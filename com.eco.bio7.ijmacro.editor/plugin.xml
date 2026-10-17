@@ -8,7 +8,7 @@
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
             default="true"
             extensions="ijm"
-            icon="icons/imagejmacrofile.png"
+            icon="icons/imagejmacrofile.svg"
             id="com.eco.bio7.editors.ijmacro.editor"
             name="ImageJ Macro Editor"
             symbolicFontName="com.eco.bio7.ijmacro.editor.textfont">
@@ -527,8 +527,8 @@
                label="Editor Actions">
             <command
                   commandId="com.eco.bio7.interpret.ijmacro"
-                  disabledIcon="icons/imagejmacrointerpret.png"
-                  icon="icons/imagejmacrointerpret.png"
+                  disabledIcon="icons/imagejmacrointerpret.svg"
+                  icon="icons/imagejmacrointerpret.svg"
                   id="toolbar.interpretmacro"
                   label="Interpret ImageJ Macro"
                   style="push">
@@ -659,7 +659,7 @@
       <wizard
             category="com.eco.bio7.ImageJ"
             class="com.eco.bio7.ijmacro.editor.wizards.ImageJMacroWizard"
-            icon="icons/imagejmacrofile.png"
+            icon="icons/imagejmacrofile.svg"
             id="com.eco.bio7.ijmacro"
             name="ImageJ Macro File"
             project="false">
@@ -682,7 +682,7 @@
          point="org.eclipse.ui.perspectives">
       <perspective
             class="com.eco.bio7.ijmacro.editor.perspectives.ImageJEditPerspective"
-            icon="icons/ijeditorperspective.png"
+            icon="icons/ijeditorperspective.svg"
             id="com.eco.bio7.ijmacro.editor.perspectives.ImageJEditPerspective"
             name="ImageJ Edit">
       </perspective>
@@ -720,7 +720,7 @@
             allowMultiple="true"
             category="com.eco.bio7.image.plugin"
             class="com.eco.bio7.ijmacro.editor.toolbar.debug.DebugVariablesView"
-            icon="icons/imagejview.png"
+            icon="icons/imagejview.svg"
             id="com.eco.bio7.ijmacro.editor.toolbar.debug"
             name="Debug"
             restorable="true">
@@ -757,7 +757,7 @@
             contributesToHeader="false"
             highlightPreferenceKey="com.eco.bio7.ijmacro.editor.debugrulermark.highlight"
             highlightPreferenceValue="true"
-            icon="/icons/brkp_obj.png"
+            icon="/icons/brkp_obj.svg"
             includeOnPreferencePage="true"
             label="ImageJ Breakpoint Marker"
             overviewRulerPreferenceKey="com.eco.bio7.ijmacro.editor.debugrulermark.overview"
@@ -832,7 +832,7 @@
             contributesToHeader="false"
             highlightPreferenceKey="com.eco.bio7.ijmacroeditor.debugrulermarkarrow.highlight"
             highlightPreferenceValue="true"
-            icon="/icons/occ_match.png"
+            icon="/icons/occ_match.svg"
             includeOnPreferencePage="true"
             label="ImageJ Debug Marker"
             overviewRulerPreferenceKey="com.eco.bio7.ijmacroeditor.debugrulermarkarrow.overview"

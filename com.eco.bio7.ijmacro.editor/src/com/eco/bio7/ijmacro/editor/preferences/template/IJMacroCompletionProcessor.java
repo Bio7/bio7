@@ -42,11 +42,11 @@ import org.eclipse.jface.text.templates.TemplateContext;
  * A completion processor for Java and BeanShell templates.
  */
 public class IJMacroCompletionProcessor extends TemplateCompletionProcessor {
-	private static final String DEFAULT_IMAGE = "$nl$/icons/template_obj.png"; //$NON-NLS-1$
-	private static final String METHOD_IMAGE = "$nl$/icons/methpub_obj.png"; //$NON-NLS-1$
-	private static final String VAR_EDITOR__IMAGE = "$nl$/icons/field_public_obj.png"; //$NON-NLS-1$
-	private static final String GLOBAL_VAR_EDITOR_IMAGE = "$nl$/icons/field_private_obj.png"; //$NON-NLS-1$
-	private static final String FUNCTION_EDITOR__IMAGE = "$nl$/icons/brkp_obj.png";
+	private static final String DEFAULT_IMAGE = "$nl$/icons/template_obj.svg"; //$NON-NLS-1$
+	private static final String METHOD_IMAGE = "$nl$/icons/methpub_obj.svg"; //$NON-NLS-1$
+	private static final String VAR_EDITOR__IMAGE = "$nl$/icons/field_public_obj.svg"; //$NON-NLS-1$
+	private static final String GLOBAL_VAR_EDITOR_IMAGE = "$nl$/icons/field_private_obj.svg"; //$NON-NLS-1$
+	private static final String FUNCTION_EDITOR__IMAGE = "$nl$/icons/brkp_obj.svg";
 	private static final Comparator fgProposalComparator = new ProposalComparator();
 	private int count = 0;// Variable to count the listed template.
 	private int defaultTemplatesLength;

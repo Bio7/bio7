@@ -45,7 +45,7 @@ import ij.measure.ResultsTable;
  */
 public class IJMacroDefaultInformationControl extends AbstractInformationControl implements DisposeListener {
 
-	Image publicMethodIcon = IJMacroEditorPlugin.getImageDescriptor("/icons/methpub_obj.png").createImage();
+	Image publicMethodIcon = IJMacroEditorPlugin.getImageDescriptor("/icons/methpub_obj.svg").createImage();
 
 	/**
 	 * An information presenter determines the style presentation of information

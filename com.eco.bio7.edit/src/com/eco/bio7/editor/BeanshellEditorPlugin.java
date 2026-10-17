@@ -76,6 +76,6 @@ public class BeanshellEditorPlugin extends AbstractUIPlugin {
 	}
 
 	public static ImageDescriptor getImageDescriptor(String path) {
-		return AbstractUIPlugin.imageDescriptorFromPlugin("com.eco.bio7.edit", path);
+		return com.eco.bio7.util.IconColors.imageDescriptorFromPlugin("com.eco.bio7.edit", path);
 	}
 }

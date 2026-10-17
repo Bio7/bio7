@@ -48,7 +48,7 @@ import com.eco.bio7.util.Util;
 /*Bio7 hoover popup!*/
 public class RDefaultInformationControl extends AbstractInformationControl implements DisposeListener {
     /*Will be disposed in a dispose event of the Styledtext!*/
-	Image publicMethodIcon = Bio7REditorPlugin.getImageDescriptor("/icons/methpub_obj.png").createImage();
+	Image publicMethodIcon = Bio7REditorPlugin.getImageDescriptor("/icons/methpub_obj.svg").createImage();
 
 	/**
 	 * An information presenter determines the style presentation of information

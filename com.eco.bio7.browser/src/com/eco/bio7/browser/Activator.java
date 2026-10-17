@@ -58,6 +58,6 @@ public class Activator extends AbstractUIPlugin {
 	 * @return the image descriptor
 	 */
 	public static ImageDescriptor getImageDescriptor(String path) {
-		return imageDescriptorFromPlugin(PLUGIN_ID, path);
+		return com.eco.bio7.util.IconColors.imageDescriptorFromPlugin(PLUGIN_ID, path);
 	}
 }

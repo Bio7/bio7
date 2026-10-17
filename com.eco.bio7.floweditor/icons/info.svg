@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon from com.eco.bio7/icons/maintoolbar/Button_Template_Views.svg (g089) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="16" height="16" viewBox="3212.220 1497.490 1021.380 1021.380">
+  <defs
+     id="defs1">
+    <symbol
+       id="info"
+       class="Web-Application-Icons">
+      <title
+         id="title80936">Info</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M640 192v-128q0 -26 -19 -45t-45 -19h-512q-26 0 -45 19t-19 45v128q0 26 19 45t45 19h64v384h-64q-26 0 -45 19t-19 45v128q0 26 19 45t45 19h384q26 0 45 -19t19 -45v-576h64q26 0 45 -19t19 -45zM512 1344v-192q0 -26 -19 -45t-45 -19h-256q-26 0 -45 19t-19 45v192 q0 26 19 45t45 19h256q26 0 45 -19t19 -45z"
+         id="path80938" />
+    </symbol>
+  </defs>
+  <g
+     transform="translate(0,-2600.8031)"
+     style="display:inline"
+     id="g1">
+    <g
+       id="use163718"
+       style="fill:#638d43;fill-opacity:1"
+       transform="matrix(14.508177,0,0,14.508177,3490.7759,4005.445)">
+      <title
+         id="title1">Info</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M 640,192 V 64 Q 640,38 621,19 602,0 576,0 H 64 Q 38,0 19,19 0,38 0,64 v 128 q 0,26 19,45 19,19 45,19 h 64 V 640 H 64 Q 38,640 19,659 0,678 0,704 v 128 q 0,26 19,45 19,19 45,19 h 384 q 26,0 45,-19 19,-19 19,-45 V 256 h 64 q 26,0 45,-19 19,-19 19,-45 z M 512,1344 v -192 q 0,-26 -19,-45 -19,-19 -45,-19 H 192 q -26,0 -45,19 -19,19 -19,45 v 192 q 0,26 19,45 19,19 45,19 h 256 q 26,0 45,-19 19,-19 19,-45 z"
+         id="path1" />
+    </g>
+  </g>
+</svg>

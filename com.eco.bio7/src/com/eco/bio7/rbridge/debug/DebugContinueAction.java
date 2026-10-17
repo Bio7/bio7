@@ -28,7 +28,7 @@ public class DebugContinueAction extends Action {
 		setId("Continue");
 		setText("Continue (c) - Continue execution without single stepping.");
 
-		ImageDescriptor desc = Bio7Plugin.getImageDescriptor("/icons/rdebug/stepreturn_co.png");
+		ImageDescriptor desc = Bio7Plugin.getImageDescriptor("/icons/rdebug/stepreturn_co.svg");
 
 		this.setImageDescriptor(desc);
 	}

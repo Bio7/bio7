@@ -33,7 +33,7 @@ public class DebugSetVariableAction extends Action {
 		// ImageDescriptor desc = ImageDescriptor.createFromImage(new
 		// Image(Display.getCurrent(),
 		// getClass().getResourceAsStream("/pics/help.gif")));
-		ImageDescriptor desc = IJMacroEditorPlugin.getImageDescriptor("/icons/ijmacrodebug/variable_view.png");
+		ImageDescriptor desc = IJMacroEditorPlugin.getImageDescriptor("/icons/ijmacrodebug/variable_view.svg");
 		this.setImageDescriptor(desc);
 	}
 

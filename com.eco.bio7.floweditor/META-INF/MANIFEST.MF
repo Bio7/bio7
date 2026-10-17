@@ -10,7 +10,8 @@ Bundle-Vendor: Eclipse.org
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.ui,org.eclipse.core.runtime,org.eclipse.co
  re.resources,org.eclipse.ui.views,org.eclipse.ui.workbench,org.eclips
- e.ui.ide,org.eclipse.jface,org.eclipse.gef
+ e.ui.ide,org.eclipse.jface,org.eclipse.gef,
+ com.eco.bio7.util
 Eclipse-LazyStart: true
 Export-Package: com.eco.bio7.floweditor.commands,com.eco.bio7.flowedit
  or.model,com.eco.bio7.floweditor.parts,com.eco.bio7.floweditor.shapes

@@ -79,7 +79,7 @@ public class CustomView extends ViewPart {// implements ISaveablePart2
 			}
 		};
 		fullscreen.setToolTipText("Display the view in fullscreen mode (F2, F3: secondary monitor, F4: tertiary monitor, F5: select the monitor, exit with ESC)");
-		fullscreen.setImageDescriptor(Bio7Plugin.getImageDescriptor("/icons/views/fullscreen.png"));
+		fullscreen.setImageDescriptor(Bio7Plugin.getImageDescriptor("/icons/views/fullscreen.svg"));
 		getViewSite().getActionBars().getToolBarManager().add(fullscreen);
 		getViewSite().getActionBars().updateActionBars();
 		parent.addDisposeListener(new DisposeListener() {

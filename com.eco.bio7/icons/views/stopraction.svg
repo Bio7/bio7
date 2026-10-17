@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon from com.eco.bio7/icons/maintoolbar/Button_Template_Views.svg (g075) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="16" height="16" viewBox="-3516.486 147.874 1022.441 1022.441">
+  <defs
+     id="defs1">
+    <symbol
+       id="times"
+       class="Web-Application-Icons">
+      <title
+         id="title79602">Times</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M1298 214q0 -40 -28 -68l-136 -136q-28 -28 -68 -28t-68 28l-294 294l-294 -294q-28 -28 -68 -28t-68 28l-136 136q-28 28 -28 68t28 68l294 294l-294 294q-28 28 -28 68t28 68l136 136q28 28 68 28t68 -28l294 -294l294 294q28 28 68 28t68 -28l136 -136q28 -28 28 -68 t-28 -68l-294 -294l294 -294q28 -28 28 -68z"
+         id="path79604" />
+    </symbol>
+  </defs>
+  <g
+     transform="translate(0,-2600.8031)"
+     id="g1">
+    <g
+       id="g86592"
+       transform="translate(-3517.271,147.09651)">
+      <g
+         style="display:inline;fill:#638d43;fill-opacity:1;stroke:#005a00;stroke-width:0;stroke-miterlimit:37.09999847;stroke-dasharray:none;stroke-opacity:1"
+         transform="matrix(1.3735875,0,0,1.6446404,15.512677,2650.6082)"
+         id="r-2-6">
+        <title
+           id="title321287-2-0">r</title>
+        <path
+           style="fill:#638d43;fill-opacity:1;fill-rule:evenodd;stroke:#005a00;stroke-width:0;stroke-miterlimit:37.09999847;stroke-dasharray:none;stroke-opacity:1"
+           d="M 361.453,485.937 C 162.329,485.937 0.906,377.828 0.906,244.469 0.906,111.109 162.329,3 361.453,3 560.578,3 722,111.109 722,244.469 722,377.828 560.578,485.937 361.453,485.937 Z M 416.641,97.406 c -151.352,0 -274.047,73.908 -274.047,165.078 0,91.17 122.695,165.078 274.047,165.078 151.351,0 263.046,-50.529 263.046,-165.078 0,-114.513 -111.695,-165.078 -263.046,-165.078 z"
+           id="path318979-2-3" />
+        <path
+           style="fill:#638d43;fill-opacity:1;fill-rule:evenodd;stroke:#005a00;stroke-width:0;stroke-miterlimit:37.09999847;stroke-dasharray:none;stroke-opacity:1"
+           d="m 550,377 c 0,0 21.822,6.585 34.5,13 4.399,2.226 12.01,6.668 17.5,12.5 5.378,5.712 8,11.5 8,11.5 L 696,559 557,559.062 492,437 c 0,0 -13.31,-22.869 -21.5,-29.5 -6.832,-5.531 -9.745,-7.5 -16.5,-7.5 -4.702,0 -33.026,0 -33.026,0 l 0.026,158.974 -123,0.052 0,-406.088 247,0 c 0,0 112.5,2.029 112.5,109.062 0,107.033 -107.5,115 -107.5,115 z m -53.5,-135.976 -74.463,-0.048 -0.037,69.05 74.5,-0.024 c 0,0 34.5,-0.107 34.5,-35.125 0,-35.722 -34.5,-33.853 -34.5,-33.853 z"
+           id="path318981-3-0" />
+      </g>
+      <g
+         id="use85308-6-9"
+         style="fill:#638d43;fill-opacity:1;stroke:#ffffff;stroke-width:44.0047;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         transform="matrix(11.36243,0,0,11.36243,112.04246,2567.4065)">
+        <title
+           id="title1">Times</title>
+        <path
+           transform="matrix(0.05,0,0,-0.05,0,76.8)"
+           d="m 1298,214 q 0,-40 -28,-68 L 1134,10 q -28,-28 -68,-28 -40,0 -68,28 L 704,304 410,10 q -28,-28 -68,-28 -40,0 -68,28 L 138,146 q -28,28 -28,68 0,40 28,68 L 432,576 138,870 q -28,28 -28,68 0,40 28,68 l 136,136 q 28,28 68,28 40,0 68,-28 l 294,-294 294,294 q 28,28 68,28 40,0 68,-28 l 136,-136 q 28,-28 28,-68 0,-40 -28,-68 L 976,576 1270,282 q 28,-28 28,-68 z"
+           id="path1" />
+      </g>
+    </g>
+  </g>
+</svg>

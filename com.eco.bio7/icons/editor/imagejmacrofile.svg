@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon from com.eco.bio7/icons/maintoolbar/Button_Template_Views.svg (g097) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="16" height="16" viewBox="-595.200 2922.970 1004.000 1004.000">
+  <defs
+     id="defs1">
+    <symbol
+       id="circle"
+       class="Web-Application-Icons Form-Control-Icons">
+      <title
+         id="title80831">Circle</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M1536 640q0 -209 -103 -385.5t-279.5 -279.5t-385.5 -103t-385.5 103t-279.5 279.5t-103 385.5t103 385.5t279.5 279.5t385.5 103t385.5 -103t279.5 -279.5t103 -385.5z"
+         id="path80833" />
+    </symbol>
+  </defs>
+  <g
+     transform="translate(0,-2600.8031)"
+     id="g1">
+    <g
+       id="g82638"
+       transform="translate(-605.19723,2912.9696)">
+      <g
+         id="use164475-4-86-9"
+         style="fill:#638d43;fill-opacity:1"
+         transform="matrix(13.072934,0,0,13.072934,9.9993344,2527.1357)">
+        <title
+           id="title1">Circle</title>
+        <path
+           transform="matrix(0.05,0,0,-0.05,0,76.8)"
+           d="M 1536,640 Q 1536,431 1433,254.5 1330,78 1153.5,-25 977,-128 768,-128 559,-128 382.5,-25 206,78 103,254.5 0,431 0,640 0,849 103,1025.5 206,1202 382.5,1305 559,1408 768,1408 977,1408 1153.5,1305 1330,1202 1433,1025.5 1536,849 1536,640 Z"
+           id="path1" />
+      </g>
+      <g
+         transform="matrix(1.3106747,0,0,1.3106747,18.131407,-966.89105)"
+         id="g86832-69-8">
+        <path
+           style="font-weight:bold;font-size:564.576px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold';letter-spacing:0px;word-spacing:0px;fill:#ffffff;stroke-width:1px"
+           d="m 97.432152,3358.4351 v -404.1352 h 81.598908 v 404.1352 z m 158.235718,0 v -404.1352 h 122.12269 l 73.32875,275.672 72.50174,-275.672 h 122.39836 v 404.1352 h -75.8098 v -318.1255 l -80.22055,318.1255 h -78.56651 l -79.94488,-318.1255 v 318.1255 z"
+           id="text84261-6-4-5"
+           transform="scale(1.0140395,0.98615488)"
+           aria-label="IM" />
+      </g>
+    </g>
+  </g>
+</svg>

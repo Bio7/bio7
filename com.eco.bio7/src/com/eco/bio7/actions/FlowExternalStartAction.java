@@ -15,7 +15,7 @@ public class FlowExternalStartAction extends Action {
 		super(text);
 		this.window = window;
 		setId("com.eco.bio7.flow_start");
-		setImageDescriptor(Bio7Plugin.getImageDescriptor("/icons/bio7new.png"));
+		setImageDescriptor(Bio7Plugin.getImageDescriptor("/icons/bio7new.svg"));
 	
 	}
 

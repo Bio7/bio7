@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon from com.eco.bio7/icons/maintoolbar/Button_Template_Views.svg (g045) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="16" height="16" viewBox="-8270.410 -2869.160 1014.210 1014.210">
+  <defs
+     id="defs1">
+    <symbol
+       id="codepen"
+       class="Brand-Icons">
+      <title
+         id="title81606">Codepen</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M216 367l603 -402v359l-334 223zM154 511l193 129l-193 129v-258zM973 -35l603 402l-269 180l-334 -223v-359zM896 458l272 182l-272 182l-272 -182zM485 733l334 223v359l-603 -402zM1445 640l193 -129v258zM1307 733l269 180l-603 402v-359zM1792 913v-546 q0 -41 -34 -64l-819 -546q-21 -13 -43 -13t-43 13l-819 546q-34 23 -34 64v546q0 41 34 64l819 546q21 13 43 13t43 -13l819 -546q34 -23 34 -64z"
+         id="path81608" />
+    </symbol>
+  </defs>
+  <g
+     transform="translate(0,-2600.8031)"
+     id="g1">
+    <g
+       id="use84181"
+       style="fill:#638d43;fill-opacity:1"
+       transform="matrix(11.319273,0,0,11.319273,-8270.4082,-268.35499)">
+      <title
+         id="title1">Codepen</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M 216,367 819,-35 V 324 L 485,547 Z M 154,511 347,640 154,769 Z M 973,-35 1576,367 1307,547 973,324 Z M 896,458 1168,640 896,822 624,640 Z M 485,733 819,956 v 359 L 216,913 Z m 960,-93 193,-129 v 258 z m -138,93 269,180 -603,402 V 956 Z m 485,180 V 367 q 0,-41 -34,-64 L 939,-243 q -21,-13 -43,-13 -22,0 -43,13 L 34,303 Q 0,326 0,367 v 546 q 0,41 34,64 l 819,546 q 21,13 43,13 22,0 43,-13 l 819,-546 q 34,-23 34,-64 z"
+         id="path1" />
+    </g>
+  </g>
+</svg>

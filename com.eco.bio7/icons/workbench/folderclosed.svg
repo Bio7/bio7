@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon from com.eco.bio7/icons/maintoolbar/Button_Template_Views.svg (g084) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="16" height="16" viewBox="-3082.058 1416.822 1023.296 1023.296">
+  <defs
+     id="defs1">
+    <symbol
+       id="folder"
+       class="Web-Application-Icons">
+      <title
+         id="title80117">Folder</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M1664 928v-704q0 -92 -66 -158t-158 -66h-1216q-92 0 -158 66t-66 158v960q0 92 66 158t158 66h320q92 0 158 -66t66 -158v-32h672q92 0 158 -66t66 -158z"
+         id="path80119" />
+    </symbol>
+  </defs>
+  <g
+     id="g1">
+    <g
+       id="use84270"
+       style="fill:#638d43;fill-opacity:1;stroke:#ffffff;stroke-opacity:1"
+       transform="matrix(12.235167,0,0,12.235167,-3079.3984,1419.495)">
+      <title
+         id="title1">Folder</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M 1664,928 V 224 Q 1664,132 1598,66 1532,0 1440,0 H 224 Q 132,0 66,66 0,132 0,224 v 960 q 0,92 66,158 66,66 158,66 h 320 q 92,0 158,-66 66,-66 66,-158 v -32 h 672 q 92,0 158,-66 66,-66 66,-158 z"
+         id="path1" />
+    </g>
+  </g>
+</svg>

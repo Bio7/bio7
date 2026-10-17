@@ -26,10 +26,10 @@ public class RPopupTable {
 	Table table;
 	int minimumWidth;
 	private String result;
-	//private Image imageArgs = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/template_obj.png"));
-	private Image imageArgs =Bio7REditorPlugin.getImageDescriptor("/icons/template_obj.png").createImage();
-	private Image imageVariables = Bio7REditorPlugin.getImageDescriptor("/icons/default_co.png").createImage();
-	private Image imageFunctions =  Bio7REditorPlugin.getImageDescriptor("/icons/brkp_obj.png").createImage();
+	//private Image imageArgs = new Image(Display.getCurrent(), getClass().getResourceAsStream("/icons/template_obj.svg"));
+	private Image imageArgs =Bio7REditorPlugin.getImageDescriptor("/icons/template_obj.svg").createImage();
+	private Image imageVariables = Bio7REditorPlugin.getImageDescriptor("/icons/default_co.svg").createImage();
+	private Image imageFunctions =  Bio7REditorPlugin.getImageDescriptor("/icons/brkp_obj.svg").createImage();
 
 	/**
 	 * Creates a PopupList above the specified shell.

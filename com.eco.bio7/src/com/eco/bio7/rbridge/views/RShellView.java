@@ -975,7 +975,7 @@ public class RShellView extends ViewPart {
 		});
 
 		btnNewButton.setToolTipText("Interrupt R execution");
-		btnNewButton.setImage(Bio7Plugin.getImageDescriptor("/icons/views/deleteaction.png").createImage());
+		btnNewButton.setImage(Bio7Plugin.getImageDescriptor("/icons/views/deleteaction.svg").createImage());
 
 		/*
 		 * fd_composite_1.top = new FormAttachment(0, 10); fd_composite_1.left = new
@@ -1127,7 +1127,7 @@ public class RShellView extends ViewPart {
 		GridData gd_iButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_iButton.heightHint = 40;
 		iButton.setLayoutData(gd_iButton);
-		iButton.setImage(Bio7Plugin.getImageDescriptor("/icons/views/helpaction.png").createImage());
+		iButton.setImage(Bio7Plugin.getImageDescriptor("/icons/views/helpaction.svg").createImage());
 		iButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 

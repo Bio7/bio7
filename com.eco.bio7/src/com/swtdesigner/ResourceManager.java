@@ -184,8 +184,13 @@ public class ResourceManager extends SWTResourceManager {
                 URL url = getPluginImageURL(plugin, name);
                 if (m_URLImageMap.containsKey(url))
                     return m_URLImageMap.get(url);
+                /* With a descriptor *.svg and @2x images are sharp on high resolution displays! */
+                Image image = ImageDescriptor.createFromURL(url).createImage(false);
+                if (image != null) {
+                    m_URLImageMap.put(url, image);
+                    return image;
+                }
                 InputStream is = url.openStream();
-                Image image;
                 try {
                     image = getImage(is);
                     m_URLImageMap.put(url, image);
@@ -251,6 +256,12 @@ public class ResourceManager extends SWTResourceManager {
         	// Ignore any exceptions
 		}
 		// else work with 'plugin' as with usual Eclipse plugin
+		if (plugin instanceof org.eclipse.core.runtime.Plugin) {
+			org.osgi.framework.Bundle bundle = ((org.eclipse.core.runtime.Plugin) plugin).getBundle();
+			URL url = org.eclipse.core.runtime.FileLocator.find(bundle, org.eclipse.core.runtime.IPath.fromPortableString(name));
+			/* *.svg icons with the icon color of the preferences! */
+			return com.eco.bio7.util.IconColors.recolor(url, bundle.getSymbolicName(), name);
+		}
 		{
 			Class<?> pluginClass = Class.forName("org.eclipse.core.runtime.Plugin"); //$NON-NLS-1$
 			if (pluginClass.isAssignableFrom(plugin.getClass())) {

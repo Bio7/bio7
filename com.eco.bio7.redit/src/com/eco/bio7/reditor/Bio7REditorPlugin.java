@@ -59,7 +59,7 @@ public class Bio7REditorPlugin extends AbstractUIPlugin {
 		return fColorProvider;
 	}
 	public static ImageDescriptor getImageDescriptor(String path) {
-		return AbstractUIPlugin.imageDescriptorFromPlugin("com.eco.bio7.redit", path);
+		return com.eco.bio7.util.IconColors.imageDescriptorFromPlugin("com.eco.bio7.redit", path);
 	}
 
 }

@@ -1367,7 +1367,7 @@ public class IJMacroEditor extends TextEditor implements IPropertyChangeListener
 				}
 
 			};
-			sortAlphabetAction.setImageDescriptor(IJMacroEditorPlugin.getImageDescriptor("icons/alphab_sort_co.png"));
+			sortAlphabetAction.setImageDescriptor(IJMacroEditorPlugin.getImageDescriptor("icons/alphab_sort_co.svg"));
 			Action collapseAllAction = new Action("Collapse", IAction.AS_PUSH_BUTTON) {
 
 				@Override
@@ -1389,7 +1389,7 @@ public class IJMacroEditor extends TextEditor implements IPropertyChangeListener
 				}
 
 			};
-			collapseAllAction.setImageDescriptor(IJMacroEditorPlugin.getImageDescriptor("icons/collapseall.png"));
+			collapseAllAction.setImageDescriptor(IJMacroEditorPlugin.getImageDescriptor("icons/collapseall.svg"));
 			// Add actions to the toolbar
 			IActionBars actionBars = getSite().getActionBars();
 			IToolBarManager toolbarManager = actionBars.getToolBarManager();

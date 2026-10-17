@@ -26,7 +26,7 @@ public class LabelControlContribution extends ControlContribution
     {  
     	
         final Label b = new Label(parent, SWT.LEFT); 
-        Image image=Bio7Plugin.getImageDescriptor("/icons/workbench/placeholder.png").createImage();
+        Image image=Bio7Plugin.getImageDescriptor("/icons/workbench/placeholder.svg").createImage();
        
         //b.setImage(image);
        // b.setText("Label: <Your User Name>");  

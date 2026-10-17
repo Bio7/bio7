@@ -152,7 +152,7 @@ public class RCompletionShell extends Shell {
 		setDefaultButton(button);
 		pack();
 		setSize(296, 388);
-		Image image = Bio7Plugin.getImageDescriptor("/icons/views/raction.png").createImage();
+		Image image = Bio7Plugin.getImageDescriptor("/icons/views/raction.svg").createImage();
 		setImage(image);
 
 		final ExpandBar expandBar = new ExpandBar(this, SWT.NONE | SWT.V_SCROLL);

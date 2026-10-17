@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon from com.eco.bio7/icons/maintoolbar/Button_Template_Views.svg (g090) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="16" height="16" viewBox="-10130.700 2922.970 1004.000 1004.000">
+  <defs
+     id="defs1">
+    <symbol
+       id="circle"
+       class="Web-Application-Icons Form-Control-Icons">
+      <title
+         id="title80831">Circle</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M1536 640q0 -209 -103 -385.5t-279.5 -279.5t-385.5 -103t-385.5 103t-279.5 279.5t-103 385.5t103 385.5t279.5 279.5t385.5 103t385.5 -103t279.5 -279.5t103 -385.5z"
+         id="path80833" />
+    </symbol>
+  </defs>
+  <g
+     transform="translate(0,-2600.8031)"
+     id="g1">
+    <g
+       id="g86836-6"
+       transform="translate(-10140.701,2912.9696)">
+      <g
+         id="use164475-4-2"
+         style="fill:#638d43;fill-opacity:1"
+         transform="matrix(13.072934,0,0,13.072934,9.9993344,2527.1357)">
+        <title
+           id="title1">Circle</title>
+        <path
+           transform="matrix(0.05,0,0,-0.05,0,76.8)"
+           d="M 1536,640 Q 1536,431 1433,254.5 1330,78 1153.5,-25 977,-128 768,-128 559,-128 382.5,-25 206,78 103,254.5 0,431 0,640 0,849 103,1025.5 206,1202 382.5,1305 559,1408 768,1408 977,1408 1153.5,1305 1330,1202 1433,1025.5 1536,849 1536,640 Z"
+           id="path1" />
+      </g>
+      <g
+         id="g86832-6">
+        <path
+           style="font-weight:bold;font-size:646.17px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold';letter-spacing:0px;word-spacing:0px;fill:#ffffff;stroke-width:1px"
+           d="m 88.118847,3387.7761 v -462.5418 h 93.391803 v 205.3989 l 188.67667,-205.3989 h 125.57411 l -174.16308,180.1578 183.62847,282.384 H 384.3854 l -127.15167,-217.0728 -75.72308,77.3006 v 139.7722 z m 466.327983,0 v -462.5418 h 90.86769 l 189.30771,308.8871 v -308.8871 h 86.76603 v 462.5418 H 827.68094 L 641.21286,3086.1459 v 301.6302 z"
+           id="text84261-6-3"
+           transform="scale(1.0140395,0.98615488)"
+           aria-label="KN" />
+      </g>
+    </g>
+  </g>
+</svg>

@@ -21,7 +21,7 @@ import com.eco.bio7.floweditor.shapes.ShapesPlugin;
  */
 public class RectangularShape extends Shape {
 	/** A 16x16 pictogram of a rectangular shape. */
-	private static final Image RECTANGLE_ICON = ShapesPlugin.getImageDescriptor("/icons/info.png").createImage();
+	private static final Image RECTANGLE_ICON = ShapesPlugin.getImageDescriptor("/icons/info.svg").createImage();
 
 	private static final long serialVersionUID = 1;
 

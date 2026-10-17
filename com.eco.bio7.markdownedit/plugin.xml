@@ -9,7 +9,7 @@
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
             default="true"
             extensions="Rmd,rmd,md"
-            icon="icons/rmarkdownfile.png"
+            icon="icons/rmarkdownfile.svg"
             id="com.eco.bio7.markdownedit"
             name="R Markdown Editor"
             symbolicFontName="com.eco.bio7.reditor.markdown.textfont">

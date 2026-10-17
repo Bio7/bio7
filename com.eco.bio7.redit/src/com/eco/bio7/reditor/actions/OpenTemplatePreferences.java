@@ -12,7 +12,7 @@ public class OpenTemplatePreferences extends Action {
 	public OpenTemplatePreferences() {
 		super("Preferences Template");
 		setId("com.eco.bio7.r_editor_open_template_preferences");
-		ImageDescriptor desc = Bio7REditorPlugin.getImageDescriptor("/icons/template_obj.png");
+		ImageDescriptor desc = Bio7REditorPlugin.getImageDescriptor("/icons/template_obj.svg");
 		this.setImageDescriptor(desc);
 
 		setText("Preferences Template");

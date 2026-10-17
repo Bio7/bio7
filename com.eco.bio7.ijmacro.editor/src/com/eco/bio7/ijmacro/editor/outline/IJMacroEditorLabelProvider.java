@@ -10,14 +10,14 @@ public class IJMacroEditorLabelProvider implements ILabelProvider {
 	 * ISharedImages images = JavaUI.getSharedImages(); Image image =
 	 * images.getImage(ISharedImages.IMG_WHATEVER);
 	 */
-	private Image publicMethodIcon = IJMacroEditorPlugin.getImageDescriptor("/icons/methpub_obj.png").createImage();
+	private Image publicMethodIcon = IJMacroEditorPlugin.getImageDescriptor("/icons/methpub_obj.svg").createImage();
 
-	private Image publicFieldIcon = IJMacroEditorPlugin.getImageDescriptor("/icons/field_public_obj.png").createImage();
+	private Image publicFieldIcon = IJMacroEditorPlugin.getImageDescriptor("/icons/field_public_obj.svg").createImage();
 
-	private Image globalFieldIcon = IJMacroEditorPlugin.getImageDescriptor("/icons/field_private_obj.png")
+	private Image globalFieldIcon = IJMacroEditorPlugin.getImageDescriptor("/icons/field_private_obj.svg")
 			.createImage();
 
-	private Image publicMacroIcon = IJMacroEditorPlugin.getImageDescriptor("/icons/brkp_obj.png").createImage();
+	private Image publicMacroIcon = IJMacroEditorPlugin.getImageDescriptor("/icons/brkp_obj.svg").createImage();
 
 	// private Image publicFieldLoopIcon =
 	// Bio7REditorPlugin.getImageDescriptor("/icons/field_protected_obj.png").createImage();

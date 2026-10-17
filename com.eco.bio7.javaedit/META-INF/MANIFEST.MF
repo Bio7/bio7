@@ -18,6 +18,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.views,
  org.eclipse.core.resources,
  com.eco.bio7.libs;bundle-version="3.4.0",
+ com.eco.bio7.util,
  org.eclipse.ui.workbench,
  org.eclipse.jdt.ui;bundle-version="3.16.0"
 Eclipse-LazyStart: true

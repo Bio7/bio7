@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon from com.eco.bio7/icons/maintoolbar/Button_Template_Views.svg (g018) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="16" height="16" viewBox="-664.624 -7938.650 1029.640 1029.640">
+  <defs
+     id="defs1" />
+  <g
+     transform="translate(0,-2600.8031)"
+     style="display:inline"
+     id="g1">
+    <g
+       id="libre_office"
+       transform="matrix(0.29157928,0,0,0.30345385,-672.65361,-5376.0477)"
+       style="fill:#638d43;fill-opacity:1;stroke:none;stroke-width:15.74493694;stroke-miterlimit:70.19999695;stroke-dasharray:none">
+      <title
+         id="title321289">libre_office</title>
+      <g
+         style="fill:#638d43;fill-opacity:1;stroke:none;stroke-width:1.16472483;stroke-miterlimit:70.19999695;stroke-dasharray:none;stroke-opacity:1"
+         transform="matrix(13.518161,0,0,13.518161,340.5,38.00848)"
+         id="g318911">
+        <path
+           d="m 123.5,6.5 -117,0 0,251 206,0 0,-162.03125 L 123.5,6.5 Z"
+           id="sheet"
+           style="fill:#638d43;fill-opacity:1;stroke:none;stroke-width:1.16472483;stroke-linejoin:round;stroke-miterlimit:70.19999695;stroke-dasharray:none;stroke-opacity:1" />
+        <path
+           d="m 212.5,61.53125 0,-55.03125 -55,0 55,55.03125 z"
+           id="corner"
+           style="fill:#638d43;fill-opacity:1;stroke:none;stroke-width:1.16472483;stroke-linejoin:round;stroke-miterlimit:70.19999695;stroke-dasharray:none;stroke-opacity:1" />
+      </g>
+      <path
+         id="path318951"
+         d="m 2580.9398,151.14096 627.5572,0 -8.8388,645.23494 z"
+         style="fill:#638d43;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:15.74493694;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:70.19999695;stroke-dasharray:none;stroke-opacity:1" />
+    </g>
+  </g>
+</svg>

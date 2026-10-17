@@ -606,7 +606,7 @@ public class Options3d extends ViewPart {
 				}
 			}
 		});
-		imagePlayPause = Bio7Plugin.getImageDescriptor("/icons/maintoolbar/play_pause.png").createImage();
+		imagePlayPause = Bio7Plugin.getImageDescriptor("/icons/maintoolbar/play_pause.svg").createImage();
 		playPauseButton.setImage(imagePlayPause);
 
 		final Button setupButton = new Button(composite_2, SWT.NONE);
@@ -623,7 +623,7 @@ public class Options3d extends ViewPart {
 
 			}
 		});
-		imageSetup = Bio7Plugin.getImageDescriptor("/icons/maintoolbar/setup.png").createImage();
+		imageSetup = Bio7Plugin.getImageDescriptor("/icons/maintoolbar/setup.svg").createImage();
 		setupButton.setImage(imageSetup);
 		// setupButton.setText("Setup");
 		new Label(composite_2, SWT.NONE);

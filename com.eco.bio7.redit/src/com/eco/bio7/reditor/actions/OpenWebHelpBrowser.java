@@ -20,7 +20,7 @@ public class OpenWebHelpBrowser extends Action {
 	public OpenWebHelpBrowser() {
 		super("Web Help");
 		setId("com.eco.bio7.r_editor_web_help");
-		ImageDescriptor desc = Bio7REditorPlugin.getImageDescriptor("/icons/help_search.png");
+		ImageDescriptor desc = Bio7REditorPlugin.getImageDescriptor("/icons/help_search.svg");
 		this.setImageDescriptor(desc);
 		setText("Web Help");
 

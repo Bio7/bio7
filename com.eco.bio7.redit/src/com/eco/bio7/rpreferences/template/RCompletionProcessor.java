@@ -46,28 +46,28 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 
 	private static final Comparator fgProposalComparator = new ProposalComparator();
 
-	private static final String DEFAULT_IMAGE = "$nl$/icons/template_obj.png"; //$NON-NLS-1$
+	private static final String DEFAULT_IMAGE = "$nl$/icons/template_obj.svg"; //$NON-NLS-1$
 
-	private static final String CALCULATED_TEMPLATE_IMAGE = "$nl$/icons/brkp_obj.png"; //$NON-NLS-1$
+	private static final String CALCULATED_TEMPLATE_IMAGE = "$nl$/icons/brkp_obj.svg"; //$NON-NLS-1$
 
-	private static final String FIELD_IMAGE = "$nl$/icons/methpub_obj.png"; //$NON-NLS-1$
+	private static final String FIELD_IMAGE = "$nl$/icons/methpub_obj.svg"; //$NON-NLS-1$
 
-	private static final String FIELD_PRIVATE_IMAGE = "$nl$/icons/field_private_obj.png"; //$NON-NLS-1$
+	private static final String FIELD_PRIVATE_IMAGE = "$nl$/icons/field_private_obj.svg"; //$NON-NLS-1$
 
-	private static final String METHOD_IMAGE = "$nl$/icons/field_public_obj.png"; //$NON-NLS-1$
+	private static final String METHOD_IMAGE = "$nl$/icons/field_public_obj.svg"; //$NON-NLS-1$
 
 	// private Image imageArgs =
-	// Bio7REditorPlugin.getImageDescriptor("/icons/template_obj.png").createImage();
-	private Image imageVariablesWorkspace = Bio7REditorPlugin.getImageDescriptor("/icons/types.png").createImage();
-	private Image imageVariablesEditor = Bio7REditorPlugin.getImageDescriptor("/icons/field_public_obj.png")
+	// Bio7REditorPlugin.getImageDescriptor("/icons/template_obj.svg").createImage();
+	private Image imageVariablesWorkspace = Bio7REditorPlugin.getImageDescriptor("/icons/types.svg").createImage();
+	private Image imageVariablesEditor = Bio7REditorPlugin.getImageDescriptor("/icons/field_public_obj.svg")
 			.createImage();
-	private Image imageFunctionsEditor = Bio7REditorPlugin.getImageDescriptor("/icons/methpub_obj.png").createImage();
-	private Image s4Image = Bio7REditorPlugin.getImageDescriptor("/icons/s4.png").createImage();
-	private Image s3Image = Bio7REditorPlugin.getImageDescriptor("/icons/s3.png").createImage();
-	private Image varImage = Bio7REditorPlugin.getImageDescriptor("/icons/varfunccall.png").createImage();
-	private Image libImage = Bio7REditorPlugin.getImageDescriptor("/icons/package_obj.png").createImage();
-	private Image dataImage = Bio7REditorPlugin.getImageDescriptor("/icons/settings_obj.png").createImage();
-	private Image arrayImage = Bio7REditorPlugin.getImageDescriptor("/icons/goto_input.png").createImage();
+	private Image imageFunctionsEditor = Bio7REditorPlugin.getImageDescriptor("/icons/methpub_obj.svg").createImage();
+	private Image s4Image = Bio7REditorPlugin.getImageDescriptor("/icons/s4.svg").createImage();
+	private Image s3Image = Bio7REditorPlugin.getImageDescriptor("/icons/s3.svg").createImage();
+	private Image varImage = Bio7REditorPlugin.getImageDescriptor("/icons/varfunccall.svg").createImage();
+	private Image libImage = Bio7REditorPlugin.getImageDescriptor("/icons/package_obj.svg").createImage();
+	private Image dataImage = Bio7REditorPlugin.getImageDescriptor("/icons/settings_obj.svg").createImage();
+	private Image arrayImage = Bio7REditorPlugin.getImageDescriptor("/icons/goto_input.svg").createImage();
 
 	private int count = 0;// Variable to count the listed template.
 

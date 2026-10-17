@@ -29,7 +29,7 @@ public class DebugStepIntoAction extends Action {
 		setText("Step Into - Step into function calls");
 
 		//ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/stepinto_co.gif")));
-		ImageDescriptor desc = Bio7Plugin.getImageDescriptor("/icons/rdebug/stepinto_co.png");
+		ImageDescriptor desc = Bio7Plugin.getImageDescriptor("/icons/rdebug/stepinto_co.svg");
 		this.setImageDescriptor(desc);
 	}
 

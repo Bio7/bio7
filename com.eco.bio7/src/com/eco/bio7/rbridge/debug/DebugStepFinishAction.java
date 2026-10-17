@@ -29,7 +29,7 @@ public class DebugStepFinishAction extends Action {
 		setText("Finish (f) - Finishes the current loop or function.");
         
 		//ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/stepbystep_co.gif")));
-		ImageDescriptor desc = Bio7Plugin.getImageDescriptor("/icons/rdebug/stepbystep_co.png");
+		ImageDescriptor desc = Bio7Plugin.getImageDescriptor("/icons/rdebug/stepbystep_co.svg");
 		this.setImageDescriptor(desc);
 	}
 

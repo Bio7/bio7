@@ -28,7 +28,7 @@
             class="com.eco.bio7.browser.MultiPageEditor"
             default="true"
             extensions="html,Rhtml"
-            icon="pics/htmlfile.png"
+            icon="pics/htmlfile.svg"
             id="com.eco.bio7.browser.guieditor"
             name="Html Gui Editor">
       </editor>

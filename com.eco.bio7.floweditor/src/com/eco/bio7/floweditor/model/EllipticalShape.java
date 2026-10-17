@@ -21,7 +21,7 @@ import com.eco.bio7.floweditor.shapes.ShapesPlugin;
 public class EllipticalShape extends Shape {
 
 	/** A 16x16 pictogram of an elliptical shape. */
-	private static final Image ELLIPSE_ICON = ShapesPlugin.getImageDescriptor("/icons/loop.png").createImage();
+	private static final Image ELLIPSE_ICON = ShapesPlugin.getImageDescriptor("/icons/loop.svg").createImage();
 	private static final long serialVersionUID = 1;
 
 	public Image getIcon() {

@@ -32,7 +32,7 @@ public class DebugRunToInsertionAction extends Action {
 		setToolTipText(
 				"Runs the macro to a statement that was previously defined by\nclicking the mouse on an executable line of code.");
 		//ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/stepinto_co.gif")));
-		ImageDescriptor desc = IJMacroEditorPlugin.getImageDescriptor("/icons/ijmacrodebug/runtoline_co.png");
+		ImageDescriptor desc = IJMacroEditorPlugin.getImageDescriptor("/icons/ijmacrodebug/runtoline_co.svg");
 		this.setImageDescriptor(desc);
 	}
 

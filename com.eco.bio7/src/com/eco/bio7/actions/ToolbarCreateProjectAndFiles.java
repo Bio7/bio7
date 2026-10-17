@@ -40,7 +40,7 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 		// setActionDefinitionId("com.eco.bio7.toolbar.files.create");
 		setMenuCreator(this);
 		this.setToolTipText("Create new projects and files!");
-		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file.png"));
+		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file.svg"));
 
 	}
 
@@ -59,7 +59,7 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 			imageCreateProjectFileJava.dispose();
 			imageCreateProjectFileJava = null;
 		}
-		imageCreateProjectFileJava = Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file_java.png")
+		imageCreateProjectFileJava = Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file_java.svg")
 				.createImage();
 		menuItemBio7JavaProject.setImage(imageCreateProjectFileJava);
 		menuItemBio7JavaProject.addSelectionListener(new SelectionListener() {
@@ -181,7 +181,7 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 			imageCreateProject.dispose();
 			imageCreateProject = null;
 		}
-		imageCreateProject = Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file.png").createImage();
+		imageCreateProject = Bio7Plugin.getImageDescriptor("/icons/maintoolbar/create_project_file.svg").createImage();
 		menuItemR.setImage(imageCreateProject);
 		menuItemR.addSelectionListener(new SelectionListener() {
 

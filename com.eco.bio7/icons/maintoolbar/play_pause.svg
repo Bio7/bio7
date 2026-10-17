@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon from com.eco.bio7/icons/maintoolbar/Button_Template_Views.svg (g015) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="16" height="16" viewBox="-5093.740 -7918.000 1024.000 1024.000">
+  <defs
+     id="defs1">
+    <symbol
+       id="pause"
+       class="Video-Player-Icons">
+      <title
+         id="title318200">pause</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="m 1536,1344 0,-1408 q 0,-26 -19,-45 -19,-19 -45,-19 l -512,0 q -26,0 -45,19 -19,19 -19,45 l 0,1408 q 0,26 19,45 19,19 45,19 l 512,0 q 26,0 45,-19 19,-19 19,-45 z m -896,0 0,-1408 q 0,-26 -19,-45 -19,-19 -45,-19 l -512,0 q -26,0 -45,19 -19,19 -19,45 l 0,1408 q 0,26 19,45 19,19 45,19 l 512,0 q 26,0 45,-19 19,-19 19,-45 z"
+         id="path318202" />
+    </symbol>
+    <symbol
+       id="play"
+       class="Video-Player-Icons">
+      <title
+         id="title318195">play</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M 1384,609 56,-129 Q 33,-142 16.5,-132 0,-122 0,-96 l 0,1472 q 0,26 16.5,36 16.5,10 39.5,-3 L 1384,671 q 23,-13 23,-31 0,-18 -23,-31 z"
+         id="path318197" />
+    </symbol>
+  </defs>
+  <g
+     transform="translate(0,-2600.8031)"
+     style="display:inline"
+     id="g1">
+    <g
+       id="playpause"
+       transform="matrix(0.28234362,0,0,0.28118325,-5086.7357,-5315.5562)"
+       style="fill:#638d43;fill-opacity:1">
+      <title
+         id="title321281">playpause</title>
+      <g
+         id="use161847"
+         style="fill:#638d43;fill-opacity:1"
+         transform="matrix(20.104772,0,0,47.418662,2057.9203,-309.30455)">
+        <title
+           id="title1">pause</title>
+        <path
+           transform="matrix(0.05,0,0,-0.05,0,76.8)"
+           d="M 1536,1344 V -64 q 0,-26 -19,-45 -19,-19 -45,-19 H 960 q -26,0 -45,19 -19,19 -19,45 v 1408 q 0,26 19,45 19,19 45,19 h 512 q 26,0 45,-19 19,-19 19,-45 z m -896,0 V -64 q 0,-26 -19,-45 -19,-19 -45,-19 H 64 q -26,0 -45,19 -19,19 -19,45 v 1408 q 0,26 19,45 19,19 45,19 h 512 q 26,0 45,-19 19,-19 19,-45 z"
+           id="path1" />
+      </g>
+      <g
+         id="use161518"
+         style="fill:#638d43;fill-opacity:1"
+         transform="matrix(21.730743,0,0,46.711369,-24.819667,-277.61769)">
+        <title
+           id="title2">play</title>
+        <path
+           transform="matrix(0.05,0,0,-0.05,0,76.8)"
+           d="M 1384,609 56,-129 Q 33,-142 16.5,-132 0,-122 0,-96 v 1472 q 0,26 16.5,36 16.5,10 39.5,-3 L 1384,671 q 23,-13 23,-31 0,-18 -23,-31 z"
+           id="path2" />
+      </g>
+    </g>
+  </g>
+</svg>

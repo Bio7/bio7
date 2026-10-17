@@ -9,7 +9,7 @@
      <extension point="org.eclipse.ui.editors">
       <editor name="Flow Editor"
               extensions="ecoflow"
-              icon="icons/flow.png"
+              icon="icons/flow.svg"
               default="true"
               class="com.eco.bio7.floweditor.shapes.ShapesEditor"
               contributorClass="com.eco.bio7.floweditor.shapes.FlowContributor"
@@ -20,7 +20,7 @@
       <wizard
             category="com.eco.bio7.bio7"
             class="com.eco.bio7.floweditor.shapes.ShapesCreationWizard"
-            icon="icons/flow.png"
+            icon="icons/flow.svg"
             id="com.eco.bio7.floweditor.ShapesCreationWizard"
             name="Flow"
             project="false">

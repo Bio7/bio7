@@ -8,8 +8,8 @@ import com.eco.bio7.markdownedit.Activator;
 
 public class MarkdownEditorLabelProvider implements ILabelProvider {
 
-	private Image MarkdownHeaderIcon = Activator.getImageDescriptor("/icons/template_obj.png").createImage();
-	private Image rMarkdownIcon = Activator.getImageDescriptor("/icons/source_attach_attrib.png").createImage();
+	private Image MarkdownHeaderIcon = Activator.getImageDescriptor("/icons/template_obj.svg").createImage();
+	private Image rMarkdownIcon = Activator.getImageDescriptor("/icons/source_attach_attrib.svg").createImage();
 	
 
 	public String getText(Object element) {

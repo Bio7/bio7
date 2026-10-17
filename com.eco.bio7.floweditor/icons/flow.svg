@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon from com.eco.bio7/icons/maintoolbar/Button_Template_Views.svg (g081) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="16" height="16" viewBox="-7307.840 1497.490 1019.410 1019.410">
+  <defs
+     id="defs1">
+    <symbol
+       id="square"
+       class="Web-Application-Icons Form-Control-Icons">
+      <title
+         id="title80491">Square</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M1536 1120v-960q0 -119 -84.5 -203.5t-203.5 -84.5h-960q-119 0 -203.5 84.5t-84.5 203.5v960q0 119 84.5 203.5t203.5 84.5h960q119 0 203.5 -84.5t84.5 -203.5z"
+         id="path80493" />
+    </symbol>
+    <symbol
+       id="minus"
+       class="Web-Application-Icons">
+      <title
+         id="title80101">minus</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M1408 800v-192q0 -40 -28 -68t-68 -28h-1216q-40 0 -68 28t-28 68v192q0 40 28 68t68 28h1216q40 0 68 -28t28 -68z"
+         id="path80103" />
+    </symbol>
+    <symbol
+       id="level-down"
+       class="Web-Application-Icons">
+      <title
+         id="title81086">Level Down</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M32 1280h704q13 0 22.5 -9.5t9.5 -23.5v-863h192q40 0 58 -37t-9 -69l-320 -384q-18 -22 -49 -22t-49 22l-320 384q-26 31 -9 69q18 37 58 37h192v640h-320q-14 0 -25 11l-160 192q-13 14 -4 34q9 19 29 19z"
+         id="path81088" />
+    </symbol>
+  </defs>
+  <g
+     transform="translate(0,-2600.8031)"
+     id="g1">
+    <g
+       id="g163980-2"
+       transform="translate(-7394.1341,1498.6392)"
+       style="fill:#638d43;fill-opacity:1">
+      <g
+         id="use163803-5"
+         style="fill:#638d43;fill-opacity:1"
+         transform="matrix(4.181545,0,0,3.8106509,193.24348,3302.0232)">
+        <title
+           id="title1">Square</title>
+        <path
+           transform="matrix(0.05,0,0,-0.05,0,76.8)"
+           d="M 1536,1120 V 160 Q 1536,41 1451.5,-43.5 1367,-128 1248,-128 H 288 Q 169,-128 84.5,-43.5 0,41 0,160 v 960 Q 0,1239 84.5,1323.5 169,1408 288,1408 h 960 q 119,0 203.5,-84.5 Q 1536,1239 1536,1120 Z"
+           id="path1" />
+      </g>
+      <g
+         id="use163828-1"
+         style="fill:#638d43;fill-opacity:1"
+         transform="matrix(-6.6739548,0,0,5.6410714,566.90074,3001.6113)">
+        <title
+           id="title2">Level Down</title>
+        <path
+           transform="matrix(0.05,0,0,-0.05,0,76.8)"
+           d="m 32,1280 h 704 q 13,0 22.5,-9.5 9.5,-9.5 9.5,-23.5 V 384 h 192 q 40,0 58,-37 18,-37 -9,-69 L 689,-106 q -18,-22 -49,-22 -31,0 -49,22 L 271,278 q -26,31 -9,69 18,37 58,37 h 192 v 640 H 192 q -14,0 -25,11 L 7,1227 q -13,14 -4,34 9,19 29,19 z"
+           id="path2" />
+      </g>
+      <g
+         id="use163850-9-6"
+         style="fill:#638d43;fill-opacity:1"
+         transform="matrix(-5.4110814,0,0,-3.7597911,823.75899,3266.3184)">
+        <title
+           id="title3">minus</title>
+        <path
+           transform="matrix(0.05,0,0,-0.05,0,76.8)"
+           d="M 1408,800 V 608 q 0,-40 -28,-68 -28,-28 -68,-28 H 96 Q 56,512 28,540 0,568 0,608 v 192 q 0,40 28,68 28,28 68,28 h 1216 q 40,0 68,-28 28,-28 28,-68 z"
+           id="path3" />
+      </g>
+      <g
+         id="use163850-8"
+         style="fill:#638d43;fill-opacity:1"
+         transform="matrix(0,-4.0009627,3.5468268,0,688.20741,3372.0825)">
+        <title
+           id="title4">minus</title>
+        <path
+           transform="matrix(0.05,0,0,-0.05,0,76.8)"
+           d="M 1408,800 V 608 q 0,-40 -28,-68 -28,-28 -68,-28 H 96 Q 56,512 28,540 0,568 0,608 v 192 q 0,40 28,68 28,28 68,28 h 1216 q 40,0 68,-28 28,-28 28,-68 z"
+           id="path4" />
+      </g>
+      <g
+         id="use163887-0"
+         style="fill:#638d43;fill-opacity:1"
+         transform="matrix(4.181545,0,0,3.7526155,677.60955,3304.6232)">
+        <title
+           id="title5">Square</title>
+        <path
+           transform="matrix(0.05,0,0,-0.05,0,76.8)"
+           d="M 1536,1120 V 160 Q 1536,41 1451.5,-43.5 1367,-128 1248,-128 H 288 Q 169,-128 84.5,-43.5 0,41 0,160 v 960 Q 0,1239 84.5,1323.5 169,1408 288,1408 h 960 q 119,0 203.5,-84.5 Q 1536,1239 1536,1120 Z"
+           id="path5" />
+      </g>
+      <g
+         id="use163922-0"
+         style="fill:#638d43;fill-opacity:1"
+         transform="matrix(4.181545,0,0,3.9791052,673.79206,2574.1919)">
+        <title
+           id="title6">Square</title>
+        <path
+           transform="matrix(0.05,0,0,-0.05,0,76.8)"
+           d="M 1536,1120 V 160 Q 1536,41 1451.5,-43.5 1367,-128 1248,-128 H 288 Q 169,-128 84.5,-43.5 0,41 0,160 v 960 Q 0,1239 84.5,1323.5 169,1408 288,1408 h 960 q 119,0 203.5,-84.5 Q 1536,1239 1536,1120 Z"
+           id="path6" />
+      </g>
+      <g
+         id="use163850-2-9"
+         style="fill:#638d43;fill-opacity:1"
+         transform="matrix(0,-5.3846093,3.5468268,0,688.20741,3135.0723)">
+        <title
+           id="title7">minus</title>
+        <path
+           transform="matrix(0.05,0,0,-0.05,0,76.8)"
+           d="M 1408,800 V 608 q 0,-40 -28,-68 -28,-28 -68,-28 H 96 Q 56,512 28,540 0,568 0,608 v 192 q 0,40 28,68 28,28 68,28 h 1216 q 40,0 68,-28 28,-28 28,-68 z"
+           id="path7" />
+      </g>
+    </g>
+  </g>
+</svg>

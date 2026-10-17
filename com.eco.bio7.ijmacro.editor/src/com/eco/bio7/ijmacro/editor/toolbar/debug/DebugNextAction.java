@@ -30,7 +30,7 @@ public class DebugNextAction extends Action {
 		setId("Step");
 		setText("Step");
         setToolTipText("Executes the highlighted statement and advances to the next.\nThe variable names and values in the \"Debug\" window are updated.");
-		ImageDescriptor desc = IJMacroEditorPlugin.getImageDescriptor("/icons/ijmacrodebug/stepover_co.png");
+		ImageDescriptor desc = IJMacroEditorPlugin.getImageDescriptor("/icons/ijmacrodebug/stepover_co.svg");
 		this.setImageDescriptor(desc);
 	}
 

@@ -16,46 +16,46 @@
       <perspective
             class="com.eco.bio7.discrete3d.Perspective3d"
             fixed="false"
-            icon="icons/perspective/3dpersp.png"
+            icon="icons/perspective/3dpersp.svg"
             id="com.eco.bio7.perspective_3d"
             name="3d"/>
       <perspective
             class="com.eco.bio7.rcp.Bio7ResourcePerspective"
             fixed="false"
-            icon="icons/perspective/resourcepersp.png"
+            icon="icons/perspective/resourcepersp.svg"
             id="com.eco.bio7.bio7resource"
             name="Resource">
       </perspective>
       <perspective
             class="com.eco.bio7.rbridge.perspectives.RPerspective"
             fixed="false"
-            icon="icons/perspective/rpersp.png"
+            icon="icons/perspective/rpersp.svg"
             id="com.eco.bio7.rbridge.RPerspective"
             name="R">
       </perspective>
       <perspective
             class="com.eco.bio7.collection.CustomPerspective"
-            icon="icons/perspective/custompersp.png"
+            icon="icons/perspective/custompersp.svg"
             id="com.eco.bio7.CustomPerspective"
             name="Custom">
       </perspective>
       <perspective
             class="com.eco.bio7.rbridge.perspectives.RImagePerspective"
             fixed="false"
-            icon="icons/perspective/rimageanalysispersp.png"
+            icon="icons/perspective/rimageanalysispersp.svg"
             id="com.eco.bio7.rbridge.RImagePerspective"
             name="R ImageJ Analysis">
       </perspective>
       <perspective
             class="com.eco.bio7.rbridge.perspectives.RDebugPerspective"
             fixed="false"
-            icon="icons/perspective/rdebugpersp.png"
+            icon="icons/perspective/rdebugpersp.svg"
             id="com.eco.bio7.rbridge.RDebugPerspective"
             name="R Debug">
       </perspective>
       <perspective
             class="com.eco.bio7.document.DocumentPerspective"
-            icon="icons/perspective/documentpersp.png"
+            icon="icons/perspective/documentpersp.svg"
             id="com.eco.bio7.document.DocumentPerspective"
             name="Document">
       </perspective>
@@ -67,7 +67,7 @@
             allowMultiple="true"
             category="com.eco.bio7.custom"
             class="com.eco.bio7.plot.ChartView"
-            icon="icons/views/linechartview.png"
+            icon="icons/views/linechartview.svg"
             id="com.eco.bio7.custom_chart"
             name="Custom Chart"
             restorable="true"/>
@@ -75,7 +75,7 @@
             allowMultiple="true"
             category="com.eco.bio7.rapplication"
             class="com.eco.bio7.image.RImageMethodsView"
-            icon="icons/views/rview.png"
+            icon="icons/views/rview.svg"
             id="com.eco.bio7.image_methods"
             name="Image-Methods"
             restorable="true"/>
@@ -83,7 +83,7 @@
             allowMultiple="true"
             category="com.eco.bio7.console"
             class="com.eco.bio7.scriptengines.BshView"
-            icon="icons/views/console.png"
+            icon="icons/views/console.svg"
             id="com.eco.bio7.bsh"
             name="Bsh-Console"
             restorable="true"/>
@@ -91,7 +91,7 @@
             allowMultiple="true"
             category="com.eco.bio7.control"
             class="com.eco.bio7.info.InfoView"
-            icon="icons/views/timeview.png"
+            icon="icons/views/timeview.svg"
             id="com.eco.bio7.control"
             name="Control"
             restorable="true"/>
@@ -128,7 +128,7 @@
             allowMultiple="true"
             category="com.eco.bio7.custom"
             class="com.eco.bio7.collection.CustomView"
-            icon="icons/views/custom.png"
+            icon="icons/views/custom.svg"
             id="com.eco.bio7.custom_controls"
             name="Custom Controls"
             restorable="false"/>
@@ -139,7 +139,7 @@
             allowMultiple="true"
             category="com.eco.bio7.ecolab"
             class="com.eco.bio7.spatial.SpatialView"
-            icon="icons/views/3dperspview.png"
+            icon="icons/views/3dperspview.svg"
             id="com.eco.bio7.spatial"
             name="Space"
             restorable="true">
@@ -148,7 +148,7 @@
             allowMultiple="true"
             category="com.eco.bio7.ecolab"
             class="com.eco.bio7.spatial.Options3d"
-            icon="icons/views/3dperspview.png"
+            icon="icons/views/3dperspview.svg"
             id="com.eco.bio7.discrete3d.Options3d"
             name="Options Space"
             restorable="true">
@@ -157,7 +157,7 @@
             allowMultiple="true"
             category="com.eco.bio7.rapplication"
             class="com.eco.bio7.rbridge.views.RShellView"
-            icon="icons/views/rview.png"
+            icon="icons/views/rview.svg"
             id="com.eco.bio7.RShell"
             name="R-Shell"
             restorable="true">
@@ -166,7 +166,7 @@
             allowMultiple="true"
             category="com.eco.bio7.rapplication"
             class="com.eco.bio7.rbridge.RTable"
-            icon="icons/views/tableview.png"
+            icon="icons/views/tableview.svg"
             id="com.eco.bio7.rbridge.RTable"
             name="Table"
             restorable="true">
@@ -175,7 +175,7 @@
             allowMultiple="true"
             category="com.eco.bio7.rapplication"
             class="com.eco.bio7.rbridge.debug.DebugVariablesView"
-            icon="icons/views/rview.png"
+            icon="icons/views/rview.svg"
             id="com.eco.bio7.rbridge.debug.DebugVariablesView"
             name="Debug (x)">
       </view>
@@ -183,7 +183,7 @@
             allowMultiple="true"
             category="com.eco.bio7.rapplication"
             class="com.eco.bio7.rbridge.debug.DebugTextView"
-            icon="icons/views/rview.png"
+            icon="icons/views/rview.svg"
             id="com.eco.bio7.rbridge.debug.DebugTextView"
             name="Debug Text">
       </view>
@@ -191,28 +191,28 @@
       <view
             category="com.eco.bio7.image"
             class="com.eco.bio7.image.TransferGeometryView"
-            icon="icons/views/rview.png"
+            icon="icons/views/rview.svg"
             id="com.eco.bio7.image.TransferGeometryView"
             name="Geometry Selections">
       </view>
       <view
             category="com.eco.bio7.rapplication"
             class="com.eco.bio7.rbridge.views.PackageInstallView"
-            icon="icons/views/rview.png"
+            icon="icons/views/rview.svg"
             id="com.eco.bio7.rbridge.PackageInstallView"
             name="Packages">
       </view>
       <view
             category="com.eco.bio7.rapplication"
             class="com.eco.bio7.rbridge.views.RPlotView"
-            icon="icons/views/rview.png"
+            icon="icons/views/rview.svg"
             id="com.eco.bio7.rbridge.RPlotView"
             name="Plot">
       </view>
       <view
             category="com.eco.bio7.rapplication"
             class="com.eco.bio7.rbridge.views.RTemplatesView"
-            icon="icons/views/rview.png"
+            icon="icons/views/rview.svg"
             id="com.eco.bio7.rbridge.views.RTemplatesView"
             name="R Snippets">
       </view>
@@ -471,13 +471,13 @@
             name="Bio7">
          <property
                name="windowImage"
-               value="icons/bio7new.png"/>
+               value="icons/bio7new.svg"/>
          <property
                name="startupProgressRect"
                value="398,330,250,8"/>
           <!-- <property
                name="aboutImage"
-               value="icons/bio7new.png"/>-->
+               value="icons/bio7new.svg"/>-->
          <property
                name="startupForegroundColor"
                value="000000"/>
@@ -494,7 +494,7 @@
          </property>
          <property
                name="windowImages"
-               value="icons/bio7app/bio7_16_new.png,icons/bio7app/bio7_32_new.png,icons/bio7app/bio7_48_new.png,icons/bio7app/bio7_64_new.png,icons/bio7app/bio7_128_new.png,icons/bio7app/bio7_256_new.png">
+               value="icons/bio7app/bio7_16_new.svg,icons/bio7app/bio7_32_new.svg,icons/bio7app/bio7_48_new.svg,icons/bio7app/bio7_64_new.svg,icons/bio7app/bio7_128_new.svg,icons/bio7app/bio7_256_new.svg">
          </property>
          
          <property
@@ -503,7 +503,7 @@
 </property>
          <property
                name="aboutImage"
-               value="icons/bio7app/bio7_48.png">
+               value="icons/bio7app/bio7_48.svg">
          </property>
          <property
                name="preferenceCustomization"
@@ -522,6 +522,11 @@
             class="com.eco.bio7.preferences.RServePrefs"
             id="com.eco.bio7.R"
             name="Preferences R"/>
+      <page
+            category="com.eco.bio7.preferences.Bio7PreferencePage"
+            class="com.eco.bio7.preferences.IconColorPreferences"
+            id="com.eco.bio7.preferences.IconColorPreferences"
+            name="Preferences Icons"/>
       <page
             category="com.eco.bio7.preferences.Bio7PreferencePage"
             class="com.eco.bio7.preferences.Bio7PaintPreferences"
@@ -687,14 +692,14 @@
       
             category="com.eco.bio7.bio7beanshell"
             class="com.eco.bio7.wizards.BeanShellNewWizard"
-            icon="icons/editor/groovy.png"
+            icon="icons/editor/groovy.svg"
             id="com.eco.bio7.wizards.SampleNewWizard"
             name="BeanShell Script"
             project="false"/>
       <wizard
             category="com.eco.bio7.RCategory"
             class="com.eco.bio7.wizards.RScriptNewWizard"
-            icon="icons/editor/rfile.png"
+            icon="icons/editor/rfile.svg"
             id="com.eco.bio7.wizard1"
             name="R Script"
             project="false"/>
@@ -705,7 +710,7 @@
       <wizard
             category="com.eco.bio7.bio7java"
             class="com.eco.bio7.wizards.JavaBio7ClassPluginWizard"
-            icon="icons/editor/java.png"
+            icon="icons/editor/java.svg"
             id="com.eco.bio7.wizardJavaModelClass"
             name="Bio7 Java (Class)"
             project="false">
@@ -713,7 +718,7 @@
       <wizard
             category="com.eco.bio7.bio7java"
             class="com.eco.bio7.wizards.JavaClassJoglPluginWizard"
-            icon="icons/editor/java.png"
+            icon="icons/editor/java.svg"
             id="com.eco.bio7.wizardJavaModelClass"
             name="Bio7 Java OpenGL (Class)"
             project="false">
@@ -721,7 +726,7 @@
       <wizard
             category="com.eco.bio7.bio7groovy"
             class="com.eco.bio7.wizards.GroovyNewWizard"
-            icon="icons/editor/groovy.png"
+            icon="icons/editor/groovy.svg"
             id="com.eco.bio7.groovyScript"
             name="Groovy Script"
             project="false">
@@ -729,7 +734,7 @@
       <wizard
             category="com.eco.bio7.ImageJ"
             class="com.eco.bio7.wizards.ImageJPluginWizard"
-            icon="icons/editor/java.png"
+            icon="icons/editor/java.svg"
             id="com.eco.bio7.wizardImageJPlugin"
             name="ImageJ Plugin File"
             project="false">
@@ -741,7 +746,7 @@
       <wizard
             category="com.eco.bio7.bio7java"
             class="com.eco.bio7.wizards.JavaClassPluginWizard"
-            icon="icons/editor/java.png"
+            icon="icons/editor/java.svg"
             id="com.eco.bio7.wizardJavaclass"
             name="Java Class File"
             project="false">
@@ -749,7 +754,7 @@
       <wizard
             category="com.eco.bio7.ImageJ"
             class="com.eco.bio7.wizards.ImageJFilterWizard"
-            icon="icons/editor/java.png"
+            icon="icons/editor/java.svg"
             id="com.eco.bio7.wizardImageJFilter"
             name="ImageJ Filter File"
             project="false">
@@ -761,7 +766,7 @@
       <wizard
             category="com.eco.bio7.RCategory"
             class="com.eco.bio7.wizards.SweavePluginWizard"
-            icon="icons/editor/sweavefile.png"
+            icon="icons/editor/sweavefile.svg"
             id="com.eco.bio7.sweaveWizard"
             name="Sweave"
             project="false">
@@ -769,7 +774,7 @@
       <wizard
             category="com.eco.bio7.ImageJ"
             class="com.eco.bio7.wizards.ImageJPluginConfigWizard"
-            icon="icons/editor/java.png"
+            icon="icons/editor/java.svg"
             id="com.eco.bio7.wizardImageJPluginConfig"
             name="ImageJ Configuration File"
             project="false">
@@ -781,7 +786,7 @@
       <wizard
             category="com.eco.bio7.bio7java"
             class="com.eco.bio7.wizards.JavaBio7ClassPluginWizard"
-            icon="icons/editor/java.png"
+            icon="icons/editor/java.svg"
             id="com.eco.bio7.wizardJavaManifest"
             name="Java Manifest File"
             project="false">
@@ -789,7 +794,7 @@
       <wizard
             category="com.eco.bio7.web"
             class="com.eco.bio7.wizards.HtmlPluginWizard"
-            icon="icons/editor/htmlfile.png"
+            icon="icons/editor/htmlfile.svg"
             id="com.eco.bio7.html"
             name="Html"
             project="false">
@@ -797,7 +802,7 @@
       <wizard
             category="com.eco.bio7.javascript"
             class="com.eco.bio7.wizards.JavaScriptPluginWizard"
-            icon="icons/editor/javascriptfile.png"
+            icon="icons/editor/javascriptfile.svg"
             id="com.eco.bio7.javascript"
             name="JavaScript"
             project="false">
@@ -805,7 +810,7 @@
       <wizard
             category="com.eco.bio7.web"
             class="com.eco.bio7.wizards.HtmlJavaScriptWizard"
-            icon="icons/editor/htmlfile.png"
+            icon="icons/editor/htmlfile.svg"
             id="com.eco.bio7.htmljavascript"
             name="Html+JavaScript"
             project="false">
@@ -813,7 +818,7 @@
       <wizard
             category="com.eco.bio7.web"
             class="com.eco.bio7.wizards.HtmlPanelPluginWizard"
-            icon="icons/editor/htmlfile.png"
+            icon="icons/editor/htmlfile.svg"
             id="com.eco.bio7.htmlcanvas"
             name="Html 2D Canvas"
             project="false">
@@ -821,7 +826,7 @@
       <wizard
             category="com.eco.bio7.web"
             class="com.eco.bio7.wizards.HtmlWebGLPluginWizard"
-            icon="icons/editor/htmlfile.png"
+            icon="icons/editor/htmlfile.svg"
             id="com.eco.bio7.htmlwebgl"
             name="Html WebGL"
             project="false">
@@ -833,7 +838,7 @@
       <wizard
             category="com.eco.bio7.bio7jython"
             class="com.eco.bio7.wizards.JythonNewWizard"
-            icon="icons/editor/python.png"
+            icon="icons/editor/python.svg"
             id="com.eco.bio7.jythonScript"
             name="Python/Jython Script"
             project="false">
@@ -841,7 +846,7 @@
       <wizard
             category="com.eco.bio7.RCategory"
             class="com.eco.bio7.wizards.KnitrHtmlPluginWizard"
-            icon="icons/editor/knitr.png"
+            icon="icons/editor/knitr.svg"
             id="com.eco.bio7.knitrHtmlWizard"
             name="knitr Html"
             project="false">
@@ -849,7 +854,7 @@
       <wizard
             category="com.eco.bio7.RCategory"
             class="com.eco.bio7.wizards.KnitrLatexPluginWizard"
-            icon="icons/editor/knitr.png"
+            icon="icons/editor/knitr.svg"
             id="com.eco.bio7.knitrLatexWizard"
             name="knitr Latex"
             project="false">
@@ -857,7 +862,7 @@
       <wizard
             category="com.eco.bio7.bio7javaproject"
             class="com.eco.bio7.wizards.java.Bio7JDTProjectPluginWizard"
-            icon="icons/maintoolbar/create_project_file_java.png"
+            icon="icons/maintoolbar/create_project_file_java.svg"
             id="com.eco.bio7.wizardJavaJdtEmtpy"
             name="Bio7 Java Project (Empty)"
             project="true">
@@ -865,7 +870,7 @@
       <wizard
             category="com.eco.bio7.bio7javaproject"
             class="com.eco.bio7.wizards.java.JavaBio7ModelClassPluginWizard"
-            icon="icons/maintoolbar/create_project_file_java.png"
+            icon="icons/maintoolbar/create_project_file_java.svg"
             id="com.eco.bio7.wizardJavaJdtBio7Model"
             name="Bio7 Java  Project (Model Template)"
             project="true">
@@ -873,7 +878,7 @@
       <wizard
             category="com.eco.bio7.bio7javaproject"
             class="com.eco.bio7.wizards.java.JavaClassJoglPluginWizard"
-            icon="icons/maintoolbar/create_project_file_java.png"
+            icon="icons/maintoolbar/create_project_file_java.svg"
             id="com.eco.bio7.wizardJavaJdtBio7ModelJogl"
             name="Bio7 Java Project (OpenGL Model Template)"
             project="true">
@@ -881,7 +886,7 @@
       <wizard
             category="com.eco.bio7.bio7javaproject"
             class="com.eco.bio7.wizards.java.JavaWindowBuilderBio7ClassWizard"
-            icon="icons/maintoolbar/create_project_file_java.png"
+            icon="icons/maintoolbar/create_project_file_java.svg"
             id="com.eco.bio7.javafxclassjdtwindowbuilder"
             name="Bio7 Java Project (WindowBuilder Template)"
             project="true">
@@ -905,7 +910,7 @@
       <wizard
             category="com.eco.bio7.RCategory"
             class="com.eco.bio7.wizards.RMarkdownPluginWizard"
-            icon="icons/editor/rmarkdownfile.png"
+            icon="icons/editor/rmarkdownfile.svg"
             id="com.eco.bio7.markdown.Wizard"
             name="R Markdown"
             project="false">
@@ -917,7 +922,7 @@
       <wizard
             category="com.eco.bio7.RCategory"
             class="com.eco.bio7.wizards.RShinyScriptWizard"
-            icon="icons/editor/rfile.png"
+            icon="icons/editor/rfile.svg"
             id="com.eco.bio7.shiny.wizard"
             name="Shiny Multiple Files Web App"
             project="false">
@@ -925,7 +930,7 @@
       <wizard
             category="com.eco.bio7.RCategory"
             class="com.eco.bio7.wizards.RShinySingleScriptWizard"
-            icon="icons/editor/rfile.png"
+            icon="icons/editor/rfile.svg"
             id="com.eco.bio7.shiny.single.wizard"
             name="Shiny Single File Web App"
             project="false">
@@ -937,7 +942,7 @@
       <wizard
             category="com.eco.bio7.reproducible"
             class="com.eco.bio7.wizards.java.Bio7ReproducibleRProjectWizard"
-            icon="icons/maintoolbar/create_project_file.png"
+            icon="icons/maintoolbar/create_project_file.svg"
             id="com.eco.bio7.wizard.reproducible"
             name="Reproducible R Project"
             project="true">
@@ -945,7 +950,7 @@
       <wizard
             category="com.eco.bio7.RCategory"
             class="com.eco.bio7.wizards.NewRProjectWizardAndFile"
-            icon="icons/maintoolbar/create_project_file.png"
+            icon="icons/maintoolbar/create_project_file.svg"
             id="com.eco.bio7.wizard.new.r.project.file"
             name="Create New Projekt With R file"
             project="true">
@@ -953,7 +958,7 @@
       <wizard
             category="com.eco.bio7.bio7javaproject"
             class="com.eco.bio7.wizards.java.JavaClassImagejPluginWizard"
-            icon="icons/maintoolbar/create_project_file_java.png"
+            icon="icons/maintoolbar/create_project_file_java.svg"
             id="com.eco.bio7.wizardJavaJdtBio7ImageJPlugin"
             name="Bio7 Java ImageJ Plugin Project"
             project="true">
@@ -989,7 +994,7 @@
             objectClass="org.eclipse.core.resources.IFile">
          <action
                class="com.eco.bio7.popup.actions.CompileImageJClass"
-               icon="icons/editor/java.png"
+               icon="icons/editor/java.svg"
                id="com.eco.bio7.compileImageJClass"
                label="Compile Java To File"
                menubarPath="additions.path">
@@ -1002,7 +1007,7 @@
           objectClass="org.eclipse.core.resources.IFile">
        <action
              class="com.eco.bio7.popup.actions.CompileAndLoadDirectory"
-             icon="icons/editor/java.png"
+             icon="icons/editor/java.svg"
              id="com.eco.bio7.action2"
              label="Compile Java"
              menubarPath="additions.path"
@@ -1017,7 +1022,7 @@
           objectClass="org.eclipse.core.resources.IFile">
        <action
              class="com.eco.bio7.popup.actions.KnitrAction"
-             icon="icons/editor/knitr.png"
+             icon="icons/editor/knitr.svg"
              id="com.eco.bio7.knitrtex"
              label="Knitr"
              menubarPath="additions.knitr">
@@ -1030,7 +1035,7 @@
           objectClass="org.eclipse.core.resources.IFile">
        <action
              class="com.eco.bio7.popup.actions.KnitrAction"
-             icon="icons/editor/knitr.png"
+             icon="icons/editor/knitr.svg"
              id="com.eco.bio7.knitrhtml"
              label="Knitr"
              menubarPath="additions.knitr">
@@ -1043,7 +1048,7 @@
           objectClass="org.eclipse.core.resources.IFile">
        <action
              class="com.eco.bio7.popup.actions.KnitrAction"
-             icon="icons/editor/knitr.png"
+             icon="icons/editor/knitr.svg"
              id="com.eco.bio7.knitrrmd"
              label="Knitr"
              menubarPath="additions.knitr">
@@ -1380,7 +1385,7 @@
           objectClass="org.eclipse.core.resources.IFile">
        <action
              class="com.eco.bio7.popup.actions.RunJavaClassFile"
-             icon="icons/editor/java.png"
+             icon="icons/editor/java.svg"
              id="com.eco.bio7.runclass"
              label="Run Compiled Java Class"
              menubarPath="additions.path">
@@ -1486,7 +1491,7 @@
           objectClass="org.eclipse.core.resources.IResource">
        <action
              class="com.eco.bio7.popup.actions.RecalculateClasspath"
-             icon="icons/editor/java.png"
+             icon="icons/editor/java.svg"
              id="com.eco.bio7.recalculateClasspath"
              label="Fix Project Classpath"
              menubarPath="additions.path">
@@ -1499,7 +1504,7 @@
           objectClass="org.eclipse.core.resources.IFile">
        <action
              class="com.eco.bio7.popup.actions.RMarkdownAction"
-             icon="icons/editor/rmarkdownfile.png"
+             icon="icons/editor/rmarkdownfile.svg"
              id="com.eco.bio7.rmarkdown"
              label="R Markdown"
              menubarPath="additions.rmarkdown">
@@ -1512,7 +1517,7 @@
           objectClass="org.eclipse.core.resources.IFile">
        <action
              class="com.eco.bio7.popup.actions.RMarkdownAction"
-             icon="icons/editor/rmarkdownfile.png"
+             icon="icons/editor/rmarkdownfile.svg"
              id="com.eco.bio7.rmarkdown"
              label="R Markdown"
              menubarPath="additions.rmarkdown">
@@ -1594,8 +1599,8 @@
            label="Editor Actions">
         <command
               commandId="com.eco.bio7.execute_r_script2"
-              disabledIcon="icons/editor/rinterpret.png"
-              icon="icons/editor/rinterpret.png"
+              disabledIcon="icons/editor/rinterpret.svg"
+              icon="icons/editor/rinterpret.svg"
               id="bio7toolbar.executer"
               label="R"
               style="push">
@@ -1610,8 +1615,8 @@
         </command>
         <command
               commandId="com.eco.bio7.compilejavaaction"
-              disabledIcon="icons/editor/javacompile.png"
-              icon="icons/editor/javacompile.png"
+              disabledIcon="icons/editor/javacompile.svg"
+              icon="icons/editor/javacompile.svg"
               id="bio7toolbar.compilejava"
               label="Compile Java"
               style="push">
@@ -1626,8 +1631,8 @@
         </command>
         <command
               commandId="com.eco.bio7.executeflowaction"
-              disabledIcon="icons/editor/flowexecute.png"
-              icon="icons/editor/flowexecute.png"
+              disabledIcon="icons/editor/flowexecute.svg"
+              icon="icons/editor/flowexecute.svg"
               id="bio7toolbar.executeflow"
               label="Flow Action"
               style="push">
@@ -1642,8 +1647,8 @@
         </command>
         <command
               commandId="com.eco.bio7.debugflowaction"
-              disabledIcon="icons/editor/flowdebug.png"
-              icon="icons/editor/flowdebug.png"
+              disabledIcon="icons/editor/flowdebug.svg"
+              icon="icons/editor/flowdebug.svg"
               id="bio7toolbar.debugflow"
               label="Debug Flow Action"
               style="push">
@@ -1658,8 +1663,8 @@
         </command>
         <command
               commandId="com.eco.bio7.interpretgroovybeanshellaction"
-              disabledIcon="icons/editor/groovyinterpret.png"
-              icon="icons/editor/groovyinterpret.png"
+              disabledIcon="icons/editor/groovyinterpret.svg"
+              icon="icons/editor/groovyinterpret.svg"
               id="bio7toolbar.interpretgroovybeanshell"
               label="Interpret Groovy/BeanShell"
               style="push">
@@ -1679,8 +1684,8 @@
         </command>
         <command
               commandId="com.eco.bio7.interpretpythonaction"
-              disabledIcon="icons/editor/pythoninterpret.png"
-              icon="icons/editor/pythoninterpret.png"
+              disabledIcon="icons/editor/pythoninterpret.svg"
+              icon="icons/editor/pythoninterpret.svg"
               id="bio7toolbar.interpretpython"
               label="Interpret Python"
               style="push">
@@ -1700,8 +1705,8 @@
         </command>
         <command
               commandId="com.eco.bio7.browser.knitrAction"
-              disabledIcon="icons/editor/knitraction.png"
-              icon="icons/editor/knitraction.png"
+              disabledIcon="icons/editor/knitraction.svg"
+              icon="icons/editor/knitraction.svg"
               id="bio7toolbar.executer"
               label="Knitr"
               style="push">
@@ -1719,8 +1724,8 @@
         </command>
         <command
               commandId="com.eco.bio7.RMarkdownAction"
-              disabledIcon="icons/editor/rmarkdownaction.png"
-              icon="icons/editor/rmarkdownaction.png"
+              disabledIcon="icons/editor/rmarkdownaction.svg"
+              icon="icons/editor/rmarkdownaction.svg"
               id="bio7toolbar.executer"
               label="Markdown"
               style="push">
@@ -1740,8 +1745,8 @@
         </command>
         <command
               commandId="com.eco.bio7.interpretjavascriptaction"
-              disabledIcon="icons/editor/javascriptinterpret.png"
-              icon="icons/editor/javascriptinterpret.png"
+              disabledIcon="icons/editor/javascriptinterpret.svg"
+              icon="icons/editor/javascriptinterpret.svg"
               id="bio7toolbar.interpretjavascript"
               label="Interpret JavaScript"
               style="push">
@@ -1765,8 +1770,8 @@
         </command>
         <command
               commandId="com.eco.bio7.browser.knitrAction"
-              disabledIcon="icons/editor/texfile.png"
-              icon="icons/editor/texfile.png"
+              disabledIcon="icons/editor/texfile.svg"
+              icon="icons/editor/texfile.svg"
               id="bio7toolbar.executer"
               label="LaTeX"
               style="push">
@@ -1846,7 +1851,7 @@
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
             default="true"
             extensions="pdf"
-            icon="icons/editor/pdf.png"
+            icon="icons/editor/pdf.svg"
             id="com.eco.bio7.editors.pdf.editor"
             name="Pdf Editor"
             symbolicFontName="com.eco.bio7.pdf.editor">

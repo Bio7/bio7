@@ -22,7 +22,7 @@ import com.eco.bio7.floweditor.shapes.ShapesPlugin;
  */
 public class BeanShellScript extends Shape {
 	/** A 16x16 pictogram of a rectangular shape. */
-	private static final Image BEAN_SHELL_ICON = ShapesPlugin.getImageDescriptor("/icons/file_green.png").createImage();
+	private static final Image BEAN_SHELL_ICON = ShapesPlugin.getImageDescriptor("/icons/file_green.svg").createImage();
 
 	private static final long serialVersionUID = 1;
 

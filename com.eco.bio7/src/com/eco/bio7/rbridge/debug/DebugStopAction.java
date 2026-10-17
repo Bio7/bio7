@@ -36,7 +36,7 @@ public class DebugStopAction extends Action {
 		setText("Stop (Q) - Halt execution and jump to the top-level immediately.");
 
 		//ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/terminatedlaunch_obj.gif")));
-		ImageDescriptor desc = Bio7Plugin.getImageDescriptor("/icons/rdebug/terminatedlaunch_obj.png");
+		ImageDescriptor desc = Bio7Plugin.getImageDescriptor("/icons/rdebug/terminatedlaunch_obj.svg");
 		this.setImageDescriptor(desc);
 	}
 

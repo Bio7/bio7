@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon from com.eco.bio7/icons/maintoolbar/Button_Template_Views.svg (g047) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="16" height="16" viewBox="-5017.915 -2887.935 1021.089 1021.089">
+  <defs
+     id="defs1">
+    <symbol
+       id="area-chart"
+       class="Web-Application-Icons Chart-Icons">
+      <title
+         id="title81784">Area Chart</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M2048 0v-128h-2048v1536h128v-1408h1920zM1664 1024l256 -896h-1664v576l448 576l576 -576z"
+         id="path81786" />
+    </symbol>
+  </defs>
+  <g
+     transform="translate(0,-2600.8031)"
+     id="g1">
+    <g
+       id="use83805"
+       style="fill:#638d43;fill-opacity:1"
+       transform="matrix(9.6599809,0,0,12.806577,-5001.959,-350.31708)">
+      <title
+         id="title1">Area Chart</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M 2048,0 V -128 H 0 V 1408 H 128 V 0 Z M 1664,1024 1920,128 H 256 v 576 l 448,576 576,-576 z"
+         id="path1" />
+    </g>
+  </g>
+</svg>

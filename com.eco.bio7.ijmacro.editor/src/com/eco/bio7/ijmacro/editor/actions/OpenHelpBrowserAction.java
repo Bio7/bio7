@@ -26,7 +26,7 @@ public class OpenHelpBrowserAction extends Action {
 	public OpenHelpBrowserAction(String link) {
 		super("Help Browser");
 		setId("com.eco.bio7.ijmacro_editor_help_browser");
-		ImageDescriptor desc = IJMacroEditorPlugin.getImageDescriptor("/icons/help_contents.png");
+		ImageDescriptor desc = IJMacroEditorPlugin.getImageDescriptor("/icons/help_contents.svg");
 		this.setImageDescriptor(desc);
 		this.link=link;
 

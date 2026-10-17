@@ -53,19 +53,19 @@ final class ShapesEditorPaletteFactory {
 		PaletteDrawer componentsDrawer = new PaletteDrawer("Flowchart");
 
 		CombinedTemplateCreationEntry component = new CombinedTemplateCreationEntry("Loop", "Create a Loop", EllipticalShape.class, new SimpleFactory(EllipticalShape.class),
-				ShapesPlugin.getImageDescriptor("/icons/loop.png"), ShapesPlugin.getImageDescriptor("/icons/loop@3x.png"));
+				ShapesPlugin.getImageDescriptor("/icons/loop.svg"), ShapesPlugin.getImageDescriptor("/icons/loop@3x.png"));
 		componentsDrawer.add(component);
 
 		component = new CombinedTemplateCreationEntry("Stop", "Create a Stop", TriangleEndShape.class, new SimpleFactory(TriangleEndShape.class),
-				ShapesPlugin.getImageDescriptor("icons/stop.png"), ShapesPlugin.getImageDescriptor( "icons/stop@3x.png"));
+				ShapesPlugin.getImageDescriptor("icons/stop.svg"), ShapesPlugin.getImageDescriptor( "icons/stop@3x.png"));
 		componentsDrawer.add(component);
 
 		component = new CombinedTemplateCreationEntry("Start", "Define a Starting Point", TriangleShape.class, new SimpleFactory(TriangleShape.class),
-				ShapesPlugin.getImageDescriptor("icons/start.png"), ShapesPlugin.getImageDescriptor("icons/start@3x.png"));
+				ShapesPlugin.getImageDescriptor("icons/start.svg"), ShapesPlugin.getImageDescriptor("icons/start@3x.png"));
 		componentsDrawer.add(component);
 
 		component = new CombinedTemplateCreationEntry("Decision", "Create a Decision", FlowDecisionShape.class, new SimpleFactory(FlowDecisionShape.class),
-				ShapesPlugin.getImageDescriptor("/icons/ifelse.png"), ShapesPlugin.getImageDescriptor("/icons/ifelse@3x.png"));
+				ShapesPlugin.getImageDescriptor("/icons/ifelse.svg"), ShapesPlugin.getImageDescriptor("/icons/ifelse@3x.png"));
 		componentsDrawer.add(component);
 
 		return componentsDrawer;
@@ -76,7 +76,7 @@ final class ShapesEditorPaletteFactory {
 		PaletteDrawer componentsDrawer = new PaletteDrawer("Extra");
 
 		CombinedTemplateCreationEntry component = new CombinedTemplateCreationEntry("Info", "Create an Information Label", RectangularShape.class, new SimpleFactory(RectangularShape.class),
-				ShapesPlugin.getImageDescriptor("/icons/info.png"), ShapesPlugin.getImageDescriptor("/icons/info@3x.png"));
+				ShapesPlugin.getImageDescriptor("/icons/info.svg"), ShapesPlugin.getImageDescriptor("/icons/info@3x.png"));
 		componentsDrawer.add(component);
 
 		return componentsDrawer;
@@ -122,7 +122,7 @@ final class ShapesEditorPaletteFactory {
 			public Object getObjectType() {
 				return Connection.SOLID_CONNECTION;
 			}
-		}, ShapesPlugin.getImageDescriptor("icons/connection.png"), ShapesPlugin.getImageDescriptor("icons/connection@3x.png"));
+		}, ShapesPlugin.getImageDescriptor("icons/connection.svg"), ShapesPlugin.getImageDescriptor("icons/connection@3x.png"));
 		toolGroup.add(tool);
 
 		return toolGroup;

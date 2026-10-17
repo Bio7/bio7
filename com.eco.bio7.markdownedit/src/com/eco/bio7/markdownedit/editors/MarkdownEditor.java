@@ -463,7 +463,7 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 				}
 
 			};
-			sortAlphabetAction.setImageDescriptor(Activator.getImageDescriptor("icons/alphab_sort_co.png"));
+			sortAlphabetAction.setImageDescriptor(Activator.getImageDescriptor("icons/alphab_sort_co.svg"));
 			Action collapseAllAction = new Action("Collapse", IAction.AS_PUSH_BUTTON) {
 
 				@Override
@@ -485,7 +485,7 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 				}
 
 			};
-			collapseAllAction.setImageDescriptor(Activator.getImageDescriptor("icons/collapseall.png"));
+			collapseAllAction.setImageDescriptor(Activator.getImageDescriptor("icons/collapseall.svg"));
 			IActionBars actionBars = getSite().getActionBars();
 			IToolBarManager toolbarManager = actionBars.getToolBarManager();
 			toolbarManager.add(collapseAllAction);

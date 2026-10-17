@@ -24,7 +24,7 @@ public class ConsolePythonShellAction extends Action {
 		setText("Python");
 
 		ImageDescriptor desc = ImageDescriptor
-				.createFromImage(Bio7Plugin.getImageDescriptor("/icons/views/pythonaction.png").createImage());
+				.createFromImage(Bio7Plugin.getImageDescriptor("/icons/views/pythonaction.svg").createImage());
 
 		this.setImageDescriptor(desc);
 	}

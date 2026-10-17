@@ -28,7 +28,7 @@ public class Start extends Action implements IMenuCreator {
 		setActionDefinitionId("com.eco.bio7.start");
 		setMenuCreator(this);
 		this.setToolTipText("Start/Stop the repeated time based invocation\n of the Java run method if available!");
-		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/maintoolbar/play_pause.png"));
+		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/maintoolbar/play_pause.svg"));
 
 	}
 

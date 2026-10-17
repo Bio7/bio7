@@ -10,27 +10,27 @@ public class REditorLabelProvider implements ILabelProvider {
 	 * ISharedImages images = JavaUI.getSharedImages(); Image image =
 	 * images.getImage(ISharedImages.IMG_WHATEVER);
 	 */
-	private Image publicMethodIcon = Bio7REditorPlugin.getImageDescriptor("/icons/methpub_obj.png").createImage();
+	private Image publicMethodIcon = Bio7REditorPlugin.getImageDescriptor("/icons/methpub_obj.svg").createImage();
 	
-	private Image publicAnonymousMethodIcon = Bio7REditorPlugin.getImageDescriptor("/icons/methpro_obj.png").createImage();
+	private Image publicAnonymousMethodIcon = Bio7REditorPlugin.getImageDescriptor("/icons/methpro_obj.svg").createImage();
 
-	private Image publicFieldIcon = Bio7REditorPlugin.getImageDescriptor("/icons/field_public_obj.png").createImage();
+	private Image publicFieldIcon = Bio7REditorPlugin.getImageDescriptor("/icons/field_public_obj.svg").createImage();
 
-	private Image publicFieldLoopIcon = Bio7REditorPlugin.getImageDescriptor("/icons/field_protected_obj.png").createImage();
+	private Image publicFieldLoopIcon = Bio7REditorPlugin.getImageDescriptor("/icons/field_protected_obj.svg").createImage();
 
-	private Image publicMethodCallFieldIcon = Bio7REditorPlugin.getImageDescriptor("/icons/field_private_obj.png").createImage();
+	private Image publicMethodCallFieldIcon = Bio7REditorPlugin.getImageDescriptor("/icons/field_private_obj.svg").createImage();
 
-	private Image importIcon = Bio7REditorPlugin.getImageDescriptor("/icons/imp_obj.png").createImage();
+	private Image importIcon = Bio7REditorPlugin.getImageDescriptor("/icons/imp_obj.svg").createImage();
 	
-	private Image baseNode = Bio7REditorPlugin.getImageDescriptor("/icons/file_obj.png").createImage();
+	private Image baseNode = Bio7REditorPlugin.getImageDescriptor("/icons/file_obj.svg").createImage();
 	
-	private Image s3ClassIcon = Bio7REditorPlugin.getImageDescriptor("/icons/innerclass_public_obj.png").createImage();
+	private Image s3ClassIcon = Bio7REditorPlugin.getImageDescriptor("/icons/innerclass_public_obj.svg").createImage();
 
-	private Image s4ClassIcon = Bio7REditorPlugin.getImageDescriptor("/icons/innerclass_private_obj.png").createImage();
+	private Image s4ClassIcon = Bio7REditorPlugin.getImageDescriptor("/icons/innerclass_private_obj.svg").createImage();
 
-	private Image refClassIcon = Bio7REditorPlugin.getImageDescriptor("/icons/innerclass_protected_obj.png").createImage();
+	private Image refClassIcon = Bio7REditorPlugin.getImageDescriptor("/icons/innerclass_protected_obj.svg").createImage();
 
-	private Image r6ClassIcon = Bio7REditorPlugin.getImageDescriptor("/icons/innerclass_default_obj.png").createImage();
+	private Image r6ClassIcon = Bio7REditorPlugin.getImageDescriptor("/icons/innerclass_default_obj.svg").createImage();
 
 	public String getText(Object element) {
 		return ((REditorOutlineNode) element).getName();

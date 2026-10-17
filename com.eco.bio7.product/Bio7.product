@@ -4,7 +4,7 @@
 <product name="Bio7" uid="4.0.0" id="com.eco.bio7.product" application="com.eco.bio7.application" version="4.0.0.qualifier" type="features" includeLaunchers="true" autoIncludeRequirements="true">
 
    <aboutInfo>
-      <image path="/com.eco.bio7/icons/bio7app/bio7_48.png"/>
+      <image path="/com.eco.bio7/icons/bio7app/bio7_48.svg"/>
       <text>
          Bio7 - An Integrated Development Environment for Ecological Modeling
 
@@ -60,7 +60,7 @@ jdk/bin/javaw.exe
       </vmArgsWin>
    </launcherArgs>
 
-   <windowImages i16="/com.eco.bio7/icons/bio7app/bio7_16_new.png" i32="/com.eco.bio7/icons/bio7app/bio7_32_new.png" i48="/com.eco.bio7/icons/bio7app/bio7_48_new.png" i64="/com.eco.bio7/icons/bio7app/bio7_64_new.png" i128="/com.eco.bio7/icons/bio7app/bio7_128_new.png" i256="/com.eco.bio7/icons/bio7app/bio7_256_new.png"/>
+   <windowImages i16="/com.eco.bio7/icons/bio7app/bio7_16_new.svg" i32="/com.eco.bio7/icons/bio7app/bio7_32_new.svg" i48="/com.eco.bio7/icons/bio7app/bio7_48_new.svg" i64="/com.eco.bio7/icons/bio7app/bio7_64_new.svg" i128="/com.eco.bio7/icons/bio7app/bio7_128_new.svg" i256="/com.eco.bio7/icons/bio7app/bio7_256_new.svg"/>
 
    <splash
       location="com.eco.bio7"

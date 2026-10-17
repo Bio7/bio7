@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon from com.eco.bio7/icons/maintoolbar/Button_Template_Views.svg (g009) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="16" height="16" viewBox="2794.000 -9629.480 1017.520 1017.520">
+  <defs
+     id="defs1">
+    <symbol
+       id="caret-right"
+       class="Directional-Icons">
+      <title
+         id="title80424">Caret Right</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M576 640q0 -26 -19 -45l-448 -448q-19 -19 -45 -19t-45 19t-19 45v896q0 26 19 45t45 19t45 -19l448 -448q19 -19 19 -45z"
+         id="path80426" />
+    </symbol>
+  </defs>
+  <g
+     transform="translate(0,-2600.8031)"
+     id="g1">
+    <g
+       id="g82623"
+       transform="translate(2790.6317,-9632.871)">
+      <g
+         style="fill:#638d43;fill-opacity:1"
+         transform="matrix(1.2445838,0,0,1.4082743,64.256595,-1091.0311)"
+         id="g86832-69-1-7">
+        <g
+           id="g82619">
+          <path
+             style="font-weight:bold;font-size:419.505px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold';letter-spacing:0px;word-spacing:0px;stroke-width:1px"
+             d="m 40.860999,3392.6729 v -249.4907 h -89.103808 v -50.7994 H 190.39153 v 50.7994 h -88.89898 v 249.4907 z m 188.654281,0 v -300.2901 h 222.6571 v 50.7994 H 290.14684 v 66.5718 h 150.75954 v 50.5946 H 290.14684 v 81.7297 H 457.9078 v 50.5946 z m 249.28581,0 102.62301,-156.6998 -92.9957,-143.5903 h 70.87338 l 60.22188,96.4779 58.99286,-96.4779 h 70.25887 l -93.40537,145.8435 102.623,154.4466 h -73.12657 l -66.57181,-103.8521 -66.77665,103.8521 z"
+             id="text84261-6-4-8-1"
+             transform="scale(1.0140395,0.98615488)"
+             aria-label="TEX" />
+        </g>
+      </g>
+      <g
+         id="use83991-3-7-8-7"
+         style="fill:#638d43;fill-opacity:1"
+         transform="matrix(11.728151,0,0,11.405644,5.1379403,2386.2809)">
+        <title
+           id="title1">Caret Right</title>
+        <path
+           transform="matrix(0.05,0,0,-0.05,0,76.8)"
+           d="m 576,640 q 0,-26 -19,-45 L 109,147 Q 90,128 64,128 38,128 19,147 0,166 0,192 v 896 q 0,26 19,45 19,19 45,19 26,0 45,-19 L 557,685 q 19,-19 19,-45 z"
+           id="path1" />
+      </g>
+    </g>
+  </g>
+</svg>

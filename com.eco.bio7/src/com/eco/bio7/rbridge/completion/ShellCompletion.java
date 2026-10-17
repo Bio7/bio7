@@ -66,14 +66,14 @@ public class ShellCompletion implements UpdateCompletion {
 	private ContentProposalAdapter contentProposalAdapter;
 	private KeyStroke stroke;
 
-	private Image image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/brkp_obj.png");
-	private Image varImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/types.png");
-	private Image varFuncCallImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/varfunccall.png");
-	private Image s4Image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/s4.png");
-	private Image s3Image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/s3.png");
-	private Image dataImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/settings_obj.png");
-	private Image libImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/package_obj.png");
-	private Image arrayImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/goto_input.png");
+	private Image image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/brkp_obj.svg");
+	private Image varImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/types.svg");
+	private Image varFuncCallImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/varfunccall.svg");
+	private Image s4Image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/s4.svg");
+	private Image s3Image = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "icons/s3.svg");
+	private Image dataImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/settings_obj.svg");
+	private Image libImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/package_obj.svg");
+	private Image arrayImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/goto_input.svg");
 	private Text control;
 	private String[] statistics;
 	private String[] statisticsContext;

@@ -21,7 +21,7 @@ public class Setup extends Action {
 
 		setId("com.eco.bio7.setup");
 
-		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("icons/maintoolbar/setup.png"));
+		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("icons/maintoolbar/setup.svg"));
 		this.setToolTipText("Setup - Invokes the Java setup method if compiled available!");
 	}
 

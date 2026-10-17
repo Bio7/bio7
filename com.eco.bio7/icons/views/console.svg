@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon from com.eco.bio7/icons/maintoolbar/Button_Template_Views.svg (g050) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="16" height="16" viewBox="-76.120 -2869.160 1037.760 1037.760">
+  <defs
+     id="defs1">
+    <symbol
+       id="square-o"
+       class="Web-Application-Icons Form-Control-Icons">
+      <title
+         id="title80164">Square Outlined</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M1120 1280h-832q-66 0 -113 -47t-47 -113v-832q0 -66 47 -113t113 -47h832q66 0 113 47t47 113v832q0 66 -47 113t-113 47zM1408 1120v-832q0 -119 -84.5 -203.5t-203.5 -84.5h-832q-119 0 -203.5 84.5t-84.5 203.5v832q0 119 84.5 203.5t203.5 84.5h832 q119 0 203.5 -84.5t84.5 -203.5z"
+         id="path80166" />
+    </symbol>
+    <symbol
+       id="terminal"
+       class="Web-Application-Icons">
+      <title
+         id="title80739">Terminal</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M585 553l-466 -466q-10 -10 -23 -10t-23 10l-50 50q-10 10 -10 23t10 23l393 393l-393 393q-10 10 -10 23t10 23l50 50q10 10 23 10t23 -10l466 -466q10 -10 10 -23t-10 -23zM1664 96v-64q0 -14 -9 -23t-23 -9h-960q-14 0 -23 9t-9 23v64q0 14 9 23t23 9h960q14 0 23 -9 t9 -23z"
+         id="path80741" />
+    </symbol>
+  </defs>
+  <g
+     transform="translate(0,-2600.8031)"
+     id="g1">
+    <g
+       id="g84012"
+       transform="translate(-79.171919,-2869.3684)">
+      <g
+         id="use83906"
+         style="fill:#638d43;fill-opacity:1"
+         transform="matrix(7.4148706,0,0,7.4148706,176.65148,2636.8968)">
+        <title
+           id="title1">Terminal</title>
+        <path
+           transform="matrix(0.05,0,0,-0.05,0,76.8)"
+           d="M 585,553 119,87 Q 109,77 96,77 83,77 73,87 l -50,50 q -10,10 -10,23 0,13 10,23 L 416,576 23,969 q -10,10 -10,23 0,13 10,23 l 50,50 q 10,10 23,10 13,0 23,-10 L 585,599 q 10,-10 10,-23 0,-13 -10,-23 z M 1664,96 V 32 q 0,-14 -9,-23 -9,-9 -23,-9 H 672 q -14,0 -23,9 -9,9 -9,23 v 64 q 0,14 9,23 9,9 23,9 h 960 q 14,0 23,-9 9,-9 9,-23 z"
+           id="path1" />
+      </g>
+      <g
+         id="use83931"
+         style="fill:#638d43;fill-opacity:1;stroke:#638d43;stroke-opacity:1"
+         transform="matrix(14.491725,0,0,14.730518,11.819857,2507.1064)">
+        <title
+           id="title2">Square Outlined</title>
+        <path
+           transform="matrix(0.05,0,0,-0.05,0,76.8)"
+           d="M 1120,1280 H 288 q -66,0 -113,-47 -47,-47 -47,-113 V 288 q 0,-66 47,-113 47,-47 113,-47 h 832 q 66,0 113,47 47,47 47,113 v 832 q 0,66 -47,113 -47,47 -113,47 z m 288,-160 V 288 Q 1408,169 1323.5,84.5 1239,0 1120,0 H 288 Q 169,0 84.5,84.5 0,169 0,288 v 832 Q 0,1239 84.5,1323.5 169,1408 288,1408 h 832 q 119,0 203.5,-84.5 Q 1408,1239 1408,1120 Z"
+           id="path2" />
+      </g>
+    </g>
+  </g>
+</svg>

@@ -259,6 +259,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				isArch = false;
 			}
 		}
+		/* The icons of the views, perspectives, toolbars and menus with the icon color of the preferences! */
+		try {
+			IconColorModel.install(PlatformUI.getWorkbench());
+		} catch (Throwable e) {
+			/* The icons keep their colors! */
+			e.printStackTrace();
+		}
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		IResourceChangeListener listener = new IResourceChangeListener() {
 			public void resourceChanged(IResourceChangeEvent event) {
@@ -1585,19 +1592,19 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		 */
 
 		/* Image for the projects! */
-		declareWorkbenchImage(bio7, IDE.SharedImages.IMG_OBJ_PROJECT, BIO7_PATH + "folderopened.png", false);
+		declareWorkbenchImage(bio7, IDE.SharedImages.IMG_OBJ_PROJECT, BIO7_PATH + "folderopened.svg", false);
 
-		declareWorkbenchImage(bio7, IDE.SharedImages.IMG_OBJ_PROJECT_CLOSED, BIO7_PATH + "folderclosed.png", false);
+		declareWorkbenchImage(bio7, IDE.SharedImages.IMG_OBJ_PROJECT_CLOSED, BIO7_PATH + "folderclosed.svg", false);
 
 		declareWorkbenchImage(bio7, IDEInternalWorkbenchImages.IMG_WIZBAN_NEWFOLDER_WIZ,
-				BIO7_PATH + "resourcepersp.png", false);
+				BIO7_PATH + "resourcepersp.svg", false);
 		/* Image for the printer! */
 		declareWorkbenchImage(bio7, org.eclipse.ui.ISharedImages.IMG_ETOOL_PRINT_EDIT_DISABLED,
-				BIO7_TOOLBAR_PATH + "print_file.png", false);
+				BIO7_TOOLBAR_PATH + "print_file.svg", false);
 		declareWorkbenchImage(bio7, org.eclipse.ui.ISharedImages.IMG_ETOOL_PRINT_EDIT,
-				BIO7_TOOLBAR_PATH + "print_file.png", false);
+				BIO7_TOOLBAR_PATH + "print_file.svg", false);
 		/* Image for the folders! */
-		declareWorkbenchImage(bio7, org.eclipse.ui.ISharedImages.IMG_OBJ_FOLDER, BIO7_PATH + "folderopened.png", false);
+		declareWorkbenchImage(bio7, org.eclipse.ui.ISharedImages.IMG_OBJ_FOLDER, BIO7_PATH + "folderopened.svg", false);
 		/* Get all JDT images! */
 		// JavaPluginImages.get(JavaPluginImages.IMG_OBJS_QUICK_ASSIST);
 
@@ -1608,7 +1615,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		/* Here we set a Bio7 fieldassist image! */
 		FieldDecorationRegistry.getDefault().registerFieldDecoration("DEC_ERROR",
 				JFaceResources.getString("FieldDecorationRegistry.errorMessage"),
-				Bio7Plugin.getImageDescriptor("/icons/workbench/error_ovr.png").createImage());
+				Bio7Plugin.getImageDescriptor("/icons/workbench/error_ovr.svg").createImage());
 
 		declareWorkbenchImage(ideBundle, IDE.SharedImages.IMG_OPEN_MARKER, PATH_ELOCALTOOL + "gotoobj_tsk.png", true);
 
@@ -1707,6 +1714,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 	private void declareWorkbenchImage(Bundle ideBundle, String symbolicName, String path, boolean shared) {
 		URL url = Platform.find(ideBundle, new Path(path));
+		/* The Bio7 *.svg icons with the icon color of the preferences! */
+		url = com.eco.bio7.util.IconColors.recolor(url, ideBundle.getSymbolicName(), path);
 		ImageDescriptor desc = ImageDescriptor.createFromURL(url);
 		IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
 		configurer.getWorkbenchConfigurer().declareImage(symbolicName, desc, shared);

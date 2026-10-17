@@ -311,7 +311,7 @@ public class RTable extends ViewPart {
 
 			}
 		};
-		ImageDescriptor desc1 = ImageDescriptor.createFromImage(Bio7Plugin.getImageDescriptor("/icons/views/addspreadaction.png").createImage());
+		ImageDescriptor desc1 = ImageDescriptor.createFromImage(Bio7Plugin.getImageDescriptor("/icons/views/addspreadaction.svg").createImage());
 		addSpread.setImageDescriptor(desc1);
 
 		addColumn = new Action("Add Column") {
@@ -328,7 +328,7 @@ public class RTable extends ViewPart {
 				}
 			}
 		};
-		ImageDescriptor desc2 = ImageDescriptor.createFromImage(Bio7Plugin.getImageDescriptor("/icons/views/addcolumnaction.png").createImage());
+		ImageDescriptor desc2 = ImageDescriptor.createFromImage(Bio7Plugin.getImageDescriptor("/icons/views/addcolumnaction.svg").createImage());
 		addColumn.setImageDescriptor(desc2);
 
 		addRow = new Action("Add Row") {
@@ -342,7 +342,7 @@ public class RTable extends ViewPart {
 
 			}
 		};
-		ImageDescriptor desc3 = ImageDescriptor.createFromImage(Bio7Plugin.getImageDescriptor("/icons/views/addrowaction.png").createImage());
+		ImageDescriptor desc3 = ImageDescriptor.createFromImage(Bio7Plugin.getImageDescriptor("/icons/views/addrowaction.svg").createImage());
 		addRow.setImageDescriptor(desc3);
 
 		ISharedImages images = PlatformUI.getWorkbench().getSharedImages();

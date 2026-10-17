@@ -731,6 +731,8 @@ Require-Bundle: org.eclipse.ui,
  com.eco.bio7.util;bundle-version="3.4.0",
  com.eco.bio7.edit;bundle-version="2.0.0",
  org.eclipse.e4.core.contexts,
+ org.eclipse.e4.core.services,
+ org.eclipse.emf.ecore,
  com.eco.bio7.ijmacro.editor;bundle-version="2.0.287",
  com.eco.bio7.os;bundle-version="3.4.0",
  org.eclipse.jdt.launching,
@@ -817,7 +819,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.terminal.view.ui;bundle-version="[1.0.100,2.0.0)",
  org.eclipse.nebula.widgets.grid;bundle-version="1.2.1"
 Eclipse-LazyStart: true
-Import-Package: org.eclipse.e4.ui.css.swt.theme
+Import-Package: org.eclipse.e4.ui.css.swt.theme,
+ org.osgi.service.event
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Bundle-ClassPath: .,
  bin/,

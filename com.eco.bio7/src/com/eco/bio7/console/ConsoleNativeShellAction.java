@@ -26,7 +26,7 @@ public class ConsoleNativeShellAction extends Action {
 		setId("Shell");
 		setText("Shell");
 
-		ImageDescriptor desc = ImageDescriptor.createFromImage(Bio7Plugin.getImageDescriptor("/icons/views/console.png").createImage());
+		ImageDescriptor desc = ImageDescriptor.createFromImage(Bio7Plugin.getImageDescriptor("/icons/views/console.svg").createImage());
 
 		this.setImageDescriptor(desc);
 	}

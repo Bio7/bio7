@@ -22,7 +22,7 @@ import com.eco.bio7.floweditor.shapes.ShapesPlugin;
  */
 public class FlowDecisionShape extends Shape {
 	/** A 16x16 pictogram of a rectangular shape. */
-	private static final Image FLOW_ICON = ShapesPlugin.getImageDescriptor("/icons/ifelse.png").createImage();
+	private static final Image FLOW_ICON = ShapesPlugin.getImageDescriptor("/icons/ifelse.svg").createImage();
 
 	private static final long serialVersionUID = 1;
 

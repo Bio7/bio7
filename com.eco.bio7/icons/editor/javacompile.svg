@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon from com.eco.bio7/icons/maintoolbar/Button_Template_Views.svg (g006) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="16" height="16" viewBox="-2053.439 -9691.285 1014.498 1014.498">
+  <defs
+     id="defs1">
+    <symbol
+       id="caret-right"
+       class="Directional-Icons">
+      <title
+         id="title80424">Caret Right</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M576 640q0 -26 -19 -45l-448 -448q-19 -19 -45 -19t-45 19t-19 45v896q0 26 19 45t45 19t45 -19l448 -448q19 -19 19 -45z"
+         id="path80426" />
+    </symbol>
+  </defs>
+  <g
+     transform="translate(0,-2600.8031)"
+     id="g1">
+    <g
+       id="g84292"
+       transform="translate(-2072.0396,-9685.4904)">
+      <g
+         id="use83991-3"
+         style="fill:#638d43;fill-opacity:1"
+         transform="matrix(12.140901,0,0,11.807044,68.528105,2415.8692)">
+        <title
+           id="title1">Caret Right</title>
+        <path
+           transform="matrix(0.05,0,0,-0.05,0,76.8)"
+           d="m 576,640 q 0,-26 -19,-45 L 109,147 Q 90,128 64,128 38,128 19,147 0,166 0,192 v 896 q 0,26 19,45 19,19 45,19 26,0 45,-19 L 557,685 q 19,-19 19,-45 z"
+           id="path1" />
+      </g>
+      <path
+         style="font-weight:bold;font-size:1290.76px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold';letter-spacing:0px;word-spacing:0px;fill:#638d43;stroke-width:1px"
+         d="m 783.6449,2688.3285 h 185.92515 v 584.8764 q 0,114.7064 -20.16815,176.4714 -27.10095,80.6726 -98.31974,129.8324 -71.21879,48.5297 -187.81592,48.5297 -136.76527,0 -210.50508,-76.2609 -73.73981,-76.8911 -74.37006,-225.0009 l 175.84107,-20.1682 q 3.15128,79.4121 23.31943,112.1854 30.25223,49.7901 92.01719,49.7901 62.39522,0 88.23567,-35.2943 25.84044,-35.9245 25.84044,-148.1098 z"
+         id="text84261"
+         transform="scale(1.0140395,0.98615488)"
+         aria-label="J" />
+    </g>
+  </g>
+</svg>

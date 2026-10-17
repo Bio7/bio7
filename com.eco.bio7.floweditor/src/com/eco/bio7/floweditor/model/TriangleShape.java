@@ -21,7 +21,7 @@ import com.eco.bio7.floweditor.shapes.ShapesPlugin;
  */
 public class TriangleShape extends Shape {
 	/** A 16x16 pictogram of a rectangular shape. */
-	private static final Image TRIANGLE_ICON = ShapesPlugin.getImageDescriptor("/icons/start.png").createImage();
+	private static final Image TRIANGLE_ICON = ShapesPlugin.getImageDescriptor("/icons/start.svg").createImage();
 
 	private static final long serialVersionUID = 1;
 

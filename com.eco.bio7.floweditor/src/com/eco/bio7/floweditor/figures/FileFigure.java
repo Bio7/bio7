@@ -32,7 +32,7 @@ public class FileFigure extends Figure implements MouseListener {
 
 	public Color BG = new Color(null, 242, 240, 255);
 
-	static Image classImage = ShapesPlugin.getImageDescriptor("/icons/file.png").createImage();
+	static Image classImage = ShapesPlugin.getImageDescriptor("/icons/file.svg").createImage();
 
 	static Font BOLD = new Font(null, "", 10, SWT.BOLD);
 

@@ -168,7 +168,7 @@ public class RImageMethodsView extends ViewPart {
 
 		btnNewButton = new Button(top, SWT.NONE);
 		btnNewButton.setToolTipText("Transfers the ImageJ \"Results Table\" data\r\nas a dataframe to R (datatype double).");
-		Image rGif = Bio7Plugin.getImageDescriptor("/icons/views/raction.png").createImage();
+		Image rGif = Bio7Plugin.getImageDescriptor("/icons/views/raction.svg").createImage();
 		
 		btnNewButton.setImage(rGif);
 		btnNewButton.addSelectionListener(new SelectionAdapter() {

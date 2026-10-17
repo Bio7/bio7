@@ -24,7 +24,7 @@ public class ConsoleRShellAction extends Action {
 		setId("RConsole");
 		setText("R Shell");
 
-		ImageDescriptor desc = ImageDescriptor.createFromImage(Bio7Plugin.getImageDescriptor("/icons/views/raction.png").createImage());
+		ImageDescriptor desc = ImageDescriptor.createFromImage(Bio7Plugin.getImageDescriptor("/icons/views/raction.svg").createImage());
 
 		this.setImageDescriptor(desc);
 	}

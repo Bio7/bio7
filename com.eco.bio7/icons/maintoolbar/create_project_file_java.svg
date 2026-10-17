@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon from com.eco.bio7/icons/maintoolbar/Button_Template_Views.svg (g042) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="16" height="16" viewBox="6139.500 -4175.550 900.850 900.850">
+  <defs
+     id="defs1">
+    <symbol
+       id="folder"
+       class="Web-Application-Icons">
+      <title
+         id="title80117">Folder</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M1664 928v-704q0 -92 -66 -158t-158 -66h-1216q-92 0 -158 66t-66 158v960q0 92 66 158t158 66h320q92 0 158 -66t66 -158v-32h672q92 0 158 -66t66 -158z"
+         id="path80119" />
+    </symbol>
+    <symbol
+       id="plus-circle"
+       class="Web-Application-Icons">
+      <title
+         id="title79937">Plus Circle</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M1216 576v128q0 26 -19 45t-45 19h-256v256q0 26 -19 45t-45 19h-128q-26 0 -45 -19t-19 -45v-256h-256q-26 0 -45 -19t-19 -45v-128q0 -26 19 -45t45 -19h256v-256q0 -26 19 -45t45 -19h128q26 0 45 19t19 45v256h256q26 0 45 19t19 45zM1536 640q0 -209 -103 -385.5 t-279.5 -279.5t-385.5 -103t-385.5 103t-279.5 279.5t-103 385.5t103 385.5t279.5 279.5t385.5 103t385.5 -103t279.5 -279.5t103 -385.5z"
+         id="path79939" />
+    </symbol>
+  </defs>
+  <g
+     transform="translate(0,-2600.8031)"
+     style="display:inline"
+     id="g1">
+    <g
+       transform="translate(1218.8002,-6.3042492)"
+       style="display:inline"
+       id="g85903">
+      <g
+         transform="matrix(0.96400811,0,0,1.0047062,177.11078,3.1503178)"
+         id="g85868-3">
+        <g
+           id="use84270-7-1"
+           style="fill:#638d43;fill-opacity:1;stroke:#ffffff;stroke-opacity:1"
+           transform="matrix(11.225062,0,0,12.712944,4920.974,-1644.767)">
+          <title
+             id="title1">Folder</title>
+          <path
+             transform="matrix(0.05,0,0,-0.05,0,76.8)"
+             d="M 1664,928 V 224 Q 1664,132 1598,66 1532,0 1440,0 H 224 Q 132,0 66,66 0,132 0,224 v 960 q 0,92 66,158 66,66 158,66 h 320 q 92,0 158,-66 66,-66 66,-158 v -32 h 672 q 92,0 158,-66 66,-66 66,-158 z"
+             id="path1" />
+        </g>
+        <g
+           id="use85254-4-0-4-8-6"
+           style="fill:#ffffff;fill-opacity:1;stroke-width:3.98065;stroke-miterlimit:4;stroke-dasharray:none"
+           transform="matrix(6.1054275,0,0,6.0196582,5351.0176,-1214.8939)">
+          <title
+             id="title2">Plus Circle</title>
+          <path
+             transform="matrix(0.05,0,0,-0.05,0,76.8)"
+             d="m 1216,576 v 128 q 0,26 -19,45 -19,19 -45,19 H 896 v 256 q 0,26 -19,45 -19,19 -45,19 H 704 q -26,0 -45,-19 -19,-19 -19,-45 V 768 H 384 q -26,0 -45,-19 -19,-19 -19,-45 V 576 q 0,-26 19,-45 19,-19 45,-19 H 640 V 256 q 0,-26 19,-45 19,-19 45,-19 h 128 q 26,0 45,19 19,19 19,45 v 256 h 256 q 26,0 45,19 19,19 19,45 z m 320,64 Q 1536,431 1433,254.5 1330,78 1153.5,-25 977,-128 768,-128 559,-128 382.5,-25 206,78 103,254.5 0,431 0,640 0,849 103,1025.5 206,1202 382.5,1305 559,1408 768,1408 977,1408 1153.5,1305 1330,1202 1433,1025.5 1536,849 1536,640 Z"
+             id="path2" />
+        </g>
+      </g>
+      <path
+         style="font-weight:bold;font-size:544.852px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold';letter-spacing:0px;word-spacing:0px;fill:#ffffff;stroke-width:1px"
+         d="m 5157.5702,-1382.6787 h 78.4821 v 246.8861 q 0,48.4195 -8.5133,74.4915 -11.4398,34.0533 -41.5024,54.8045 -30.0627,20.48515 -79.2803,20.48515 -57.7309,0 -88.8577,-32.19095 -31.1268,-32.457 -31.3928,-94.9767 l 74.2254,-8.5133 q 1.3302,33.5212 9.8436,47.3553 12.7699,21.0173 38.8419,21.0173 26.3381,0 37.2458,-14.8983 10.9077,-15.1644 10.9077,-62.5197 z"
+         id="text84323-0-6"
+         aria-label="J" />
+    </g>
+  </g>
+</svg>

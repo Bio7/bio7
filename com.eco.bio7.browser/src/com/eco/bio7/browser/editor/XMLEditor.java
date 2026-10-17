@@ -636,7 +636,7 @@ public class XMLEditor extends TextEditor {
 				}
 
 			};
-			sortAlphabetAction.setImageDescriptor(Activator.getImageDescriptor("icons/alphab_sort_co.png"));
+			sortAlphabetAction.setImageDescriptor(Activator.getImageDescriptor("icons/alphab_sort_co.svg"));
 			Action collapseAllAction = new Action("Collapse", IAction.AS_PUSH_BUTTON) {
 
 				@Override
@@ -658,7 +658,7 @@ public class XMLEditor extends TextEditor {
 				}
 
 			};
-			collapseAllAction.setImageDescriptor(Activator.getImageDescriptor("icons/collapseall.png"));
+			collapseAllAction.setImageDescriptor(Activator.getImageDescriptor("icons/collapseall.svg"));
 			IActionBars actionBars = getSite().getActionBars();
 			IToolBarManager toolbarManager = actionBars.getToolBarManager();
 			toolbarManager.add(collapseAllAction);

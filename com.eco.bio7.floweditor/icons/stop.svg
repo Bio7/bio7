@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon from com.eco.bio7/icons/maintoolbar/Button_Template_Views.svg (g087) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="16" height="16" viewBox="732.610 1275.080 1016.740 1016.740">
+  <defs
+     id="defs1">
+    <symbol
+       id="caret-down"
+       class="Directional-Icons">
+      <title
+         id="title80561">Caret Down</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M1024 832q0 -26 -19 -45l-448 -448q-19 -19 -45 -19t-45 19l-448 448q-19 19 -19 45t19 45t45 19h896q26 0 45 -19t19 -45z"
+         id="path80563" />
+    </symbol>
+  </defs>
+  <g
+     transform="translate(0,-2600.8031)"
+     style="display:inline"
+     id="g1">
+    <g
+       id="use164322-4"
+       style="fill:#638d43;fill-opacity:1"
+       transform="matrix(19.858143,0,0,-19.858143,732.60578,5305.6724)">
+      <title
+         id="title1">Caret Down</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="m 1024,832 q 0,-26 -19,-45 L 557,339 q -19,-19 -45,-19 -26,0 -45,19 L 19,787 q -19,19 -19,45 0,26 19,45 19,19 45,19 h 896 q 26,0 45,-19 19,-19 19,-45 z"
+         id="path1" />
+    </g>
+  </g>
+</svg>

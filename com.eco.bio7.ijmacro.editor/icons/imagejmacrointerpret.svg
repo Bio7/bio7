@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon from com.eco.bio7/icons/maintoolbar/Button_Template_Views.svg (g011) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="16" height="16" viewBox="6089.967 -9579.791 1012.876 1012.876">
+  <defs
+     id="defs1">
+    <symbol
+       id="caret-right"
+       class="Directional-Icons">
+      <title
+         id="title80424">Caret Right</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M576 640q0 -26 -19 -45l-448 -448q-19 -19 -45 -19t-45 19t-19 45v896q0 26 19 45t45 19t45 -19l448 -448q19 -19 19 -45z"
+         id="path80426" />
+    </symbol>
+  </defs>
+  <g
+     transform="translate(0,-2600.8031)"
+     id="g1">
+    <g
+       id="g82614"
+       transform="translate(6086.2445,-9581.0802)">
+      <g
+         id="use83991-3-1-9-2"
+         style="fill:#638d43;fill-opacity:1"
+         transform="matrix(11.734205,0,0,11.807044,20.199917,2392.5207)">
+        <title
+           id="title1">Caret Right</title>
+        <path
+           transform="matrix(0.05,0,0,-0.05,0,76.8)"
+           d="m 576,640 q 0,-26 -19,-45 L 109,147 Q 90,128 64,128 38,128 19,147 0,166 0,192 v 896 q 0,26 19,45 19,19 45,19 26,0 45,-19 L 557,685 q 19,-19 19,-45 z"
+           id="path1" />
+      </g>
+      <g
+         style="fill:#638d43;fill-opacity:1"
+         transform="matrix(1.1615403,0,0,1.1615403,112.61502,-233.27496)"
+         id="g86832-68-2-9">
+        <path
+           style="font-weight:bold;font-size:564.576px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold';letter-spacing:0px;word-spacing:0px;stroke-width:1px"
+           d="m 97.432152,3358.4351 v -404.1352 h 81.598908 v 404.1352 z m 158.235718,0 v -404.1352 h 122.12269 l 73.32875,275.672 72.50174,-275.672 h 122.39836 v 404.1352 h -75.8098 v -318.1255 l -80.22055,318.1255 h -78.56651 l -79.94488,-318.1255 v 318.1255 z"
+           id="text84261-6-39-7-1"
+           transform="scale(1.0140395,0.98615488)"
+           aria-label="IM" />
+      </g>
+    </g>
+  </g>
+</svg>

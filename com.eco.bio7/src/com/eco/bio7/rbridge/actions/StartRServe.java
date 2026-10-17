@@ -59,7 +59,7 @@ public class StartRServe extends Action implements IMenuCreator {
 		setId("com.eco.bio7.start_rserve");
 
 		setActionDefinitionId("com.eco.bio7.Start_RServe_Action");
-		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/maintoolbar/r.png"));
+		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/maintoolbar/r.svg"));
 		setMenuCreator(this);
 
 	}
@@ -330,7 +330,7 @@ public class StartRServe extends Action implements IMenuCreator {
 		// Image image =
 		// PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
 
-		menuItem.setImage(Bio7Plugin.getImageDescriptor("/icons/views/raction.png").createImage());
+		menuItem.setImage(Bio7Plugin.getImageDescriptor("/icons/views/raction.svg").createImage());
 		menuItem.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
@@ -346,7 +346,7 @@ public class StartRServe extends Action implements IMenuCreator {
 		MenuItem terminateRProcessMenuItem = new MenuItem(fMenu, SWT.PUSH);
 		terminateRProcessMenuItem.setText("Terminate R");
 		// terminateRProcessMenuItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
-		terminateRProcessMenuItem.setImage(Bio7Plugin.getImageDescriptor("/icons/views/stopraction.png").createImage());
+		terminateRProcessMenuItem.setImage(Bio7Plugin.getImageDescriptor("/icons/views/stopraction.svg").createImage());
 		terminateRProcessMenuItem.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
@@ -392,7 +392,7 @@ public class StartRServe extends Action implements IMenuCreator {
 		MenuItem menuItemFractal = new MenuItem(fMenu, SWT.PUSH);
 		menuItemFractal.setText("Kill All R Processes");
 		// menuItemFractal.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
-		menuItemFractal.setImage(Bio7Plugin.getImageDescriptor("/icons/views/stopraction.png").createImage());
+		menuItemFractal.setImage(Bio7Plugin.getImageDescriptor("/icons/views/stopraction.svg").createImage());
 		menuItemFractal.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {

@@ -31,7 +31,7 @@ public class DebugNextAction extends Action {
 		setText("Next");
 
 		//ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/stepover_co.gif")));
-		ImageDescriptor desc = Bio7Plugin.getImageDescriptor("/icons/rdebug/stepover_co.png");
+		ImageDescriptor desc = Bio7Plugin.getImageDescriptor("/icons/rdebug/stepover_co.svg");
 		this.setImageDescriptor(desc);
 	}
 

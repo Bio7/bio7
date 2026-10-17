@@ -912,7 +912,7 @@ public class REditor extends TextEditor implements IPropertyChangeListener, Upda
 				}
 
 			};
-			sortAlphabetAction.setImageDescriptor(Bio7REditorPlugin.getImageDescriptor("icons/alphab_sort_co.png"));
+			sortAlphabetAction.setImageDescriptor(Bio7REditorPlugin.getImageDescriptor("icons/alphab_sort_co.svg"));
 			Action collapseAllAction = new Action("Collapse", IAction.AS_PUSH_BUTTON) {
 
 				@Override
@@ -934,7 +934,7 @@ public class REditor extends TextEditor implements IPropertyChangeListener, Upda
 				}
 
 			};
-			collapseAllAction.setImageDescriptor(Bio7REditorPlugin.getImageDescriptor("icons/collapseall.png"));
+			collapseAllAction.setImageDescriptor(Bio7REditorPlugin.getImageDescriptor("icons/collapseall.svg"));
 			// Add actions to the toolbar
 			IActionBars actionBars = getSite().getActionBars();
 			IToolBarManager toolbarManager = actionBars.getToolBarManager();

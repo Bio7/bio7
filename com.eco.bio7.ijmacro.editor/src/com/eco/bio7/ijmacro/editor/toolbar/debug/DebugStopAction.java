@@ -35,7 +35,7 @@ public class DebugStopAction extends Action {
 		setId("Abort");
 		setText("Abort");
 		setToolTipText("Exits the macro.");
-		ImageDescriptor desc = IJMacroEditorPlugin.getImageDescriptor("/icons/ijmacrodebug/terminatedlaunch_obj.png");
+		ImageDescriptor desc = IJMacroEditorPlugin.getImageDescriptor("/icons/ijmacrodebug/terminatedlaunch_obj.svg");
 		this.setImageDescriptor(desc);
 	}
 

@@ -54,7 +54,7 @@ public class DebugMarkerAction extends Action {
 		setToolTipText(
 				"Runs the macro to the defined breakpoints or to the evaluated\nexpression of the expression breakpoints.");
 		//ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/stepinto_co.gif")));
-		ImageDescriptor desc = IJMacroEditorPlugin.getImageDescriptor("/icons/ijmacrodebug/changevariablevalue_co.png");
+		ImageDescriptor desc = IJMacroEditorPlugin.getImageDescriptor("/icons/ijmacrodebug/changevariablevalue_co.svg");
 		this.setImageDescriptor(desc);
 	}
 

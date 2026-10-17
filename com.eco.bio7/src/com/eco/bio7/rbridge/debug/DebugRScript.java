@@ -100,7 +100,7 @@ public class DebugRScript extends Action {
 		setId("Debug");
 		setText("Debug Trace Action - Insert debugging code at chosen places in any function.");
 
-		ImageDescriptor desc = Bio7Plugin.getImageDescriptor("/icons/rdebug/rundebug.png");
+		ImageDescriptor desc = Bio7Plugin.getImageDescriptor("/icons/rdebug/rundebug.svg");
 		this.setImageDescriptor(desc);
 	}
 

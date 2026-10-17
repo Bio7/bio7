@@ -33,7 +33,7 @@ public class DebugStepFinishAction extends Action {
 		setText("Run");
 		setToolTipText("Runs the macro to completion at normal speed.");
 		//ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/stepbystep_co.gif")));
-		ImageDescriptor desc = IJMacroEditorPlugin.getImageDescriptor("/icons/ijmacrodebug/resume_co.png");
+		ImageDescriptor desc = IJMacroEditorPlugin.getImageDescriptor("/icons/ijmacrodebug/resume_co.svg");
 		this.setImageDescriptor(desc);
 	}
 

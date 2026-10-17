@@ -9,7 +9,7 @@
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
             default="true"
             extensions="py"
-            icon="icons/python.png"
+            icon="icons/python.svg"
             id="com.eco.bio7.pythoneditors.PythonEditor"
             name="Python Editor"
             symbolicFontName="com.eco.bio7.pythoneditor.textfont">

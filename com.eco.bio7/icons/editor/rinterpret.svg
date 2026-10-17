@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon from com.eco.bio7/icons/maintoolbar/Button_Template_Views.svg (g005) -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="16" height="16" viewBox="-3612.180 -9665.650 1028.930 1028.930">
+  <defs
+     id="defs1">
+    <symbol
+       id="caret-right"
+       class="Directional-Icons">
+      <title
+         id="title80424">Caret Right</title>
+      <path
+         transform="matrix(0.05,0,0,-0.05,0,76.8)"
+         d="M576 640q0 -26 -19 -45l-448 -448q-19 -19 -45 -19t-45 19t-19 45v896q0 26 19 45t45 19t45 -19l448 -448q19 -19 19 -45z"
+         id="path80426" />
+    </symbol>
+  </defs>
+  <g
+     transform="translate(0,-2600.8031)"
+     id="g1">
+    <g
+       id="g82942"
+       transform="translate(-3586.8564,-9681.1648)">
+      <g
+         id="use83991-3-1"
+         style="fill:#638d43;fill-opacity:1"
+         transform="matrix(11.734205,0,0,11.807044,-25.3189,2411.5436)">
+        <title
+           id="title1">Caret Right</title>
+        <path
+           transform="matrix(0.05,0,0,-0.05,0,76.8)"
+           d="m 576,640 q 0,-26 -19,-45 L 109,147 Q 90,128 64,128 38,128 19,147 0,166 0,192 v 896 q 0,26 19,45 19,19 45,19 26,0 45,-19 L 557,685 q 19,-19 19,-45 z"
+           id="path1" />
+      </g>
+      <path
+         style="font-weight:bold;font-size:1013.28px;line-height:125%;font-family:Arial;-inkscape-font-specification:'Arial Bold';letter-spacing:0px;word-spacing:0px;fill:#638d43;stroke-width:1px"
+         d="m 372.03611,3550.6892 v -725.3289 h 308.24003 q 116.27032,0 168.71566,19.7907 52.9401,19.296 84.60521,69.2675 31.6651,49.9714 31.6651,114.2912 0,81.6366 -47.99243,135.0715 -47.99242,52.9401 -143.48252,66.7936 47.49767,27.7069 78.17324,60.8563 31.17034,33.1494 83.61567,117.7547 l 88.56333,141.5034 H 848.9918 L 743.11159,3392.8584 q -56.40347,-84.6052 -77.1837,-106.3749 -20.78023,-22.2646 -44.03429,-30.1808 -23.25406,-8.4111 -73.72033,-8.4111 h -29.68604 v 302.7976 z m 146.45112,-418.5731 h 108.35404 q 105.38544,0 131.60811,-8.9058 26.22267,-8.9059 41.06568,-30.6756 14.84302,-21.7698 14.84302,-54.4244 0,-36.6128 -19.79069,-58.8773 -19.29592,-22.7593 -54.91917,-28.6965 -17.81162,-2.4739 -106.86974,-2.4739 H 518.48723 Z"
+         id="text84261-0"
+         transform="scale(0.97995355,1.0204565)"
+         aria-label="R" />
+    </g>
+  </g>
+</svg>

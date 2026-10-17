@@ -31,7 +31,7 @@ public class OpenHelpBrowserAction extends Action {
 	public OpenHelpBrowserAction() {
 		super("Help Browser");
 		setId("com.eco.bio7.r_editor_help_browser");
-		ImageDescriptor desc = Bio7REditorPlugin.getImageDescriptor("/icons/help_contents.png");
+		ImageDescriptor desc = Bio7REditorPlugin.getImageDescriptor("/icons/help_contents.svg");
 		this.setImageDescriptor(desc);
 
 		setText("Help Browser");
