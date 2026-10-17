@@ -50,7 +50,7 @@ final class ShapesEditorPaletteFactory {
 	/** Create the "Shapes" drawer. */
 	private static PaletteContainer createShapesDrawer() {
 
-		PaletteDrawer componentsDrawer = new PaletteDrawer("Flowchart");
+		PaletteDrawer componentsDrawer = new PaletteDrawer("Flowchart", ShapesPlugin.getImageDescriptor("icons/gef/folder_open.svg"));
 
 		CombinedTemplateCreationEntry component = new CombinedTemplateCreationEntry("Loop", "Create a Loop", EllipticalShape.class, new SimpleFactory(EllipticalShape.class),
 				ShapesPlugin.getImageDescriptor("/icons/loop.svg"), ShapesPlugin.getImageDescriptor("/icons/loop@3x.png"));
@@ -73,7 +73,7 @@ final class ShapesEditorPaletteFactory {
 
 	private static PaletteContainer createShapesDrawer2() {
 
-		PaletteDrawer componentsDrawer = new PaletteDrawer("Extra");
+		PaletteDrawer componentsDrawer = new PaletteDrawer("Extra", ShapesPlugin.getImageDescriptor("icons/gef/folder_open.svg"));
 
 		CombinedTemplateCreationEntry component = new CombinedTemplateCreationEntry("Info", "Create an Information Label", RectangularShape.class, new SimpleFactory(RectangularShape.class),
 				ShapesPlugin.getImageDescriptor("/icons/info.svg"), ShapesPlugin.getImageDescriptor("/icons/info@3x.png"));
@@ -102,11 +102,16 @@ final class ShapesEditorPaletteFactory {
 
 		// Add a selection tool to the group
 		ToolEntry tool = new PanningSelectionToolEntry();
+		tool.setSmallIcon(ShapesPlugin.getImageDescriptor("icons/gef/select.svg"));
+		tool.setLargeIcon(tool.getSmallIcon());
 		toolGroup.add(tool);
 		palette.setDefaultEntry(tool);
 
 		// Add a marquee tool to the group
-		toolGroup.add(new MarqueeToolEntry());
+		ToolEntry marquee = new MarqueeToolEntry();
+		marquee.setSmallIcon(ShapesPlugin.getImageDescriptor("icons/gef/marquee.svg"));
+		marquee.setLargeIcon(marquee.getSmallIcon());
+		toolGroup.add(marquee);
 
 		// Add a (unnamed) separator to the group
 		toolGroup.add(new PaletteSeparator());

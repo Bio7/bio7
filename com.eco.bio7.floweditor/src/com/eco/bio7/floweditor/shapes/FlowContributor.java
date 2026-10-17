@@ -1,10 +1,13 @@
 package com.eco.bio7.floweditor.shapes;
 
+import java.util.function.Function;
+
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.actions.RetargetAction;
 import org.eclipse.draw2d.PositionConstants;
@@ -59,7 +62,50 @@ public class FlowContributor extends ActionBarContributor {
 		addRetargetAction(new RetargetAction(
 				GEFActionConstants.TOGGLE_GRID_VISIBILITY,
 				GEFMessages.ToggleGrid_Label, IAction.AS_CHECK_BOX));
+		setBio7Icons();
+	}
 
+	public void setActiveEditor(IEditorPart editor) {
+		super.setActiveEditor(editor);
+		/* Undo and redo take the images of the actions of the editor! */
+		setBio7Icons();
+	}
+
+	private void setBio7Icons() {
+		setBio7Icons(this::getAction);
+	}
+
+	/*
+	 * The Bio7 icons instead of the GEF and Eclipse icons (with the icon color of
+	 * the preferences). The toolbar actions take the images of the actions of the
+	 * editor (when the editor is activated), so the icons are also set for the
+	 * actions of the editor!
+	 */
+	static void setBio7Icons(Function<String, IAction> actions) {
+		setIcon(actions, ActionFactory.DELETE.getId(), "delete");
+		setIcon(actions, ActionFactory.UNDO.getId(), "undo");
+		setIcon(actions, ActionFactory.REDO.getId(), "redo");
+		setIcon(actions, GEFActionConstants.ALIGN_LEFT, "alignleft");
+		setIcon(actions, GEFActionConstants.ALIGN_CENTER, "aligncenter");
+		setIcon(actions, GEFActionConstants.ALIGN_RIGHT, "alignright");
+		setIcon(actions, GEFActionConstants.ALIGN_TOP, "aligntop");
+		setIcon(actions, GEFActionConstants.ALIGN_MIDDLE, "alignmid");
+		setIcon(actions, GEFActionConstants.ALIGN_BOTTOM, "alignbottom");
+		setIcon(actions, GEFActionConstants.MATCH_WIDTH, "matchwidth");
+		setIcon(actions, GEFActionConstants.MATCH_HEIGHT, "matchheight");
+		setIcon(actions, GEFActionConstants.ZOOM_IN, "zoom_in");
+		setIcon(actions, GEFActionConstants.ZOOM_OUT, "zoom_out");
+	}
+
+	private static void setIcon(Function<String, IAction> actions, String id, String name) {
+		IAction action = actions.apply(id);
+		if (action == null) {
+			return;
+		}
+		action.setImageDescriptor(ShapesPlugin.getImageDescriptor("icons/gef/" + name + ".svg"));
+		/* The disabled and hover images are computed from the image! */
+		action.setDisabledImageDescriptor(null);
+		action.setHoverImageDescriptor(null);
 	}
 
 	protected void declareGlobalActionKeys() {

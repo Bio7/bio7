@@ -144,9 +144,19 @@ public class ShapesEditor extends GraphicalEditorWithFlyoutPalette {
 	ScalableRootEditPart rootEditPart;
 
 	/** Create a new ShapesEditor instance. This is called by the Workspace. */
+	/* The Bio7 icon of the palette title (shared by all editors)! */
+	private static boolean paletteIcon;
+
 	public ShapesEditor() {
 
 		setEditDomain(new DefaultEditDomain(this));
+		if (!paletteIcon) {
+			paletteIcon = true;
+			org.eclipse.swt.graphics.Image image = ShapesPlugin.getImageDescriptor("icons/gef/palette.svg").createImage(false);
+			if (image != null) {
+				org.eclipse.gef.internal.InternalImages.set(org.eclipse.gef.internal.InternalImages.IMG_PALETTE, image);
+			}
+		}
 
 	}
 
@@ -241,6 +251,7 @@ public class ShapesEditor extends GraphicalEditorWithFlyoutPalette {
 
 		action = new ZoomOutAction(manager);
 		getActionRegistry().registerAction(action);
+		FlowContributor.setBio7Icons(getActionRegistry()::getAction);
 		loadProperties();// the rulers visibility
 		
 		
@@ -581,6 +592,8 @@ public class ShapesEditor extends GraphicalEditorWithFlyoutPalette {
 		action = new AlignmentAction((IWorkbenchPart) this, PositionConstants.MIDDLE);
 		registry.registerAction(action);
 		getSelectionActions().add(action.getId());
+		/* The Bio7 icons (the actions of the toolbar take the images of these actions)! */
+		FlowContributor.setBio7Icons(registry::getAction);
 
 	}
 

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon (replaces the GEF icon zoom_out) -->
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <circle cx="6.6" cy="6.6" r="4.9" fill="none" stroke="#638d43" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"/><path d="M10.3 10.3l4.1 4.1" fill="none" stroke="#638d43" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4"/>
+  <path d="M4.3 6.6h4.6" fill="none" stroke="#638d43" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"/>
+</svg>

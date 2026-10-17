@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon (replaces the GEF icon marquee16) -->
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <rect x="1.6" y="1.6" width="11.6" height="10.4" rx="1" fill="none" stroke="#638d43" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4" stroke-dasharray="2.2 1.8"/>
+  <path d="M8.6 7.2l6.2 5.3-2.7.3 1.5 2.8-1.4.7-1.5-2.8-2.1 1.8z" fill="#638d43" stroke="#638d43" stroke-width="0.7" stroke-linejoin="round"/>
+</svg>
