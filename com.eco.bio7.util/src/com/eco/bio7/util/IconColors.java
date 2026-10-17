@@ -18,6 +18,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -70,6 +72,7 @@ public final class IconColors {
 	private static final float MIN_DETAIL_BRIGHTNESS = 0.8f;
 
 	private static final Pattern HEX = Pattern.compile("#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})(?![0-9a-fA-F])");
+	private static final Pattern MASK = Pattern.compile("<mask\\b.*?</mask>", Pattern.DOTALL);
 	private static final Pattern WHITE_NAME = Pattern.compile("((?:fill|stroke|stop-color)\\s*(?::|=)\\s*[\"']?)white\\b", Pattern.CASE_INSENSITIVE);
 
 	private static final Map<String, URL> CACHE = new ConcurrentHashMap<String, URL>();
@@ -158,6 +161,11 @@ public final class IconColors {
 	 * (platform:/plugin/bundle/path.svg) or the URI itself.
 	 */
 	public static String recolorURI(String uri) {
+		String original = originalURI(uri);
+		if (original != null) {
+			/* An icon which was recolored with other colors (e.g., stored in the model)! */
+			uri = original;
+		}
 		if (uri == null || !isActive() || !isSvg(uri) || !uri.startsWith("platform:/plugin/")) {
 			return uri;
 		}
@@ -168,6 +176,28 @@ public final class IconColors {
 		}
 		URL url = recolored(rest.substring(0, slash), rest.substring(slash + 1));
 		return url == null ? uri : url.toString();
+	}
+
+	/*
+	 * The original icon URI (platform:/plugin/bundle/path) of a recolored icon
+	 * (state location/icons/colors/bundle/path) or null!
+	 */
+	private static String originalURI(String uri) {
+		if (uri == null || !uri.startsWith("file:")) {
+			return null;
+		}
+		try {
+			String icons = Activator.getDefault().getStateLocation().append("icons").toFile().toURI().toString();
+			if (!uri.startsWith(icons)) {
+				return null;
+			}
+			String rest = uri.substring(icons.length()).replaceAll("^/+", "");
+			/* colors/bundle/path! */
+			int first = rest.indexOf('/');
+			return first < 0 ? null : "platform:/plugin/" + rest.substring(first + 1);
+		} catch (RuntimeException e) {
+			return null;
+		}
 	}
 
 	/** Returns the recolored icon for the URL of a *.svg icon or the URL itself. */
@@ -213,9 +243,11 @@ public final class IconColors {
 			RGB detail = getDetailColor();
 			String folder = WHITE.equals(detail) ? hex(color) : hex(color) + "_" + hex(detail);
 			File file = Activator.getDefault().getStateLocation().append("icons").append(folder).append(bundleId).append(clean).toFile();
-			if (!file.exists()) {
+			String recolored = recolor(svg, color, detail);
+			/* Written again if changed (e.g., by a new version of the icon or of the recoloring)! */
+			if (!file.exists() || !recolored.equals(Files.readString(file.toPath(), StandardCharsets.UTF_8))) {
 				file.getParentFile().mkdirs();
-				Files.writeString(file.toPath(), recolor(svg, color, detail), StandardCharsets.UTF_8);
+				Files.writeString(file.toPath(), recolored, StandardCharsets.UTF_8);
 			}
 			URL url = file.toURI().toURL();
 			CACHE.put(key, url);
@@ -254,11 +286,21 @@ public final class IconColors {
 		float[] det = detail.getHSB();
 		boolean details = !WHITE.equals(detail);
 		if (details) {
-			svg = WHITE_NAME.matcher(svg).replaceAll("$1#ffffff");
+			svg = replaceOutsideMasks(svg);
+		}
+		/* The colors of the masks (black and white) define the transparency and are not changed! */
+		List<int[]> masks = new ArrayList<int[]>();
+		Matcher mm = MASK.matcher(svg);
+		while (mm.find()) {
+			masks.add(new int[] { mm.start(), mm.end() });
 		}
 		Matcher m = HEX.matcher(svg);
 		StringBuilder out = new StringBuilder(svg.length());
 		while (m.find()) {
+			if (inside(masks, m.start())) {
+				m.appendReplacement(out, Matcher.quoteReplacement(m.group()));
+				continue;
+			}
 			RGB rgb = parse(m.group(1));
 			float[] hsb = rgb.getHSB();
 			String replacement = m.group();
@@ -276,6 +318,29 @@ public final class IconColors {
 		}
 		m.appendTail(out);
 		return out.toString();
+	}
+
+	/* The color name white as hex color (outside of the masks), so that it is replaced by the detail color! */
+	private static String replaceOutsideMasks(String svg) {
+		StringBuilder out = new StringBuilder(svg.length());
+		Matcher mm = MASK.matcher(svg);
+		int last = 0;
+		while (mm.find()) {
+			out.append(WHITE_NAME.matcher(svg.substring(last, mm.start())).replaceAll("$1#ffffff"));
+			out.append(mm.group());
+			last = mm.end();
+		}
+		out.append(WHITE_NAME.matcher(svg.substring(last)).replaceAll("$1#ffffff"));
+		return out.toString();
+	}
+
+	private static boolean inside(List<int[]> ranges, int index) {
+		for (int[] r : ranges) {
+			if (index >= r[0] && index < r[1]) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private static boolean isSvg(String path) {
