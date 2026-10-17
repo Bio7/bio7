@@ -50,6 +50,7 @@ jdk/bin/javaw.exe
 -Dpython.console.encoding=UTF-8 
 -Dswt.enable.themedScrollBar=true 
 -XstartOnFirstThread
+-Dosgi.splashPath=platform:/base/plugins/com.eco.bio7.cocoa.macosx.aarch64,platform:/base/plugins/com.eco.bio7
       </vmArgsMac>
       <vmArgsWin>--module-path=jdk/nashorn
 -Dorg.eclipse.swt.browser.DefaultType=&quot;edge&quot; 
