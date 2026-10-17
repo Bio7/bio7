@@ -1597,7 +1597,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		declareWorkbenchImage(bio7, IDE.SharedImages.IMG_OBJ_PROJECT_CLOSED, BIO7_PATH + "folderclosed.svg", false);
 
 		declareWorkbenchImage(bio7, IDEInternalWorkbenchImages.IMG_WIZBAN_NEWFOLDER_WIZ,
-				BIO7_PATH + "resourcepersp.svg", false);
+				"/icons/perspective/resourcepersp.svg", false);
 		/* Image for the printer! */
 		declareWorkbenchImage(bio7, org.eclipse.ui.ISharedImages.IMG_ETOOL_PRINT_EDIT_DISABLED,
 				BIO7_TOOLBAR_PATH + "print_file.svg", false);
