@@ -71,6 +71,32 @@ class Spread {
 		return selectedRowMin;
 	}
 
+	/* The column of the last click on a column header (for Shift+click)! */
+	private int lastHeaderColumn = -1;
+
+	private void selectColumns(int col, int stateMask) {
+		if (grid.getItemCount() == 0) {
+			return;
+		}
+		boolean add = (stateMask & SWT.MOD1) != 0;
+		boolean range = (stateMask & SWT.SHIFT) != 0 && lastHeaderColumn >= 0 && lastHeaderColumn < grid.getColumnCount();
+		if (!add) {
+			grid.deselectAllCells();
+		}
+		int from = range ? Math.min(lastHeaderColumn, col) : col;
+		int to = range ? Math.max(lastHeaderColumn, col) : col;
+		for (int c = from; c <= to; c++) {
+			grid.selectColumn(c);
+		}
+		if (!range) {
+			lastHeaderColumn = col;
+		}
+		/* A paste starts at the top of the (first) selected column! */
+		selectedColumnMin = from;
+		selectedRowMin = 0;
+		grid.redraw();
+	}
+
 	public Grid spread(CTabFolder tabFolder, int cols, int rows, String name) {
 		ccp = new CutCopyPaste();
 		initialColumns = cols;
@@ -201,6 +227,32 @@ class Spread {
 		grid.setCellSelectionEnabled(true);
 		tab1TabItem.setData(grid);
 
+		/*
+		 * A click on a column header (without moving or resizing the column) selects the column
+		 * like a click on a row header selects the row: Shift selects the range from the last
+		 * clicked column, Ctrl/Cmd adds the column to the selection!
+		 */
+		final int[] headerDown = { -1, 0, 0 };
+		grid.addListener(SWT.MouseDown, e -> {
+			headerDown[0] = -1;
+			if (e.button == 1 && grid.getHeaderVisible() && e.y >= 0 && e.y < grid.getHeaderHeight()) {
+				GridColumn c = grid.getColumn(new Point(e.x, e.y));
+				if (c != null) {
+					headerDown[0] = grid.indexOf(c);
+					headerDown[1] = e.x;
+					headerDown[2] = c.getWidth();
+				}
+			}
+		});
+		grid.addListener(SWT.MouseUp, e -> {
+			int col = headerDown[0];
+			headerDown[0] = -1;
+			if (col < 0 || col >= grid.getColumnCount() || e.button != 1 || Math.abs(e.x - headerDown[1]) > 3 || grid.getColumn(col).getWidth() != headerDown[2]) {
+				return;
+			}
+			selectColumns(col, e.stateMask);
+		});
+
 		final GridEditor editor = new GridEditor(grid);
 
 		grid.addListener(SWT.MouseDoubleClick, new Listener() {
@@ -237,6 +289,15 @@ class Spread {
 			 * A recursive method to move to the next row to e.g. ease the input
 			 * of data!
 			 */
+			/* Sets the text of a cell as an undoable step (if the text was changed)! */
+			private void setCellText(GridItem item, int col, String value) {
+				int row = grid.indexOf(item);
+				if (row < 0 || value.equals(item.getText(col))) {
+					return;
+				}
+				GridHistory.of(grid).recordCells("Edit", java.util.Collections.singletonList(new Point(col, row)), () -> item.setText(col, value));
+			}
+
 			private void recursiveEdit(final GridEditor editor, final GridItem item) {
 
 				final Text text = new Text(grid, SWT.NONE);
@@ -245,7 +306,7 @@ class Spread {
 						switch (e.type) {
 						case SWT.FocusOut:
 							if (item.isDisposed() == false) {
-								item.setText(column, text.getText());
+								setCellText(item, column, text.getText());
 								text.dispose();
 
 							}
@@ -253,7 +314,7 @@ class Spread {
 						case SWT.Traverse:
 							switch (e.detail) {
 							case SWT.TRAVERSE_RETURN:
-								item.setText(column, text.getText());
+								setCellText(item, column, text.getText());
 								index++;
 								if (index < grid.getItemCount()) {
 
@@ -271,7 +332,7 @@ class Spread {
 									recursiveEdit(editor, gi);
 									 /*Dynamically resize row amount!*/
 								} else if (index == grid.getItemCount()) {
-									Bio7Grid.createRow(index, item.getHeight());
+									GridHistory.of(grid).recordGrid("Add Row", () -> Bio7Grid.createRow(index, item.getHeight()));
 
 									GridItem gi = grid.getItem(index);
 									grid.showItem(gi);
@@ -285,7 +346,7 @@ class Spread {
 								break;
 							/* Other keys don't work here! */
 							case SWT.TRAVERSE_TAB_NEXT:
-								item.setText(column, text.getText());
+								setCellText(item, column, text.getText());
 								index--;
 								if (index >= 0) {
 									GridItem gi = grid.getItem(index);
@@ -297,7 +358,7 @@ class Spread {
 								}
 								break;
 							case SWT.TRAVERSE_ARROW_NEXT:
-								item.setText(column, text.getText());
+								setCellText(item, column, text.getText());
 								column++;
 								if (column < grid.getColumnCount()) {
 									GridItem gi = grid.getItem(index);
@@ -307,7 +368,7 @@ class Spread {
 								}
                                 /*Dynamically resize column amount!*/
 								else if (column == grid.getColumnCount()) {
-									Bio7Grid.createColumn(cols, grid.getColumn(column - 1).getWidth(), "C " + (grid.getColumnCount() + 1));
+									GridHistory.of(grid).recordGrid("Add Column", () -> Bio7Grid.createColumn(cols, grid.getColumn(column - 1).getWidth(), "C " + (grid.getColumnCount() + 1)));
 
 									GridItem gi = grid.getItem(index);
 									GridColumn col = grid.getColumn(column);
@@ -321,7 +382,7 @@ class Spread {
 								}
 								break;
 							case SWT.TRAVERSE_ARROW_PREVIOUS:
-								item.setText(column, text.getText());
+								setCellText(item, column, text.getText());
 								column--;
 								if (column >= 0) {
 									GridItem gi = grid.getItem(index);

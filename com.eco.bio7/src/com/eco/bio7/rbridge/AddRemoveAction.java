@@ -130,12 +130,12 @@ public class AddRemoveAction extends Action implements IMenuCreator {
 
 			public void widgetSelected(SelectionEvent e) {
 				Grid grid = RTable.getGrid();
-				int sel = grid.getSelectionIndex();
 				if (grid != null) {
-					new GridItem(grid, SWT.NONE, sel);
-					
-					grid.layout();
-					
+					int sel = grid.getSelectionIndex();
+					GridHistory.of(grid).recordGrid("Add Row", () -> {
+						new GridItem(grid, SWT.NONE, sel);
+						grid.layout();
+					});
 				}
 			}
 
@@ -151,12 +151,12 @@ public class AddRemoveAction extends Action implements IMenuCreator {
 
 			public void widgetSelected(SelectionEvent e) {
 				Grid grid = RTable.getGrid();
-				int sel = grid.getSelectionIndex();
 				if (grid != null) {
-					new GridItem(grid, SWT.NONE, sel + 1);
-					
-					grid.layout();
-					
+					int sel = grid.getSelectionIndex();
+					GridHistory.of(grid).recordGrid("Add Row", () -> {
+						new GridItem(grid, SWT.NONE, sel + 1);
+						grid.layout();
+					});
 				}
 			}
 
@@ -172,27 +172,13 @@ public class AddRemoveAction extends Action implements IMenuCreator {
 
 			public void widgetSelected(SelectionEvent e) {
 				Grid grid = RTable.getGrid();
-				GridColumn column = null;
 				if (grid != null) {
 					Point[] sel = grid.getCellSelection();
-
-					if (sel.length == 0) {
-
-						column = new GridColumn(grid, SWT.NONE, grid.getColumnCount());
-						column.setWidth(50);
-
-					} else {
-						// System.out.println(sel[0].x);
-						column = new GridColumn(grid, SWT.NONE, sel[0].x);
-						// column.setText("C " + (sel[0].x + 1));
-						column.setWidth(50);
-
-					}
-
-					renameColumnsSorted(grid);
-
-					// column.pack();
-
+					int index = sel.length == 0 ? grid.getColumnCount() : sel[0].x;
+					GridHistory.of(grid).recordGrid("Add Column", () -> {
+						new GridColumn(grid, SWT.NONE, index).setWidth(50);
+						renameColumnsSorted(grid);
+					});
 				}
 
 			}
@@ -209,27 +195,13 @@ public class AddRemoveAction extends Action implements IMenuCreator {
 
 			public void widgetSelected(SelectionEvent e) {
 				Grid grid = RTable.getGrid();
-				GridColumn column = null;
 				if (grid != null) {
 					Point[] sel = grid.getCellSelection();
-
-					if (sel.length == 0) {
-
-						column = new GridColumn(grid, SWT.NONE, grid.getColumnCount());
-						column.setWidth(50);
-
-					} else {
-
-						column = new GridColumn(grid, SWT.NONE, sel[0].x + 1);
-						// column.setText("C " + (sel[0].x + 1));
-						column.setWidth(50);
-
-					}
-
-					renameColumnsSorted(grid);
-
-					// column.pack();
-
+					int index = sel.length == 0 ? grid.getColumnCount() : sel[0].x + 1;
+					GridHistory.of(grid).recordGrid("Add Column", () -> {
+						new GridColumn(grid, SWT.NONE, index).setWidth(50);
+						renameColumnsSorted(grid);
+					});
 				}
 
 			}
@@ -247,8 +219,7 @@ public class AddRemoveAction extends Action implements IMenuCreator {
 			public void widgetSelected(SelectionEvent e) {
 				Grid grid = RTable.getGrid();
 				if (grid != null) {
-					// grid.remove(1);
-					grid.remove(grid.getSelectionIndices());
+					GridHistory.of(grid).recordGrid("Remove Rows", () -> grid.remove(grid.getSelectionIndices()));
 				}
 			}
 
@@ -276,17 +247,19 @@ public class AddRemoveAction extends Action implements IMenuCreator {
 					 * first available!)
 					 */
 					int colNrCurrent = sel[0].y;
-					// System.out.println(colNrCurrent);
+					/* The selected columns, removed from the right so that the indices stay valid! */
+					java.util.TreeSet<Integer> columns = new java.util.TreeSet<Integer>(java.util.Collections.reverseOrder());
 					for (int i = 0; i < sel.length; i++) {
-						int colNrTemp = sel[i].y;
-
-						if (colNrCurrent == colNrTemp) {
-							grid.getColumn(sel[i].x).dispose();
-							// System.out.println(sel[i].x);
-							colNrTemp = colNrCurrent;
+						if (colNrCurrent == sel[i].y) {
+							columns.add(sel[i].x);
 						}
 					}
-					renameColumnsSorted(grid);
+					GridHistory.of(grid).recordGrid("Remove Columns", () -> {
+						for (int column : columns) {
+							grid.getColumn(column).dispose();
+						}
+						renameColumnsSorted(grid);
+					});
 					}
 					}
 				}

@@ -48,7 +48,10 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.part.ViewPart;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
@@ -72,6 +75,17 @@ public class RTable extends ViewPart {
 	private Action addSpread;
 	private Action addColumn;
 	private Action addRow;
+	private Action undoAction;
+	private Action redoAction;
+	/* Updates the undo/redo actions when a history changes! */
+	private final Runnable historyListener = () -> {
+		Display display = Display.getDefault();
+		if (Display.getCurrent() == display) {
+			updateUndoRedo();
+		} else {
+			display.asyncExec(this::updateUndoRedo);
+		}
+	};
 	private static RTable instance;
 	private CTabItem item;
 
@@ -81,6 +95,9 @@ public class RTable extends ViewPart {
 
 	public static void setGrid(Grid grid) {
 		RTable.grid = grid;
+		if (instance != null) {
+			instance.historyListener.run();
+		}
 	}
 
 	private static CTabFolder tabFolder;
@@ -91,6 +108,50 @@ public class RTable extends ViewPart {
 
 	public static RTable getInstance() {
 		return instance;
+	}
+
+	/** Undoes the last change of the selected sheet (see GridHistory). */
+	public static void undo() {
+		GridHistory history = prepareHistory();
+		if (history != null) {
+			history.undo();
+		}
+	}
+
+	/** Redoes the last undone change of the selected sheet (see GridHistory). */
+	public static void redo() {
+		GridHistory history = prepareHistory();
+		if (history != null) {
+			history.redo();
+		}
+	}
+
+	/* A cell which is edited is committed first (the editor is a Text in the grid)! */
+	private static GridHistory prepareHistory() {
+		Grid g = getGrid();
+		if (g == null || g.isDisposed()) {
+			return null;
+		}
+		Control focus = g.getDisplay().getFocusControl();
+		if (focus instanceof Text && focus.getParent() == g) {
+			g.setFocus();
+		}
+		return GridHistory.of(g);
+	}
+
+	private void updateUndoRedo() {
+		if (undoAction == null) {
+			return;
+		}
+		GridHistory history = GridHistory.of(grid);
+		boolean canUndo = history != null && history.canUndo();
+		boolean canRedo = history != null && history.canRedo();
+		undoAction.setEnabled(canUndo);
+		redoAction.setEnabled(canRedo);
+		undoAction.setToolTipText(canUndo ? "Undo " + history.getUndoLabel() : "Undo");
+		redoAction.setToolTipText(canRedo ? "Redo " + history.getRedoLabel() : "Redo");
+		undoAction.setText(canUndo ? "Undo " + history.getUndoLabel() : "Undo");
+		redoAction.setText(canRedo ? "Redo " + history.getRedoLabel() : "Redo");
 	}
 
 	/**
@@ -141,6 +202,7 @@ public class RTable extends ViewPart {
 				if (tabFolder.getSelection() != null) {
 					grid = (Grid) tabFolder.getSelection().getData();
 				}
+				updateUndoRedo();
 
 			}
 
@@ -169,11 +231,12 @@ public class RTable extends ViewPart {
 
 			public void widgetDefaultSelected(SelectionEvent e) {
 				grid = (Grid) e.item.getData();
+				updateUndoRedo();
 			}
 
 			public void widgetSelected(SelectionEvent e) {
 				grid = (Grid) e.item.getData();
-
+				updateUndoRedo();
 			}
 
 		});
@@ -217,6 +280,12 @@ public class RTable extends ViewPart {
 		createActions();
 		initializeToolBar();
 		initializeMenu();
+		/* Edit > Undo/Redo and the shortcuts of the workbench (e.g., Ctrl/Cmd+Z) undo the sheet! */
+		getViewSite().getActionBars().setGlobalActionHandler(ActionFactory.UNDO.getId(), undoAction);
+		getViewSite().getActionBars().setGlobalActionHandler(ActionFactory.REDO.getId(), redoAction);
+		getViewSite().getActionBars().updateActionBars();
+		GridHistory.addListener(historyListener);
+		updateUndoRedo();
 
 	}
 
@@ -249,24 +318,13 @@ public class RTable extends ViewPart {
 
 			public void run() {
 				Grid grid = RTable.getGrid();
-				GridColumn column = null;
 				if (grid != null) {
 					Point[] sel = grid.getCellSelection();
-
-					if (sel.length == 0) {
-
-						column = new GridColumn(grid, SWT.NONE, grid.getColumnCount());
-						column.setWidth(50);
-
-					} else {
-						column = new GridColumn(RTable.getGrid(), SWT.NONE, sel[0].x);
-
-						column.setWidth(50);
-
-					}
-
-					renameColumnsSorted(grid);
-
+					int index = sel.length == 0 ? grid.getColumnCount() : sel[0].x;
+					GridHistory.of(grid).recordGrid("Add Column", () -> {
+						new GridColumn(grid, SWT.NONE, index).setWidth(50);
+						renameColumnsSorted(grid);
+					});
 				}
 			}
 		};
@@ -277,15 +335,31 @@ public class RTable extends ViewPart {
 
 			public void run() {
 				Grid grid = RTable.getGrid();
-				int sel = grid.getSelectionIndex();
 				if (grid != null) {
-					new GridItem(grid, SWT.NONE, sel);
+					int sel = grid.getSelectionIndex();
+					GridHistory.of(grid).recordGrid("Add Row", () -> new GridItem(grid, SWT.NONE, sel));
 				}
 
 			}
 		};
 		ImageDescriptor desc3 = ImageDescriptor.createFromImage(Bio7Plugin.getImageDescriptor("/icons/views/addrowaction.png").createImage());
 		addRow.setImageDescriptor(desc3);
+
+		ISharedImages images = PlatformUI.getWorkbench().getSharedImages();
+		undoAction = new Action("Undo") {
+			public void run() {
+				undo();
+			}
+		};
+		undoAction.setImageDescriptor(images.getImageDescriptor(ISharedImages.IMG_TOOL_UNDO));
+		undoAction.setDisabledImageDescriptor(images.getImageDescriptor(ISharedImages.IMG_TOOL_UNDO_DISABLED));
+		redoAction = new Action("Redo") {
+			public void run() {
+				redo();
+			}
+		};
+		redoAction.setImageDescriptor(images.getImageDescriptor(ISharedImages.IMG_TOOL_REDO));
+		redoAction.setDisabledImageDescriptor(images.getImageDescriptor(ISharedImages.IMG_TOOL_REDO_DISABLED));
 
 	}
 
@@ -306,6 +380,10 @@ public class RTable extends ViewPart {
 		toolbarManager.add(add);
 		toolbarManager.add(fromSpread);
 		toolbarManager.add(scriptAction);
+		toolbarManager.add(new Separator());
+		toolbarManager.add(undoAction);
+		toolbarManager.add(redoAction);
+		toolbarManager.add(new Separator());
 		toolbarManager.add(addSpread);
 		toolbarManager.add(addColumn);
 		toolbarManager.add(addRow);
@@ -315,6 +393,7 @@ public class RTable extends ViewPart {
 	}
 
 	public void dispose() {
+		GridHistory.removeListener(historyListener);
 		instance = null;
 		super.dispose();
 	}

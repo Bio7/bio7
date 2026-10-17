@@ -74,6 +74,8 @@ public class TransferVectorToGridJob extends UIJob {
 		int tabs = RTable.getTabFolder().getItemCount();
 
 		if (tabs > 0) {
+			/* The vector is written into the selected sheet: not undoable, the history is cleared! */
+			GridHistory.clear(grid);
 
 			int colCount = grid.getColumnCount();
 			int rowCount = grid.getItemCount();

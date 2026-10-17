@@ -63,6 +63,17 @@ public class EditAction extends Action implements IMenuCreator {
 			fMenu.dispose();
 		}
 		fMenu = new Menu(parent);
+		/* Undo and redo of the selected sheet (see GridHistory)! */
+		GridHistory history = GridHistory.of(RTable.getGrid());
+		MenuItem menuUndo = new MenuItem(fMenu, SWT.PUSH);
+		menuUndo.setText(history != null && history.canUndo() ? "&Undo " + history.getUndoLabel() : "&Undo");
+		menuUndo.setEnabled(history != null && history.canUndo());
+		menuUndo.addListener(SWT.Selection, e -> RTable.undo());
+		MenuItem menuRedo = new MenuItem(fMenu, SWT.PUSH);
+		menuRedo.setText(history != null && history.canRedo() ? "&Redo " + history.getRedoLabel() : "&Redo");
+		menuRedo.setEnabled(history != null && history.canRedo());
+		menuRedo.addListener(SWT.Selection, e -> RTable.redo());
+		new MenuItem(fMenu, SWT.SEPARATOR);
 		MenuItem menuCut = new MenuItem(fMenu, SWT.PUSH);
 
 		menuCut.setText("&Cut\tCtrl+ t");
@@ -228,12 +239,13 @@ public class EditAction extends Action implements IMenuCreator {
 				if (grid != null) {
 
 					Point[] sel = grid.getCellSelection();
-					int temp = 0;
-					for (Point selection : sel) {
-						fontRegistry.put("font", new FontData[] { new FontData(newFont.getName(), newFont.getHeight(), newFont.getStyle()) });
-						grid.getItem(selection.y).setFont(selection.x, fontRegistry.get("font"));
-						grid.getItem(selection.y).setForeground(selection.x, new Color(Display.getCurrent(), fd.getRGB()));
-					}
+					GridHistory.of(grid).recordCells("Font", java.util.Arrays.asList(sel), () -> {
+						for (Point selection : sel) {
+							fontRegistry.put("font", new FontData[] { new FontData(newFont.getName(), newFont.getHeight(), newFont.getStyle()) });
+							grid.getItem(selection.y).setFont(selection.x, fontRegistry.get("font"));
+							grid.getItem(selection.y).setForeground(selection.x, new Color(Display.getCurrent(), fd.getRGB()));
+						}
+					});
 
 				}
 			}
@@ -271,16 +283,11 @@ public class EditAction extends Action implements IMenuCreator {
 				if (grid != null) {
 
 					Point[] sel = grid.getCellSelection();
-					int temp = 0;
-
-					for (Point selection : sel) {
-
-						if (color != null) {
-
+					GridHistory.of(grid).recordCells("Background Colour", java.util.Arrays.asList(sel), () -> {
+						for (Point selection : sel) {
 							grid.getItem(selection.y).setBackground(selection.x, colorRegistry.get(colorAsString));
-
 						}
-					}
+					});
 				}
 			}
 
@@ -331,7 +338,13 @@ public class EditAction extends Action implements IMenuCreator {
 		menuResizeSelCell.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
-				new ResizeDialog(Util.getShell()).open();
+				/* The dialog resizes the cells while it is open: one undoable step for the whole dialog! */
+				GridHistory history = GridHistory.of(RTable.getGrid());
+				if (history != null) {
+					history.recordGrid("Resize Cells", () -> new ResizeDialog(Util.getShell()).open());
+				} else {
+					new ResizeDialog(Util.getShell()).open();
+				}
 
 			}
 

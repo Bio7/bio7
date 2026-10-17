@@ -126,6 +126,8 @@ public class Bio7Grid {
 	public static void setValues(final String[][] val) {
 		final Grid grid = RTable.getGrid();
 		if (grid != null) {
+			/* Not undoable: the undo history of the sheet is cleared (ignored while a step is recorded)! */
+			GridHistory.clear(grid);
 			Display display = PlatformUI.getWorkbench().getDisplay();
 			display.syncExec(new Runnable() {
 				public void run() {
@@ -176,6 +178,8 @@ public class Bio7Grid {
 		final Grid grid = RTable.getGrid();
 
 		if (grid != null) {
+			/* Not undoable: the undo history of the sheet is cleared (ignored while a step is recorded)! */
+			GridHistory.clear(grid);
 			Display display = PlatformUI.getWorkbench().getDisplay();
 			display.syncExec(new Runnable() {
 				public void run() {
@@ -269,6 +273,8 @@ public class Bio7Grid {
 	public static void setColor(final int row, final int column, final int r, final int g, final int b) {
 		final Grid grid = RTable.getGrid();
 		if (grid != null) {
+			/* Not undoable: the undo history of the sheet is cleared (ignored while a step is recorded)! */
+			GridHistory.clear(grid);
 			Display display = PlatformUI.getWorkbench().getDisplay();
 			display.syncExec(new Runnable() {
 				public void run() {
@@ -322,6 +328,8 @@ public class Bio7Grid {
 	public static void createRow(final int index, final int height) {
 		final Grid grid = RTable.getGrid();
 		if (grid != null) {
+			/* Not undoable: the undo history of the sheet is cleared (ignored while a step is recorded)! */
+			GridHistory.clear(grid);
 			Display display = PlatformUI.getWorkbench().getDisplay();
 			display.syncExec(new Runnable() {
 				public void run() {
@@ -348,6 +356,8 @@ public class Bio7Grid {
 	public static void createColumn(final int index, final int width, final String titel) {
 		final Grid grid = RTable.getGrid();
 		if (grid != null) {
+			/* Not undoable: the undo history of the sheet is cleared (ignored while a step is recorded)! */
+			GridHistory.clear(grid);
 			Display display = PlatformUI.getWorkbench().getDisplay();
 			display.syncExec(new Runnable() {
 				public void run() {
@@ -375,6 +385,8 @@ public class Bio7Grid {
 	public static void setImage(final int row, final int column, final Image image) {
 		final Grid grid = RTable.getGrid();
 		if (grid != null) {
+			/* Not undoable: the undo history of the sheet is cleared (ignored while a step is recorded)! */
+			GridHistory.clear(grid);
 			Display display = PlatformUI.getWorkbench().getDisplay();
 			display.syncExec(new Runnable() {
 				public void run() {

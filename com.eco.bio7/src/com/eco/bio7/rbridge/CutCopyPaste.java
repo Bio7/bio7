@@ -1,5 +1,8 @@
 package com.eco.bio7.rbridge;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import org.eclipse.nebula.widgets.grid.Grid;
@@ -21,7 +24,7 @@ public class CutCopyPaste {
 	public void cut() {
 
 		copy();
-		delete();
+		delete("Cut");
 
 	}
 
@@ -50,11 +53,14 @@ public class CutCopyPaste {
 		ImageData imageData = (ImageData) cb.getContents(ImageTransfer.getInstance());
 		int plusC = Spread.getSelectedColumnMin();
 		int plusR = Spread.getSelectedRowMin();
-		if (imageData != null) {
+		if (imageData != null && grid != null && plusR < grid.getItemCount() && plusC < grid.getColumnCount()) {
 			Image im = new Image(Display.getDefault(), imageData);
-			grid.getItem(plusR).setImage(plusC, im);
-			grid.getItem(plusR).setHeight(imageData.height);
-			grid.getColumn(plusC).setWidth(imageData.width);
+			/* The image changes the size of the row and the column: a snapshot step! */
+			GridHistory.of(grid).recordGrid("Paste Image", () -> {
+				grid.getItem(plusR).setImage(plusC, im);
+				grid.getItem(plusR).setHeight(imageData.height);
+				grid.getColumn(plusC).setWidth(imageData.width);
+			});
 
 		}
 	}
@@ -138,13 +144,7 @@ public class CutCopyPaste {
 		if (grid != null) {
 			TextTransfer transfer = TextTransfer.getInstance();
 
-			// ImageData imageData = (ImageData)
-			// cb.getContents(ImageTransfer.getInstance());
-
 			String data = (String) cb.getContents(transfer);
-
-			String rowstring;
-			String value;
 
 			if (data == null) {
 				data = " ";
@@ -152,33 +152,39 @@ public class CutCopyPaste {
 			StringTokenizer st1 = new StringTokenizer(data, System.getProperty("line.separator"));
 			int plusC = Spread.getSelectedColumnMin();
 			int plusR = Spread.getSelectedRowMin();
-
+			/* The pasted cells (x = column, y = row) and their values! */
+			List<Point> cells = new ArrayList<Point>();
+			List<String> values = new ArrayList<String>();
+			boolean grows = false;
 			for (int i = 0; st1.hasMoreTokens(); i++) {
-				rowstring = st1.nextToken();
-				StringTokenizer st2 = new StringTokenizer(rowstring, "\t");
+				StringTokenizer st2 = new StringTokenizer(st1.nextToken(), "\t");
 				for (int j = 0; st2.hasMoreTokens(); j++) {
-					value = (String) st2.nextToken();
-					// System.out.println("y:"+i+" x:"+j+" value:"+value);
-					int row = i + plusR;
-					int column = j + plusC;
-					if (row < grid.getItemCount() && column < grid.getColumnCount()) {
-						grid.getItem(row).setText(column, value);
+					Point cell = new Point(j + plusC, i + plusR);
+					cells.add(cell);
+					values.add(st2.nextToken());
+					if (cell.y >= grid.getItemCount() || cell.x >= grid.getColumnCount()) {
+						grows = true;
 					}
-					/* Create row or columns if grid is to small! */
-					else {
-
-						if (row >= grid.getItemCount()) {
-							Bio7Grid.createRow(row, grid.getItemHeight());
-
-						}
-
-						else if (column >= grid.getColumnCount()) {
-							Bio7Grid.createColumn(column, 50, "C" + (column + 1));
-						}
-						grid.getItem(row).setText(column, value);
-					}
-
 				}
+			}
+			Runnable paste = () -> {
+				for (int k = 0; k < cells.size(); k++) {
+					Point cell = cells.get(k);
+					/* Create rows or columns if the grid is too small! */
+					while (cell.y >= grid.getItemCount()) {
+						Bio7Grid.createRow(grid.getItemCount(), grid.getItemHeight());
+					}
+					while (cell.x >= grid.getColumnCount()) {
+						Bio7Grid.createColumn(grid.getColumnCount(), 50, "C" + (grid.getColumnCount() + 1));
+					}
+					grid.getItem(cell.y).setText(cell.x, values.get(k));
+				}
+			};
+			/* Only the pasted cells are stored, a snapshot if the grid grows! */
+			if (grows) {
+				GridHistory.of(grid).recordGrid("Paste", paste);
+			} else {
+				GridHistory.of(grid).recordCells("Paste", cells, paste);
 			}
 
 		}
@@ -186,25 +192,26 @@ public class CutCopyPaste {
 	}
 
 	public void delete() {
+		delete("Delete");
+	}
+
+	private void delete(String label) {
 		Grid grid = RTable.getGrid();
 
 		if (grid != null) {
 			Point[] sel = grid.getCellSelection();
-
-			int temp = sel[0].y;
-			for (Point selection : sel) {
-
-				grid.getItem(selection.y);
-				grid.getColumn(selection.x);
-				if (selection.y > temp) {
-
-					temp = selection.y;
-				}
-
-				grid.getItem(selection.y).setText(selection.x, "");
-				grid.getItem(selection.y).setImage(selection.x, null);
-
+			if (sel == null || sel.length == 0) {
+				return;
 			}
+			GridHistory.of(grid).recordCells(label, Arrays.asList(sel), () -> {
+				for (Point selection : sel) {
+					grid.getItem(selection.y).setText(selection.x, "");
+					/* Only if there is an image: the first setImage call of a grid computes the row heights again! */
+					if (grid.getItem(selection.y).getImage(selection.x) != null) {
+						grid.getItem(selection.y).setImage(selection.x, null);
+					}
+				}
+			});
 
 		}
 
