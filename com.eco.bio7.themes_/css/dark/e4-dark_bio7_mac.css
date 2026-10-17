@@ -18,12 +18,13 @@
 #com-eco-bio7-browser-Browser.MToolBar,
 #org-eclipse-ui-console-ConsoleView.MToolBar,
 #org-eclipse-ui-views-ContentOutline.MToolBar {
-	background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+	/* The view tool bars are in the tab row (see e4-dark_bio7.css)! */
+	background-color: '#org-eclipse-ui-workbench-ACTIVE_UNSELECTED_TABS_COLOR_START';
 	font-size: 14px;
 }
 
 #com-eco-bio7-ijmacro-editor-toolbar-debug.MToolBar {
-	background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+	background-color: '#org-eclipse-ui-workbench-ACTIVE_UNSELECTED_TABS_COLOR_START';
 	font-size: 14px;
 }
 
@@ -42,8 +43,8 @@
 /*
  * The view menu toolbar in the tab row of a view (CTabFolder top right) is transparent and a
  * line of the tab folder is drawn through the view menu icon. The color of the tab folder
- * (DARK_BACKGROUND, #1E1E1E) has no effect, so a nearly identical color is used!
+ * (DARK_BACKGROUND, #1E1E1E) has no effect, so the color of the tab row is used!
  */
 CTabFolder ToolBar {
-	background-color: #1F1F1F;
+	background-color: '#org-eclipse-ui-workbench-ACTIVE_UNSELECTED_TABS_COLOR_START';
 }

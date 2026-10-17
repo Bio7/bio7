@@ -26,13 +26,16 @@ ColorDefinition#org-eclipse-ui-workbench-DARK_FOREGROUND {
 	color: #dddddd;
 }
 
-/* The Bio7 tabs (the selected tab has the background of the views)! */
+/*
+ * The Bio7 tabs, like in the default theme: the selected tab has the background of the views,
+ * the tab row is slightly lighter (no highlight line, see below)!
+ */
 ColorDefinition#org-eclipse-ui-workbench-INACTIVE_UNSELECTED_TABS_COLOR_START {
-	color: #1E1E1E;
+	color: #252526;
 }
 
 ColorDefinition#org-eclipse-ui-workbench-INACTIVE_UNSELECTED_TABS_COLOR_END {
-	color: #1E1E1E;
+	color: #252526;
 }
 
 ColorDefinition#org-eclipse-ui-workbench-INACTIVE_TAB_BG_START {
@@ -44,11 +47,11 @@ ColorDefinition#org-eclipse-ui-workbench-INACTIVE_TAB_BG_END {
 }
 
 ColorDefinition#org-eclipse-ui-workbench-ACTIVE_UNSELECTED_TABS_COLOR_START {
-	color: #1E1E1E;
+	color: #252526;
 }
 
 ColorDefinition#org-eclipse-ui-workbench-ACTIVE_UNSELECTED_TABS_COLOR_END {
-	color: #1E1E1E;
+	color: #252526;
 }
 
 ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_BG_START {
@@ -133,6 +136,21 @@ ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_SELECTED_TEXT_COLOR 
 
 Shell Tree, Shell Table, Shell List {
 	background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+}
+
+/*
+ * A subtle selected tab like in the default theme: the highlight line (white or blue at the edge
+ * of the selected tab) gets the color of the selected tab and is not visible. The selected tab is
+ * marked by its background (the background of the view) and the outline!
+ */
+.MPartStack,
+.MPartStack.active,
+.MPartStack CTabFolder[style~='SWT.DOWN'][style~='SWT.BOTTOM'],
+.MPartStack.active CTabFolder[style~='SWT.DOWN'][style~='SWT.BOTTOM'],
+#org-eclipse-ui-editorss CTabFolder,
+#org-eclipse-ui-editorss CTabFolder.active {
+	swt-selected-tab-highlight: #1E1E1E;
+	swt-unselected-hot-tab-color-background: #2D2D2E;
 }
 
 /* The Bio7 editor background (see e4-dark_preferencestyle.css)! */
@@ -278,12 +296,20 @@ StyledText {
 }
 
 #com-eco-bio7-thumbnails,
-#com-eco-bio7-thumbnails Label,
+#com-eco-bio7-thumbnails Label {
+	background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+	color: #dddddd;
+}
+
+/* The view tool bars are in the tab row and have its color (see the tabs above)! */
+CTabFolder Composite.ToolbarComposite,
 #com-eco-bio7-thumbnails.MToolBar,
 #com-eco-bio7-thumbnails.MToolBar Label,
 #com-eco-bio7-browser-Browser.MToolBar,
 #com-eco-bio7-browser-Browser.MToolBar Label,
+#com-eco-bio7-rbridge-RTable.MToolBar,
+#com-eco-bio7-imagej.MToolBar,
 #org-eclipse-ui-console-ConsoleView.MToolBar {
-	background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+	background-color: '#org-eclipse-ui-workbench-ACTIVE_UNSELECTED_TABS_COLOR_START';
 	color: #dddddd;
 }
