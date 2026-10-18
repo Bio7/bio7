@@ -105,6 +105,7 @@ public class IJtoolbar extends ViewPart {
 		setColors(ijComposite, background, foreground);
 		ijComposite.redraw();
 		ijComposite.update();
+		Bio7ImageJ.setTextColors(background.getRGB(), foreground.getRGB());
 	}
 
 	/*
