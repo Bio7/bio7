@@ -62,6 +62,11 @@ public final class ThemeStore {
 	private static final long MAX_SIZE = 20L * 1024 * 1024;
 	/* The example themes in this plugin! */
 	private static final String EXAMPLES = "themes/examples/";
+	/*
+	 * The version of the example themes: an example of an older version is
+	 * installed again if it has not been changed by the user!
+	 */
+	private static final int EXAMPLES_VERSION = 2;
 
 	private static final Set<String> REGISTERED = new HashSet<String>();
 	private static boolean listening;
@@ -485,10 +490,15 @@ public final class ThemeStore {
 		while (paths.hasMoreElements()) {
 			String path = paths.nextElement();
 			String folder = path.substring(EXAMPLES.length()).replace("/", "");
-			if (folder.isEmpty() || store.getBoolean("THEME_EXAMPLE_INSTALLED." + folder)) {
+			if (folder.isEmpty() || store.getInt("THEME_EXAMPLE_VERSION." + folder) >= EXAMPLES_VERSION) {
 				continue;
 			}
 			File dir = new File(folder(), folder);
+			if (store.getBoolean("THEME_EXAMPLE_INSTALLED." + folder) && !unchangedExample(dir, store.getString("THEME_EXAMPLE_SIGNATURE." + folder))) {
+				/* Changed by the user (or deleted): not installed again! */
+				store.setValue("THEME_EXAMPLE_VERSION." + folder, EXAMPLES_VERSION);
+				continue;
+			}
 			Enumeration<String> files = bundle.getEntryPaths(path);
 			if (files == null) {
 				continue;
@@ -505,14 +515,35 @@ public final class ThemeStore {
 			}
 			try {
 				/* Writes the stylesheet (for the operating system)! */
-				save(CustomTheme.load(dir));
+				CustomTheme theme = CustomTheme.load(dir);
+				save(theme);
+				store.setValue("THEME_EXAMPLE_SIGNATURE." + folder, theme.signature());
 			} catch (IOException e) {
 				deleteTree(dir);
 				continue;
 			}
 			store.setValue("THEME_EXAMPLE_INSTALLED." + folder, true);
+			store.setValue("THEME_EXAMPLE_VERSION." + folder, EXAMPLES_VERSION);
 		}
 		flush();
+	}
+
+	/*
+	 * True if the installed example is unchanged. The examples of the first version
+	 * have no signature (installed again, the themes were new in this version)!
+	 */
+	private static boolean unchangedExample(File dir, String signature) {
+		if (!dir.isDirectory()) {
+			return false;
+		}
+		if (signature.isEmpty()) {
+			return true;
+		}
+		try {
+			return CustomTheme.load(dir).signature().equals(signature);
+		} catch (IOException e) {
+			return false;
+		}
 	}
 
 	private static void deleteTree(File file) {

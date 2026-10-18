@@ -42,8 +42,8 @@ public class CustomTheme {
 
 	/** The color slots (key, label). */
 	public static final String[][] SLOTS = { { "background", "Window background" }, { "viewBackground", "View background" },
-			{ "text", "Text" }, { "tabRow", "Tab row" }, { "tabSelected", "Selected tab" }, { "tabText", "Tab text" },
-			{ "tabSelectedText", "Selected tab text" }, { "tabBorder", "Tab border" }, { "toolbarTop", "Toolbar (top)" },
+			{ "panelBackground", "View panels" }, { "text", "Text" }, { "tabRow", "Tab row" }, { "tabSelected", "Selected tab" },
+			{ "tabText", "Tab text" }, { "tabSelectedText", "Selected tab text" }, { "tabBorder", "Tab border" }, { "toolbarTop", "Toolbar (top)" },
 			{ "toolbarBottom", "Toolbar (bottom)" }, { "toolbarText", "Toolbar text" }, { "statusBar", "Status bar" },
 			{ "iconColor", "Icon color" }, { "iconDetail", "Icon detail color" } };
 
@@ -81,6 +81,7 @@ public class CustomTheme {
 		if (dark) {
 			put("background", "1e1e1e");
 			put("viewBackground", "1e1e1e");
+			put("panelBackground", "1e1e1e");
 			put("text", "dddddd");
 			put("tabRow", "252526");
 			put("tabSelected", "1e1e1e");
@@ -96,9 +97,11 @@ public class CustomTheme {
 		} else {
 			put("background", "ffffff");
 			put("viewBackground", "ffffff");
+			put("panelBackground", "f4f4f4");
 			put("text", "000000");
 			put("tabRow", "eeeeee");
-			put("tabSelected", "ffffff");
+			/* The selected tab has the color of the view panel (like the dark theme)! */
+			put("tabSelected", "f4f4f4");
 			put("tabText", "333333");
 			put("tabSelectedText", "000000");
 			put("tabBorder", "b6bccc");
@@ -156,6 +159,20 @@ public class CustomTheme {
 
 	public void setDark(boolean dark) {
 		this.dark = dark;
+	}
+
+	/*
+	 * The view panels (composites and labels of the views) of a dark theme have the
+	 * view background, of a light theme a tint between the window background and
+	 * the tab row (white panels look empty, like in the Bio7 light theme)!
+	 */
+	private RGB defaultPanelBackground() {
+		RGB view = colors.get("viewBackground");
+		if (dark) {
+			return view;
+		}
+		RGB a = colors.get("background"), b = colors.get("tabRow");
+		return new RGB((a.red + b.red) / 2, (a.green + b.green) / 2, (a.blue + b.blue) / 2);
 	}
 
 	public RGB getColor(String key) {
@@ -243,6 +260,19 @@ public class CustomTheme {
 
 	public void save(File dir) throws IOException {
 		dir.mkdirs();
+		Properties p = toProperties();
+		try (OutputStream out = Files.newOutputStream(new File(dir, PROPERTIES).toPath())) {
+			p.store(out, "Bio7 theme");
+		}
+		Files.writeString(new File(dir, CSS).toPath(), toCss());
+	}
+
+	/** The settings of the theme (sorted, without the date of the file), e.g., to detect changes. */
+	public String signature() {
+		return new java.util.TreeMap<Object, Object>(toProperties()).toString();
+	}
+
+	private Properties toProperties() {
 		Properties p = new Properties();
 		p.setProperty("name", name);
 		p.setProperty("author", author);
@@ -257,10 +287,7 @@ public class CustomTheme {
 		p.setProperty("artwork.fade", fade);
 		p.setProperty("artwork.fadeWidth", Integer.toString(fadeWidth));
 		p.setProperty("toolbar.style", style);
-		try (OutputStream out = Files.newOutputStream(new File(dir, PROPERTIES).toPath())) {
-			p.store(out, "Bio7 theme");
-		}
-		Files.writeString(new File(dir, CSS).toPath(), toCss());
+		return p;
 	}
 
 	public static CustomTheme load(File dir) throws IOException {
@@ -277,6 +304,10 @@ public class CustomTheme {
 			if (v != null && v.matches("#?[0-9a-fA-F]{6}")) {
 				t.colors.put(slot[0], parse(v));
 			}
+		}
+		if (p.getProperty("color.panelBackground") == null) {
+			/* A theme of an older version (the view panels were the view background)! */
+			t.colors.put("panelBackground", t.defaultPanelBackground());
 		}
 		String art = p.getProperty("artwork", "");
 		/* Only a file in the theme folder (no paths)! */
@@ -367,15 +398,37 @@ public class CustomTheme {
 		rule(css, ".MPartStack,\n.MPartStack.active,\n.MPartStack.active.noFocus",
 				"swt-unselected-tabs-color: " + c("tabRow") + ";\n\tswt-selected-tab-fill: " + c("tabSelected") + " " + c("tabSelected")
 						+ " 100% 100%;\n\tswt-outer-keyline-color: " + c("tabBorder") + ";\n\tswt-tab-outline: " + c("tabBorder") + ";");
+		/* The selected editor tab has the color of the editors (the view background)! */
 		rule(css, "#org-eclipse-ui-editorss CTabFolder,\n#org-eclipse-ui-editorss CTabFolder.active",
-				"swt-selected-tab-fill: " + c("tabSelected") + ";\n\tswt-selected-tab-highlight: " + c("tabSelected")
+				"swt-selected-tab-fill: " + c("viewBackground") + ";\n\tswt-selected-tab-highlight: " + c("viewBackground")
 						+ ";\n\tswt-unselected-tabs-color: " + c("tabRow") + ";");
 		rule(css, "CTabItem", "color: " + c("tabText") + ";");
-		rule(css, "CTabItem:selected", "color: " + c("tabSelectedText") + ";");
+		/* The selected tab of the tab folders in the views (the base themes: a grey gradient)! */
+		rule(css, "CTabItem:selected", "background-color: " + c("tabSelected") + ";\n\tcolor: " + c("tabSelectedText") + ";");
+		/*
+		 * The background of a tab item of a view is the background of the tab row (the
+		 * base themes: ".View"). After "CTabItem:selected" (the same specificity)!
+		 */
+		rule(css, "CTabItem.MPart", "background-color: " + c("tabRow") + ";");
+		/* The tab folders in the views (e.g., the options of the views)! */
+		rule(css, ".MPart CTabFolder", "background-color: " + c("tabRow") + ";\n\tcolor: " + c("tabText") + ";");
 		/* The view tool bars in the tab rows! */
 		rule(css, "CTabFolder ToolBar,\nCTabFolder .MToolBar,\n.MPartStack .MToolBar", "background-color: " + c("tabRow") + ";");
-		rule(css, ".MPart,\n.MPart Composite,\n.MPart Tree,\n.MPart Table,\n.MPart List,\n.MPart Label,\n.MPart Grid",
-				"background-color: " + c("viewBackground") + ";\n\tcolor: " + c("text") + ";");
+		/* The tool bars of views with an own color in the base themes (more specific selectors)! */
+		rule(css, "#org-eclipse-ui-console-ConsoleView.MToolBar,\n#com-eco-bio7-browser-Browser.MToolBar,\n"
+				+ "#com-eco-bio7-browser-Browser.MToolBar Label,\n#com-eco-bio7-imagej.MToolBar,\n#com-eco-bio7-thumbnails.MToolBar,\n"
+				+ "#com-eco-bio7-thumbnails.MToolBar Label,\n#com-eco-bio7-rbridge-RTable.MToolBar,\nComposite #com-eco-bio7-rbridge-RTable.MToolBar,\n"
+				+ "#com-eco-bio7-rbridge-RTable.MToolBar Label,\n#org-eclipse-ui-views-ContentOutline.MToolBar,\n"
+				+ "#com-eco-bio7-ijmacro-editor-toolbar-debug.MToolBar", "background-color: " + c("tabRow") + ";");
+		/*
+		 * Not ".MPart": the tab items have the classes of their parts and the
+		 * background of a tab item is the background of the tab row (white tab rows)!
+		 */
+		rule(css, "Composite.MPart,\n.MPart Composite,\n.MPart Label,\n.MPart CLabel,\n.MPart Group,\n.MPart Link,\n"
+				+ ".MPart Sash,\n.MPart SashForm,\n.MPart ScrolledComposite,\n.MPart Canvas,\n.MPart Form,\n.MPart ScrolledForm,\n"
+				+ ".MPart Section,\n.MPart ViewForm", "background-color: " + c("panelBackground") + ";\n\tcolor: " + c("text") + ";");
+		/* The content of the views (lists, trees, tables)! */
+		rule(css, ".MPart Tree,\n.MPart Table,\n.MPart List,\n.MPart Grid", "background-color: " + c("viewBackground") + ";\n\tcolor: " + c("text") + ";");
 		/*
 		 * The main toolbar (the gradient and the artwork are painted over it)! All
 		 * selectors of the base stylesheets with a gradient get a plain color: a CSS

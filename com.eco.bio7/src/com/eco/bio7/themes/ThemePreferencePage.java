@@ -536,6 +536,13 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		gc.fillRectangle(5, tabY + 4 + tabH, size.x - 10, size.y - tabY - tabH - 10);
 		gc.setForeground(color(t.getColor("text")));
 		gc.drawText("x <- rnorm(100)   # The text of a view", 14, tabY + tabH + 12, true);
+		/* The panel of a view (e.g., with buttons and labels)! */
+		int panelY = tabY + tabH + 12 + gc.getFontMetrics().getHeight() + 8;
+		if (panelY < size.y - 10) {
+			gc.setBackground(color(t.getColor("panelBackground")));
+			gc.fillRectangle(5, panelY, size.x - 10, size.y - panelY - 5);
+			gc.drawText("View panel", 14, panelY + 4, true);
+		}
 	}
 
 	private Color color(RGB rgb) {
