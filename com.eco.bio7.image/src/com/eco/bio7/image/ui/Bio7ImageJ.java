@@ -19,9 +19,12 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -81,7 +84,47 @@ public class Bio7ImageJ implements ImageJHost, ImageListener {
 			/* The ImageJ shell is never shown. Bio7 displays toolbar and menus! */
 			new ImageJ(ImageJ.NO_SHOW);
 		}
+		if (Util.isThemeBlack()) {
+			/* Until the ImageJ-Toolbar view sets the colors of the theme! */
+			setTextColors(new RGB(30, 30, 30), new RGB(220, 220, 220));
+		}
 		setCompilerTarget();
+	}
+
+	/**
+	 * Sets the background and text colors which SWTImageJ uses for the text
+	 * windows (e.g., the Results table) and the progress bar, e.g., the colors of
+	 * the Bio7 theme. Open text windows are painted again.
+	 */
+	public static void setTextColors(RGB background, RGB foreground) {
+		/*
+		 * A view without a text color of the theme has the system text color (e.g.,
+		 * white in the dark mode of macOS with a light Bio7 theme)!
+		 */
+		if (Math.abs(luminance(background) - luminance(foreground)) < 100) {
+			foreground = luminance(background) < 128 ? new RGB(230, 230, 230) : new RGB(0, 0, 0);
+		}
+		ij.swt.Color.backGround = new org.eclipse.swt.graphics.Color(background);
+		ij.swt.Color.foreGround = new org.eclipse.swt.graphics.Color(foreground);
+		for (Shell shell : Util.getDisplay().getShells()) {
+			redrawTextPanels(shell);
+		}
+	}
+
+	private static double luminance(RGB c) {
+		return 0.299 * c.red + 0.587 * c.green + 0.114 * c.blue;
+	}
+
+	private static void redrawTextPanels(Composite parent) {
+		for (Control child : parent.getChildren()) {
+			/* The canvas of a text window (not public in SWTImageJ)! */
+			if ("ij.text.TextCanvas".equals(child.getClass().getName())) {
+				child.redraw();
+			}
+			if (child instanceof Composite) {
+				redrawTextPanels((Composite) child);
+			}
+		}
 	}
 
 	/*
