@@ -2,6 +2,7 @@ package com.eco.bio7.floweditor.shapes;
 
 import java.util.function.Function;
 
+import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
@@ -21,13 +22,20 @@ import org.eclipse.gef.ui.actions.MatchHeightRetargetAction;
 import org.eclipse.gef.ui.actions.MatchWidthRetargetAction;
 import org.eclipse.gef.ui.actions.RedoRetargetAction;
 import org.eclipse.gef.ui.actions.UndoRetargetAction;
-import org.eclipse.gef.ui.actions.ZoomComboContributionItem;
 import org.eclipse.gef.ui.actions.ZoomInRetargetAction;
 import org.eclipse.gef.ui.actions.ZoomOutRetargetAction;
 
 public class FlowContributor extends ActionBarContributor {
 
+	/* The zoom levels of the active editor in the tool bar! */
+	private final ZoomDropDownAction zoomLevels = new ZoomDropDownAction();
+
 	public FlowContributor() {
+	}
+
+	public void dispose() {
+		zoomLevels.dispose();
+		super.dispose();
 	}
 
 	protected void buildActions() {
@@ -67,6 +75,7 @@ public class FlowContributor extends ActionBarContributor {
 
 	public void setActiveEditor(IEditorPart editor) {
 		super.setActiveEditor(editor);
+		zoomLevels.setZoomManager(editor == null ? null : editor.getAdapter(ZoomManager.class));
 		/* Undo and redo take the images of the actions of the editor! */
 		setBio7Icons();
 	}
@@ -134,9 +143,13 @@ public class FlowContributor extends ActionBarContributor {
 		tbm.add(getAction(GEFActionConstants.MATCH_HEIGHT));
 
 		tbm.add(new Separator());
-		String[] zoomStrings = new String[] { ZoomManager.FIT_ALL,
-				ZoomManager.FIT_HEIGHT, ZoomManager.FIT_WIDTH };
-		tbm.add(new ZoomComboContributionItem(getPage(), zoomStrings));
+		/*
+		 * The zoom levels as drop down button (a native combo in the main tool bar
+		 * shifts the gradient of the tool bar on macOS)!
+		 */
+		ActionContributionItem zoomItem = new ActionContributionItem(zoomLevels);
+		zoomItem.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+		tbm.add(zoomItem);
 		tbm.add(getActionRegistry().getAction(GEFActionConstants.ZOOM_IN));
 		tbm.add(getActionRegistry().getAction(GEFActionConstants.ZOOM_OUT));
 
