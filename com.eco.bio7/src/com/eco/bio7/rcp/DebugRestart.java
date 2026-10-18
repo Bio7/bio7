@@ -161,6 +161,21 @@ public final class DebugRestart {
 	 * mode. Called when the workbench has already been closed.
 	 */
 	public static void relaunchAfterExit() {
+		/*
+		 * Started from the Eclipse IDE (development mode): the launcher of the IDE does
+		 * not know the launch configuration, so the same command is started again!
+		 */
+		if (System.getProperty("osgi.dev") != null) {
+			List<String> command = currentCommand();
+			if (command != null) {
+				try {
+					startHelper(ProcessHandle.current().pid(), command);
+					return;
+				} catch (IOException e) {
+					System.err.println("[Bio7] Restart not possible: " + e.getMessage());
+				}
+			}
+		}
 		String launcher = System.getProperty("eclipse.launcher");
 		if (launcher == null || !new File(launcher).canExecute()) {
 			System.err.println("[Bio7] Restart not possible, the launcher was not found: " + launcher);
@@ -171,6 +186,20 @@ public final class DebugRestart {
 		} catch (IOException e) {
 			System.err.println("[Bio7] Restart not possible: " + e.getMessage());
 		}
+	}
+
+	/* The command line of this process (Java, arguments of the JVM and of the application) or null! */
+	private static List<String> currentCommand() {
+		ProcessHandle.Info info = ProcessHandle.current().info();
+		if (info.command().isEmpty() || info.arguments().isEmpty()) {
+			return null;
+		}
+		List<String> command = new ArrayList<String>();
+		command.add(info.command().get());
+		for (String argument : info.arguments().get()) {
+			command.add(argument);
+		}
+		return command;
 	}
 
 	private static List<String> relaunchCommand(String launcher, String vmArgument) {

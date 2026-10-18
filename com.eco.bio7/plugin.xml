@@ -524,9 +524,14 @@
             name="Preferences R"/>
       <page
             category="com.eco.bio7.preferences.Bio7PreferencePage"
+            class="com.eco.bio7.themes.ThemePreferencePage"
+            id="com.eco.bio7.themes.ThemePreferencePage"
+            name="Preferences Appearance"/>
+      <page
+            category="com.eco.bio7.preferences.Bio7PreferencePage/com.eco.bio7.themes.ThemePreferencePage"
             class="com.eco.bio7.preferences.IconColorPreferences"
             id="com.eco.bio7.preferences.IconColorPreferences"
-            name="Preferences Icons"/>
+            name="Icons"/>
       <page
             category="com.eco.bio7.preferences.Bio7PreferencePage"
             class="com.eco.bio7.preferences.Bio7PaintPreferences"

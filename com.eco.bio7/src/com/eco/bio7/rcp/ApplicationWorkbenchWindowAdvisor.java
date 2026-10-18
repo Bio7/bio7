@@ -259,6 +259,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				isArch = false;
 			}
 		}
+		/* The custom themes (registered, the theme of the last session is activated)! */
+		try {
+			com.eco.bio7.themes.ThemeStore.startup();
+		} catch (Throwable e) {
+			/* The Bio7 default themes are not affected! */
+			e.printStackTrace();
+		}
 		/* The icons of the views, perspectives, toolbars and menus with the icon color of the preferences! */
 		try {
 			IconColorModel.install(PlatformUI.getWorkbench());
