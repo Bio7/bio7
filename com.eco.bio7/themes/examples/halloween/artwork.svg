@@ -1,3 +1,52 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="120" height="30" viewBox="0 0 120 30">
-<g transform="translate(18,19)"><ellipse cx="-4.05" cy="0" rx="5.3999999999999995" ry="7.2" fill="#d9600f"/><ellipse cx="4.05" cy="0" rx="5.3999999999999995" ry="7.2" fill="#d9600f"/><ellipse cx="0" cy="0" rx="4.95" ry="7.6499999999999995" fill="#f07f1a"/><rect x="-1" y="-8.549999999999999" width="2" height="3.15" fill="#3e6b2a"/><polygon points="-4.05,-1.3499999999999999 -1.8,-1.3499999999999999 -2.88,-3.6" fill="#2a1405"/><polygon points="1.8,-1.3499999999999999 4.05,-1.3499999999999999 2.88,-3.6" fill="#2a1405"/><path d="M-4.5,1.8 L-2.25,4.05 L0,2.25 L2.25,4.05 L4.5,1.8 Z" fill="#2a1405"/></g><g transform="translate(80,21)"><ellipse cx="-3.15" cy="0" rx="4.2" ry="5.6000000000000005" fill="#d9600f"/><ellipse cx="3.15" cy="0" rx="4.2" ry="5.6000000000000005" fill="#d9600f"/><ellipse cx="0" cy="0" rx="3.8500000000000005" ry="5.95" fill="#f07f1a"/><rect x="-1" y="-6.6499999999999995" width="2" height="2.4499999999999997" fill="#3e6b2a"/><polygon points="-3.15,-1.05 -1.4000000000000001,-1.05 -2.24,-2.8000000000000003" fill="#2a1405"/><polygon points="1.4000000000000001,-1.05 3.15,-1.05 2.24,-2.8000000000000003" fill="#2a1405"/><path d="M-3.5,1.4000000000000001 L-1.75,3.15 L0,1.75 L1.75,3.15 L3.5,1.4000000000000001 Z" fill="#2a1405"/></g><g transform="translate(48,9) rotate(-8) scale(0.9)"><path d="M0,0 C-3,-4 -8,-4 -12,-1 C-10,0 -9,2 -9,3 C-7,1 -5,1 -4,3 C-3,1 -1,1 0,2 C1,1 3,1 4,3 C5,1 7,1 9,3 C9,2 10,0 12,-1 C8,-4 3,-4 0,0 Z" fill="#9b6bc2"/></g><g transform="translate(104,11) rotate(10) scale(0.75)"><path d="M0,0 C-3,-4 -8,-4 -12,-1 C-10,0 -9,2 -9,3 C-7,1 -5,1 -4,3 C-3,1 -1,1 0,2 C1,1 3,1 4,3 C5,1 7,1 9,3 C9,2 10,0 12,-1 C8,-4 3,-4 0,0 Z" fill="#9b6bc2"/></g><polygon points="36.00,22.60 36.37,23.49 37.33,23.57 36.60,24.19 36.82,25.13 36.00,24.63 35.18,25.13 35.40,24.19 34.67,23.57 35.63,23.49" fill="#f3e9b5"/><polygon points="62.00,4.60 62.37,5.49 63.33,5.57 62.60,6.19 62.82,7.13 62.00,6.63 61.18,7.13 61.40,6.19 60.67,5.57 61.63,5.49" fill="#f3e9b5"/><polygon points="94.00,24.60 94.37,25.49 95.33,25.57 94.60,26.19 94.82,27.13 94.00,26.63 93.18,27.13 93.40,26.19 92.67,25.57 93.63,25.49" fill="#f3e9b5"/><polygon points="116.00,2.60 116.37,3.49 117.33,3.57 116.60,4.19 116.82,5.13 116.00,4.63 115.18,5.13 115.40,4.19 114.67,3.57 115.63,3.49" fill="#f3e9b5"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="150" height="30" viewBox="0 0 150 30">
+<defs>
+<radialGradient id="glow"><stop offset="0" stop-color="#ffb347" stop-opacity="0.55"/><stop offset="1" stop-color="#ff7a00" stop-opacity="0"/></radialGradient>
+<radialGradient id="moonglow"><stop offset="0.6" stop-color="#f6eebf" stop-opacity="0.35"/><stop offset="1" stop-color="#f6eebf" stop-opacity="0"/></radialGradient>
+</defs>
+<!-- The pumpkin (a jack-o'-lantern with a glowing face) -->
+<g transform="translate(24,18.5)">
+<circle cx="0" cy="0" r="14" fill="url(#glow)"/>
+<ellipse cx="-5.2" cy="0.6" rx="6.4" ry="8.4" fill="#c9530c"/>
+<ellipse cx="5.2" cy="0.6" rx="6.4" ry="8.4" fill="#c9530c"/>
+<ellipse cx="-2.4" cy="0.3" rx="5" ry="8.8" fill="#e8690f"/>
+<ellipse cx="2.4" cy="0.3" rx="5" ry="8.8" fill="#e8690f"/>
+<ellipse cx="0" cy="0" rx="3.6" ry="9" fill="#f5821c"/>
+<path d="M-0.9,-8.6 C-1.2,-10.6 -0.6,-12 1.2,-12.6 L1.6,-11.6 C0.6,-11.1 0.5,-10.2 0.9,-8.6 Z" fill="#4f7a2c"/>
+<path d="M0.8,-10.4 C2.6,-12.2 4.8,-11.6 5.4,-10.2 C4,-10.8 2.6,-10.4 1.4,-9.6 Z" fill="#6b9a38"/>
+<polygon points="-5.4,-1.4 -1.8,-1.4 -3.6,-4.6" fill="#ffd34d"/>
+<polygon points="1.8,-1.4 5.4,-1.4 3.6,-4.6" fill="#ffd34d"/>
+<polygon points="-0.7,0.6 0.7,0.6 0,-0.8" fill="#ffd34d"/>
+<path d="M-6,2.2 L-4.4,4.6 L-3,3 L-1.5,5.2 L0,3.4 L1.5,5.2 L3,3 L4.4,4.6 L6,2.2 C4,6.8 -4,6.8 -6,2.2 Z" fill="#ffd34d"/>
+</g>
+<!-- The bat in front of the full moon -->
+<circle cx="72" cy="12" r="13" fill="url(#moonglow)"/>
+<circle cx="72" cy="12" r="9" fill="#f3e9b5"/>
+<circle cx="69" cy="9.5" r="1.6" fill="#e3d79c"/>
+<circle cx="75.5" cy="14.5" r="1.2" fill="#e3d79c"/>
+<circle cx="74" cy="8" r="0.8" fill="#e3d79c"/>
+<g transform="translate(72,12.5) rotate(-6)">
+<path d="M-1.4,-1 C-3.8,-4.4 -8.2,-4.6 -11,-1.4 C-9.4,-1.4 -8.8,0 -8.8,1.2 C-7.6,0.2 -6,0.3 -5.3,1.6 C-4.4,0.5 -2.9,0.6 -2,1.8 Z" fill="#120a16"/>
+<path d="M1.4,-1 C3.8,-4.4 8.2,-4.6 11,-1.4 C9.4,-1.4 8.8,0 8.8,1.2 C7.6,0.2 6,0.3 5.3,1.6 C4.4,0.5 2.9,0.6 2,1.8 Z" fill="#120a16"/>
+<ellipse cx="0" cy="0.4" rx="1.9" ry="2.8" fill="#120a16"/>
+<path d="M-1.6,-1.6 L-1.4,-4 L-0.4,-2.4 L0.4,-2.4 L1.4,-4 L1.6,-1.6 Z" fill="#120a16"/>
+<circle cx="-0.6" cy="-1.2" r="0.32" fill="#ff5a3c"/>
+<circle cx="0.6" cy="-1.2" r="0.32" fill="#ff5a3c"/>
+</g>
+<!-- The ghost -->
+<g transform="translate(119,15) rotate(8)">
+<path d="M-6.5,7 L-6.5,-2.5 C-6.5,-11.5 6.5,-11.5 6.5,-2.5 L6.5,7 Q4.9,4.8 3.25,7 Q1.6,9.2 0,7 Q-1.6,4.8 -3.25,7 Q-4.9,9.2 -6.5,7 Z" fill="#f4f1fa" opacity="0.93"/>
+<path d="M-6.4,0.5 C-8.6,0.8 -9.6,2.6 -9.2,4.2 C-8,3 -7.2,2.8 -6.4,3.2 Z" fill="#f4f1fa" opacity="0.93"/>
+<path d="M6.4,0.5 C8.6,0.2 9.8,-1.6 9.6,-3.2 C8.4,-2 7.4,-1.8 6.4,-1.6 Z" fill="#f4f1fa" opacity="0.93"/>
+<ellipse cx="-2.3" cy="-3" rx="1.05" ry="1.5" fill="#1a0f22"/>
+<ellipse cx="2.3" cy="-3" rx="1.05" ry="1.5" fill="#1a0f22"/>
+<ellipse cx="0" cy="1.2" rx="1.1" ry="1.5" fill="#1a0f22"/>
+</g>
+<!-- Stars -->
+<polygon points="46,4.4 46.4,5.4 47.4,5.5 46.6,6.1 46.9,7.1 46,6.6 45.1,7.1 45.4,6.1 44.6,5.5 45.6,5.4" fill="#f3e9b5"/>
+<polygon points="96,23.4 96.4,24.4 97.4,24.5 96.6,25.1 96.9,26.1 96,25.6 95.1,26.1 95.4,25.1 94.6,24.5 95.6,24.4" fill="#f3e9b5"/>
+<polygon points="142,5.4 142.4,6.4 143.4,6.5 142.6,7.1 142.9,8.1 142,7.6 141.1,8.1 141.4,7.1 140.6,6.5 141.6,6.4" fill="#f3e9b5"/>
+<circle cx="8" cy="4" r="0.6" fill="#f3e9b5"/>
+<circle cx="100" cy="5" r="0.5" fill="#f3e9b5"/>
+<circle cx="54" cy="25" r="0.5" fill="#f3e9b5"/>
+<circle cx="136" cy="25.5" r="0.6" fill="#f3e9b5"/>
 </svg>

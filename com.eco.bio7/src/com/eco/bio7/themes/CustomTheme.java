@@ -61,6 +61,8 @@ public class CustomTheme {
 	private String author = "";
 	private boolean dark = true;
 	private final Map<String, RGB> colors = new LinkedHashMap<String, RGB>();
+	/* The colors of the theme when it was installed, created or imported (for a reset)! */
+	private final Map<String, RGB> originalColors = new LinkedHashMap<String, RGB>();
 	private String artwork = "";
 	private String mode = "tile";
 	private int tileSize = 100;
@@ -183,6 +185,26 @@ public class CustomTheme {
 		colors.put(key, rgb);
 	}
 
+	/** The current colors are the original colors of the theme (e.g., after an installation). */
+	public void markOriginalColors() {
+		originalColors.clear();
+		originalColors.putAll(colors);
+	}
+
+	public boolean hasOriginalColors() {
+		return !originalColors.isEmpty();
+	}
+
+	/** Sets the colors to the original colors of the theme or of the other theme (e.g., a bundled example). */
+	public void resetColors(CustomTheme source) {
+		Map<String, RGB> from = source != null ? source.colors : originalColors;
+		if (from.isEmpty()) {
+			setDefaults();
+			return;
+		}
+		colors.putAll(from);
+	}
+
 	public String getArtwork() {
 		return artwork;
 	}
@@ -246,6 +268,7 @@ public class CustomTheme {
 		copy.author = author;
 		copy.colors.clear();
 		copy.colors.putAll(colors);
+		copy.originalColors.putAll(originalColors);
 		copy.artwork = artwork;
 		copy.mode = mode;
 		copy.tileSize = tileSize;
@@ -287,17 +310,25 @@ public class CustomTheme {
 		p.setProperty("artwork.fade", fade);
 		p.setProperty("artwork.fadeWidth", Integer.toString(fadeWidth));
 		p.setProperty("toolbar.style", style);
+		for (Map.Entry<String, RGB> e : originalColors.entrySet()) {
+			p.setProperty("original.color." + e.getKey(), hex(e.getValue()));
+		}
 		return p;
 	}
 
 	public static CustomTheme load(File dir) throws IOException {
-		Properties p = new Properties();
 		try (InputStream in = Files.newInputStream(new File(dir, PROPERTIES).toPath())) {
-			p.load(in);
+			return load(in, dir.getName());
 		}
+	}
+
+	/** Loads the theme description (e.g., of a bundled example). */
+	public static CustomTheme load(InputStream in, String folderName) throws IOException {
+		Properties p = new Properties();
+		p.load(in);
 		boolean dark = !"light".equalsIgnoreCase(p.getProperty("base", "dark"));
-		CustomTheme t = new CustomTheme(dir.getName(), dark);
-		t.name = p.getProperty("name", dir.getName());
+		CustomTheme t = new CustomTheme(folderName, dark);
+		t.name = p.getProperty("name", folderName);
 		t.author = p.getProperty("author", "");
 		for (String[] slot : SLOTS) {
 			String v = p.getProperty("color." + slot[0]);
@@ -308,6 +339,18 @@ public class CustomTheme {
 		if (p.getProperty("color.panelBackground") == null) {
 			/* A theme of an older version (the view panels were the view background)! */
 			t.colors.put("panelBackground", t.defaultPanelBackground());
+		}
+		for (String[] slot : SLOTS) {
+			String v = p.getProperty("original.color." + slot[0]);
+			if (v != null && v.matches("#?[0-9a-fA-F]{6}")) {
+				t.originalColors.put(slot[0], parse(v));
+			}
+		}
+		if (!t.originalColors.isEmpty()) {
+			/* All slots (e.g., a slot of a newer version)! */
+			for (Map.Entry<String, RGB> e : t.colors.entrySet()) {
+				t.originalColors.putIfAbsent(e.getKey(), e.getValue());
+			}
 		}
 		String art = p.getProperty("artwork", "");
 		/* Only a file in the theme folder (no paths)! */

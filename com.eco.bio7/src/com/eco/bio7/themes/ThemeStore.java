@@ -60,13 +60,15 @@ public final class ThemeStore {
 	/* Allowed files in a theme (no code)! */
 	private static final Set<String> ALLOWED = Set.of("properties", "svg", "png", "jpg", "jpeg", "gif");
 	private static final long MAX_SIZE = 20L * 1024 * 1024;
+	/* Images which are converted to PNG when they are chosen as artwork (e.g., TIFF is not supported by SWT)! */
+	private static final Set<String> CONVERTED = Set.of("tif", "tiff", "bmp");
 	/* The example themes in this plugin! */
 	private static final String EXAMPLES = "themes/examples/";
 	/*
 	 * The version of the example themes: an example of an older version is
 	 * installed again if it has not been changed by the user!
 	 */
-	private static final int EXAMPLES_VERSION = 2;
+	private static final int EXAMPLES_VERSION = 7;
 
 	private static final Set<String> REGISTERED = new HashSet<String>();
 	private static boolean listening;
@@ -249,11 +251,29 @@ public final class ThemeStore {
 		}
 		Bio7Plugin.getDefault().getPreferenceStore().setValue(ACTIVE, theme.getFolderName());
 		setIconColors(theme);
-		engine.setTheme(theme.getThemeId(), true);
+		setEngineTheme(engine, theme.getThemeId());
 		ToolbarArtwork.setTheme(theme, dir(theme));
 		/* After the preferences of the theme (stylesheets)! */
 		org.eclipse.swt.widgets.Display.getDefault().asyncExec(() -> setEditorBackground(theme));
 		flush();
+	}
+
+	/*
+	 * The theme engine does nothing if the theme is already active, so the changed
+	 * stylesheet of the active theme (e.g., new colors) is loaded with "force"
+	 * (ThemeEngine, not in the interface)!
+	 */
+	private static void setEngineTheme(IThemeEngine engine, String id) {
+		ITheme active = engine.getActiveTheme();
+		if (active != null && id.equals(active.getId())) {
+			try {
+				engine.getClass().getMethod("setTheme", ITheme.class, boolean.class, boolean.class).invoke(engine, active, true, true);
+				return;
+			} catch (ReflectiveOperationException | RuntimeException e) {
+				/* The normal method! */
+			}
+		}
+		engine.setTheme(id, true);
 	}
 
 	/* ######################## Editor background ######################## */
@@ -411,6 +431,22 @@ public final class ThemeStore {
 		}
 	}
 
+	/**
+	 * The bundled example theme with the folder name of the theme or null (e.g., for
+	 * the original colors of an example installed by an older version).
+	 */
+	public static CustomTheme bundledExample(CustomTheme theme) {
+		URL url = Bio7Plugin.getDefault().getBundle().getEntry(EXAMPLES + theme.getFolderName() + "/" + CustomTheme.PROPERTIES);
+		if (url == null) {
+			return null;
+		}
+		try (InputStream in = url.openStream()) {
+			return CustomTheme.load(in, theme.getFolderName());
+		} catch (IOException e) {
+			return null;
+		}
+	}
+
 	/** Imports a theme file (only the theme description and images, no subfolders). */
 	public static CustomTheme importTheme(File file) throws IOException {
 		File tmp = Files.createTempDirectory("bio7theme").toFile();
@@ -435,6 +471,9 @@ public final class ThemeStore {
 			}
 			CustomTheme loaded = CustomTheme.load(tmp);
 			CustomTheme theme = loaded.copy(newFolderName(loaded.getName()));
+			if (!theme.hasOriginalColors()) {
+				theme.markOriginalColors();
+			}
 			File dir = dir(theme);
 			dir.mkdirs();
 			File[] files = tmp.listFiles(File::isFile);
@@ -453,22 +492,36 @@ public final class ThemeStore {
 
 	/** Copies an image into the theme folder (the artwork of the theme). */
 	public static String copyArtwork(CustomTheme theme, File image) throws IOException {
-		if (!allowed(image.getName()) || image.getName().endsWith(".properties")) {
-			throw new IOException("Only SVG, PNG, JPG or GIF images are supported.");
+		String extension = image.getName().substring(image.getName().lastIndexOf('.') + 1).toLowerCase(Locale.ROOT);
+		boolean convert = CONVERTED.contains(extension);
+		if ((!allowed(image.getName()) && !convert) || image.getName().endsWith(".properties")) {
+			throw new IOException("Only SVG, PNG, JPG, GIF, TIFF or BMP images are supported.");
 		}
 		if (image.length() > MAX_SIZE) {
 			throw new IOException("The image is too large (max. 20 MB).");
 		}
+		java.awt.image.BufferedImage converted = null;
+		if (convert) {
+			converted = javax.imageio.ImageIO.read(image);
+			if (converted == null) {
+				throw new IOException("The image cannot be read (unsupported " + extension.toUpperCase(Locale.ROOT) + " format).");
+			}
+		}
 		File dir = dir(theme);
 		dir.mkdirs();
-		String name = "artwork" + image.getName().substring(image.getName().lastIndexOf('.')).toLowerCase(Locale.ROOT);
+		String name = "artwork." + (convert ? "png" : extension);
 		File[] old = dir.listFiles((d, n) -> n.startsWith("artwork."));
 		if (old != null) {
 			for (File f : old) {
 				f.delete();
 			}
 		}
-		Files.copy(image.toPath(), new File(dir, name).toPath(), StandardCopyOption.REPLACE_EXISTING);
+		if (converted != null) {
+			/* Stored as PNG (supported by SWT and in shared themes)! */
+			javax.imageio.ImageIO.write(converted, "png", new File(dir, name));
+		} else {
+			Files.copy(image.toPath(), new File(dir, name).toPath(), StandardCopyOption.REPLACE_EXISTING);
+		}
 		return name;
 	}
 
@@ -516,6 +569,7 @@ public final class ThemeStore {
 			try {
 				/* Writes the stylesheet (for the operating system)! */
 				CustomTheme theme = CustomTheme.load(dir);
+				theme.markOriginalColors();
 				save(theme);
 				store.setValue("THEME_EXAMPLE_SIGNATURE." + folder, theme.signature());
 			} catch (IOException e) {

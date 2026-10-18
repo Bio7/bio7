@@ -77,6 +77,8 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 	private final List<CustomTheme> themes = new ArrayList<CustomTheme>();
 	private CustomTheme current;
 	private boolean dirty;
+	/* The active theme has been changed (applied when the preferences are applied)! */
+	private boolean activeChanged;
 	private boolean updating;
 
 	private Composite editor;
@@ -175,11 +177,12 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		}
 		Button reset = new Button(colors, SWT.PUSH);
 		reset.setText("Reset Colors");
+		reset.setToolTipText("Resets the colors to the original colors of the theme");
 		reset.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 4, 1));
 		reset.addListener(SWT.Selection, e -> resetColors());
 
 		Group art = new Group(editor, SWT.NONE);
-		art.setText("Toolbar Artwork (SVG, PNG, JPG)");
+		art.setText("Toolbar Artwork (SVG, PNG, JPG, GIF, TIFF, BMP)");
 		art.setLayout(new GridLayout(6, false));
 		art.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 4, 1));
 		new Label(art, SWT.NONE).setText("Image:");
@@ -332,17 +335,23 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 			/* A new id (the base is a part of the id), so the theme is saved in a new folder! */
 			current.setDark(dark);
 			if (MessageDialog.openQuestion(getShell(), "Theme", "Use the default colors of the Bio7 " + (dark ? "dark" : "light") + " theme?")) {
-				resetColors();
+				current.setDefaults();
+				showColors();
 			}
 			changed();
 		}
 	}
 
+	/* The original colors of the theme (an example: its bundled colors, a new theme: the Bio7 colors)! */
 	private void resetColors() {
 		if (current == null) {
 			return;
 		}
-		current.setDefaults();
+		current.resetColors(current.hasOriginalColors() ? null : ThemeStore.bundledExample(current));
+		showColors();
+	}
+
+	private void showColors() {
 		updating = true;
 		for (String[] slot : CustomTheme.SLOTS) {
 			selectors.get(slot[0]).setColorValue(current.getColor(slot[0]));
@@ -353,7 +362,8 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 
 	private void chooseArtwork() {
 		FileDialog dialog = new FileDialog(getShell(), SWT.OPEN);
-		dialog.setFilterExtensions(new String[] { "*.svg;*.png;*.jpg;*.jpeg;*.gif", "*.*" });
+		dialog.setFilterExtensions(new String[] { "*.svg;*.png;*.jpg;*.jpeg;*.gif;*.tif;*.tiff;*.bmp", "*.*" });
+		dialog.setFilterNames(new String[] { "Images (SVG, PNG, JPG, GIF, TIFF, BMP)", "All Files" });
 		String file = dialog.open();
 		if (file == null || current == null) {
 			return;
@@ -369,6 +379,9 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 
 	private void saveCurrent() {
 		if (current != null && dirty) {
+			if (current.getFolderName().equals(ThemeStore.activeFolder())) {
+				activeChanged = true;
+			}
 			try {
 				ThemeStore.save(current);
 			} catch (IOException e) {
@@ -384,6 +397,7 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		boolean dark = current != null ? current.isDark() : table.getSelectionIndex() == 1;
 		CustomTheme theme = new CustomTheme(ThemeStore.newFolderName("New Theme"), dark);
 		theme.setName("New Theme");
+		theme.markOriginalColors();
 		store(theme);
 	}
 
@@ -392,6 +406,8 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		String newName = (current != null ? current.getName() : table.getSelectionIndex() == 1 ? "Bio7 Dark" : "Bio7 Light") + " Copy";
 		CustomTheme theme = source.copy(ThemeStore.newFolderName(newName));
 		theme.setName(newName);
+		/* The colors of the duplicate when it was created! */
+		theme.markOriginalColors();
 		if (current != null && !current.getArtwork().isEmpty()) {
 			try {
 				ThemeStore.save(theme);
@@ -493,6 +509,13 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 			CustomTheme saved = ThemeStore.find(active.getFolderName());
 			if (saved != null) {
 				ThemeStore.activate(saved);
+			}
+		}
+		if (activeChanged) {
+			activeChanged = false;
+			if (MessageDialog.openQuestion(getShell(), "Theme",
+					"The changes of the active theme have been applied. Some colors (e.g., of the icons and of open editors) are applied completely after a restart.\n\nRestart Bio7 now?")) {
+				getShell().getDisplay().asyncExec(() -> PlatformUI.getWorkbench().restart());
 			}
 		}
 		return true;
