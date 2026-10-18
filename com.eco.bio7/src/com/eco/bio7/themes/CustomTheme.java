@@ -376,8 +376,15 @@ public class CustomTheme {
 		rule(css, "CTabFolder ToolBar,\nCTabFolder .MToolBar,\n.MPartStack .MToolBar", "background-color: " + c("tabRow") + ";");
 		rule(css, ".MPart,\n.MPart Composite,\n.MPart Tree,\n.MPart Table,\n.MPart List,\n.MPart Label,\n.MPart Grid",
 				"background-color: " + c("viewBackground") + ";\n\tcolor: " + c("text") + ";");
-		/* The main toolbar (the gradient and the artwork are painted over it)! */
-		rule(css, ".MTrimBar,\n#org-eclipse-ui-main-toolbar,\n#PerspectiveSwitcher",
+		/*
+		 * The main toolbar (the gradient and the artwork are painted over it)! All
+		 * selectors of the base stylesheets with a gradient get a plain color: a CSS
+		 * gradient paints over the artwork when a control is resized (e.g., when an
+		 * editor is opened) and its images are not disposed.
+		 */
+		rule(css, ".MTrimBar,\n#org-eclipse-ui-main-toolbar,\n#PerspectiveSwitcher,\n#org-eclipse-ui-main-toolbar .MToolBar,\n"
+				+ "#org-eclipse-ui-main-toolbar .MToolControl,\n#org-eclipse-ui-main-toolbar ImageBasedFrame,\n"
+				+ "#org-eclipse-ui-main-toolbar ToolBar,\n#org-eclipse-ui-main-toolbar #PerspectiveSwitcher,\n#PerspectiveSwitcher ToolBar",
 				"background-color: " + c("toolbarBottom") + ";\n\tcolor: " + c("toolbarText") + ";");
 		/* The items have no own background (the toolbar background is painted by ToolbarArtwork)! */
 		rule(css, "#org-eclipse-ui-main-toolbar ToolItem,\n#PerspectiveSwitcher ToolItem", "color: " + c("toolbarText") + ";");
