@@ -54,6 +54,7 @@ public final class ToolbarArtwork {
 	private static final String PART_BOUNDS = "bio7.themes.partBounds";
 
 	private static final Color TRANSPARENT = new Color(0, 0, 0, 0);
+	private static final boolean WINDOWS = "win32".equals(SWT.getPlatform());
 
 	private static CustomTheme theme;
 	private static File themeDir;
@@ -163,10 +164,12 @@ public final class ToolbarArtwork {
 				child.addListener(SWT.Resize, e -> later(bar));
 				child.addListener(SWT.Dispose, e -> disposePart(child));
 			}
-			if (child instanceof ToolBar) {
+			if (child instanceof ToolBar && !WINDOWS) {
 				/*
 				 * A toolbar (macOS) draws its background color and no background image, so it
-				 * is transparent and the part of its parent is visible!
+				 * is transparent and the part of its parent is visible! Windows draws the
+				 * background image of a toolbar but fills the items with their background
+				 * color without alpha (black), so a toolbar gets its own part there!
 				 */
 				transparent(child);
 			} else {
