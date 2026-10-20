@@ -367,6 +367,94 @@ public class Work {
 	}
 
 	/**
+	 * Shows or hides the main toolbar of the Bio7 window (the actions and the
+	 * perspective switcher). Can be called from any thread.
+	 * 
+	 * @param visible true to show the main toolbar.
+	 */
+	public static void setMainToolbarVisible(final boolean visible) {
+		Display.getDefault().syncExec(() -> {
+			org.eclipse.ui.internal.WorkbenchWindow window = workbenchWindow();
+			if (window != null) {
+				/* The perspective switcher is in the same trim bar (else an empty bar is visible)! */
+				window.setCoolBarVisible(visible);
+				window.setPerspectiveBarVisible(visible);
+			}
+		});
+	}
+
+	/**
+	 * Returns true if the main toolbar of the Bio7 window is visible.
+	 * 
+	 * @return the visibility of the main toolbar.
+	 */
+	public static boolean isMainToolbarVisible() {
+		java.util.concurrent.atomic.AtomicBoolean visible = new java.util.concurrent.atomic.AtomicBoolean(true);
+		Display.getDefault().syncExec(() -> {
+			org.eclipse.ui.internal.WorkbenchWindow window = workbenchWindow();
+			if (window != null) {
+				visible.set(window.getCoolBarVisible());
+			}
+		});
+		return visible.get();
+	}
+
+	/**
+	 * Shows the main toolbar of the Bio7 window if it is hidden, otherwise hides
+	 * it.
+	 */
+	public static void toggleMainToolbar() {
+		setMainToolbarVisible(!isMainToolbarVisible());
+	}
+
+	/**
+	 * Displays the Bio7 window in fullscreen mode or returns to the normal mode.
+	 * Can be called from any thread.
+	 * 
+	 * @param fullscreen true for the fullscreen mode.
+	 */
+	public static void setFullscreen(final boolean fullscreen) {
+		Display.getDefault().syncExec(() -> {
+			IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+			if (window != null && window.getShell() != null) {
+				window.getShell().setFullScreen(fullscreen);
+			}
+		});
+	}
+
+	/**
+	 * Returns true if the Bio7 window is displayed in fullscreen mode.
+	 * 
+	 * @return the fullscreen mode.
+	 */
+	public static boolean isFullscreen() {
+		java.util.concurrent.atomic.AtomicBoolean fullscreen = new java.util.concurrent.atomic.AtomicBoolean();
+		Display.getDefault().syncExec(() -> {
+			IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+			if (window != null && window.getShell() != null) {
+				fullscreen.set(window.getShell().getFullScreen());
+			}
+		});
+		return fullscreen.get();
+	}
+
+	/**
+	 * Displays the Bio7 window in fullscreen mode or returns to the normal mode.
+	 */
+	public static void toggleFullscreen() {
+		setFullscreen(!isFullscreen());
+	}
+
+	/* The active Bio7 window (in the UI thread) or null! */
+	private static org.eclipse.ui.internal.WorkbenchWindow workbenchWindow() {
+		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+		if (window == null && PlatformUI.getWorkbench().getWorkbenchWindowCount() > 0) {
+			window = PlatformUI.getWorkbench().getWorkbenchWindows()[0];
+		}
+		return window instanceof org.eclipse.ui.internal.WorkbenchWindow ? (org.eclipse.ui.internal.WorkbenchWindow) window : null;
+	}
+
+	/**
 	 * Shows or hides the editor area.
 	 */
 	public static void showHide() {

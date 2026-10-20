@@ -71,6 +71,7 @@ import com.eco.bio7.actions.LibreOfficeConnection;
 import com.eco.bio7.actions.OpenBio7BrowserAction;
 import com.eco.bio7.actions.OpenViewMenuAction;
 import com.eco.bio7.actions.ShowEditorAreaAction;
+import com.eco.bio7.actions.ShowHideMainToolbarAction;
 import com.eco.bio7.actions.ShowMainMenus;
 import com.eco.bio7.actions.Setup;
 import com.eco.bio7.actions.Start;
@@ -785,6 +786,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		WindowMenu.add(openPerspectiveMenu);
 		WindowMenu.add(new Separator());
 		WindowMenu.add(new ShowEditorAreaAction("Show/Hide Editor", window2));
+		WindowMenu.add(new ShowHideMainToolbarAction("Show/Hide Toolbar"));
 		WindowMenu.add(showMainMenu);
 		WindowMenu.add(hideMainMenu);
 		WindowMenu.add(hideMainMenuAndFullscreen);

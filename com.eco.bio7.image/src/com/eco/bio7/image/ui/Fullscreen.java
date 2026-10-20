@@ -14,6 +14,7 @@ package com.eco.bio7.image.ui;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -93,7 +94,7 @@ public class Fullscreen {
 		shell = new Shell(holder.getDisplay(), SWT.NO_TRIM | SWT.ON_TOP);
 		shell.setLayout(new FillLayout());
 		shell.setBackground(holder.getDisplay().getSystemColor(SWT.COLOR_BLACK));
-		shell.addListener(SWT.Close, e -> restore());
+		shell.addListener(SWT.Close, _ -> restore());
 		if (oldItem != null) {
 			oldItem.setControl(null);
 		}
@@ -102,9 +103,32 @@ public class Fullscreen {
 		shell.setBounds(holder.getMonitor().getBounds());
 		shell.setFullScreen(true);
 		shell.open();
+		/*
+		 * macOS (e.g., with a notch): the shell is moved below the menu bar area with
+		 * the height of the monitor, so the bottom (e.g., the time slider of a
+		 * hyperstack) is not visible!
+		 */
+		shell.addListener(SWT.Move, _ -> fitToMonitor());
+		shell.addListener(SWT.Resize, _ -> fitToMonitor());
+		fitToMonitor();
+		shell.getDisplay().timerExec(300, Fullscreen::fitToMonitor);
 		shell.layout(true, true);
 		if (imp.getCanvas() != null) {
 			imp.getCanvas().setFocus();
+		}
+	}
+
+	/* The shell ends at the bottom of the monitor! */
+	private static void fitToMonitor() {
+		if (!isActive()) {
+			return;
+		}
+		Rectangle monitor = shell.getMonitor().getBounds();
+		Rectangle bounds = shell.getBounds();
+		int bottom = monitor.y + monitor.height;
+		if (bounds.y + bounds.height > bottom && bottom - bounds.y > 0) {
+			shell.setSize(bounds.width, bottom - bounds.y);
+			shell.layout(true, true);
 		}
 	}
 
