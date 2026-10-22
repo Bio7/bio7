@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import com.eco.bio7.image.ui.Activator;
@@ -203,11 +204,29 @@ public class ImageJWindowAction extends Action implements IMenuCreator {
 
 					}
 				});
+				/* New images are opened as views (see Bio7ImageJ.imageOpened)! */
+				MenuItem menuItemImagesAsViews = new MenuItem(fMenu, SWT.CHECK);
+				menuItemImagesAsViews.setText(IMAGES_AS_VIEWS_TEXT);
+				menuItemImagesAsViews.addSelectionListener(new SelectionListener() {
+					public void widgetSelected(SelectionEvent e) {
+						Activator.getDefault().getPreferenceStore().setValue(OPEN_IMAGES_AS_VIEWS, menuItemImagesAsViews.getSelection());
+					}
+
+					public void widgetDefaultSelected(SelectionEvent e) {
+
+					}
+				});
 				MenuItem[] menuItems = fMenu.getItems();
-				int defaultMenuEntries = 4;
+				int defaultMenuEntries = 5;
 				/*If we use the plugin in the Bio7 RCP!*/
 				if (bio7RCP) {
-					defaultMenuEntries = 5;
+					defaultMenuEntries = 6;
+				}
+				/* The kept check item shows the current preference (e.g., changed in the preferences)! */
+				for (int i = 0; i < defaultMenuEntries && i < menuItems.length; i++) {
+					if ((menuItems[i].getStyle() & SWT.CHECK) != 0 && IMAGES_AS_VIEWS_TEXT.equals(menuItems[i].getText())) {
+						menuItems[i].setSelection(isOpenImagesAsViews());
+					}
 				}
 				// Only delete the plugins menu items and menus (seperator menu items counting, too!)!
 				for (int i = defaultMenuEntries; i < menuItems.length; i++) {
@@ -304,44 +323,79 @@ public class ImageJWindowAction extends Action implements IMenuCreator {
 
 	}
 
+	/** The preference to open new images as views by default. */
+	public static final String OPEN_IMAGES_AS_VIEWS = "OPEN_IMAGES_AS_VIEWS";
+
+	private static final String IMAGES_AS_VIEWS_TEXT = "Open Images As Views By Default";
+
+	/** Returns true if new images are opened as views by default. */
+	public static boolean isOpenImagesAsViews() {
+		return Activator.getDefault().getPreferenceStore().getBoolean(OPEN_IMAGES_AS_VIEWS);
+	}
+
 	/**
-	 * Opens all images of the ImageJ-Canvas view in detached views.
+	 * Opens the image of the ImageJ-Canvas view in a view (see the preferences),
+	 * placed after the already opened image views. Must be called in the SWT UI
+	 * thread.
 	 */
-	public static void openDetachedView() {
+	public static void openAsView(ImagePlus imp) {
+		if (!Activator.getDefault().getPreferenceStore().getBoolean("ENABLE_DETACHED_VIEW_WINDOWS")) {
+			CustomDetachedImageJView.detach(imp, null);
+			return;
+		}
+		int openViews = 0;
+		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+		IWorkbenchPage page = window != null ? window.getActivePage() : null;
+		if (page != null) {
+			for (IViewReference ref : page.getViewReferences()) {
+				if (CustomDetachedImageJView.ID.equals(ref.getId())) {
+					openViews++;
+				}
+			}
+		}
+		CustomDetachedImageJView.detach(imp, floatingBounds(openViews));
+	}
+
+	/* The location and size of the n-th floating image view (see the preferences)! */
+	private static Rectangle floatingBounds(int index) {
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-		boolean detWindow = store.getBoolean("ENABLE_DETACHED_VIEW_WINDOWS");
 		int xPosDefault = store.getInt("DETACHED_IMAGE_POSITION_X");
 		int yPosDefault = store.getInt("DETACHED_IMAGE_POSITION_Y");
-		int xWidth = store.getInt("DETACHED_IMAGE_WIDTH");
-		int yHeight = store.getInt("DETACHED_IMAGE_HEIGHT");
 		int xSpacing = store.getInt("DETACHED_IMAGE_SPACING_X");
 		int ySpacing = store.getInt("DETACHED_IMAGE_SPACING_Y");
 		int xMaxSpace = store.getInt("DETACHED_IMAGE_SPACING_X_MAX");
 		int yMaxSpace = store.getInt("DETACHED_IMAGE_SPACING_Y_MAX");
 		int xPos = xPosDefault;
 		int yPos = yPosDefault;
-		for (ImagePlus plu : IJTabs.getImagePlusList()) {
-			if (detWindow) {
-				CustomDetachedImageJView.detach(plu, new Rectangle(xPos, yPos, xWidth, yHeight));
-				if (xMaxSpace > 0) {
-					if ((xPos + xSpacing) > xMaxSpace) {
-						xPos = xPosDefault;
-						yPos = yPos + ySpacing;
-					} else {
-						xPos = xPos + xSpacing;
-					}
+		for (int i = 0; i < index; i++) {
+			if (xMaxSpace > 0) {
+				if ((xPos + xSpacing) > xMaxSpace) {
+					xPos = xPosDefault;
+					yPos = yPos + ySpacing;
+				} else {
+					xPos = xPos + xSpacing;
 				}
-				if (yMaxSpace > 0) {
-					if ((yPos + ySpacing) > yMaxSpace) {
-						yPos = yPosDefault;
-						xPos = xPos + xSpacing;
-					} else {
-						yPos = yPos + ySpacing;
-					}
-				}
-			} else {
-				CustomDetachedImageJView.detach(plu, null);
 			}
+			if (yMaxSpace > 0) {
+				if ((yPos + ySpacing) > yMaxSpace) {
+					yPos = yPosDefault;
+					xPos = xPos + xSpacing;
+				} else {
+					yPos = yPos + ySpacing;
+				}
+			}
+		}
+		return new Rectangle(xPos, yPos, store.getInt("DETACHED_IMAGE_WIDTH"), store.getInt("DETACHED_IMAGE_HEIGHT"));
+	}
+
+	/**
+	 * Opens all images of the ImageJ-Canvas view in detached views.
+	 */
+	public static void openDetachedView() {
+		boolean detWindow = Activator.getDefault().getPreferenceStore().getBoolean("ENABLE_DETACHED_VIEW_WINDOWS");
+		int index = 0;
+		for (ImagePlus plu : IJTabs.getImagePlusList()) {
+			CustomDetachedImageJView.detach(plu, detWindow ? floatingBounds(index++) : null);
 		}
 	}
 }

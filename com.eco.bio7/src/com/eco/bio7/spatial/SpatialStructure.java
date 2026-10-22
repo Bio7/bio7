@@ -41,7 +41,10 @@ import java.awt.image.BufferedImage;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.PlatformUI;
 
 import com.eco.bio7.Bio7Plugin;
@@ -49,6 +52,8 @@ import com.eco.bio7.compile.Model;
 import com.eco.bio7.loader3d.OBJModel;
 import com.eco.bio7.methods.Compiled;
 import com.eco.bio7.spatial.preferences.Preferences3d;
+import com.eco.bio7.util.Util;
+import com.jogamp.nativewindow.swt.SWTAccessor;
 import com.jogamp.nativewindow.util.Point;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.KeyListener;
@@ -235,6 +240,20 @@ public class SpatialStructure implements KeyListener, MouseListener {
 
 		canvas = new NewtCanvasSWT(view.top, SWT.NO_BACKGROUND, glWindow);
 		canvas.setSize(canvasWidth, canvasHeight);
+		/*
+		 * Workaround for HiDPI scaling on Windows: NewtCanvasSWT sizes the NEWT window
+		 * with the SWT client area in points but NEWT on Windows expects pixels. Our
+		 * listeners are called after the NewtCanvasSWT listeners and correct the size!
+		 */
+		if (Util.getOS().equals("Windows")) {
+			Listener hiDpiSizeListener = new Listener() {
+				public void handleEvent(Event event) {
+					updateHiDpiWindowSize();
+				}
+			};
+			canvas.addListener(SWT.Resize, hiDpiSizeListener);
+			canvas.addListener(SWT.Paint, hiDpiSizeListener);
+		}
 		// canvas.setData(gldata);
 
 		// glWindow.setSize(new Dimension(canvasWidth, canvasHeight));
@@ -266,6 +285,22 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		textures.createNewTexture = true;
 
 		initViewerPosn();
+	}
+
+	/* Resize the NEWT window to the client area of the canvas in pixels! */
+	private void updateHiDpiWindowSize() {
+		/*
+		 * Only resize when the NEWT window is embedded as a child. During a reparent
+		 * operation the NEWT window is temporarily a top-level window and a resize would
+		 * show it in the taskbar!
+		 */
+		if (canvas.isDisposed() || glWindow.isFullscreen() || !glWindow.isNativeValid() || glWindow.getParent() == null) {
+			return;
+		}
+		Rectangle pixelArea = SWTAccessor.getClientAreaInPixels(canvas);
+		if (pixelArea.width > 0 && pixelArea.height > 0 && (glWindow.getWidth() != pixelArea.width || glWindow.getHeight() != pixelArea.height)) {
+			glWindow.setSize(pixelArea.width, pixelArea.height);
+		}
 	}
 
 	public class initRenderer implements GLEventListener {

@@ -179,19 +179,19 @@ public final class IconColorModel {
 				IWorkbenchPart part = ref.getPart(false);
 				if (part != null) {
 					recolorTab(part);
-					replaceActionsLater(part);
+					replaceActionsLater(ref);
 				}
 			}
 
 			@Override
 			public void partActivated(IWorkbenchPartReference ref) {
 				/* E.g., the Console view changes the actions with the console! */
-				replaceActionsLater(ref.getPart(false));
+				replaceActionsLater(ref);
 			}
 
 			@Override
 			public void partVisible(IWorkbenchPartReference ref) {
-				replaceActionsLater(ref.getPart(false));
+				replaceActionsLater(ref);
 			}
 		});
 		for (IWorkbenchPage page : window.getPages()) {
@@ -199,7 +199,7 @@ public final class IconColorModel {
 				IWorkbenchPart part = ref.getPart(false);
 				if (part != null) {
 					recolorTab(part);
-					replaceActionsLater(part);
+					replaceActionsLater(ref);
 				}
 			}
 			for (IWorkbenchPartReference ref : page.getEditorReferences()) {
@@ -544,9 +544,15 @@ public final class IconColorModel {
 		return url.getPath().replaceAll("^/+", "");
 	}
 
-	private static void replaceActionsLater(IWorkbenchPart part) {
+	private static void replaceActionsLater(IWorkbenchPartReference ref) {
+		IWorkbenchPart part = ref.getPart(false);
 		if (part instanceof IViewPart) {
-			Display.getDefault().asyncExec(() -> replaceActions((IViewPart) part));
+			Display.getDefault().asyncExec(() -> {
+				/* Not if the view has been closed meanwhile (the reference has no part then)! */
+				if (ref.getPart(false) == part) {
+					replaceActions((IViewPart) part);
+				}
+			});
 		}
 	}
 

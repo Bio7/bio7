@@ -32,6 +32,8 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.Bundle;
 
+import com.eco.bio7.ImageJPluginActions.ImageJWindowAction;
+
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImageListener;
@@ -306,6 +308,15 @@ public class Bio7ImageJ implements ImageJHost, ImageListener {
 
 	@Override
 	public void imageOpened(ImagePlus imp) {
+		if (!ImageJWindowAction.isOpenImagesAsViews()) {
+			return;
+		}
+		/* Opened in a tab of the ImageJ-Canvas view. Moved into a view (see the Window menu)! */
+		Util.getDisplay().asyncExec(() -> {
+			if (getTab(imp) != null && imp.getWindow() != null && !imp.getWindow().isClosed()) {
+				ImageJWindowAction.openAsView(imp);
+			}
+		});
 	}
 
 	@Override

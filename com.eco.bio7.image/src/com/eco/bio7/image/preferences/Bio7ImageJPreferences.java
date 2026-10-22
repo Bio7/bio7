@@ -54,6 +54,7 @@ public class Bio7ImageJPreferences extends FieldEditorPreferencePage implements 
 		addField(new IntegerFieldEditor("IMAGEJ_TOOLBAR_SIZE_Y", "y", getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("Detached ImageJ Views:", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("OPEN_IMAGES_AS_VIEWS", "Open new images as views by default", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("ENABLE_DETACHED_VIEW_WINDOWS", "&Open detached views in a window", getFieldEditorParent()));
 		addField(new IntegerFieldEditor("DETACHED_IMAGE_POSITION_X", "x", getFieldEditorParent()));
 		addField(new IntegerFieldEditor("DETACHED_IMAGE_POSITION_Y", "y", getFieldEditorParent()));
