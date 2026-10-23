@@ -574,7 +574,7 @@ public class SpatialUtil {
 				display.syncExec(new Runnable() {
 
 					public void run() {
-						Options3d.getPlayPauseButton().setSelection(false);
+						setPlayPauseSelection(false);
 					}
 				});
 
@@ -584,7 +584,7 @@ public class SpatialUtil {
 				display.syncExec(new Runnable() {
 
 					public void run() {
-						Options3d.getPlayPauseButton().setSelection(true);
+						setPlayPauseSelection(true);
 					}
 				});
 			}
@@ -605,4 +605,11 @@ public class SpatialUtil {
 
 	}
 
+	/* The play/pause button of the Options3d view (it can be disposed, e.g., if it was moved into a custom view)! */
+	private static void setPlayPauseSelection(boolean selected) {
+		org.eclipse.swt.widgets.Button button = Options3d.getPlayPauseButton();
+		if (button != null && !button.isDisposed()) {
+			button.setSelection(selected);
+		}
+	}
 }

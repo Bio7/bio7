@@ -38,10 +38,12 @@ import org.eclipse.ui.PlatformUI;
 import com.eco.bio7.image.ui.Activator;
 import com.eco.bio7.image.ui.CanvasView;
 import com.eco.bio7.image.ui.CustomDetachedImageJView;
+import com.eco.bio7.image.ui.Fullscreen;
 import com.eco.bio7.image.ui.IJTabs;
 import com.eco.bio7.image.ui.Util;
 
 import ij.ImagePlus;
+import ij.WindowManager;
 
 public class ImageJWindowAction extends Action implements IMenuCreator {
 
@@ -204,6 +206,24 @@ public class ImageJWindowAction extends Action implements IMenuCreator {
 
 					}
 				});
+				/* Also without the F2 key (e.g., if the focus is not on the image)! */
+				MenuItem menuItemFullscreen = new MenuItem(fMenu, SWT.PUSH);
+				menuItemFullscreen.setText("Fullscreen Image (F2)");
+				menuItemFullscreen.addSelectionListener(new SelectionListener() {
+					public void widgetSelected(SelectionEvent e) {
+						ImagePlus plu = IJTabs.getSelectedImagePlus();
+						if (plu == null) {
+							plu = WindowManager.getCurrentImage();
+						}
+						if (plu != null) {
+							Fullscreen.enter(plu);
+						}
+					}
+
+					public void widgetDefaultSelected(SelectionEvent e) {
+
+					}
+				});
 				/* New images are opened as views (see Bio7ImageJ.imageOpened)! */
 				MenuItem menuItemImagesAsViews = new MenuItem(fMenu, SWT.CHECK);
 				menuItemImagesAsViews.setText(IMAGES_AS_VIEWS_TEXT);
@@ -217,10 +237,10 @@ public class ImageJWindowAction extends Action implements IMenuCreator {
 					}
 				});
 				MenuItem[] menuItems = fMenu.getItems();
-				int defaultMenuEntries = 5;
+				int defaultMenuEntries = 6;
 				/*If we use the plugin in the Bio7 RCP!*/
 				if (bio7RCP) {
-					defaultMenuEntries = 6;
+					defaultMenuEntries = 7;
 				}
 				/* The kept check item shows the current preference (e.g., changed in the preferences)! */
 				for (int i = 0; i < defaultMenuEntries && i < menuItems.length; i++) {

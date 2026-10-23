@@ -78,12 +78,48 @@ public class Preferences3d {
 
 	}
 
+	/**
+	 * Stores the position, rotation and scale of the model (with decimals).
+	 */
+	public void storeModelTransform(double[] position, double[] rotation, double scale) {
+		store.setValue("modelTransform", position[0] + "," + position[1] + "," + position[2] + "," + rotation[0] + ","
+				+ rotation[1] + "," + rotation[2] + "," + scale);
+	}
+
+	/* The stored position, rotation and scale (7 values) or null! */
+	private double[] getModelTransform() {
+		String value = store.getString("modelTransform");
+		if (value == null || value.isEmpty()) {
+			return null;
+		}
+		String[] parts = value.split(",");
+		if (parts.length != 7) {
+			return null;
+		}
+		double[] v = new double[7];
+		try {
+			for (int i = 0; i < 7; i++) {
+				v[i] = Double.parseDouble(parts[i].trim());
+			}
+		} catch (NumberFormatException e) {
+			return null;
+		}
+		return v;
+	}
+
 	public void getModelValues() {
+		SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+		double[] transform = getModelTransform();
+		if (grid != null && transform != null && transform[6] > 0) {
+			grid.objModel1Position = new double[] { transform[0], transform[1], transform[2] };
+			grid.objModel1Rotation = new double[] { transform[3], transform[4], transform[5] };
+			grid.objModel1Scale = transform[6];
+			return;
+		}
 		Point3d p = Bio7PrefConverterSpatial.getPoint(store, "modelLocation");
 		Point3d p2 = Bio7PrefConverterSpatial.getPoint(store, "modelRotation");
 		Point3d p3 = Bio7PrefConverterSpatial.getPoint(store, "modelScale");
 
-		SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
 		if (grid != null) {
 			/* Avoid scale value <1. The Model will not be shown! */
 			if (p3.x < 1) {

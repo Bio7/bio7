@@ -16,6 +16,7 @@ package com.eco.bio7.spatial;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.measure.Calibration;
+import ij.process.ImageProcessor;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.util.texture.Texture;
@@ -47,9 +48,71 @@ public class HeightMaps {
 	// Smooth shading variables
 	private float[][][] vertexNormals;
 	private int lastDetailUsed = -1;
+	// The texture and height values the vertex normals were computed for
+	private Texture lastNormalsTexture;
+	private float[][] lastNormalsHeights;
 
 	public static boolean isInverse() {
 		return inverse;
+	}
+
+	/*
+	 * false: the image is displayed like in ImageJ (0,0 at the top left), true:
+	 * flipped vertically (the first row of the image at the bottom).
+	 */
+	private static boolean flipVertically = false;
+
+	/** Returns true if the texture and height map are displayed vertically flipped. */
+	public static boolean isFlipVertically() {
+		return flipVertically;
+	}
+
+	/**
+	 * Displays the texture and height map vertically flipped (true) or like the
+	 * image in ImageJ with 0,0 at the top left (false, the default).
+	 */
+	public static void setFlipVertically(boolean flip) {
+		HeightMaps.flipVertically = flip;
+	}
+
+	/*
+	 * With a single diffuse light the faces turned away from the light are almost
+	 * black and the colors of the texture (e.g., the LUT of the image) are lost.
+	 * More ambient light keeps the colors visible in the shadow. The lighting
+	 * state is restored in endHeightMapLighting!
+	 */
+	private static void beginHeightMapLighting(GL2 gl) {
+		gl.glPushAttrib(GL_LIGHTING_BIT);
+		gl.glLightModelfv(GL_LIGHT_MODEL_AMBIENT, new float[] { 0.4f, 0.4f, 0.4f, 1.0f }, 0);
+		gl.glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, new float[] { 1.0f, 1.0f, 1.0f, 1.0f }, 0);
+		gl.glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, new float[] { 0.6f, 0.6f, 0.6f, 1.0f }, 0);
+	}
+
+	private static void endHeightMapLighting(GL2 gl) {
+		gl.glPopAttrib();
+	}
+
+	/*
+	 * The rows of the image are drawn from the bottom (first row) to the top. The
+	 * surface (texture and heights together) is mirrored around its center, so
+	 * that the first row is at the top like in ImageJ. Returns true if the matrix
+	 * has been pushed (see endOrientation)!
+	 */
+	private static boolean beginOrientation(GL2 gl, float centerY) {
+		if (flipVertically) {
+			return false;
+		}
+		gl.glPushMatrix();
+		gl.glTranslatef(0, centerY, 0);
+		gl.glScalef(1, -1, 1);
+		gl.glTranslatef(0, -centerY, 0);
+		return true;
+	}
+
+	private static void endOrientation(GL2 gl, boolean pushed) {
+		if (pushed) {
+			gl.glPopMatrix();
+		}
 	}
 
 	public static void setInverse(boolean inverse) {
@@ -169,9 +232,15 @@ public class HeightMaps {
 	 * @param drawable 
 	 */
 	public void RenderHeightMap(Texture text, GL2 gl, GLAutoDrawable drawable) {
-		// Recompute normals if detail changed
-		if (vertexNormals == null || lastDetailUsed != detail) {
+		/*
+		 * Recompute the normals if the detail, the texture or the heights changed.
+		 * Dynamic heights are read from the active image and can change any time!
+		 */
+		if (vertexNormals == null || lastDetailUsed != detail || dynamicMap || lastNormalsTexture != text
+				|| lastNormalsHeights != heights) {
 			computeVertexNormals(text, gl);
+			lastNormalsTexture = text;
+			lastNormalsHeights = heights;
 		}
 
 		text.enable(gl);
@@ -181,6 +250,8 @@ public class HeightMaps {
 		int cy = -OriginY;
 		float mX = text.getWidth();
 		float mY = text.getHeight();
+		boolean mirrored = beginOrientation(gl, OriginY + mY / 2);
+		beginHeightMapLighting(gl);
 
 		float s = detail;
 
@@ -306,6 +377,8 @@ public class HeightMaps {
 		gl.glDisableClientState(GL2.GL_TEXTURE_COORD_ARRAY);
 
 		gl.glDeleteBuffers(3, vbos, 0);
+		endHeightMapLighting(gl);
+		endOrientation(gl, mirrored);
 		text.disable(gl);
 	}
 
@@ -326,6 +399,8 @@ public class HeightMaps {
 		float mY = text.getHeight();
 
 		float s = detail;// How fine is the resolution of the quads.
+		boolean mirrored = beginOrientation(gl, OriginY + mY / 2);
+		beginHeightMapLighting(gl);
 		float tileX;
 		float tileY;
 		/* Graphics Card specific? */
@@ -491,6 +566,8 @@ public class HeightMaps {
 		u = 0;
 
 		gl.glEnd();
+		endHeightMapLighting(gl);
+		endOrientation(gl, mirrored);
 
 		text.disable(gl);
 
@@ -502,8 +579,9 @@ public class HeightMaps {
 		text.bind(gl);
 		text.enable(gl);
 		OriginX = -(int) (mX / 2);
-		OriginY = -(int) (mX / 2);
+		OriginY = -(int) (mY / 2);
 		TextureCoords tc = text.getImageTexCoords();
+		boolean mirrored = beginOrientation(gl, cartesian ? 0 : -OriginY);
 		if (cartesian == false) {
 			gl.glBegin(GL_QUADS);
 			gl.glTexCoord2f(tc.left(), tc.top());
@@ -531,6 +609,7 @@ public class HeightMaps {
 			gl.glEnd();
 
 		}
+		endOrientation(gl, mirrored);
 
 		text.disable(gl);
 	}
@@ -543,8 +622,9 @@ public class HeightMaps {
 		text.bind(gl);
 		text.enable(gl);
 		OriginX = -(int) (mX / 2);
-		OriginY = -(int) (mX / 2);
+		OriginY = -(int) (mY / 2);
 		TextureCoords tc = text.getImageTexCoords();
+		boolean mirrored = beginOrientation(gl, cartesian ? 0 : -OriginY);
 		if (cartesian == false) {
 			gl.glBegin(GL_QUADS);
 			gl.glTexCoord2f(tc.left(), tc.top());
@@ -572,6 +652,7 @@ public class HeightMaps {
 			gl.glEnd();
 
 		}
+		endOrientation(gl, mirrored);
 
 		text.disable(gl);
 	}
@@ -652,37 +733,7 @@ public class HeightMaps {
 
 					imageHeight = imp.getHeight();
 					imageWidth = imp.getWidth();
-					int type = imp.getType();
-					Calibration cal = imp.getCalibration();
-
-					int[] v;
-					switch (type) {
-					case ImagePlus.GRAY32:
-						v = imp.getPixel(x, y);
-						/* We get the calibration value from ImageJ! */
-						double cValue = Float.intBitsToFloat(v[0]);
-						if (cValue == v[0]) {
-							h = v[0];
-
-						} else {
-							h = (float) cValue;
-						}
-						break;
-					case ImagePlus.GRAY8:
-					case ImagePlus.GRAY16:
-						v = imp.getPixel(x, y);
-						/* We get the calibration value from ImageJ! */
-						double c2Value = cal.getCValue(v[0]);
-						if (c2Value == v[0]) {
-							h = v[0];
-
-						} else {
-							h = (float) c2Value;
-						}
-						break;
-					default:
-						h = 0;
-					}
+					h = heightValue(imp.getProcessor(), imp.getType(), imp.getCalibration(), x, y);
 
 				}
 			}
@@ -690,6 +741,34 @@ public class HeightMaps {
 		return h; // Index Into Our Height
 		// Array And Return The
 		// Height
+	}
+
+	/**
+	 * Returns the height value of a pixel: the calibrated value for 8-bit and
+	 * 16-bit images, the float value for 32-bit images and the luminance for RGB
+	 * images. Pixels outside of the image and NaN values return 0.
+	 */
+	private static float heightValue(ImageProcessor ip, int type, Calibration cal, int x, int y) {
+		if (ip == null || x < 0 || y < 0 || x >= ip.getWidth() || y >= ip.getHeight()) {
+			return 0;
+		}
+		float value;
+		switch (type) {
+		case ImagePlus.GRAY8:
+		case ImagePlus.GRAY16:
+		case ImagePlus.COLOR_256:
+			/* We get the calibration value from ImageJ! */
+			value = (float) cal.getCValue(ip.getPixel(x, y));
+			break;
+		case ImagePlus.GRAY32:
+		case ImagePlus.COLOR_RGB:
+			/* The float value or the luminance of the RGB color! */
+			value = ip.getPixelValue(x, y);
+			break;
+		default:
+			value = 0;
+		}
+		return Float.isNaN(value) ? 0 : value;
 	}
 
 	public void HeightStatic() { // This method creates a height array from
@@ -707,37 +786,11 @@ public class HeightMaps {
 
 					int type = imp.getType();
 					Calibration cal = imp.getCalibration();
+					ImageProcessor ip = imp.getProcessor();
 
 					for (int y = 0; y < imageHeight; y++) {
 						for (int x = 0; x < imageWidth; x++) {
-
-							int[] v;
-							switch (type) {
-							case ImagePlus.GRAY32:
-								v = imp.getPixel(x, y);
-								/* We get the calibration value from ImageJ! */
-								double cValue = Float.intBitsToFloat(v[0]);
-								if (cValue == v[0]) {
-									heights[y][x] = v[0];
-
-								} else {
-									heights[y][x] = (float) cValue;
-								}
-								break;
-							case ImagePlus.GRAY8:
-							case ImagePlus.GRAY16:
-
-								v = imp.getPixel(x, y);
-								/* We get the calibration value from ImageJ! */
-								double c2Value = cal.getCValue(v[0]);
-								if (c2Value == v[0]) {
-									heights[y][x] = v[0];
-
-								} else {
-									heights[y][x] = (float) c2Value;
-								}
-								break;
-							}
+							heights[y][x] = heightValue(ip, type, cal, x, y);
 						}
 
 					}

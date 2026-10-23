@@ -42,7 +42,8 @@ public class DynamicTexture {
 				}
 
 				if (imp != null) {
-					Image img = imp.getImage();
+					/* With the current LUT (ImagePlus.getImage() is cached)! */
+					Image img = Textures.createImageWithLut(imp);
 					g2.drawImage(img, 0, 0, imp.getWidth(), imp.getHeight(), null);
 				}
 			}

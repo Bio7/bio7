@@ -1,5 +1,6 @@
 package com.eco.bio7.javapreferences;
 
+import com.eco.bio7.compile.JavaVersions;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -98,7 +99,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		path = path.replace("\\", "/");
 		//storeJava.setDefault("JAVA_MODULES_PATH", path);
 		//storeJava.setDefault("JAVA_MODULES","javafx.controls,javafx.base,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web,javafx.swt");
-		storeJava.setDefault("compiler_version", 25);
+		storeJava.setDefault("compiler_version", JavaVersions.COMPILER_VERSION);
 		storeJava.setDefault("compiler_debug", false);
 		storeJava.setDefault("compiler_verbose", false);
 		storeJava.setDefault("compiler_warnings", false);

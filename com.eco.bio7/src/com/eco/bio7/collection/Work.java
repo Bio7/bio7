@@ -34,6 +34,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -509,6 +510,52 @@ public class Work {
 
 		});
 
+	}
+
+	/**
+	 * Closes an open perspective of the active workbench window, e.g.,
+	 * closePerspective("com.eco.bio7.perspective_3d") or closePerspective("3d").
+	 * 
+	 * @param idOrName the id of the perspective or its name (the label in the
+	 *                 perspective bar, case is ignored).
+	 * @return true if the perspective was open and has been closed.
+	 */
+	public static boolean closePerspective(final String idOrName) {
+		final boolean[] closed = new boolean[1];
+		if (idOrName == null) {
+			return false;
+		}
+		Display display = PlatformUI.getWorkbench().getDisplay();
+		display.syncExec(new Runnable() {
+			public void run() {
+				IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+				IWorkbenchPage page = window != null ? window.getActivePage() : null;
+				if (page == null) {
+					return;
+				}
+				/* The id first, then the name! */
+				IPerspectiveDescriptor found = null;
+				for (IPerspectiveDescriptor desc : page.getOpenPerspectives()) {
+					if (desc.getId().equals(idOrName)) {
+						found = desc;
+						break;
+					}
+				}
+				if (found == null) {
+					for (IPerspectiveDescriptor desc : page.getOpenPerspectives()) {
+						if (desc.getLabel() != null && desc.getLabel().equalsIgnoreCase(idOrName)) {
+							found = desc;
+							break;
+						}
+					}
+				}
+				if (found != null) {
+					page.closePerspective(found, true, false);
+					closed[0] = true;
+				}
+			}
+		});
+		return closed[0];
 	}
 
 	/**

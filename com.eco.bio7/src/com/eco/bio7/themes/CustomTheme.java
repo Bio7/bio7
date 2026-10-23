@@ -470,6 +470,12 @@ public class CustomTheme {
 		rule(css, "Composite.MPart,\n.MPart Composite,\n.MPart Label,\n.MPart CLabel,\n.MPart Group,\n.MPart Link,\n"
 				+ ".MPart Sash,\n.MPart SashForm,\n.MPart ScrolledComposite,\n.MPart Canvas,\n.MPart Form,\n.MPart ScrolledForm,\n"
 				+ ".MPart Section,\n.MPart ViewForm", "background-color: " + c("panelBackground") + ";\n\tcolor: " + c("text") + ";");
+		/*
+		 * Windows: check boxes, radio buttons and sliders paint the system background
+		 * (macOS: transparent). Not the push buttons (they keep the native look)!
+		 */
+		rule(css, ".MPart Button[style~='SWT.CHECK'],\n.MPart Button[style~='SWT.RADIO'],\n.MPart Scale,\n.MPart Slider",
+				"background-color: " + c("panelBackground") + ";\n\tcolor: " + c("text") + ";");
 		/* The content of the views (lists, trees, tables)! */
 		rule(css, ".MPart Tree,\n.MPart Table,\n.MPart List,\n.MPart Grid", "background-color: " + c("viewBackground") + ";\n\tcolor: " + c("text") + ";");
 		/*
@@ -485,7 +491,8 @@ public class CustomTheme {
 		/* The items have no own background (the toolbar background is painted by ToolbarArtwork)! */
 		rule(css, "#org-eclipse-ui-main-toolbar ToolItem,\n#PerspectiveSwitcher ToolItem", "color: " + c("toolbarText") + ";");
 		rule(css, "#PerspectiveSwitcher ToolBar", "color: " + c("toolbarText") + ";");
-		rule(css, "#org-eclipse-ui-trim-status,\n#org-eclipse-ui-trim-status Composite,\n#org-eclipse-ui-trim-status Label",
+		/* The heap status paints with its own colors (set with setBackground and setForeground)! */
+		rule(css, "#org-eclipse-ui-trim-status,\n#org-eclipse-ui-trim-status Composite,\n#org-eclipse-ui-trim-status Label,\nHeapStatus",
 				"background-color: " + c("statusBar") + ";\n\tcolor: " + c("text") + ";");
 		return css.toString();
 	}

@@ -1,5 +1,6 @@
 package com.eco.bio7.javaeditor.ast;
 
+import com.eco.bio7.compile.JavaVersions;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -35,10 +36,10 @@ public class CompilerAst {
 
 	public CompilerAst(String source) {
 		Document doc = new Document(source);
-		parser = ASTParser.newParser(AST.JLS25);
+		parser = ASTParser.newParser(JavaVersions.AST_LEVEL);
 
 		Map<String, String> options = JavaCore.getOptions();
-		JavaCore.setComplianceOptions(JavaCore.VERSION_25, options);
+		JavaCore.setComplianceOptions(JavaVersions.JDT_COMPLIANCE, options);
 		parser.setCompilerOptions(options);
 		parser.setResolveBindings(true);
 		parser.setBindingsRecovery(true);

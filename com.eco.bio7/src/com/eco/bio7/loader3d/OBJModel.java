@@ -342,6 +342,27 @@ public class OBJModel {
 										// faces
 	} // end of reportOnModel()
 
+	/**
+	 * Returns the name of the model file.
+	 */
+	public String getName() {
+		return modelNm;
+	}
+
+	/**
+	 * Returns the number of vertices.
+	 */
+	public int getNumVertices() {
+		return verts.size();
+	}
+
+	/**
+	 * Returns the number of faces.
+	 */
+	public int getNumFaces() {
+		return faces.getNumFaces();
+	}
+
 	public ModelDimensions getModelDims() {
 		return modelDims;
 	}

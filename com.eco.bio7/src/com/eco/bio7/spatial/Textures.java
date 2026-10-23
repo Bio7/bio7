@@ -15,10 +15,12 @@ package com.eco.bio7.spatial;
 
 import ij.ImagePlus;
 import ij.WindowManager;
+import ij.process.ByteProcessor;
+import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
@@ -52,6 +54,9 @@ public class Textures {
 	private IPreferenceStore store;
 
 	private boolean staticImageImageJ = false;
+	/* The title of the ImageJ image or the name of the file of a static texture! */
+	private String sourceName = "";
+	private Runnable updateListener;
 
 	public Textures(HeightMaps heightMap) {
 
@@ -85,17 +90,18 @@ public class Textures {
 				imp = WindowManager.getCurrentWindow().getImagePlus();
 
 				if (imp != null) {
-					Image img = imp.getImage();
 					heightMap.imageWidth = imp.getWidth();
 					heightMap.imageHeight = imp.getHeight();
 					ip = imp.getProcessor();
+					sourceName = imp.getTitle();
 
-					buff = createBufferedImage(img);
+					buff = createImageWithLut(imp);
 
 					drawable.invoke(false, new GLRunnable() {
 						@Override
 						public boolean run(GLAutoDrawable drawable) {
 							tex = AWTTextureIO.newTexture(drawable.getGLProfile(), buff, false);
+							notifyListener();
 							return true;
 						}
 					});
@@ -134,6 +140,7 @@ public class Textures {
 			tex = animRenderer.getTexture();
 
 		}
+		notifyListener();
 
 	}
 
@@ -163,10 +170,17 @@ public class Textures {
 		BufferedImage image;
 		try {
 			image = ImageIO.read(new File(filename));
+			if (image == null) {
+				/* Not a supported image file! */
+				System.err.println("The texture file can't be read: " + filename);
+				return tex;
+			}
+			sourceName = new File(filename).getName();
 			drawable.invoke(false, new GLRunnable() {
 				@Override
 				public boolean run(GLAutoDrawable drawable) {
 					tex = AWTTextureIO.newTexture(drawable.getGLProfile(), image, false);
+					notifyListener();
 					return true;
 				}
 			});
@@ -182,7 +196,53 @@ public class Textures {
 		return tex;
 	}
 
-	private BufferedImage createBufferedImage(java.awt.Image image) {
+	/**
+	 * Creates an image of the ImageJ image with the current LUT and display range.
+	 * The AWT image of ImagePlus.getImage() is cached and not updated if a LUT is
+	 * applied to a displayed image!
+	 * 
+	 * @param imp the ImageJ image
+	 * @return an ARGB image like displayed in ImageJ
+	 */
+	public static BufferedImage createImageWithLut(ImagePlus imp) {
+		ImageProcessor ip = imp.getProcessor();
+		if (ip == null || imp.isComposite()) {
+			return createBufferedImage(imp.getImage());
+		}
+		int w = ip.getWidth();
+		int h = ip.getHeight();
+		int[] argb = new int[w * h];
+		if (ip instanceof ColorProcessor) {
+			int[] pixels = (int[]) ip.getPixels();
+			for (int i = 0; i < argb.length; i++) {
+				argb[i] = 0xff000000 | pixels[i];
+			}
+		} else {
+			byte[] pixels;
+			ColorModel cm;
+			if (ip instanceof ByteProcessor) {
+				/* The current color model contains the display range of 8-bit images! */
+				pixels = (byte[]) ip.getPixels();
+				cm = ip.getCurrentColorModel();
+			} else {
+				/* 16-bit and 32-bit images are scaled to the display range! */
+				pixels = (byte[]) ip.convertToByteProcessor(true).getPixels();
+				cm = ip.getColorModel();
+			}
+			int[] lut = new int[256];
+			for (int i = 0; i < 256; i++) {
+				lut[i] = 0xff000000 | cm.getRGB(i);
+			}
+			for (int i = 0; i < argb.length; i++) {
+				argb[i] = lut[pixels[i] & 0xff];
+			}
+		}
+		BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		bi.setRGB(0, 0, w, h, argb, 0, w);
+		return bi;
+	}
+
+	private static BufferedImage createBufferedImage(java.awt.Image image) {
 
 		int w = image.getWidth(null);
 		int h = image.getHeight(null);
@@ -207,6 +267,43 @@ public class Textures {
 
 	public void setShowTexture(boolean showTexture) {
 		this.showTexture = showTexture;
+	}
+
+	/**
+	 * Returns a description of the displayed texture (source and size).
+	 * 
+	 * @return the description
+	 */
+	public String getInfo() {
+		if (!showTexture || tex == null) {
+			return "No texture displayed";
+		}
+		String source;
+		if (!renderImage) {
+			source = DynamicTexture.isImagejEnabled() ? "Dynamic texture (ImageJ)" : "Empty dynamic texture";
+		} else if (staticImageImageJ) {
+			source = "Static texture (ImageJ): " + sourceName;
+		} else {
+			source = "Static texture (file): " + sourceName;
+		}
+		return source + ", " + tex.getWidth() + " x " + tex.getHeight();
+	}
+
+	/**
+	 * A listener which is called (in the OpenGL thread) when a texture has been
+	 * created.
+	 * 
+	 * @param listener the listener
+	 */
+	public void setUpdateListener(Runnable listener) {
+		this.updateListener = listener;
+	}
+
+	private void notifyListener() {
+		Runnable listener = updateListener;
+		if (listener != null) {
+			listener.run();
+		}
 	}
 
 	public boolean isStaticImageImageJ() {

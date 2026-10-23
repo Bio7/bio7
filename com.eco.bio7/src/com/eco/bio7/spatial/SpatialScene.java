@@ -30,11 +30,14 @@ public class SpatialScene {
 	}
 
 	public void showAxes(GL2 gl, SpatialStructure grid) {
-		float sizeX = grid.getSizeX();
-		float sizeY = grid.getSizeY();
-		float sizeZ = grid.getSizeZ();
+		/* The x and y axes are as long as a displayed texture! */
+		float sizeX = grid.getAxisSizeX();
+		float sizeY = grid.getAxisSizeY();
+		float sizeZ = grid.getAxisSizeZ();
 		if (grid.showAxes) {
 			setAxesLines(gl, grid);
+			/* The letters are scaled to a displayed texture like the axis numbers! */
+			float letterScale = AxisLabelsRenderer.getSizeFactor(grid);
 
 			// Save original matrix
 			float[] originalMV = new float[16];
@@ -42,31 +45,31 @@ public class SpatialScene {
 
 			// X Axis Label
 			gl.glPushMatrix();
-			gl.glTranslatef(sizeX + 10, 0, 0);
+			gl.glTranslatef(sizeX + 10 * letterScale, 0, 0);
 			applyBillboardRotation(gl, originalMV);
 			renderer.begin3DRendering();
 			renderer.setColor(colorCubeLines[0], colorCubeLines[1], colorCubeLines[2], colorCubeLines[3]);
-			renderer.draw3D("X", 0, 0, 0, 1.0f);
+			renderer.draw3D("X", 0, 0, 0, letterScale);
 			renderer.end3DRendering();
 			gl.glPopMatrix();
 
 			// Y Axis Label
 			gl.glPushMatrix();
-			gl.glTranslatef(0, sizeY + 10, 0);
+			gl.glTranslatef(0, sizeY + 10 * letterScale, 0);
 			applyBillboardRotation(gl, originalMV);
 			renderer.begin3DRendering();
 			renderer.setColor(colorCubeLines[0], colorCubeLines[1], colorCubeLines[2], colorCubeLines[3]);
-			renderer.draw3D("Y", 0, 0, 0, 1.0f);
+			renderer.draw3D("Y", 0, 0, 0, letterScale);
 			renderer.end3DRendering();
 			gl.glPopMatrix();
 
 			// Z Axis Label
 			gl.glPushMatrix();
-			gl.glTranslatef(0, 0, sizeZ + 10);
+			gl.glTranslatef(0, 0, sizeZ + 10 * letterScale);
 			applyBillboardRotation(gl, originalMV);
 			renderer.begin3DRendering();
 			renderer.setColor(colorCubeLines[0], colorCubeLines[1], colorCubeLines[2], colorCubeLines[3]);
-			renderer.draw3D("Z", 0, 0, 0, 1.0f);
+			renderer.draw3D("Z", 0, 0, 0, letterScale);
 			renderer.end3DRendering();
 			gl.glPopMatrix();
 		}
@@ -114,25 +117,30 @@ public class SpatialScene {
 	}
 
 	public void setAxesLines(GL2 gl, SpatialStructure grid) {
-		float sizeX = grid.getSizeX();
-		float sizeY = grid.getSizeY();
-		float sizeZ = grid.getSizeZ();
+		float sizeX = grid.getAxisSizeX();
+		float sizeY = grid.getAxisSizeY();
+		float sizeZ = grid.getAxisSizeZ();
+		/*
+		 * Cartesian: the axes from -size to +size (like the axis numbers, see
+		 * AxisLabelsRenderer), octant: from the origin to +size!
+		 */
+		float start = HeightMaps.isCartesian() ? -1 : 0;
 
 		gl.glBegin(GL.GL_LINES);
 
 		// x
 		gl.glColor3f(colorCubeLines[0], colorCubeLines[1], colorCubeLines[2]);
-		gl.glVertex3f(0, 0, 0);
+		gl.glVertex3f(start * sizeX, 0, 0);
 		gl.glColor3f(colorCubeLines[0], colorCubeLines[1], colorCubeLines[2]);
 		gl.glVertex3f(sizeX, 0, 0);
 		/* y */
 		gl.glColor3f(colorCubeLines[0], colorCubeLines[1], colorCubeLines[2]);
-		gl.glVertex3f(0, 0, 0);
+		gl.glVertex3f(0, start * sizeY, 0);
 		gl.glColor3f(colorCubeLines[0], colorCubeLines[1], colorCubeLines[2]);
 		gl.glVertex3f(0, sizeY, 0);
 		/* z */
 		gl.glColor3f(colorCubeLines[0], colorCubeLines[1], colorCubeLines[2]);
-		gl.glVertex3f(0, 0, 0);
+		gl.glVertex3f(0, 0, start * sizeZ);
 		gl.glColor3f(colorCubeLines[0], colorCubeLines[1], colorCubeLines[2]);
 		gl.glVertex3f(0, 0, sizeZ);
 
@@ -142,9 +150,10 @@ public class SpatialScene {
 
 	public void drawGrid(GL2 gl, SpatialStructure grid) {
 		if (grid.showGrid) {
-			float sizeX = grid.getSizeX();
-			float sizeY = grid.getSizeY();
-			float sizeZ = grid.getSizeZ();
+			/* The XY extent is as large as a displayed texture! */
+			float sizeX = grid.getAxisSizeX();
+			float sizeY = grid.getAxisSizeY();
+			float sizeZ = grid.getAxisSizeZ();
 			float gridSize = grid.getGridSize();
 			gl.glBegin(GL.GL_LINES);
 			gl.glColor3f(colorCubeLines[0], colorCubeLines[1], colorCubeLines[2]);
@@ -290,9 +299,10 @@ public class SpatialScene {
 	}
 
 	public void drawGrid2(GL2 gl, SpatialStructure grid) {
-		float sizeX = grid.getSizeX();
-		float sizeY = grid.getSizeY();
-		float sizeZ = grid.getSizeZ();
+		/* The XY extent is as large as a displayed texture! */
+		float sizeX = grid.getAxisSizeX();
+		float sizeY = grid.getAxisSizeY();
+		float sizeZ = grid.getAxisSizeZ();
 		float gridSize = grid.getGridSize();
 		if (grid.showGrid) {
 			gl.glBegin(GL.GL_LINES);

@@ -45,6 +45,13 @@ public class AxisLabelsRenderer {
 	private boolean showMajorTicks = true;
 	private boolean showMinorTicks = true;
 	private boolean showRulerAxes = true; // Draw physical ruler axes (octant mode only)
+	// Label the x and y axes with the pixel coordinates of a displayed texture
+	private static boolean imageCoordinates = false;
+	// The x labels are placed below and the y labels left of a centered texture
+	private float labelBaseX = 0;
+	private float labelBaseY = 0;
+	// Scales the text, ticks and label offset to the size of a displayed texture
+	private float sizeFactor = 1.0f;
 	private float majorTickLength = 10.0f;
 	private float minorTickLength = 5.0f;
 	private float labelOffset = 35.0f;
@@ -69,6 +76,11 @@ public class AxisLabelsRenderer {
 		public int decimalPlaces;
 		public boolean enabled;
 		public String axisName;
+		// The displayed value = valueOffset + valueSign * axis position
+		public float valueOffset = 0;
+		public float valueSign = 1;
+		// The label interval adapted to a displayed texture (0 = labelInterval)
+		public float autoInterval = 0;
 
 		public AxisConfig(String name, float min, float max, float labelInterval, int minorTicks, int decimals) {
 			this.axisName = name;
@@ -80,8 +92,12 @@ public class AxisLabelsRenderer {
 			this.enabled = true;
 		}
 
+		public float getInterval() {
+			return autoInterval > 0 ? autoInterval : labelInterval;
+		}
+
 		public float getMinorTickInterval() {
-			return labelInterval / (float) minorTicksPerMajor;
+			return getInterval() / (float) minorTicksPerMajor;
 		}
 
 		public String formatValue(float value) {
@@ -134,6 +150,8 @@ public class AxisLabelsRenderer {
 		// Get current mode from HeightMaps (which is managed by SpatialStructure)
 		boolean isOctantMode = !HeightMaps.isCartesian();
 		updateAxisRangesFromSpatialStructure(spatial, isOctantMode);
+		updateValueMapping(spatial, isOctantMode);
+		updateSizeFromTexture(spatial);
 
 		// In octant mode, draw ruler axes first
 		if (isOctantMode && showRulerAxes) {
@@ -158,8 +176,8 @@ public class AxisLabelsRenderer {
 	 * 0) in octant space
 	 */
 	private void drawRulerAxes(GL2 gl, SpatialStructure spatial) {
-		float sizeX = spatial.getSizeX();
-		float sizeY = spatial.getSizeY();
+		float sizeX = spatial.getAxisSizeX();
+		float sizeY = spatial.getAxisSizeY();
 
 		gl.glDisable(GL2.GL_LIGHTING);
 		gl.glColor4f(axisColor[0], axisColor[1], axisColor[2], axisColor[3]);
@@ -186,9 +204,10 @@ public class AxisLabelsRenderer {
 	 * Called before rendering to sync with current spatial extents
 	 */
 	private void updateAxisRangesFromSpatialStructure(SpatialStructure spatial, boolean isOctantMode) {
-		float sizeX = spatial.getSizeX();
-		float sizeY = spatial.getSizeY();
-		float sizeZ = spatial.getSizeZ();
+		/* The x and y axes are as long as a displayed texture! */
+		float sizeX = spatial.getAxisSizeX();
+		float sizeY = spatial.getAxisSizeY();
+		float sizeZ = spatial.getAxisSizeZ();
 
 		// Update X axis range
 		if (lastOctantMode != isOctantMode || Math.abs(lastSizeX - sizeX) > 1.0f) {
@@ -226,20 +245,128 @@ public class AxisLabelsRenderer {
 	}
 
 	/**
+	 * Maps the axis positions to the displayed values. With image coordinates
+	 * enabled and a displayed texture the x and y axes show the pixel coordinates
+	 * of the image (y like in ImageJ from the top of the image).
+	 */
+	private void updateValueMapping(SpatialStructure spatial, boolean isOctantMode) {
+		float[] textureExtent = spatial.getTextureExtent();
+		/* Cartesian: the texture is centered and would hide the labels at the axes! */
+		boolean centeredTexture = textureExtent != null && !isOctantMode;
+		labelBaseX = centeredTexture ? -textureExtent[0] / 2 : 0;
+		labelBaseY = centeredTexture ? -textureExtent[1] / 2 : 0;
+		float[] extent = imageCoordinates ? textureExtent : null;
+		xAxisConfig.valueOffset = 0;
+		xAxisConfig.valueSign = 1;
+		yAxisConfig.valueOffset = 0;
+		yAxisConfig.valueSign = 1;
+		if (extent == null) {
+			return;
+		}
+		float width = extent[0];
+		float height = extent[1];
+
+		// In Cartesian mode the texture is centered at the origin
+		if (!isOctantMode) {
+			xAxisConfig.valueOffset = width / 2;
+		}
+
+		// By default the image row 0 is at the top (see HeightMaps.beginOrientation)
+		boolean flipped = HeightMaps.isFlipVertically();
+		if (isOctantMode) {
+			yAxisConfig.valueOffset = flipped ? 0 : height;
+		} else {
+			yAxisConfig.valueOffset = height / 2;
+		}
+		yAxisConfig.valueSign = flipped ? 1 : -1;
+	}
+
+	/**
+	 * Adapts the label interval of the axes and the size of the labels and
+	 * ticks to a displayed texture (about 10 labels along the longer image side).
+	 * Without a texture the default (configured) values are used.
+	 */
+	private void updateSizeFromTexture(SpatialStructure spatial) {
+		float[] extent = spatial.getTextureExtent();
+		if (extent == null) {
+			xAxisConfig.autoInterval = 0;
+			yAxisConfig.autoInterval = 0;
+			zAxisConfig.autoInterval = 0;
+			sizeFactor = 1.0f;
+			return;
+		}
+		float interval = textureInterval(extent);
+		xAxisConfig.autoInterval = interval;
+		yAxisConfig.autoInterval = interval;
+		zAxisConfig.autoInterval = interval;
+		sizeFactor = interval / 100.0f;
+	}
+
+	/* About 10 labels along the longer side of the texture! */
+	private static float textureInterval(float[] extent) {
+		return niceInterval(Math.max(extent[0], extent[1]) / 10.0f);
+	}
+
+	/**
+	 * Returns the size factor for the axis labels and letters: 1 without a
+	 * displayed texture, else scaled to the texture size (the defaults fit to the
+	 * default interval of 100, e.g., a 1000 pixel image).
+	 * 
+	 * @param spatial the spatial structure
+	 * @return the size factor
+	 */
+	public static float getSizeFactor(SpatialStructure spatial) {
+		float[] extent = spatial.getTextureExtent();
+		return extent == null ? 1.0f : textureInterval(extent) / 100.0f;
+	}
+
+	/**
+	 * Returns a rounded interval (1, 2 or 5 times a power of 10, at least 1) near
+	 * the given value.
+	 */
+	private static float niceInterval(float value) {
+		if (value <= 1) {
+			return 1;
+		}
+		double exponent = Math.pow(10, Math.floor(Math.log10(value)));
+		double fraction = value / exponent;
+		double nice;
+		if (fraction < 1.5) {
+			nice = 1;
+		} else if (fraction < 3.5) {
+			nice = 2;
+		} else if (fraction < 7.5) {
+			nice = 5;
+		} else {
+			nice = 10;
+		}
+		return (float) (nice * exponent);
+	}
+
+	/**
 	 * Render a single axis with ticks and rotated labels
 	 */
 	private void renderAxis(GL2 gl, AxisConfig config, boolean isXAxis, boolean isYAxis, boolean isZAxis,
 			boolean isOctantMode) {
 		float minorInterval = config.getMinorTickInterval();
-		float startValue = (float) Math.ceil(config.minValue / minorInterval) * minorInterval;
 
-		for (float value = startValue; value <= config.maxValue + 0.001f; value += minorInterval) {
-			if (value < config.minValue - 0.001f || value > config.maxValue + 0.001f) {
+		// The range of the displayed values (see updateValueMapping)
+		float valueA = config.valueOffset + config.valueSign * config.minValue;
+		float valueB = config.valueOffset + config.valueSign * config.maxValue;
+		float minValue = Math.min(valueA, valueB);
+		float maxValue = Math.max(valueA, valueB);
+		float startValue = (float) Math.ceil(minValue / minorInterval) * minorInterval;
+
+		for (float value = startValue; value <= maxValue + 0.001f; value += minorInterval) {
+			if (value < minValue - 0.001f || value > maxValue + 0.001f) {
 				continue;
 			}
 
+			// The position of the displayed value on the axis
+			float position = (value - config.valueOffset) / config.valueSign;
+
 			// Determine if this is a major tick (at label interval)
-			boolean isMajorTick = Math.abs(value % config.labelInterval) < minorInterval * 0.1f;
+			boolean isMajorTick = Math.abs(value % config.getInterval()) < minorInterval * 0.1f;
 
 			// In Cartesian mode, always show 0 as a major tick
 			if (!isOctantMode && Math.abs(value) < minorInterval * 0.1f) {
@@ -247,13 +374,15 @@ public class AxisLabelsRenderer {
 			}
 
 			if (isMajorTick && showMajorTicks) {
-				drawTick(gl, value, isXAxis, isYAxis, isZAxis, majorTickLength, tickColor, isOctantMode);
+				drawTick(gl, position, isXAxis, isYAxis, isZAxis, majorTickLength * sizeFactor, tickColor,
+						isOctantMode);
 			} else if (!isMajorTick && showMinorTicks) {
-				drawTick(gl, value, isXAxis, isYAxis, isZAxis, minorTickLength, tickColor, isOctantMode);
+				drawTick(gl, position, isXAxis, isYAxis, isZAxis, minorTickLength * sizeFactor, tickColor,
+						isOctantMode);
 			}
 
 			if (isMajorTick && showLabels) {
-				drawRotatedLabel(gl, value, config, isXAxis, isYAxis, isZAxis, isOctantMode);
+				drawRotatedLabel(gl, position, value, config, isXAxis, isYAxis, isZAxis, isOctantMode);
 			}
 		}
 	}
@@ -309,8 +438,8 @@ public class AxisLabelsRenderer {
 	 * Draw a label rotated to face the camera (billboard style) Uses matrix
 	 * manipulation for screen-aligned text rendering
 	 */
-	private void drawRotatedLabel(GL2 gl, float value, AxisConfig config, boolean isXAxis, boolean isYAxis,
-			boolean isZAxis, boolean isOctantMode) {
+	private void drawRotatedLabel(GL2 gl, float position, float value, AxisConfig config, boolean isXAxis,
+			boolean isYAxis, boolean isZAxis, boolean isOctantMode) {
 		String label = config.formatValue(value);
 
 		// Save the current matrix state
@@ -318,19 +447,20 @@ public class AxisLabelsRenderer {
 
 		// Calculate label position based on axis
 		float labelX, labelY, labelZ;
+		float labelOffset = this.labelOffset * sizeFactor;
 
 		if (isXAxis) {
-			labelX = value;
-			labelY = -labelOffset;
+			labelX = position;
+			labelY = labelBaseY - labelOffset;
 			labelZ = -labelOffset;
 		} else if (isYAxis) {
-			labelX = -labelOffset;
-			labelY = value;
+			labelX = labelBaseX - labelOffset;
+			labelY = position;
 			labelZ = -labelOffset;
 		} else {
 			labelX = -labelOffset;
 			labelY = -labelOffset;
-			labelZ = value;
+			labelZ = position;
 		}
 
 		// Translate to label position
@@ -359,8 +489,9 @@ public class AxisLabelsRenderer {
 		renderer.setColor(labelColor[0], labelColor[1], labelColor[2], labelColor[3]);
 
 		// Center text on the label position
-		float textWidth = renderer.getCharWidth('0') * label.length();
-		renderer.draw3D(label, -textWidth / 2f, -6, 0, 0.8f);
+		float textScale = 0.8f * sizeFactor;
+		float textWidth = renderer.getCharWidth('0') * label.length() * sizeFactor;
+		renderer.draw3D(label, -textWidth / 2f, -6 * sizeFactor, 0, textScale);
 
 		renderer.end3DRendering();
 
@@ -376,6 +507,20 @@ public class AxisLabelsRenderer {
 
 	public void setShowRulerAxes(boolean show) {
 		this.showRulerAxes = show;
+	}
+
+	/**
+	 * If enabled the x and y axes are labeled with the pixel coordinates of a
+	 * displayed texture (y like in ImageJ from the top of the image).
+	 * 
+	 * @param enable true to display the image coordinates
+	 */
+	public static void setImageCoordinates(boolean enable) {
+		imageCoordinates = enable;
+	}
+
+	public static boolean isImageCoordinates() {
+		return imageCoordinates;
 	}
 
 	public void setXAxisConfig(float interval, int minorTicks, int decimalPlaces) {

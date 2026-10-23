@@ -168,6 +168,22 @@ public final class ThemeStore {
 		return app == null ? null : app.getContext().get(IThemeEngine.class);
 	}
 
+	/*
+	 * The stylesheet of a theme saved by an older version of Bio7 is generated
+	 * again (e.g., with new rules), before the theme engine reads it!
+	 */
+	private static void updateCss(CustomTheme theme) {
+		File css = new File(dir(theme), CustomTheme.CSS);
+		try {
+			String generated = theme.toCss();
+			if (!css.exists() || !generated.equals(Files.readString(css.toPath()))) {
+				Files.writeString(css.toPath(), generated);
+			}
+		} catch (IOException e) {
+			/* The old stylesheet is used! */
+		}
+	}
+
 	/** Registers the theme (once, the stylesheet is read again when the theme is set). */
 	public static void register(CustomTheme theme) {
 		IThemeEngine engine = engine();
@@ -191,6 +207,7 @@ public final class ThemeStore {
 
 	public static void registerAll() {
 		for (CustomTheme theme : themes()) {
+			updateCss(theme);
 			register(theme);
 		}
 		listenToThemeChanges();

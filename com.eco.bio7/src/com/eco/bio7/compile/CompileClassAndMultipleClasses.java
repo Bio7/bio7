@@ -195,11 +195,10 @@
  *   The original context classloader is restored after execution.
  * 
  * 
- * For Java compiler version updates, also change:
- *   - AST.JLS25 in this class
- *   - JavaSourceClassLoader
- *   - WorkbenchPreferenceJava
- *   - PreferenceInitializer
+ * For Java compiler version updates, change the constants in JavaVersions
+ * (com.eco.bio7.javaedit, package com.eco.bio7.compile): the AST level of this
+ * class, the compiler versions of the preferences and the ImageJ compiler
+ * target are defined there.
  * 
  * =============================================================================
  */
@@ -228,7 +227,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Name;
@@ -566,7 +564,7 @@ public class CompileClassAndMultipleClasses {
         ICompilationUnit cu = getCompilationUnitFromEditor(editor);
         
         if (cu != null) {
-            ASTParser parser = ASTParser.newParser(AST.JLS25);
+            ASTParser parser = ASTParser.newParser(JavaVersions.AST_LEVEL);
             parser.setSource(cu);
             CompilationUnit compUnit = (CompilationUnit) parser.createAST(null);
 
@@ -591,7 +589,7 @@ public class CompileClassAndMultipleClasses {
             CompilationUnit compUnit = null;
             Document doc = new Document(BatchModel.fileToString(path.getAbsolutePath()));
 
-            ASTParser parser = ASTParser.newParser(AST.JLS25);
+            ASTParser parser = ASTParser.newParser(JavaVersions.AST_LEVEL);
             parser.setSource(doc.get().toCharArray());
             compUnit = (CompilationUnit) parser.createAST(null);
             PackageDeclaration pdecl = compUnit.getPackage();
@@ -615,7 +613,7 @@ public class CompileClassAndMultipleClasses {
             CompilationUnit compUnit = null;
             Document doc = new Document(BatchModel.fileToString(ifile.getRawLocation().toString()));
 
-            ASTParser parser = ASTParser.newParser(AST.JLS25);
+            ASTParser parser = ASTParser.newParser(JavaVersions.AST_LEVEL);
             parser.setSource(doc.get().toCharArray());
             compUnit = (CompilationUnit) parser.createAST(null);
             PackageDeclaration pdecl = compUnit.getPackage();
@@ -643,11 +641,22 @@ public class CompileClassAndMultipleClasses {
 
         boolean useObjectCreation = store.getBoolean("COMPILE_OBJECT_CREATION");
         if (useObjectCreation) {
+            /*
+             * The registered (old) model is removed while the new class is created: its
+             * constructor can open views (e.g., the 3D view) which call the setup method of
+             * the registered model, so the old model would open its perspective and custom
+             * views again. It is registered again if the new class is not a model.
+             */
+            Model oldModel = Compiled.getModel();
+            Compiled.setModel(null);
             try {
                 o = cl.getDeclaredConstructor().newInstance();
             } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                     | InvocationTargetException | NoSuchMethodException | SecurityException e1) {
                 e1.printStackTrace();
+            }
+            if (!(o instanceof Model)) {
+                Compiled.setModel(oldModel);
             }
 
             if (o != null) {

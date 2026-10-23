@@ -49,6 +49,7 @@ import org.eclipse.ui.PlatformUI;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.compile.Model;
+import com.eco.bio7.loader3d.ModelDimensions;
 import com.eco.bio7.loader3d.OBJModel;
 import com.eco.bio7.methods.Compiled;
 import com.eco.bio7.spatial.preferences.Preferences3d;
@@ -106,7 +107,17 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	private IPreferenceStore store;
 	private int dox;
 	private int doy;
-	private int doz = 2000;
+	private static final int DEFAULT_VIEW_DISTANCE = 2000;
+	private int doz = DEFAULT_VIEW_DISTANCE;
+	// The texture size the view distance was fitted to (0 = no texture)
+	private float fitTextureWidth = 0;
+	private float fitTextureHeight = 0;
+	private float fitTextureDepth = 0;
+	/* The volume rendering of ImageJ stacks! */
+	private final VolumeRenderer volume = new VolumeRenderer();
+	/* The iso surface of ImageJ stacks! */
+	private final IsoSurface isoSurface = new IsoSurface();
+	private Runnable modelListener;
 	private int doxv;
 	private int doyv = 0;
 	private int dozv;
@@ -326,11 +337,15 @@ public class SpatialStructure implements KeyListener, MouseListener {
 			space = new SpatialLoader(gl);
 			scene = new SpatialScene();
 			axisLabelsRenderer = new AxisLabelsRenderer(0, 1000, 0, 1000, 0, 1000);
+			/* A new context: the volume texture is created again! */
+			volume.contextLost();
+			isoSurface.contextLost();
 			textures.createTexture(gl,drawable);
 			addLight(gl);
 			/* Load the.obj model from the path! */
 			if (loadModel) {
 				space.loadObjModel();// loads the model from an object file!
+				notifyModelListener();
 			}
 
 			gl.glClearColor(colorBackground[0], colorBackground[1], colorBackground[2], colorBackground[3]);
@@ -591,6 +606,20 @@ public class SpatialStructure implements KeyListener, MouseListener {
 
 			gl.glRotatef(rotatz, 0.0f, 0.0f, 1.0f);
 			gl.glScalef(scaleValue, scaleValue, scaleValue);// here you can
+			/*
+			 * In octant mode rotate around the center of the grid axes (with a texture
+			 * around the center of the image)!
+			 */
+			if (!walkthrough && !HeightMaps.isCartesian()) {
+				float centerZ;
+				float[] stack = getStackExtent();
+				if (stack != null) {
+					centerZ = stack[2] / 2.0f;
+				} else {
+					centerZ = getTextureExtent() != null ? 0 : sizeZ / 2.0f;
+				}
+				gl.glTranslatef(-getAxisSizeX() / 2.0f, -getAxisSizeY() / 2.0f, -centerZ);
+			}
 			if (stereo) {
 				gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 				gl.glDepthMask(true);
@@ -606,12 +635,14 @@ public class SpatialStructure implements KeyListener, MouseListener {
 				textures.createTexture(gl,drawable);
 				textures.createNewTexture = false;
 			}
+			fitViewToTexture();
 			drawSpace(gl,drawable);
 
 			/* Load the.obj model from the path! */
 			if (reloadModel) {
 				space.loadObjModel();
 				reloadModel = false;
+				notifyModelListener();
 			}
 			if (loadModel && model != null) {
 				gl.glPushMatrix();
@@ -622,6 +653,9 @@ public class SpatialStructure implements KeyListener, MouseListener {
 				gl.glRotated(objModel1Rotation[1], 0, 1, 0);
 				gl.glRotated(objModel1Rotation[2], 0, 0, 1);
 				gl.glScaled(objModel1Scale, objModel1Scale, objModel1Scale);
+				gl.glPushAttrib(GL2.GL_ENABLE_BIT);
+				/* The scale also scales the normals (too bright or too dark lighting)! */
+				gl.glEnable(GL2.GL_NORMALIZE);
 				/* Switch if the model should be affected by the light! */
 				if (lightenedObjModel == false) {
 					gl.glDisable(GL_LIGHTING);
@@ -629,6 +663,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 					gl.glEnable(GL_LIGHTING);
 				}
 				model.draw(gl);
+				gl.glPopAttrib();
 				gl.glPopMatrix();
 
 			}
@@ -672,6 +707,10 @@ public class SpatialStructure implements KeyListener, MouseListener {
 			}
 
 			ecoMain();
+
+			/* The iso surface and the transparent volume after the opaque objects! */
+			isoSurface.render(gl, HeightMaps.isCartesian());
+			volume.render(gl, HeightMaps.isCartesian());
 
 			gl.glPopMatrix();
 			gl.glFlush();
@@ -1164,7 +1203,9 @@ public class SpatialStructure implements KeyListener, MouseListener {
 					prevMouseX = x;
 					prevMouseY = y;
 
-					doz += thetaY * multiplyDragCameraSpeed;// adjust camera speed for the distance to the object!
+					/* Faster for large distances (e.g., a large texture)! */
+					float distanceSpeed = Math.max(1.0f, doz / (float) DEFAULT_VIEW_DISTANCE);
+					doz += thetaY * multiplyDragCameraSpeed * distanceSpeed;// adjust camera speed for the distance to the object!
 
 				}
 			} else {
@@ -1279,6 +1320,136 @@ public class SpatialStructure implements KeyListener, MouseListener {
 
 	public float getSizeZ() {
 		return sizeZ;
+	}
+
+	/**
+	 * Returns the size (width, height) of the displayed texture (or of a displayed
+	 * volume if no texture is displayed) or null if nothing is displayed.
+	 * 
+	 * @return the texture width and height or null
+	 */
+	public float[] getTextureExtent() {
+		if (textures != null && textures.showTexture && textures.tex != null) {
+			return new float[] { textures.tex.getWidth(), textures.tex.getHeight() };
+		}
+		float[] stack = getStackExtent();
+		if (stack != null) {
+			return new float[] { stack[0], stack[1] };
+		}
+		return null;
+	}
+
+	/*
+	 * The size (width, height, depth) of a displayed volume or iso surface of an
+	 * ImageJ stack if no texture is displayed, else null!
+	 */
+	private float[] getStackExtent() {
+		if (textures != null && textures.showTexture && textures.tex != null) {
+			return null;
+		}
+		if (volume.isDisplayed()) {
+			return new float[] { volume.getWidth(), volume.getHeight(), volume.getDepth() };
+		}
+		if (isoSurface.isDisplayed()) {
+			return new float[] { isoSurface.getWidth(), isoSurface.getHeight(), isoSurface.getDepth() };
+		}
+		return null;
+	}
+
+	/**
+	 * Returns the iso surface renderer for ImageJ stacks.
+	 * 
+	 * @return the iso surface
+	 */
+	public IsoSurface getIsoSurface() {
+		return isoSurface;
+	}
+
+	/**
+	 * A listener which is called (in the OpenGL thread) when an *.obj model has
+	 * been loaded.
+	 * 
+	 * @param listener the listener
+	 */
+	public void setModelListener(Runnable listener) {
+		this.modelListener = listener;
+	}
+
+	private void notifyModelListener() {
+		Runnable listener = modelListener;
+		if (listener != null) {
+			listener.run();
+		}
+	}
+
+	/**
+	 * Returns a description of the loaded *.obj model.
+	 * 
+	 * @return the description
+	 */
+	public String getModelInfo() {
+		OBJModel m = model;
+		if (m == null) {
+			return loadModel ? "The model can't be loaded (see the error log)" : "No model loaded";
+		}
+		ModelDimensions dims = m.getModelDims();
+		String size = String.format("%.4g x %.4g x %.4g", dims.getWidth(), dims.getHeight(), dims.getDepth());
+		return m.getName() + ": " + m.getNumVertices() + " vertices, " + m.getNumFaces() + " faces, size " + size
+				+ (loadModel ? "" : " (hidden)");
+	}
+
+	/**
+	 * Returns the volume renderer for ImageJ stacks.
+	 * 
+	 * @return the volume renderer
+	 */
+	public VolumeRenderer getVolumeRenderer() {
+		return volume;
+	}
+
+	/**
+	 * Returns the length of the x axis. If a texture is displayed the axis is as
+	 * long as the texture width (Cartesian: from -width/2 to +width/2).
+	 * 
+	 * @return the length of the x axis
+	 */
+	public float getAxisSizeX() {
+		float[] extent = getTextureExtent();
+		if (extent == null) {
+			return sizeX;
+		}
+		return HeightMaps.isCartesian() ? extent[0] / 2 : extent[0];
+	}
+
+	/**
+	 * Returns the length of the z axis. If a texture is displayed the axis is as
+	 * long as the longer texture side (Cartesian: from -side/2 to +side/2).
+	 * 
+	 * @return the length of the z axis
+	 */
+	public float getAxisSizeZ() {
+		float[] extent = getTextureExtent();
+		if (extent == null) {
+			return sizeZ;
+		}
+		/* A stack: as long as the depth of the stack! */
+		float[] stack = getStackExtent();
+		float side = stack != null ? stack[2] : Math.max(extent[0], extent[1]);
+		return HeightMaps.isCartesian() ? side / 2 : side;
+	}
+
+	/**
+	 * Returns the length of the y axis. If a texture is displayed the axis is as
+	 * long as the texture height (Cartesian: from -height/2 to +height/2).
+	 * 
+	 * @return the length of the y axis
+	 */
+	public float getAxisSizeY() {
+		float[] extent = getTextureExtent();
+		if (extent == null) {
+			return sizeY;
+		}
+		return HeightMaps.isCartesian() ? extent[1] / 2 : extent[1];
 	}
 
 	public void setSizeZ(float sizeZ) {
@@ -1715,6 +1886,43 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	/* Set view distance to object! */
 	public void setDoz(int doz) {
 		this.doz = doz;
+	}
+
+	/**
+	 * Returns the default view distance: 2000 or, if a texture is displayed, a
+	 * distance that shows the texture like the default 1000 units grid.
+	 * 
+	 * @return the default view distance
+	 */
+	public int getDefaultViewDistance() {
+		float[] extent = getTextureExtent();
+		if (extent == null) {
+			return DEFAULT_VIEW_DISTANCE;
+		}
+		float size = Math.max(extent[0], extent[1]);
+		float[] stack = getStackExtent();
+		if (stack != null) {
+			size = Math.max(size, stack[2]);
+		}
+		return Math.max(10, Math.round(DEFAULT_VIEW_DISTANCE * size / 1000.0f));
+	}
+
+	/*
+	 * Zooms in or out if the size of the displayed texture changed (or the texture
+	 * is hidden), so that the image is neither too close nor too far!
+	 */
+	private void fitViewToTexture() {
+		float[] extent = getTextureExtent();
+		float width = extent != null ? extent[0] : 0;
+		float height = extent != null ? extent[1] : 0;
+		float[] stack = getStackExtent();
+		float depth = stack != null ? stack[2] : 0;
+		if (width != fitTextureWidth || height != fitTextureHeight || depth != fitTextureDepth) {
+			fitTextureWidth = width;
+			fitTextureHeight = height;
+			fitTextureDepth = depth;
+			doz = getDefaultViewDistance();
+		}
 	}
 	// Add getter method:
 	public AxisLabelsRenderer getAxisLabelsRenderer() {
