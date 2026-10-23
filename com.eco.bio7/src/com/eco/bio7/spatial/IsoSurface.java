@@ -37,6 +37,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.measure.Calibration;
+import ij.plugin.LutLoader;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 import ij.process.LUT;
@@ -123,6 +124,11 @@ public class IsoSurface {
 	private float[] vertexColors;
 	private boolean colorsDirty = false;
 	private boolean isoExplicit = false;
+	/* A color array set with setColorData (kept by setData) */
+	private boolean customColorData = false;
+	private boolean customColorRange = false;
+	private int[] customColorTable;
+	private float colorSampleDepth = 1;
 
 	/* The background computation */
 	private Thread worker;
@@ -210,6 +216,8 @@ public class IsoSurface {
 			}
 			isoExplicit = keepIso;
 			colorData = colorValues;
+			customColorData = false;
+			customColorRange = false;
 			imageColors = displayColors;
 			colorLut = otherChannel ? otherLut : lut;
 			colorMin = otherChannel ? otherMin : displayMin;
@@ -366,13 +374,189 @@ public class IsoSurface {
 			if (!isoExplicit) {
 				isoValue = (min + max) / 2.0;
 			}
-			colorData = copy;
 			imageColors = null;
 			colorLut = null;
+			/* A color array (see setColorData) of the same size is kept! */
+			if (!customColorData || colorData == null || colorData.length != copy.length) {
+				customColorData = false;
+				colorData = copy;
+				if (!customColorRange) {
+					colorMin = min;
+					colorMax = max;
+				}
+			}
+		}
+		update();
+	}
+
+	/**
+	 * Sets an array for the colors of the surface (e.g., a heat map of another
+	 * variable of a model). The array has the size and the layout of the data
+	 * (see setData) and is kept for the following setData calls. The color mode is
+	 * set to COLOR_INTENSITY. The values are mapped to the colors of the color map
+	 * (see setColorMap) with the color range (see setColorRange, default: the
+	 * minimum and maximum of the array).
+	 * 
+	 * @param values the values (index = (z * height + y) * width + x)
+	 */
+	public void setColorData(float[] values) {
+		float[] copy = values.clone();
+		float min = Float.MAX_VALUE;
+		float max = -Float.MAX_VALUE;
+		for (int i = 0; i < copy.length; i++) {
+			if (Float.isNaN(copy[i])) {
+				copy[i] = 0;
+			}
+			min = Math.min(min, copy[i]);
+			max = Math.max(max, copy[i]);
+		}
+		synchronized (this) {
+			colorData = copy;
+			customColorData = true;
+			if (!customColorRange) {
+				colorMin = min;
+				colorMax = max;
+			}
+			if (colorMode == COLOR_SINGLE || colorMode == COLOR_IMAGE) {
+				colorMode = COLOR_INTENSITY;
+			}
+			colorsDirty = true;
+		}
+	}
+
+	/**
+	 * Sets an array for the colors of the surface (values[x][y][z], see
+	 * setColorData(float[])).
+	 */
+	public void setColorData(double[][][] values) {
+		setColorData(flatten(values));
+	}
+
+	/**
+	 * Sets an array for the colors of the surface (values[x][y][z], see
+	 * setColorData(float[])).
+	 */
+	public void setColorData(float[][][] values) {
+		int w = values.length, h = values[0].length, d = values[0][0].length;
+		float[] f = new float[w * h * d];
+		for (int x = 0; x < w; x++) {
+			for (int y = 0; y < h; y++) {
+				for (int z = 0; z < d; z++) {
+					f[(z * h + y) * w + x] = values[x][y][z];
+				}
+			}
+		}
+		setColorData(f);
+	}
+
+	private static float[] flatten(double[][][] values) {
+		int w = values.length, h = values[0].length, d = values[0][0].length;
+		float[] f = new float[w * h * d];
+		for (int x = 0; x < w; x++) {
+			for (int y = 0; y < h; y++) {
+				for (int z = 0; z < d; z++) {
+					f[(z * h + y) * w + x] = (float) values[x][y][z];
+				}
+			}
+		}
+		return f;
+	}
+
+	/**
+	 * Removes the color array (see setColorData). The colors are computed from the
+	 * data again.
+	 */
+	public synchronized void clearColorData() {
+		customColorData = false;
+		colorData = data;
+		if (!customColorRange) {
+			colorMin = displayMin;
+			colorMax = displayMax;
+		}
+		colorsDirty = true;
+	}
+
+	/**
+	 * Sets the value range of the colors (the first and the last color of the
+	 * color map).
+	 * 
+	 * @param min the value of the first color
+	 * @param max the value of the last color
+	 */
+	public synchronized void setColorRange(double min, double max) {
+		colorMin = min;
+		colorMax = max;
+		customColorRange = true;
+		colorsDirty = true;
+	}
+
+	/**
+	 * Uses the minimum and the maximum of the color values as the color range
+	 * again.
+	 */
+	public synchronized void resetColorRange() {
+		customColorRange = false;
+		if (colorData != null) {
+			float min = Float.MAX_VALUE;
+			float max = -Float.MAX_VALUE;
+			for (float v : colorData) {
+				min = Math.min(min, v);
+				max = Math.max(max, v);
+			}
 			colorMin = min;
 			colorMax = max;
 		}
-		update();
+		colorsDirty = true;
+	}
+
+	/**
+	 * Sets the color map of the colors by the name of an ImageJ LUT (e.g.,
+	 * "Fire", "Spectrum", "Ice", "16 colors", any entry of the Lookup Tables menu)
+	 * or "Viridis". null uses the default (the LUT of the image or Viridis).
+	 * 
+	 * @param name the name of the LUT
+	 * @return true if the LUT has been found
+	 */
+	public boolean setColorMap(String name) {
+		if (name == null) {
+			setColorMap((ColorModel) null);
+			return true;
+		}
+		if (name.equalsIgnoreCase("viridis")) {
+			synchronized (this) {
+				customColorTable = colorTable(null, true);
+				colorsDirty = true;
+			}
+			return true;
+		}
+		ColorModel cm = LutLoader.getLut(name);
+		if (cm == null) {
+			return false;
+		}
+		setColorMap(cm);
+		return true;
+	}
+
+	/**
+	 * Sets the color map of the colors (e.g., an ImageJ LUT). null uses the
+	 * default (the LUT of the image or Viridis).
+	 * 
+	 * @param cm the color model (256 colors)
+	 */
+	public synchronized void setColorMap(ColorModel cm) {
+		customColorTable = cm != null ? colorTable(cm, false) : null;
+		colorsDirty = true;
+	}
+
+	/**
+	 * The distance (voxels) inside of the surface where the color values are
+	 * sampled (default 1, 0 = at the surface).
+	 * 
+	 * @param voxels the distance in voxels
+	 */
+	public synchronized void setColorSampleDepth(float voxels) {
+		colorSampleDepth = Math.max(0, voxels);
+		colorsDirty = true;
 	}
 
 	/**
@@ -543,12 +727,13 @@ public class IsoSurface {
 		}
 		colorsDirty = false;
 		vertexColors = null;
-		if (colorMode == COLOR_SINGLE || meshVertices == null || colorData == null) {
+		if (colorMode == COLOR_SINGLE || meshVertices == null || colorData == null
+				|| colorData.length != nx * ny * nz) {
 			return;
 		}
 		int n = meshVertices.length / 3;
 		float[] colors = new float[n * 3];
-		if (colorMode == COLOR_IMAGE && imageColors != null) {
+		if (colorMode == COLOR_IMAGE && imageColors != null && !customColorData) {
 			/* The displayed colors one voxel inside of the surface (the normals point outside)! */
 			float[] inside = computeNormals(meshVertices, meshTriangles);
 			for (int i = 0; i < n; i++) {
@@ -563,11 +748,12 @@ public class IsoSurface {
 		float[] inward = null;
 		/* Without displayed colors (data of a model): the intensity! */
 		if (colorMode == COLOR_INTENSITY || colorMode == COLOR_IMAGE) {
-			table = colorTable(colorLut, false);
+			table = customColorTable != null ? customColorTable : colorTable(colorLut, false);
 			inward = computeNormals(meshVertices, meshTriangles);
 		} else {
-			table = colorTable(lut, true);
+			table = customColorTable != null ? customColorTable : colorTable(lut, true);
 		}
+		float depthInside = colorSampleDepth;
 		double range = colorMax > colorMin ? colorMax - colorMin : 1;
 		for (int i = 0; i < n; i++) {
 			float x = meshVertices[i * 3];
@@ -576,8 +762,8 @@ public class IsoSurface {
 			double t;
 			if (inward != null) {
 				/* The normals point outside (lower values)! */
-				float value = sample(colorData, nx, ny, nz, x - inward[i * 3], y - inward[i * 3 + 1],
-						z - inward[i * 3 + 2]);
+				float value = sample(colorData, nx, ny, nz, x - depthInside * inward[i * 3],
+						y - depthInside * inward[i * 3 + 1], z - depthInside * inward[i * 3 + 2]);
 				t = (value - colorMin) / range;
 			} else {
 				t = nz > 1 ? z / (nz - 1) : 0;
