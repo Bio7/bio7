@@ -393,7 +393,7 @@ public class IsoSurface {
 	 * Sets an array for the colors of the surface (e.g., a heat map of another
 	 * variable of a model). The array has the size and the layout of the data
 	 * (see setData) and is kept for the following setData calls. The color mode is
-	 * set to COLOR_INTENSITY. The values are mapped to the colors of the color map
+	 * set to COLOR_INTENSITY (always, also after COLOR_DEPTH). The values are mapped to the colors of the color map
 	 * (see setColorMap) with the color range (see setColorRange, default: the
 	 * minimum and maximum of the array).
 	 * 
@@ -417,9 +417,7 @@ public class IsoSurface {
 				colorMin = min;
 				colorMax = max;
 			}
-			if (colorMode == COLOR_SINGLE || colorMode == COLOR_IMAGE) {
-				colorMode = COLOR_INTENSITY;
-			}
+			colorMode = COLOR_INTENSITY;
 			colorsDirty = true;
 		}
 	}
@@ -460,6 +458,24 @@ public class IsoSurface {
 			}
 		}
 		return f;
+	}
+
+	/**
+	 * Resets the color settings to the defaults: no color array (see
+	 * setColorData), the value range of the data, the default color map (the LUT
+	 * of the image or Viridis) and the sample depth 1. The color mode is not
+	 * changed. Useful at the start of a model, because the iso surface keeps the
+	 * settings of a former model.
+	 */
+	public synchronized void resetColors() {
+		customColorData = false;
+		colorData = data;
+		customColorRange = false;
+		colorMin = displayMin;
+		colorMax = displayMax;
+		customColorTable = null;
+		colorSampleDepth = 1;
+		colorsDirty = true;
 	}
 
 	/**
