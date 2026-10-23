@@ -28,6 +28,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.core.expressions,
  com.eco.bio7.util,
+ com.eco.bio7.javaedit,
  org.eclipse.swt.imagej;bundle-version="0.7.0";visibility:=reexport
 Eclipse-LazyStart: true
 Bundle-RequiredExecutionEnvironment: JavaSE-25

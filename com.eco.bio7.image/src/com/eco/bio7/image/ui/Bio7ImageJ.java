@@ -14,6 +14,8 @@ package com.eco.bio7.image.ui;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -33,6 +35,7 @@ import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.Bundle;
 
 import com.eco.bio7.ImageJPluginActions.ImageJWindowAction;
+import com.eco.bio7.compile.JavaVersions;
 
 import ij.IJ;
 import ij.ImageJ;
@@ -60,7 +63,16 @@ public class Bio7ImageJ implements ImageJHost, ImageListener {
 	/* See ij.plugin.Compiler! */
 	private static final String COMPILER_TARGET_KEY = "javac.target";
 
-	private static final int COMPILER_TARGET = 25;
+	/* The targets of older Bio7 versions (replaced by the target of JavaVersions)! */
+	private static final int[] OLD_DEFAULT_TARGETS = { 8, 25 };
+
+	/*
+	 * The status line is updated at most every 100 ms. Fast loops (e.g.,
+	 * animations) update the image and the status for every frame!
+	 */
+	private static final int STATUS_INTERVAL = 100;
+	private final AtomicReference<Supplier<String>> pendingStatus = new AtomicReference<>();
+	private long lastStatusTime;
 
 	private Bio7ImageJ() {
 	}
@@ -147,15 +159,20 @@ public class Bio7ImageJ implements ImageJHost, ImageListener {
 	}
 
 	/*
-	 * Plugins are compiled for Java 25 by default (SWTImageJ uses Java 8). The
+	 * Plugins are compiled for the Java version of the bundled JDK by default
+	 * (JavaVersions.IMAGEJ_COMPILER_TARGET, SWTImageJ uses Java 8). The
 	 * preference must be set after ImageJ has loaded the preferences and before
 	 * the compiler class is loaded. A target selected in "Compile and Run" options
-	 * (other than the old default 8) is kept!
+	 * (other than an old default) is kept!
 	 */
 	private static void setCompilerTarget() {
 		int target = (int) Prefs.get(COMPILER_TARGET_KEY, 0);
-		if (target == 0 || target == 8) {
-			Prefs.set(COMPILER_TARGET_KEY, COMPILER_TARGET);
+		boolean oldDefault = target == 0;
+		for (int old : OLD_DEFAULT_TARGETS) {
+			oldDefault |= target == old;
+		}
+		if (oldDefault) {
+			Prefs.set(COMPILER_TARGET_KEY, JavaVersions.IMAGEJ_COMPILER_TARGET);
 		}
 	}
 
@@ -297,13 +314,40 @@ public class Bio7ImageJ implements ImageJHost, ImageListener {
 
 	@Override
 	public void showStatus(String message) {
+		postStatus(() -> message);
+	}
+
+	/*
+	 * Only one update is pending (the latest message is displayed) and the status
+	 * line is not updated more often than every STATUS_INTERVAL ms!
+	 */
+	private void postStatus(Supplier<String> message) {
+		if (pendingStatus.getAndSet(message) != null) {
+			return; // An update is already scheduled
+		}
 		Display display = Util.getDisplay();
 		display.asyncExec(() -> {
-			CanvasView view = CanvasView.getCanvas_view();
-			if (view != null) {
-				view.setstatusline(message);
+			long wait = lastStatusTime + STATUS_INTERVAL - System.currentTimeMillis();
+			if (wait > 0) {
+				display.timerExec((int) wait, this::applyStatus);
+			} else {
+				applyStatus();
 			}
 		});
+	}
+
+	/* Called in the UI thread! */
+	private void applyStatus() {
+		Supplier<String> message = pendingStatus.getAndSet(null);
+		lastStatusTime = System.currentTimeMillis();
+		if (message == null) {
+			return;
+		}
+		String text = message.get();
+		CanvasView view = CanvasView.getCanvas_view();
+		if (text != null && view != null) {
+			view.setstatusline(text);
+		}
 	}
 
 	@Override
@@ -353,12 +397,12 @@ public class Bio7ImageJ implements ImageJHost, ImageListener {
 	@Override
 	public void imageUpdated(ImagePlus imp) {
 		/* Display the image information (size, type, etc.) in the status line! */
-		Util.getDisplay().asyncExec(() -> {
-			CanvasView view = CanvasView.getCanvas_view();
+		postStatus(() -> {
 			ImageWindow win = imp.getWindow();
-			if (view != null && win != null && !win.isClosed() && ij.WindowManager.getCurrentImage() == imp) {
-				view.setstatusline(win.createSubtitle());
+			if (win != null && !win.isClosed() && ij.WindowManager.getCurrentImage() == imp) {
+				return win.createSubtitle();
 			}
+			return null;
 		});
 	}
 

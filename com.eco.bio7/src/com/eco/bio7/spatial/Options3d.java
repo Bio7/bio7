@@ -2578,7 +2578,7 @@ public class Options3d extends ViewPart {
 		final Composite compositeIso = new Composite(scrollIso, SWT.NONE);
 		isoItem.setControl(scrollIso);
 		compositeIso.setLayout(new GridLayout(2, true));
-		scrollIso.setMinSize(200, 520);
+		scrollIso.setMinSize(200, 600);
 		scrollIso.setContent(compositeIso);
 		scrollIso.setExpandVertical(true);
 		scrollIso.setExpandHorizontal(true);
@@ -2770,6 +2770,45 @@ public class Options3d extends ViewPart {
 					iso.setColor(rgb.red / 255f, rgb.green / 255f, rgb.blue / 255f);
 					iso.setLutColor(false);
 					lutColorButton.setSelection(false);
+				}
+			}
+		});
+
+		final Label colorModeLabel = new Label(compositeIso, SWT.NONE);
+		colorModeLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		colorModeLabel.setText("Colors:");
+		final Combo colorModeCombo = new Combo(compositeIso, SWT.READ_ONLY);
+		colorModeCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		colorModeCombo.setItems("Single Color", "Intensity (LUT)", "Depth (LUT)", "Image Colors");
+		colorModeCombo.select(IsoSurface.COLOR_SINGLE);
+		colorModeCombo.setToolTipText(
+				"Single Color: the LUT color at the iso value or the selected color\nIntensity (LUT): the intensity of the stack (or of the color channel) inside of the surface\nDepth (LUT): the z position (Viridis for a gray LUT)\nImage Colors: the displayed colors of the image (RGB, composite or LUT colors)");
+		final Label colorChannelLabel = new Label(compositeIso, SWT.NONE);
+		colorChannelLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		colorChannelLabel.setText("Color Channel:");
+		final Spinner colorChannelSpinner = new Spinner(compositeIso, SWT.BORDER);
+		colorChannelSpinner.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		colorChannelSpinner.setMinimum(0);
+		colorChannelSpinner.setMaximum(64);
+		colorChannelSpinner.setSelection(0);
+		colorChannelSpinner.setEnabled(false);
+		colorChannelSpinner.setToolTipText(
+				"The channel of a multichannel stack for the intensity colors (0 = the channel of the surface)");
+		colorModeCombo.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				IsoSurface iso = isoSurface();
+				if (iso != null) {
+					iso.setColorMode(colorModeCombo.getSelectionIndex());
+				}
+				colorChannelSpinner.setEnabled(colorModeCombo.getSelectionIndex() == IsoSurface.COLOR_INTENSITY);
+			}
+		});
+		colorChannelSpinner.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				IsoSurface iso = isoSurface();
+				if (iso != null) {
+					iso.setUpdateListener(updateInfo);
+					iso.setColorChannel(colorChannelSpinner.getSelection());
 				}
 			}
 		});

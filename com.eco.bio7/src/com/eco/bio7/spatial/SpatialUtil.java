@@ -30,6 +30,28 @@ import com.jogamp.opengl.util.awt.Overlay;
 public class SpatialUtil {
 
 	/**
+	 * Returns the iso surface of the 3d view (e.g., to create an iso surface of
+	 * the data of a model with IsoSurface.setData).
+	 * 
+	 * @return the iso surface or null if the 3d view is not opened
+	 */
+	public static IsoSurface getIsoSurface() {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		return struc != null ? struc.getIsoSurface() : null;
+	}
+
+	/**
+	 * Returns the volume renderer of the 3d view (e.g., to load a stack with
+	 * VolumeRenderer.load).
+	 * 
+	 * @return the volume renderer or null if the 3d view is not opened
+	 */
+	public static VolumeRenderer getVolumeRenderer() {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		return struc != null ? struc.getVolumeRenderer() : null;
+	}
+
+	/**
 	 * Get the x-rotation value.
 	 * 
 	 * @return a float value.

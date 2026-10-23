@@ -32,11 +32,14 @@ import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 
+import ij.CompositeImage;
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.measure.Calibration;
 import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
+import ij.process.LUT;
 
 /**
  * Creates and renders an iso surface of an ImageJ stack. The surface is
@@ -52,6 +55,17 @@ public class IsoSurface {
 	private static final int[][] CELL_EDGES = { { 0, 1 }, { 2, 3 }, { 4, 5 }, { 6, 7 }, { 0, 2 }, { 1, 3 }, { 4, 6 },
 			{ 5, 7 }, { 0, 4 }, { 1, 5 }, { 2, 6 }, { 3, 7 } };
 	private static final float[] DEFAULT_COLOR = { 0.85f, 0.78f, 0.66f };
+	/* Viridis (used if no color LUT is available)! */
+	private static final int[] VIRIDIS = { 0x440154, 0x3b528b, 0x21918c, 0x5ec962, 0xfde725 };
+
+	/** One color (the selected color or the LUT color at the iso value). */
+	public static final int COLOR_SINGLE = 0;
+	/** The intensity of the stack (or of a color channel) inside of the surface (LUT). */
+	public static final int COLOR_INTENSITY = 1;
+	/** The depth (z position) of the surface (LUT). */
+	public static final int COLOR_DEPTH = 2;
+	/** The displayed colors of the image inside of the surface (RGB, composite or LUT colors). */
+	public static final int COLOR_IMAGE = 3;
 
 	/* The (reduced) stack */
 	private float[] data;
@@ -80,8 +94,9 @@ public class IsoSurface {
 	private boolean bakedFlip;
 
 	/* OpenGL */
-	private final int[] buffers = new int[3];
+	private final int[] buffers = new int[4];
 	private boolean hasBuffers = false;
+	private boolean hasColorBuffer = false;
 	private boolean upload = false;
 	private int indexCount = 0;
 
@@ -96,6 +111,18 @@ public class IsoSurface {
 	private boolean headLight = true;
 	private boolean lutColor = true;
 	private float[] color = DEFAULT_COLOR.clone();
+
+	/* The vertex colors */
+	private int colorMode = COLOR_SINGLE;
+	private int colorChannel = 0;
+	private float[] colorData;
+	private int[] imageColors; // The displayed colors (RGB) of the stack
+	private double colorMin;
+	private double colorMax = 255;
+	private ColorModel colorLut;
+	private float[] vertexColors;
+	private boolean colorsDirty = false;
+	private boolean isoExplicit = false;
 
 	/* The background computation */
 	private Thread worker;
@@ -123,25 +150,25 @@ public class IsoSurface {
 		int tw = (w + sx - 1) / sx;
 		int th = (h + sy - 1) / sy;
 		int td = (d + sz - 1) / sz;
-		float[] values = new float[tw * th * td];
-		ImageStack stack = imp.getStack();
 		int channel = imp.getChannel();
-		int frame = imp.getFrame();
-		for (int z = 0; z < td; z++) {
-			ImageProcessor ip = stack.getProcessor(imp.getStackIndex(channel, Math.min(d, z * sz + 1), frame));
-			boolean rgb = ip instanceof ColorProcessor;
-			for (int y = 0; y < th; y++) {
-				for (int x = 0; x < tw; x++) {
-					float value;
-					if (rgb) {
-						int c = ip.getPixel(x * sx, y * sy);
-						value = (float) (0.299 * ((c >> 16) & 0xff) + 0.587 * ((c >> 8) & 0xff) + 0.114 * (c & 0xff));
-					} else {
-						value = ip.getf(x * sx, y * sy);
-					}
-					values[(z * th + y) * tw + x] = Float.isNaN(value) ? 0 : value;
-				}
-			}
+		float[] values = readChannel(imp, channel, sx, sy, sz, tw, th, td);
+		/* The values of another channel for the intensity colors! */
+		int cc = colorChannel;
+		boolean otherChannel = cc > 0 && cc != channel && cc <= imp.getNChannels();
+		float[] colorValues = otherChannel ? readChannel(imp, cc, sx, sy, sz, tw, th, td) : values;
+		int[] displayColors = readDisplayColors(imp, sx, sy, sz, tw, th, td);
+		ColorModel otherLut = null;
+		double otherMin = 0;
+		double otherMax = 255;
+		if (otherChannel && imp instanceof CompositeImage) {
+			LUT channelLut = ((CompositeImage) imp).getChannelLut(cc);
+			otherLut = channelLut;
+			otherMin = channelLut.min;
+			otherMax = channelLut.max;
+		} else if (otherChannel) {
+			otherLut = imp.getProcessor().getColorModel();
+			otherMin = imp.getDisplayRangeMin();
+			otherMax = imp.getDisplayRangeMax();
 		}
 		Calibration cal = imp.getCalibration();
 		double voxelDepth = 1;
@@ -175,11 +202,246 @@ public class IsoSurface {
 			pixelSize = cal != null && cal.pixelWidth > 0 ? cal.pixelWidth : 1;
 			unit = cal != null ? cal.getUnit() : "pixel";
 			lut = ip instanceof ColorProcessor ? null : ip.getColorModel();
+			/* A reload of the same stack keeps a selected iso value! */
+			boolean keepIso = imp == image && isoExplicit;
 			image = imp;
-			isoValue = iso;
+			if (!keepIso) {
+				isoValue = iso;
+			}
+			isoExplicit = keepIso;
+			colorData = colorValues;
+			imageColors = displayColors;
+			colorLut = otherChannel ? otherLut : lut;
+			colorMin = otherChannel ? otherMin : displayMin;
+			colorMax = otherChannel ? otherMax : displayMax;
 		}
 		update();
 		return true;
+	}
+
+	/* The values of a channel (current frame) of a stack with a reduced resolution! */
+	private static float[] readChannel(ImagePlus imp, int channel, int sx, int sy, int sz, int tw, int th,
+			int td) {
+		float[] values = new float[tw * th * td];
+		ImageStack stack = imp.getStack();
+		int d = imp.getNSlices();
+		int frame = imp.getFrame();
+		for (int z = 0; z < td; z++) {
+			ImageProcessor ip = stack.getProcessor(imp.getStackIndex(channel, Math.min(d, z * sz + 1), frame));
+			boolean rgb = ip instanceof ColorProcessor;
+			for (int y = 0; y < th; y++) {
+				for (int x = 0; x < tw; x++) {
+					float value;
+					if (rgb) {
+						int c = ip.getPixel(x * sx, y * sy);
+						value = (float) (0.299 * ((c >> 16) & 0xff) + 0.587 * ((c >> 8) & 0xff) + 0.114 * (c & 0xff));
+					} else {
+						value = ip.getf(x * sx, y * sy);
+					}
+					values[(z * th + y) * tw + x] = Float.isNaN(value) ? 0 : value;
+				}
+			}
+		}
+		return values;
+	}
+
+	/*
+	 * The colors of the stack like displayed in ImageJ: the RGB colors, the merged
+	 * colors of the active channels of a composite image (added like in ImageJ) or
+	 * the LUT colors (display range) of the channel!
+	 */
+	private static int[] readDisplayColors(ImagePlus imp, int sx, int sy, int sz, int tw, int th, int td) {
+		int[] colors = new int[tw * th * td];
+		ImageStack stack = imp.getStack();
+		int d = imp.getNSlices();
+		int frame = imp.getFrame();
+		CompositeImage ci = imp instanceof CompositeImage ? (CompositeImage) imp : null;
+		boolean composite = ci != null && ci.getMode() == IJ.COMPOSITE;
+		int channels = imp.getNChannels();
+		boolean[] active = composite ? ci.getActiveChannels() : null;
+		for (int c = 1; c <= channels; c++) {
+			if (composite ? (active != null && c <= active.length && !active[c - 1]) : c != imp.getChannel()) {
+				continue;
+			}
+			ColorModel cm;
+			double min, max;
+			if (ci != null) {
+				LUT channelLut = ci.getChannelLut(c);
+				cm = channelLut;
+				min = channelLut.min;
+				max = channelLut.max;
+			} else {
+				cm = imp.getProcessor().getColorModel();
+				min = imp.getDisplayRangeMin();
+				max = imp.getDisplayRangeMax();
+			}
+			double range = max > min ? max - min : 1;
+			int[] table = new int[256];
+			for (int i = 0; i < 256; i++) {
+				table[i] = cm.getRGB(i) & 0xffffff;
+			}
+			for (int z = 0; z < td; z++) {
+				ImageProcessor ip = stack.getProcessor(imp.getStackIndex(c, Math.min(d, z * sz + 1), frame));
+				boolean rgb = ip instanceof ColorProcessor;
+				for (int y = 0; y < th; y++) {
+					for (int x = 0; x < tw; x++) {
+						int color;
+						if (rgb) {
+							color = ip.getPixel(x * sx, y * sy) & 0xffffff;
+						} else {
+							double v = (ip.getf(x * sx, y * sy) - min) / range * 255.0;
+							int index = Double.isNaN(v) ? 0 : (int) Math.max(0, Math.min(255, Math.round(v)));
+							color = table[index];
+						}
+						int i = (z * th + y) * tw + x;
+						/* Added and clamped (composite)! */
+						int old = colors[i];
+						int red = Math.min(255, ((old >> 16) & 0xff) + ((color >> 16) & 0xff));
+						int green = Math.min(255, ((old >> 8) & 0xff) + ((color >> 8) & 0xff));
+						int blue = Math.min(255, (old & 0xff) + (color & 0xff));
+						colors[i] = (red << 16) | (green << 8) | blue;
+					}
+				}
+			}
+		}
+		return colors;
+	}
+
+	/**
+	 * Sets the data of the iso surface (e.g., of a dynamic model) and computes the
+	 * surface in the background. The values are copied.
+	 * 
+	 * @param values the values (index = (z * height + y) * width + x)
+	 * @param w      the width (x)
+	 * @param h      the height (y)
+	 * @param d      the depth (z)
+	 */
+	public void setData(float[] values, int w, int h, int d) {
+		setData(values, w, h, d, 1.0);
+	}
+
+	/**
+	 * Sets the data of the iso surface (e.g., of a dynamic model) and computes the
+	 * surface in the background. The values are copied. The iso value is kept if
+	 * it has been set (see setIsoValue), else the center of the value range is
+	 * used.
+	 * 
+	 * @param values     the values (index = (z * height + y) * width + x)
+	 * @param w          the width (x)
+	 * @param h          the height (y)
+	 * @param d          the depth (z)
+	 * @param voxelDepth the depth of a voxel relative to its width
+	 */
+	public void setData(float[] values, int w, int h, int d, double voxelDepth) {
+		if (values == null || w < 1 || h < 1 || d < 1 || values.length < w * h * d) {
+			throw new IllegalArgumentException("The size of the data doesn't fit!");
+		}
+		float[] copy = Arrays.copyOf(values, w * h * d);
+		float min = Float.MAX_VALUE;
+		float max = -Float.MAX_VALUE;
+		for (int i = 0; i < copy.length; i++) {
+			if (Float.isNaN(copy[i])) {
+				copy[i] = 0;
+			}
+			min = Math.min(min, copy[i]);
+			max = Math.max(max, copy[i]);
+		}
+		synchronized (this) {
+			data = copy;
+			nx = w;
+			ny = h;
+			nz = d;
+			stepX = 1;
+			stepY = 1;
+			stepZ = (float) voxelDepth;
+			width = w;
+			height = h;
+			depth = (float) (d * voxelDepth);
+			displayMin = min;
+			displayMax = max;
+			pixelSize = 1;
+			unit = "pixel";
+			lut = null;
+			image = null;
+			if (!isoExplicit) {
+				isoValue = (min + max) / 2.0;
+			}
+			colorData = copy;
+			imageColors = null;
+			colorLut = null;
+			colorMin = min;
+			colorMax = max;
+		}
+		update();
+	}
+
+	/**
+	 * Sets the data of the iso surface (e.g., of a dynamic model) and computes the
+	 * surface in the background.
+	 * 
+	 * @param values the values (values[x][y][z])
+	 */
+	public void setData(double[][][] values) {
+		int w = values.length;
+		int h = values[0].length;
+		int d = values[0][0].length;
+		float[] f = new float[w * h * d];
+		for (int x = 0; x < w; x++) {
+			for (int y = 0; y < h; y++) {
+				for (int z = 0; z < d; z++) {
+					f[(z * h + y) * w + x] = (float) values[x][y][z];
+				}
+			}
+		}
+		setData(f, w, h, d);
+	}
+
+	/**
+	 * Sets the data of the iso surface (e.g., of a dynamic model) and computes the
+	 * surface in the background.
+	 * 
+	 * @param values the values (values[x][y][z])
+	 */
+	public void setData(float[][][] values) {
+		int w = values.length;
+		int h = values[0].length;
+		int d = values[0][0].length;
+		float[] f = new float[w * h * d];
+		for (int x = 0; x < w; x++) {
+			for (int y = 0; y < h; y++) {
+				for (int z = 0; z < d; z++) {
+					f[(z * h + y) * w + x] = values[x][y][z];
+				}
+			}
+		}
+		setData(f, w, h, d);
+	}
+
+	/**
+	 * Computes the iso surface in the calling thread (e.g., in a time step of a
+	 * model, so that the surface fits to the data of the step). The surface is
+	 * displayed with the next frame.
+	 */
+	public void computeNow() {
+		float[] values;
+		int w, h, d;
+		double iso;
+		float sigma;
+		int iterations;
+		synchronized (this) {
+			if (data == null) {
+				return;
+			}
+			values = data;
+			w = nx;
+			h = ny;
+			d = nz;
+			iso = isoValue;
+			sigma = smoothing;
+			iterations = meshSmoothing;
+		}
+		Mesh mesh = computeMesh(values, w, h, d, iso, sigma, iterations);
+		setMesh(values, mesh);
 	}
 
 	/**
@@ -201,6 +463,9 @@ public class IsoSurface {
 		positions = null;
 		normals = null;
 		indices = null;
+		colorData = null;
+		imageColors = null;
+		vertexColors = null;
 		upload = true;
 		notifyListener();
 	}
@@ -241,20 +506,159 @@ public class IsoSurface {
 				sigma = smoothing;
 				iterations = meshSmoothing;
 			}
-			float[] smoothed = sigma > 0 ? gaussian(values, w, h, d, sigma) : values;
-			Mesh mesh = surfaceNets(smoothed, w, h, d, (float) iso);
-			taubinSmoothing(mesh, iterations);
-			synchronized (this) {
-				if (values != data) {
-					continue; // a new stack has been loaded
-				}
-				meshVertices = mesh.vertices;
-				meshTriangles = mesh.triangles;
-				bake(HeightMaps.isFlipVertically());
-				upload = true;
-			}
-			notifyListener();
+			Mesh mesh = computeMesh(values, w, h, d, iso, sigma, iterations);
+			setMesh(values, mesh);
 		}
+	}
+
+	private static Mesh computeMesh(float[] values, int w, int h, int d, double iso, float sigma, int iterations) {
+		float[] smoothed = sigma > 0 ? gaussian(values, w, h, d, sigma) : values;
+		Mesh mesh = surfaceNets(smoothed, w, h, d, (float) iso);
+		taubinSmoothing(mesh, iterations);
+		return mesh;
+	}
+
+	/* Sets a computed mesh (if the data hasn't been changed in the meantime)! */
+	private void setMesh(float[] values, Mesh mesh) {
+		synchronized (this) {
+			if (values != data) {
+				return; // new data has been set
+			}
+			meshVertices = mesh.vertices;
+			meshTriangles = mesh.triangles;
+			bake(HeightMaps.isFlipVertically());
+			colorsDirty = true;
+			upload = true;
+		}
+		notifyListener();
+	}
+
+	/*
+	 * The vertex colors (RGB) of the color mode: the intensity of the color data
+	 * one voxel inside of the surface or the depth (z), mapped with the LUT!
+	 */
+	private void ensureColors() {
+		if (!colorsDirty) {
+			return;
+		}
+		colorsDirty = false;
+		vertexColors = null;
+		if (colorMode == COLOR_SINGLE || meshVertices == null || colorData == null) {
+			return;
+		}
+		int n = meshVertices.length / 3;
+		float[] colors = new float[n * 3];
+		if (colorMode == COLOR_IMAGE && imageColors != null) {
+			/* The displayed colors one voxel inside of the surface (the normals point outside)! */
+			float[] inside = computeNormals(meshVertices, meshTriangles);
+			for (int i = 0; i < n; i++) {
+				sampleColor(imageColors, nx, ny, nz, meshVertices[i * 3] - inside[i * 3],
+						meshVertices[i * 3 + 1] - inside[i * 3 + 1], meshVertices[i * 3 + 2] - inside[i * 3 + 2], colors,
+						i * 3);
+			}
+			vertexColors = colors;
+			return;
+		}
+		int[] table;
+		float[] inward = null;
+		/* Without displayed colors (data of a model): the intensity! */
+		if (colorMode == COLOR_INTENSITY || colorMode == COLOR_IMAGE) {
+			table = colorTable(colorLut, false);
+			inward = computeNormals(meshVertices, meshTriangles);
+		} else {
+			table = colorTable(lut, true);
+		}
+		double range = colorMax > colorMin ? colorMax - colorMin : 1;
+		for (int i = 0; i < n; i++) {
+			float x = meshVertices[i * 3];
+			float y = meshVertices[i * 3 + 1];
+			float z = meshVertices[i * 3 + 2];
+			double t;
+			if (inward != null) {
+				/* The normals point outside (lower values)! */
+				float value = sample(colorData, nx, ny, nz, x - inward[i * 3], y - inward[i * 3 + 1],
+						z - inward[i * 3 + 2]);
+				t = (value - colorMin) / range;
+			} else {
+				t = nz > 1 ? z / (nz - 1) : 0;
+			}
+			int index = (int) Math.max(0, Math.min(255, Math.round(t * 255)));
+			int rgb = table[index];
+			colors[i * 3] = ((rgb >> 16) & 0xff) / 255f;
+			colors[i * 3 + 1] = ((rgb >> 8) & 0xff) / 255f;
+			colors[i * 3 + 2] = (rgb & 0xff) / 255f;
+		}
+		vertexColors = colors;
+	}
+
+	/* The colors of a LUT (or Viridis if no LUT or, optional, a gray LUT is available)! */
+	private static int[] colorTable(ColorModel cm, boolean replaceGray) {
+		int[] table = new int[256];
+		boolean gray = true;
+		if (cm != null) {
+			for (int i = 0; i < 256; i++) {
+				table[i] = cm.getRGB(i) & 0xffffff;
+				int r = (table[i] >> 16) & 0xff, g = (table[i] >> 8) & 0xff, b = table[i] & 0xff;
+				gray &= r == g && g == b;
+			}
+		}
+		if (cm == null || (gray && replaceGray)) {
+			for (int i = 0; i < 256; i++) {
+				double f = i / 255.0 * (VIRIDIS.length - 1);
+				int k = Math.min(VIRIDIS.length - 2, (int) f);
+				double t = f - k;
+				int c = 0;
+				for (int shift = 16; shift >= 0; shift -= 8) {
+					int a = (VIRIDIS[k] >> shift) & 0xff;
+					int b = (VIRIDIS[k + 1] >> shift) & 0xff;
+					c |= ((int) Math.round(a + t * (b - a))) << shift;
+				}
+				table[i] = c;
+			}
+		}
+		return table;
+	}
+
+	/* Trilinear interpolation of RGB colors (clamped at the borders)! */
+	private static void sampleColor(int[] c, int w, int h, int d, float x, float y, float z, float[] out,
+			int offset) {
+		x = Math.max(0, Math.min(w - 1, x));
+		y = Math.max(0, Math.min(h - 1, y));
+		z = Math.max(0, Math.min(d - 1, z));
+		int x0 = (int) x, y0 = (int) y, z0 = (int) z;
+		int x1 = Math.min(w - 1, x0 + 1), y1 = Math.min(h - 1, y0 + 1), z1 = Math.min(d - 1, z0 + 1);
+		float tx = x - x0, ty = y - y0, tz = z - z0;
+		int[] corners = { c[(z0 * h + y0) * w + x0], c[(z0 * h + y0) * w + x1], c[(z0 * h + y1) * w + x0],
+				c[(z0 * h + y1) * w + x1], c[(z1 * h + y0) * w + x0], c[(z1 * h + y0) * w + x1],
+				c[(z1 * h + y1) * w + x0], c[(z1 * h + y1) * w + x1] };
+		float[] weights = { (1 - tx) * (1 - ty) * (1 - tz), tx * (1 - ty) * (1 - tz), (1 - tx) * ty * (1 - tz),
+				tx * ty * (1 - tz), (1 - tx) * (1 - ty) * tz, tx * (1 - ty) * tz, (1 - tx) * ty * tz, tx * ty * tz };
+		float r = 0, g = 0, b = 0;
+		for (int k = 0; k < 8; k++) {
+			r += weights[k] * ((corners[k] >> 16) & 0xff);
+			g += weights[k] * ((corners[k] >> 8) & 0xff);
+			b += weights[k] * (corners[k] & 0xff);
+		}
+		out[offset] = r / 255f;
+		out[offset + 1] = g / 255f;
+		out[offset + 2] = b / 255f;
+	}
+
+	/* Trilinear interpolation (clamped at the borders)! */
+	private static float sample(float[] f, int w, int h, int d, float x, float y, float z) {
+		x = Math.max(0, Math.min(w - 1, x));
+		y = Math.max(0, Math.min(h - 1, y));
+		z = Math.max(0, Math.min(d - 1, z));
+		int x0 = (int) x, y0 = (int) y, z0 = (int) z;
+		int x1 = Math.min(w - 1, x0 + 1), y1 = Math.min(h - 1, y0 + 1), z1 = Math.min(d - 1, z0 + 1);
+		float tx = x - x0, ty = y - y0, tz = z - z0;
+		float c00 = f[(z0 * h + y0) * w + x0] * (1 - tx) + f[(z0 * h + y0) * w + x1] * tx;
+		float c10 = f[(z0 * h + y1) * w + x0] * (1 - tx) + f[(z0 * h + y1) * w + x1] * tx;
+		float c01 = f[(z1 * h + y0) * w + x0] * (1 - tx) + f[(z1 * h + y0) * w + x1] * tx;
+		float c11 = f[(z1 * h + y1) * w + x0] * (1 - tx) + f[(z1 * h + y1) * w + x1] * tx;
+		float c0 = c00 * (1 - ty) + c10 * ty;
+		float c1 = c01 * (1 - ty) + c11 * ty;
+		return c0 * (1 - tz) + c1 * tz;
 	}
 
 	private void notifyListener() {
@@ -584,6 +988,10 @@ public class IsoSurface {
 			bake(HeightMaps.isFlipVertically());
 			upload = true;
 		}
+		if (colorsDirty) {
+			ensureColors();
+			upload = true;
+		}
 		if (upload) {
 			uploadBuffers(gl);
 		}
@@ -637,6 +1045,14 @@ public class IsoSurface {
 		gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, buffers[2]);
 		gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
 		gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
+		if (hasColorBuffer) {
+			/* The vertex colors (with the opacity) are the ambient and diffuse material! */
+			gl.glEnable(GL2.GL_COLOR_MATERIAL);
+			gl.glColorMaterial(GL.GL_FRONT_AND_BACK, GL2.GL_AMBIENT_AND_DIFFUSE);
+			gl.glBindBuffer(GL.GL_ARRAY_BUFFER, buffers[3]);
+			gl.glColorPointer(4, GL.GL_FLOAT, 0, 0);
+			gl.glEnableClientState(GL2.GL_COLOR_ARRAY);
+		}
 		if (opacity < 1) {
 			/* Transparent: the back faces first, then the front faces! */
 			gl.glEnable(GL.GL_BLEND);
@@ -653,6 +1069,7 @@ public class IsoSurface {
 		}
 		gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
 		gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
+		gl.glDisableClientState(GL2.GL_COLOR_ARRAY);
 		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
 		gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0);
 
@@ -663,14 +1080,15 @@ public class IsoSurface {
 	private void uploadBuffers(GL2 gl) {
 		upload = false;
 		if (hasBuffers) {
-			gl.glDeleteBuffers(3, buffers, 0);
+			gl.glDeleteBuffers(4, buffers, 0);
 			hasBuffers = false;
 		}
+		hasColorBuffer = false;
 		indexCount = 0;
 		if (positions == null || indices == null || indices.length == 0) {
 			return;
 		}
-		gl.glGenBuffers(3, buffers, 0);
+		gl.glGenBuffers(4, buffers, 0);
 		FloatBuffer pos = Buffers.newDirectFloatBuffer(positions);
 		FloatBuffer nor = Buffers.newDirectFloatBuffer(normals);
 		IntBuffer idx = Buffers.newDirectIntBuffer(indices);
@@ -680,6 +1098,18 @@ public class IsoSurface {
 		gl.glBufferData(GL.GL_ARRAY_BUFFER, (long) normals.length * 4, nor, GL.GL_STATIC_DRAW);
 		gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, buffers[2]);
 		gl.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, (long) indices.length * 4, idx, GL.GL_STATIC_DRAW);
+		if (vertexColors != null && vertexColors.length == positions.length) {
+			/* RGBA with the opacity! */
+			int n = vertexColors.length / 3;
+			FloatBuffer col = Buffers.newDirectFloatBuffer(n * 4);
+			for (int i = 0; i < n; i++) {
+				col.put(vertexColors[i * 3]).put(vertexColors[i * 3 + 1]).put(vertexColors[i * 3 + 2]).put(opacity);
+			}
+			col.rewind();
+			gl.glBindBuffer(GL.GL_ARRAY_BUFFER, buffers[3]);
+			gl.glBufferData(GL.GL_ARRAY_BUFFER, (long) n * 16, col, GL.GL_STATIC_DRAW);
+			hasColorBuffer = true;
+		}
 		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
 		gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0);
 		hasBuffers = true;
@@ -711,6 +1141,7 @@ public class IsoSurface {
 		float[] normals;
 		int[] indices;
 		float[] color;
+		float[] vertexColors; // RGB per vertex or null
 		float opacity;
 		String title;
 		String unit;
@@ -732,6 +1163,8 @@ public class IsoSurface {
 			scale = (float) pixelSize;
 			zs = zScale;
 			e.color = getRenderColor();
+			ensureColors();
+			e.vertexColors = vertexColors;
 			e.opacity = opacity;
 			e.title = image != null ? image.getTitle() : "iso surface";
 			e.unit = unit;
@@ -810,10 +1243,15 @@ public class IsoSurface {
 			out.write("o " + base.replace(' ', '_') + "\n");
 			StringBuilder sb = new StringBuilder(64);
 			float[] pos = e.positions;
+			float[] vc = e.vertexColors;
 			for (int i = 0; i < pos.length; i += 3) {
 				sb.setLength(0);
-				sb.append("v ").append(pos[i]).append(' ').append(pos[i + 1]).append(' ').append(pos[i + 2])
-						.append('\n');
+				sb.append("v ").append(pos[i]).append(' ').append(pos[i + 1]).append(' ').append(pos[i + 2]);
+				if (vc != null) {
+					/* The vertex colors (an extension supported by, e.g., MeshLab and Blender)! */
+					sb.append(' ').append(vc[i]).append(' ').append(vc[i + 1]).append(' ').append(vc[i + 2]);
+				}
+				sb.append('\n');
 				out.write(sb.toString());
 			}
 			float[] nor = e.normals;
@@ -898,10 +1336,16 @@ public class IsoSurface {
 		buffer.put(head);
 		byte r = (byte) Math.round(e.color[0] * 255), g = (byte) Math.round(e.color[1] * 255),
 				b = (byte) Math.round(e.color[2] * 255);
+		float[] vc = e.vertexColors;
 		for (int i = 0; i < p.length; i += 3) {
 			buffer.putFloat(p[i]).putFloat(p[i + 1]).putFloat(p[i + 2]);
 			buffer.putFloat(n[i]).putFloat(n[i + 1]).putFloat(n[i + 2]);
-			buffer.put(r).put(g).put(b);
+			if (vc != null) {
+				buffer.put((byte) Math.round(vc[i] * 255)).put((byte) Math.round(vc[i + 1] * 255))
+						.put((byte) Math.round(vc[i + 2] * 255));
+			} else {
+				buffer.put(r).put(g).put(b);
+			}
 		}
 		for (int i = 0; i < idx.length; i += 3) {
 			buffer.put((byte) 3).putInt(idx[i]).putInt(idx[i + 1]).putInt(idx[i + 2]);
@@ -933,11 +1377,14 @@ public class IsoSurface {
 		int positionBytes = p.length * 4;
 		int normalBytes = n.length * 4;
 		int indexBytes = idx.length * 4;
-		int binLength = positionBytes + normalBytes + indexBytes;
-		float[] c = e.color;
+		float[] vc = e.vertexColors;
+		int colorBytes = vc != null ? vc.length * 4 : 0;
+		int binLength = positionBytes + normalBytes + indexBytes + colorBytes;
+		/* With vertex colors the base color is white (it is multiplied)! */
+		float[] c = vc != null ? new float[] { 1, 1, 1 } : e.color;
 		String json = "{\"asset\":{\"version\":\"2.0\",\"generator\":\"Bio7 iso surface\"},"
 				+ "\"scene\":0,\"scenes\":[{\"nodes\":[0]}],\"nodes\":[{\"mesh\":0,\"name\":\"" + jsonText(e.title) + "\"}],"
-				+ "\"meshes\":[{\"name\":\"isosurface\",\"primitives\":[{\"attributes\":{\"POSITION\":0,\"NORMAL\":1},\"indices\":2,\"material\":0,\"mode\":4}]}],"
+				+ "\"meshes\":[{\"name\":\"isosurface\",\"primitives\":[{\"attributes\":{\"POSITION\":0,\"NORMAL\":1" + (vc != null ? ",\"COLOR_0\":3" : "") + "},\"indices\":2,\"material\":0,\"mode\":4}]}],"
 				+ "\"materials\":[{\"name\":\"isosurface\",\"doubleSided\":true,"
 				+ (e.opacity < 1 ? "\"alphaMode\":\"BLEND\"," : "")
 				+ "\"pbrMetallicRoughness\":{\"baseColorFactor\":[" + c[0] + "," + c[1] + "," + c[2] + "," + e.opacity
@@ -946,12 +1393,18 @@ public class IsoSurface {
 				+ "\"bufferViews\":[{\"buffer\":0,\"byteOffset\":0,\"byteLength\":" + positionBytes + ",\"target\":34962},"
 				+ "{\"buffer\":0,\"byteOffset\":" + positionBytes + ",\"byteLength\":" + normalBytes + ",\"target\":34962},"
 				+ "{\"buffer\":0,\"byteOffset\":" + (positionBytes + normalBytes) + ",\"byteLength\":" + indexBytes
-				+ ",\"target\":34963}],"
+				+ ",\"target\":34963}"
+				+ (vc != null ? ",{\"buffer\":0,\"byteOffset\":" + (positionBytes + normalBytes + indexBytes)
+						+ ",\"byteLength\":" + colorBytes + ",\"target\":34962}" : "")
+				+ "],"
 				+ "\"accessors\":[{\"bufferView\":0,\"componentType\":5126,\"count\":" + vertices
 				+ ",\"type\":\"VEC3\",\"min\":[" + min[0] + "," + min[1] + "," + min[2] + "],\"max\":[" + max[0] + ","
 				+ max[1] + "," + max[2] + "]}," + "{\"bufferView\":1,\"componentType\":5126,\"count\":" + vertices
 				+ ",\"type\":\"VEC3\"}," + "{\"bufferView\":2,\"componentType\":5125,\"count\":" + idx.length
-				+ ",\"type\":\"SCALAR\"}]}";
+				+ ",\"type\":\"SCALAR\"}"
+				+ (vc != null ? ",{\"bufferView\":3,\"componentType\":5126,\"count\":" + vertices + ",\"type\":\"VEC3\"}"
+						: "")
+				+ "]}";
 		byte[] jsonBytes = json.getBytes(StandardCharsets.UTF_8);
 		/* The chunks are aligned to 4 bytes (JSON with spaces)! */
 		int jsonLength = (jsonBytes.length + 3) & ~3;
@@ -972,6 +1425,11 @@ public class IsoSurface {
 		}
 		for (int v : idx) {
 			buffer.putInt(v);
+		}
+		if (vc != null) {
+			for (float v : vc) {
+				buffer.putFloat(v);
+			}
 		}
 		Files.write(file.toPath(), buffer.array());
 	}
@@ -1024,6 +1482,13 @@ public class IsoSurface {
 			for (float v : n) {
 				out.writeFloat(v);
 			}
+			if (e.vertexColors != null) {
+				/* Binary color scalars are unsigned chars! */
+				out.write("\nCOLOR_SCALARS colors 3\n".getBytes(StandardCharsets.US_ASCII));
+				for (float v : e.vertexColors) {
+					out.writeByte(Math.round(v * 255));
+				}
+			}
 			out.write('\n');
 		}
 	}
@@ -1035,7 +1500,7 @@ public class IsoSurface {
 		if (data == null) {
 			return "No stack loaded";
 		}
-		String title = image != null ? image.getTitle() : "";
+		String title = image != null ? image.getTitle() : "Data";
 		int vertices = positions != null ? positions.length / 3 : 0;
 		int triangles = indices != null ? indices.length / 3 : 0;
 		return title + ": " + nx + " x " + ny + " x " + nz + " voxels, " + vertices + " vertices, " + triangles
@@ -1077,6 +1542,7 @@ public class IsoSurface {
 	public void setIsoValue(double isoValue) {
 		synchronized (this) {
 			this.isoValue = isoValue;
+			isoExplicit = true;
 		}
 		update();
 	}
@@ -1133,8 +1599,12 @@ public class IsoSurface {
 		return opacity;
 	}
 
-	public void setOpacity(float opacity) {
+	public synchronized void setOpacity(float opacity) {
 		this.opacity = Math.max(0.05f, Math.min(1, opacity));
+		/* The opacity is part of the vertex colors! */
+		if (vertexColors != null) {
+			upload = true;
+		}
 	}
 
 	public boolean isShow() {
@@ -1165,6 +1635,37 @@ public class IsoSurface {
 	 */
 	public void setLutColor(boolean lutColor) {
 		this.lutColor = lutColor;
+	}
+
+	public synchronized int getColorMode() {
+		return colorMode;
+	}
+
+	/**
+	 * Selects the colors of the surface: COLOR_SINGLE (the selected color or the
+	 * LUT color at the iso value), COLOR_INTENSITY (the intensity of the stack or
+	 * of the color channel one voxel inside of the surface, with the LUT) or
+	 * COLOR_DEPTH (the z position, with the LUT or Viridis for a gray LUT) or
+	 * COLOR_IMAGE (the displayed colors of the image, e.g., of an RGB stack).
+	 */
+	public synchronized void setColorMode(int mode) {
+		this.colorMode = mode;
+		colorsDirty = true;
+	}
+
+	public synchronized int getColorChannel() {
+		return colorChannel;
+	}
+
+	/**
+	 * The channel of a multichannel stack for the intensity colors (0 = the
+	 * channel of the surface). The stack is loaded again!
+	 */
+	public void setColorChannel(int channel) {
+		synchronized (this) {
+			this.colorChannel = Math.max(0, channel);
+		}
+		reload();
 	}
 
 	public void setColor(float r, float g, float b) {
