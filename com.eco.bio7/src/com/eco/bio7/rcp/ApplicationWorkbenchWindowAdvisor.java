@@ -440,6 +440,12 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			public void perspectiveClosed(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
 				if (CUSTOM_CONTROLS_HOST_PERSPECTIVES.contains(perspective.getId())) {
 					closeAllCustomViews(page);
+					/*
+					 * The model of the closed perspective is removed. Else a new 3d view (e.g., of
+					 * the 3d perspective) calls the setup method of the model again, which opens
+					 * the closed perspective again!
+					 */
+					com.eco.bio7.methods.Compiled.setModel(null);
 				}
 			}
 
