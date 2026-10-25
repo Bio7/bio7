@@ -19,6 +19,8 @@ import java.awt.GraphicsEnvironment;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
+import java.awt.image.ColorModel;
+
 import ij.ImagePlus;
 import ij.WindowManager;
 import org.eclipse.swt.SWT;
@@ -42,6 +44,8 @@ import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Scale;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
@@ -990,6 +994,8 @@ public class Options3d extends ViewPart {
 
 		createVolumeTab(expandBar);
 		createIsoSurfaceTab(expandBar);
+		createClippingTab(expandBar);
+		createMeasureTab(expandBar);
 
 		final CTabItem newItemExpandItem_5 = new CTabItem(expandBar, SWT.NONE);
 		// newItemExpandItem_5.setHeight(500);
@@ -2474,7 +2480,9 @@ public class Options3d extends ViewPart {
 		final Combo modeCombo = new Combo(compositeVolume, SWT.READ_ONLY);
 		modeCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		modeCombo.setItems("Alpha Blending", "Maximum Intensity");
-		modeCombo.select(VolumeRenderer.MODE_ALPHA_BLENDING);
+		/* The current mode of the volume (or the default) */
+		VolumeRenderer currentVolume = volumeRenderer();
+		modeCombo.select(currentVolume != null ? currentVolume.getMode() : VolumeRenderer.MODE_ALPHA_BLENDING);
 		modeCombo.setToolTipText(
 				"Alpha Blending: transparent voxels (see Opacity)\nMaximum Intensity: the maximum along the view direction");
 		modeCombo.addSelectionListener(new SelectionAdapter() {
@@ -2483,6 +2491,42 @@ public class Options3d extends ViewPart {
 				if (volume != null) {
 					volume.setMode(modeCombo.getSelectionIndex());
 				}
+			}
+		});
+
+		/* The transfer function (colors and opacities of the voxels) */
+		final Button tfButton = new Button(compositeVolume, SWT.CHECK);
+		tfButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		tfButton.setText("Transfer Function");
+		tfButton.setToolTipText("Colors and opacities of the voxels from a transfer function (see Edit...)");
+		final Button tfEditButton = new Button(compositeVolume, SWT.PUSH);
+		tfEditButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		tfEditButton.setText("Edit...");
+		tfEditButton.setToolTipText("Opens the transfer function editor (opacity curve and color map)");
+		tfButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				VolumeRenderer volume = volumeRenderer();
+				if (volume != null) {
+					volume.setTransferFunction(tfButton.getSelection() ? volumeTransferFunction(volume) : null);
+				}
+			}
+		});
+		tfEditButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				VolumeRenderer volume = volumeRenderer();
+				if (volume == null) {
+					return;
+				}
+				TransferFunction tf = volumeTransferFunction(volume);
+				tfButton.setSelection(true);
+				volume.setTransferFunction(tf);
+				TransferFunctionEditor.openDialog(tfEditButton.getShell(), "Volume Transfer Function", tf,
+						volume.getHistogram(), volume.getValueMin(), volume.getValueMax(), volume.getColorModel(), t -> {
+							VolumeRenderer v = volumeRenderer();
+							if (v != null && !tfButton.isDisposed() && tfButton.getSelection()) {
+								v.setTransferFunction(t);
+							}
+						});
 			}
 		});
 
@@ -2557,12 +2601,22 @@ public class Options3d extends ViewPart {
 		maxSizeSpinner.setIncrement(32);
 		maxSizeSpinner.setSelection(256);
 		maxSizeSpinner.setToolTipText(
-				"The maximum number of voxels of a dimension (larger stacks are reduced).\nApplied when the stack is loaded!");
+				"The maximum number of voxels of a dimension (larger stacks are reduced).\nA loaded stack is loaded again.");
+		final Runnable reloadVolume = () -> {
+			VolumeRenderer volume = volumeRenderer();
+			if (volume != null && volume.getImage() != null) {
+				runInBackground(volume::reload, "Bio7 Volume Reload");
+			}
+		};
 		maxSizeSpinner.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				VolumeRenderer volume = volumeRenderer();
 				if (volume != null) {
 					volume.setMaxSize(maxSizeSpinner.getSelection());
+					/* Loaded again after a short delay (not for every step of the spinner) */
+					Display display = maxSizeSpinner.getDisplay();
+					display.timerExec(-1, reloadVolume);
+					display.timerExec(500, reloadVolume);
 				}
 			}
 		});
@@ -2780,7 +2834,9 @@ public class Options3d extends ViewPart {
 		final Combo colorModeCombo = new Combo(compositeIso, SWT.READ_ONLY);
 		colorModeCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		colorModeCombo.setItems("Single Color", "Intensity (LUT)", "Depth (LUT)", "Image Colors");
-		colorModeCombo.select(IsoSurface.COLOR_SINGLE);
+		/* The current color mode of the surface (or the default) */
+		IsoSurface currentIso = isoSurface();
+		colorModeCombo.select(currentIso != null ? currentIso.getColorMode() : IsoSurface.COLOR_SINGLE);
 		colorModeCombo.setToolTipText(
 				"Single Color: the LUT color at the iso value or the selected color\nIntensity (LUT): the intensity of the stack (or of the color channel) inside of the surface\nDepth (LUT): the z position (Viridis for a gray LUT)\nImage Colors: the displayed colors of the image (RGB, composite or LUT colors)");
 		final Label colorChannelLabel = new Label(compositeIso, SWT.NONE);
@@ -2791,7 +2847,7 @@ public class Options3d extends ViewPart {
 		colorChannelSpinner.setMinimum(0);
 		colorChannelSpinner.setMaximum(64);
 		colorChannelSpinner.setSelection(0);
-		colorChannelSpinner.setEnabled(false);
+		colorChannelSpinner.setEnabled(colorModeCombo.getSelectionIndex() == IsoSurface.COLOR_INTENSITY);
 		colorChannelSpinner.setToolTipText(
 				"The channel of a multichannel stack for the intensity colors (0 = the channel of the surface)");
 		colorModeCombo.addSelectionListener(new SelectionAdapter() {
@@ -2809,6 +2865,84 @@ public class Options3d extends ViewPart {
 				if (iso != null) {
 					iso.setUpdateListener(updateInfo);
 					iso.setColorChannel(colorChannelSpinner.getSelection());
+				}
+			}
+		});
+
+		/* The transfer function (colors and the opacity mapping) */
+		final Button isoTfButton = new Button(compositeIso, SWT.CHECK);
+		isoTfButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		isoTfButton.setText("Transfer Function");
+		isoTfButton.setToolTipText("Colors (and opacities) of the surface from a transfer function (see Edit...)");
+		final Button isoTfEditButton = new Button(compositeIso, SWT.PUSH);
+		isoTfEditButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		isoTfEditButton.setText("Edit...");
+		isoTfEditButton.setToolTipText("Opens the transfer function editor (color map and opacity curve)");
+		final Button opacityMappingButton = new Button(compositeIso, SWT.CHECK);
+		opacityMappingButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		opacityMappingButton.setText("Opacity Mapping");
+		opacityMappingButton.setToolTipText(
+				"Uses the opacity curve of the transfer function for the surface (transparent where the opacity is low)");
+		isoTfButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				IsoSurface iso = isoSurface();
+				if (iso != null) {
+					iso.setTransferFunction(isoTfButton.getSelection() ? isoTransferFunction(iso) : null);
+					if (isoTfButton.getSelection()) {
+						colorModeCombo.select(iso.getColorMode());
+						colorChannelSpinner.setEnabled(iso.getColorMode() == IsoSurface.COLOR_INTENSITY);
+					}
+				}
+			}
+		});
+		opacityMappingButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				IsoSurface iso = isoSurface();
+				if (iso != null) {
+					iso.setOpacityMapping(opacityMappingButton.getSelection());
+				}
+			}
+		});
+		isoTfEditButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				IsoSurface iso = isoSurface();
+				if (iso == null) {
+					return;
+				}
+				TransferFunction tf = isoTransferFunction(iso);
+				isoTfButton.setSelection(true);
+				iso.setTransferFunction(tf);
+				colorModeCombo.select(iso.getColorMode());
+				colorChannelSpinner.setEnabled(iso.getColorMode() == IsoSurface.COLOR_INTENSITY);
+				/* The histogram of the values on the surface and the position of the iso value */
+				TransferFunctionEditor.openDialog(isoTfEditButton.getShell(), "Iso Surface Transfer Function", tf,
+						iso.getSurfaceHistogram(), iso.getColorMin(), iso.getColorMax(), iso.getColorModel(),
+						iso.getIsoPosition(), "iso value", t -> {
+							IsoSurface s = isoSurface();
+							if (s != null && !isoTfButton.isDisposed() && isoTfButton.getSelection()) {
+								s.setTransferFunction(t);
+							}
+						});
+			}
+		});
+
+		final Label colorDepthLabel = new Label(compositeIso, SWT.NONE);
+		colorDepthLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		colorDepthLabel.setText("Color Depth:");
+		final Spinner colorDepthSpinner = new Spinner(compositeIso, SWT.BORDER);
+		colorDepthSpinner.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		colorDepthSpinner.setDigits(1);
+		colorDepthSpinner.setMinimum(0);
+		colorDepthSpinner.setMaximum(300);
+		colorDepthSpinner.setIncrement(5);
+		colorDepthSpinner.setSelection(10);
+		colorDepthSpinner.setToolTipText(
+				"The distance (voxels) inside of the surface where the intensity for the colors is sampled.\nThe values at the surface are close to the iso value, a larger depth shows the structure inside.");
+		colorDepthSpinner.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				IsoSurface iso = isoSurface();
+				if (iso != null) {
+					iso.setColorSampleDepth(colorDepthSpinner.getSelection() / 10f);
 				}
 			}
 		});
@@ -2833,6 +2967,13 @@ public class Options3d extends ViewPart {
 			}
 		});
 
+		/* The reduced display (optional, the measurements use the full resolution) */
+		final Button reduceButton = new Button(compositeIso, SWT.CHECK);
+		reduceButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		reduceButton.setText("Reduce Display (Max Size)");
+		reduceButton.setSelection(false);
+		reduceButton.setToolTipText(
+				"Reduces the displayed surface of large stacks to the maximum size (faster).\nThe measurements always use the full resolution.");
 		final Label maxSizeLabel = new Label(compositeIso, SWT.NONE);
 		maxSizeLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		maxSizeLabel.setText("Max Size:");
@@ -2842,13 +2983,35 @@ public class Options3d extends ViewPart {
 		maxSizeSpinner.setMaximum(2048);
 		maxSizeSpinner.setIncrement(32);
 		maxSizeSpinner.setSelection(256);
+		maxSizeSpinner.setEnabled(false);
 		maxSizeSpinner.setToolTipText(
-				"The maximum number of voxels of a dimension (larger stacks are reduced).\nApplied when the stack is loaded!");
+				"The maximum number of voxels of a dimension of the reduced display.\nA loaded stack is loaded again (the measurements use the full resolution).");
+		final Runnable reloadIso = () -> {
+			IsoSurface iso = isoSurface();
+			if (iso != null && iso.getImage() != null) {
+				runInBackground(iso::reload, "Bio7 Iso Surface Reload");
+			}
+		};
 		maxSizeSpinner.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				IsoSurface iso = isoSurface();
 				if (iso != null) {
 					iso.setMaxSize(maxSizeSpinner.getSelection());
+					/* Loaded again after a short delay (not for every step of the spinner) */
+					Display display = maxSizeSpinner.getDisplay();
+					display.timerExec(-1, reloadIso);
+					display.timerExec(500, reloadIso);
+				}
+			}
+		});
+		reduceButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				maxSizeSpinner.setEnabled(reduceButton.getSelection());
+				IsoSurface iso = isoSurface();
+				if (iso != null) {
+					iso.setReduceDisplay(reduceButton.getSelection());
+					iso.setMaxSize(maxSizeSpinner.getSelection());
+					reloadIso.run();
 				}
 			}
 		});
@@ -2913,6 +3076,675 @@ public class Options3d extends ViewPart {
 	private static IsoSurface isoSurface() {
 		SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
 		return grid != null ? grid.getIsoSurface() : null;
+	}
+
+	/* The edited transfer functions (kept while the view is opened) */
+	private TransferFunction volumeTf;
+	private TransferFunction isoTf;
+
+	/* The transfer function of the volume (a new one with the LUT of the stack)! */
+	private TransferFunction volumeTransferFunction(VolumeRenderer volume) {
+		if (volumeTf == null) {
+			ColorModel cm = volume.getColorModel();
+			volumeTf = cm != null ? TransferFunction.fromColorModel(cm) : new TransferFunction();
+		}
+		return volumeTf;
+	}
+
+	/* The transfer function of the iso surface (a new one with the LUT of the stack)! */
+	private TransferFunction isoTransferFunction(IsoSurface iso) {
+		if (isoTf == null) {
+			ColorModel cm = iso.getColorModel();
+			isoTf = cm != null ? TransferFunction.fromColorModel(cm) : new TransferFunction();
+			// Opaque surfaces by default (see the opacity mapping)
+			isoTf.setConstantOpacity(1);
+		}
+		return isoTf;
+	}
+
+	/*
+	 * The tab for the clipping of the volume and the iso surface (see Clipping)!
+	 */
+	private void createClippingTab(CTabFolder tabFolder) {
+		final CTabItem clipItem = new CTabItem(tabFolder, SWT.NONE);
+		clipItem.setText("Clipping");
+		ScrolledComposite scrollClip = new ScrolledComposite(tabFolder, SWT.V_SCROLL);
+		final Composite compositeClip = new Composite(scrollClip, SWT.NONE);
+		clipItem.setControl(scrollClip);
+		compositeClip.setLayout(new GridLayout(3, false));
+		scrollClip.setMinSize(200, 800);
+		scrollClip.setContent(compositeClip);
+		scrollClip.setExpandVertical(true);
+		scrollClip.setExpandHorizontal(true);
+		scrollClip.setAlwaysShowScrollBars(true);
+
+		final Label infoLabel = new Label(compositeClip, SWT.WRAP);
+		GridData gd_infoLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
+		gd_infoLabel.heightHint = 40;
+		infoLabel.setLayoutData(gd_infoLabel);
+		infoLabel.setText("Clips the volume and the iso surface (box and cutting plane).");
+
+		/* The clipping box (min and max of every axis) */
+		final Button boxButton = new Button(compositeClip, SWT.CHECK);
+		boxButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+		boxButton.setText("Clipping Box");
+		boxButton.setToolTipText("Removes the parts outside of the box");
+		boxButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Clipping clip = SpatialUtil.getClipping();
+				if (clip != null) {
+					clip.setBoxEnabled(boxButton.getSelection());
+				}
+			}
+		});
+		final Scale[] boxScales = new Scale[6];
+		String[] axes = { "X", "Y", "Z" };
+		for (int a = 0; a < 3; a++) {
+			Label label = new Label(compositeClip, SWT.NONE);
+			label.setText(axes[a] + ":");
+			for (int m = 0; m < 2; m++) {
+				final int axis = a;
+				final boolean max = m == 1;
+				Scale scale = new Scale(compositeClip, SWT.NONE);
+				scale.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+				scale.setMinimum(0);
+				scale.setMaximum(1000);
+				scale.setSelection(max ? 1000 : 0);
+				scale.setToolTipText((max ? "Maximum" : "Minimum") + " of the " + axes[a] + " axis");
+				scale.addSelectionListener(new SelectionAdapter() {
+					public void widgetSelected(final SelectionEvent e) {
+						Clipping clip = SpatialUtil.getClipping();
+						if (clip != null) {
+							clip.setBoxLimit(axis, max, scale.getSelection() / 1000.0);
+							clip.setBoxEnabled(true);
+							boxButton.setSelection(true);
+						}
+					}
+				});
+				boxScales[a * 2 + m] = scale;
+			}
+		}
+
+		/* The cutting plane */
+		final Button planeButton = new Button(compositeClip, SWT.CHECK);
+		planeButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+		planeButton.setText("Cutting Plane");
+		planeButton.setToolTipText("Removes the part in front of the plane (see Flip Side)");
+		final Scale azimuthScale = createClipScale(compositeClip, "Azimuth:", 0, 360, 0,
+				"The direction of the plane normal around the vertical axis (degree)");
+		final Scale elevationScale = createClipScale(compositeClip, "Elevation:", 0, 180, 90,
+				"The elevation of the plane normal (-90 - 90 degree)");
+		final Scale offsetScale = createClipScale(compositeClip, "Offset:", 0, 200, 100,
+				"The position of the plane along its normal (the center is in the middle)");
+		final Runnable applyPlane = () -> {
+			Clipping clip = SpatialUtil.getClipping();
+			if (clip != null) {
+				clip.setPlane(azimuthScale.getSelection(), elevationScale.getSelection() - 90,
+						(offsetScale.getSelection() - 100) / 100.0);
+				clip.setPlaneEnabled(true);
+				planeButton.setSelection(true);
+			}
+		};
+		for (Scale scale : new Scale[] { azimuthScale, elevationScale, offsetScale }) {
+			scale.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(final SelectionEvent e) {
+					applyPlane.run();
+				}
+			});
+		}
+		planeButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Clipping clip = SpatialUtil.getClipping();
+				if (clip != null) {
+					if (planeButton.getSelection()) {
+						applyPlane.run();
+					} else {
+						clip.setPlaneEnabled(false);
+					}
+				}
+			}
+		});
+
+		final Button flipButton = new Button(compositeClip, SWT.CHECK);
+		flipButton.setText("Flip Side");
+		flipButton.setToolTipText("Removes the other side of the plane");
+		flipButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Clipping clip = SpatialUtil.getClipping();
+				if (clip != null) {
+					clip.setFlip(flipButton.getSelection());
+				}
+			}
+		});
+		final Button outlineButton = new Button(compositeClip, SWT.CHECK);
+		outlineButton.setText("Outline");
+		outlineButton.setSelection(true);
+		outlineButton.setToolTipText("Draws the outline of the cutting plane");
+		outlineButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Clipping clip = SpatialUtil.getClipping();
+				if (clip != null) {
+					clip.setOutline(outlineButton.getSelection());
+				}
+			}
+		});
+		final Button sliceButton = new Button(compositeClip, SWT.CHECK);
+		sliceButton.setText("Slice");
+		sliceButton.setToolTipText(
+				"Displays the cross-section of the plane with the data (the colors of the Volume tab: LUT or transfer function)");
+		sliceButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Clipping clip = SpatialUtil.getClipping();
+				VolumeRenderer volume = volumeRenderer();
+				IsoSurface iso = isoSurface();
+				if (clip == null || volume == null) {
+					return;
+				}
+				if (sliceButton.getSelection() && !volume.isLoaded()) {
+					/* The slice needs the data of the volume: the stack of the iso surface (not displayed) */
+					if (iso != null && iso.getImage() != null) {
+						volume.load(iso.getImage());
+						volume.setShow(false);
+						infoLabel.setText("The slice uses the stack of the iso surface (the volume is not displayed).");
+					} else {
+						infoLabel.setText("Load a stack in the Volume or Iso Surface tab for the slice!");
+					}
+				}
+				clip.setSlice(sliceButton.getSelection());
+			}
+		});
+
+		/* The cut of the iso surface mesh (closed with caps, exported) */
+		final Button cutMeshButton = new Button(compositeClip, SWT.CHECK);
+		cutMeshButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+		cutMeshButton.setText("Cut Iso Surface Mesh (Closed, Export)");
+		cutMeshButton.setToolTipText(
+				"Cuts the mesh of the iso surface with the box and the plane (closed with caps, the export contains the cut surface)");
+		cutMeshButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Clipping clip = SpatialUtil.getClipping();
+				if (clip != null) {
+					clip.setCutMesh(cutMeshButton.getSelection());
+				}
+			}
+		});
+
+		/* The cuts with a selection or a mask image (removed voxels) */
+		final Label cutLabel = new Label(compositeClip, SWT.NONE);
+		cutLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+		cutLabel.setText("Cut with the Selection of the Current Image:");
+		Label sliceLabel = new Label(compositeClip, SWT.NONE);
+		sliceLabel.setText("Slices:");
+		final Spinner firstSpinner = new Spinner(compositeClip, SWT.BORDER);
+		firstSpinner.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		firstSpinner.setMinimum(1);
+		firstSpinner.setMaximum(100000);
+		firstSpinner.setSelection(1);
+		firstSpinner.setToolTipText("The first slice of the cut");
+		final Spinner lastSpinner = new Spinner(compositeClip, SWT.BORDER);
+		lastSpinner.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		lastSpinner.setMinimum(1);
+		lastSpinner.setMaximum(100000);
+		lastSpinner.setSelection(100000);
+		lastSpinner.setToolTipText("The last slice of the cut (larger values are the last slice)");
+		final Runnable[] showMask = new Runnable[1];
+		for (int i = 0; i < 2; i++) {
+			final boolean inside = i == 0;
+			Button cutButton = new Button(compositeClip, SWT.PUSH);
+			cutButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, i == 0 ? 2 : 1, 1));
+			cutButton.setText(inside ? "Remove Inside" : "Remove Outside");
+			cutButton.setToolTipText("Removes the voxels " + (inside ? "inside" : "outside")
+					+ " of the selection (area) of the current image in the slices");
+			cutButton.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(final SelectionEvent e) {
+					Clipping clip = SpatialUtil.getClipping();
+					if (clip == null) {
+						return;
+					}
+					ImagePlus imp = WindowManager.getCurrentImage();
+					if (clip.cutRoi(imp, inside, firstSpinner.getSelection(), lastSpinner.getSelection())) {
+						showMask[0].run();
+					} else {
+						infoLabel.setText("The current image has no area selection!");
+					}
+				}
+			});
+		}
+		final Button maskButton = new Button(compositeClip, SWT.PUSH);
+		maskButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		maskButton.setText("Mask Image...");
+		maskButton.setToolTipText("Removes the voxels with the value 0 of a mask image (binary stack)");
+		maskButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				/* A menu of the open images */
+				Menu menu = new Menu(maskButton);
+				int[] ids = WindowManager.getIDList();
+				if (ids == null) {
+					infoLabel.setText("No image is open!");
+					return;
+				}
+				for (int id : ids) {
+					ImagePlus imp = WindowManager.getImage(id);
+					if (imp == null) {
+						continue;
+					}
+					MenuItem item = new MenuItem(menu, SWT.PUSH);
+					item.setText(imp.getTitle());
+					item.addListener(SWT.Selection, _ -> {
+						Clipping clip = SpatialUtil.getClipping();
+						if (clip != null) {
+							clip.setMask(imp);
+							showMask[0].run();
+						}
+					});
+				}
+				menu.addListener(SWT.Hide, _ -> maskButton.getDisplay().asyncExec(menu::dispose));
+				menu.setLocation(maskButton.toDisplay(0, maskButton.getSize().y));
+				menu.setVisible(true);
+			}
+		});
+		final Button invertButton = new Button(compositeClip, SWT.PUSH);
+		invertButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		invertButton.setText("Invert");
+		invertButton.setToolTipText("Inverts the removed voxels");
+		final Button undoButton = new Button(compositeClip, SWT.PUSH);
+		undoButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		undoButton.setText("Undo Cut");
+		undoButton.setToolTipText("Undoes the last cut");
+		final Button clearButton = new Button(compositeClip, SWT.PUSH);
+		clearButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		clearButton.setText("Clear Cuts");
+		clearButton.setToolTipText("Removes all cuts (the mask)");
+		showMask[0] = () -> {
+			Clipping clip = SpatialUtil.getClipping();
+			Clipping.Mask mask = clip != null ? clip.getMask() : null;
+			infoLabel.setText(mask == null ? "No voxels are removed."
+					: "Removed voxels: " + mask.getRemovedCount() + " (mask " + mask.getWidth() + " x "
+							+ mask.getHeight() + " x " + mask.getDepth() + ")");
+		};
+		invertButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Clipping clip = SpatialUtil.getClipping();
+				if (clip != null) {
+					clip.invertMask();
+					showMask[0].run();
+				}
+			}
+		});
+		undoButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Clipping clip = SpatialUtil.getClipping();
+				if (clip != null) {
+					clip.undoCut();
+					showMask[0].run();
+				}
+			}
+		});
+		clearButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Clipping clip = SpatialUtil.getClipping();
+				if (clip != null) {
+					clip.clearMask();
+					showMask[0].run();
+				}
+			}
+		});
+
+		/* The mouse tools in the 3D view (left mouse button) */
+		Label toolLabel = new Label(compositeClip, SWT.NONE);
+		toolLabel.setText("Mouse:");
+		final Combo toolCombo = new Combo(compositeClip, SWT.READ_ONLY);
+		toolCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		toolCombo.setItems("Rotate View", "Move Plane (Shift: Rotate)", "Erase Voxels (Shift: Restore)");
+		toolCombo.select(0);
+		toolCombo.setToolTipText("The tool of the left mouse button in the 3D view");
+		Label eraserLabel = new Label(compositeClip, SWT.NONE);
+		eraserLabel.setText("Eraser Size:");
+		final Spinner eraserSpinner = new Spinner(compositeClip, SWT.BORDER);
+		eraserSpinner.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		eraserSpinner.setMinimum(1);
+		eraserSpinner.setMaximum(200);
+		eraserSpinner.setSelection(5);
+		eraserSpinner.setToolTipText("The radius of the eraser (voxels)");
+		eraserSpinner.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Clipping clip = SpatialUtil.getClipping();
+				if (clip != null) {
+					clip.setEraserSize(eraserSpinner.getSelection());
+				}
+			}
+		});
+		/* Displays the changes of the mouse tools (plane and removed voxels) */
+		final Clipping[] observed = new Clipping[1];
+		final Runnable syncTools = () -> {
+			Clipping clip = observed[0];
+			if (clip == null || planeButton.isDisposed()) {
+				return;
+			}
+			double[] plane = clip.getPlane();
+			int tool = clip.getTool();
+			toolCombo.select(tool == Clipping.TOOL_PLANE ? 1 : tool == Clipping.TOOL_ERASER ? 2 : 0);
+			planeButton.setSelection(clip.isPlaneEnabled());
+			azimuthScale.setSelection((int) Math.round(plane[0]));
+			elevationScale.setSelection((int) Math.round(plane[1] + 90));
+			offsetScale.setSelection((int) Math.round(plane[2] * 100 + 100));
+			showMask[0].run();
+		};
+		final Runnable[] toolListener = new Runnable[1];
+		toolListener[0] = () -> {
+			Display display = compositeClip.isDisposed() ? null : compositeClip.getDisplay();
+			if (display == null || display.isDisposed()) {
+				Clipping clip = observed[0];
+				if (clip != null) {
+					clip.removeChangeListener(toolListener[0]);
+				}
+				return;
+			}
+			display.asyncExec(syncTools);
+		};
+		toolCombo.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Clipping clip = SpatialUtil.getClipping();
+				if (clip == null) {
+					return;
+				}
+				if (observed[0] != clip) {
+					if (observed[0] != null) {
+						observed[0].removeChangeListener(toolListener[0]);
+					}
+					observed[0] = clip;
+					clip.addChangeListener(toolListener[0]);
+				}
+				clip.setEraserSize(eraserSpinner.getSelection());
+				int index = toolCombo.getSelectionIndex();
+				clip.setTool(index == 1 ? Clipping.TOOL_PLANE : index == 2 ? Clipping.TOOL_ERASER : Clipping.TOOL_NONE);
+				if (index == 1) {
+					infoLabel.setText("Drag the plane with the left mouse button (Shift: rotate the plane).");
+				} else if (index == 2) {
+					infoLabel.setText("Drag to remove the voxels along the view direction (Shift: restore).");
+				}
+			}
+		});
+
+		final Button resetButton = new Button(compositeClip, SWT.PUSH);
+		GridData gd_resetButton = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
+		gd_resetButton.heightHint = 40;
+		resetButton.setLayoutData(gd_resetButton);
+		resetButton.setText("Reset");
+		resetButton.setToolTipText("Removes the clipping and the cuts");
+		resetButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Clipping clip = SpatialUtil.getClipping();
+				if (clip != null) {
+					clip.reset();
+				}
+				boxButton.setSelection(false);
+				planeButton.setSelection(false);
+				flipButton.setSelection(false);
+				sliceButton.setSelection(false);
+				cutMeshButton.setSelection(false);
+				toolCombo.select(0);
+				showMask[0].run();
+				for (int i = 0; i < 6; i++) {
+					boxScales[i].setSelection(i % 2 == 1 ? 1000 : 0);
+				}
+				azimuthScale.setSelection(0);
+				elevationScale.setSelection(90);
+				offsetScale.setSelection(100);
+			}
+		});
+	}
+
+	private void createMeasureTab(CTabFolder tabFolder) {
+		final CTabItem measureItem = new CTabItem(tabFolder, SWT.NONE);
+		measureItem.setText("Measure");
+		ScrolledComposite scrollMeasure = new ScrolledComposite(tabFolder, SWT.V_SCROLL);
+		final Composite compositeMeasure = new Composite(scrollMeasure, SWT.NONE);
+		measureItem.setControl(scrollMeasure);
+		compositeMeasure.setLayout(new GridLayout(2, false));
+		scrollMeasure.setMinSize(200, 580);
+		scrollMeasure.setContent(compositeMeasure);
+		scrollMeasure.setExpandVertical(true);
+		scrollMeasure.setExpandHorizontal(true);
+		scrollMeasure.setAlwaysShowScrollBars(true);
+
+		final Label infoLabel = new Label(compositeMeasure, SWT.WRAP);
+		GridData gd_infoLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		gd_infoLabel.heightHint = 80;
+		infoLabel.setLayoutData(gd_infoLabel);
+		infoLabel.setText("Measures the iso surface and the volume (results in the Bio7 table).");
+
+		Label minLabel = new Label(compositeMeasure, SWT.NONE);
+		minLabel.setText("Min. Object Size (Voxels):");
+		final Spinner minSpinner = new Spinner(compositeMeasure, SWT.BORDER);
+		minSpinner.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		minSpinner.setMinimum(0);
+		minSpinner.setMaximum(100000000);
+		minSpinner.setSelection(10);
+		minSpinner.setToolTipText("Smaller objects of the iso surface are not measured (e.g., noise)");
+
+		Label maxLabel = new Label(compositeMeasure, SWT.NONE);
+		maxLabel.setText("Max. Object Size (Voxels, 0 = All):");
+		final Spinner maxSpinner = new Spinner(compositeMeasure, SWT.BORDER);
+		maxSpinner.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		maxSpinner.setMinimum(0);
+		maxSpinner.setMaximum(Integer.MAX_VALUE);
+		maxSpinner.setSelection(0);
+		maxSpinner.setToolTipText("Larger objects of the iso surface are not measured (0 measures all objects)");
+
+		Label smoothLabel = new Label(compositeMeasure, SWT.NONE);
+		smoothLabel.setText("Smoothing (Voxels):");
+		final Spinner smoothSpinner = new Spinner(compositeMeasure, SWT.BORDER);
+		smoothSpinner.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		smoothSpinner.setDigits(1);
+		smoothSpinner.setMinimum(0);
+		smoothSpinner.setMaximum(50);
+		smoothSpinner.setSelection(0);
+		smoothSpinner.setToolTipText(
+				"The Gaussian smoothing of the stack for the measurements (0 = the data at the iso value).\nThe smoothing of the display is not used for the measurements.");
+
+		final Button objectsButton = new Button(compositeMeasure, SWT.PUSH);
+		GridData gd_objectsButton = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		gd_objectsButton.heightHint = 35;
+		objectsButton.setLayoutData(gd_objectsButton);
+		objectsButton.setText("Measure Iso Surface Objects");
+		objectsButton.setToolTipText(
+				"Volume, surface area, sphericity, centroid, ellipsoid axes, Feret diameter and holes of the objects of the iso surface");
+		objectsButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Measurement3d measurement = SpatialUtil.getMeasurement();
+				if (measurement == null) {
+					return;
+				}
+				measurement.setMinObjectSize(minSpinner.getSelection());
+				measurement.setMaxObjectSize(maxSpinner.getSelection());
+				measurement.setMeasureSmoothing(smoothSpinner.getSelection() / 10f);
+				infoLabel.setText("Measuring at full resolution...");
+				Display display = objectsButton.getDisplay();
+				/* Large stacks: in the background */
+				runInBackground(() -> {
+					double[][] result = measurement.measureIsoSurface(true);
+					display.asyncExec(() -> {
+						if (!infoLabel.isDisposed()) {
+							infoLabel.setText(result == null ? "No iso surface available!"
+									: "Objects: " + result.length + reductionNote());
+						}
+					});
+				}, "Bio7 Measure Objects");
+			}
+		});
+
+		final Button distanceButton = new Button(compositeMeasure, SWT.PUSH);
+		GridData gd_distanceButton = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		gd_distanceButton.heightHint = 35;
+		distanceButton.setLayoutData(gd_distanceButton);
+		distanceButton.setText("Measure Distances (Nearest Neighbors)");
+		distanceButton.setToolTipText(
+				"Nearest neighbors of the objects (centroids and surfaces edge to edge), the distance matrices and the Clark-Evans index");
+		distanceButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Measurement3d measurement = SpatialUtil.getMeasurement();
+				if (measurement == null) {
+					return;
+				}
+				measurement.setMinObjectSize(minSpinner.getSelection());
+				measurement.setMaxObjectSize(maxSpinner.getSelection());
+				measurement.setMeasureSmoothing(smoothSpinner.getSelection() / 10f);
+				infoLabel.setText("Measuring the distances...");
+				Display display = distanceButton.getDisplay();
+				/* Many objects: in the background */
+				Thread thread = new Thread(() -> {
+					double[][][] result = measurement.measureDistances(true);
+					display.asyncExec(() -> {
+						if (!infoLabel.isDisposed()) {
+							infoLabel.setText(result == null ? "No iso surface available!"
+									: "Distances of " + result[0].length + " objects" + reductionNote());
+						}
+					});
+				}, "Bio7 Measure Distances");
+				thread.setDaemon(true);
+				thread.start();
+			}
+		});
+
+		final Button highlightButton = new Button(compositeMeasure, SWT.CHECK);
+		highlightButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		highlightButton.setText("Highlight Objects (Colors and Numbers)");
+		highlightButton.setSelection(true);
+		highlightButton.setToolTipText(
+				"Colors the measured objects and displays their numbers (the colors and numbers of the table)");
+		highlightButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Measurement3d measurement = SpatialUtil.getMeasurement();
+				if (measurement != null) {
+					measurement.setHighlightObjects(highlightButton.getSelection());
+				}
+			}
+		});
+
+		final Button regionButton = new Button(compositeMeasure, SWT.PUSH);
+		GridData gd_regionButton = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		gd_regionButton.heightHint = 35;
+		regionButton.setLayoutData(gd_regionButton);
+		regionButton.setText("Measure Region (Clipping)");
+		regionButton.setToolTipText(
+				"Statistics of the voxels in the region of the clipping (box, plane and cuts) and the volume above the iso value");
+		regionButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Measurement3d measurement = SpatialUtil.getMeasurement();
+				if (measurement == null) {
+					return;
+				}
+				infoLabel.setText("Measuring...");
+				Display display = regionButton.getDisplay();
+				/* Large stacks: in the background */
+				Thread thread = new Thread(() -> {
+					double[] result = measurement.measureRegion(true);
+					display.asyncExec(() -> {
+						if (!infoLabel.isDisposed()) {
+							infoLabel.setText(result == null ? "No stack available!"
+									: "Region: " + (long) result[0] + " voxels");
+						}
+					});
+				}, "Bio7 Measure Region");
+				thread.setDaemon(true);
+				thread.start();
+			}
+		});
+
+		final Button pickButton = new Button(compositeMeasure, SWT.CHECK);
+		pickButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		pickButton.setText("Pick Points with the Mouse (Ruler)");
+		pickButton.setToolTipText(
+				"A click on the iso surface or the volume adds a point (position, value and distance) to the table");
+		final Clipping[] observed = new Clipping[1];
+		final Runnable[] toolListener = new Runnable[1];
+		toolListener[0] = () -> {
+			if (pickButton.isDisposed()) {
+				if (observed[0] != null) {
+					observed[0].removeChangeListener(toolListener[0]);
+				}
+				return;
+			}
+			pickButton.getDisplay().asyncExec(() -> {
+				if (!pickButton.isDisposed() && observed[0] != null) {
+					pickButton.setSelection(observed[0].getTool() == Clipping.TOOL_PICK);
+				}
+			});
+		};
+		pickButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Clipping clip = SpatialUtil.getClipping();
+				if (clip == null) {
+					return;
+				}
+				if (observed[0] != clip) {
+					observed[0] = clip;
+					clip.addChangeListener(toolListener[0]);
+				}
+				clip.setTool(pickButton.getSelection() ? Clipping.TOOL_PICK : Clipping.TOOL_NONE);
+				if (pickButton.getSelection()) {
+					infoLabel.setText("Click on the iso surface or the volume (the left mouse button).");
+				}
+			}
+		});
+		final Button clearButton = new Button(compositeMeasure, SWT.PUSH);
+		clearButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		clearButton.setText("Clear Points");
+		clearButton.setToolTipText("Removes the picked points (the next point starts a new sheet)");
+		clearButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Measurement3d measurement = SpatialUtil.getMeasurement();
+				if (measurement != null) {
+					measurement.clearPoints();
+				}
+			}
+		});
+
+		final Button clearAllButton = new Button(compositeMeasure, SWT.PUSH);
+		GridData gd_clearAllButton = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		gd_clearAllButton.heightHint = 35;
+		clearAllButton.setLayoutData(gd_clearAllButton);
+		clearAllButton.setText("Clear Measurements");
+		clearAllButton.setToolTipText(
+				"Clears the measurements in the 3D view: the object colors, numbers and selection and the picked points");
+		clearAllButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Measurement3d measurement = SpatialUtil.getMeasurement();
+				if (measurement != null) {
+					measurement.clear();
+					infoLabel.setText("The measurements in the 3D view have been cleared.");
+				}
+			}
+		});
+	}
+
+	/* A note if the display is reduced (the measurements use the full resolution) */
+	private static String reductionNote() {
+		IsoSurface iso = isoSurface();
+		String reduction = iso != null ? iso.getReduction() : null;
+		return reduction == null ? ""
+				: "\nMeasured at full resolution. The display is reduced (" + reduction
+						+ "), the colors of small objects can be inexact.";
+	}
+
+	private static void runInBackground(Runnable runnable, String name) {
+		Thread thread = new Thread(runnable, name);
+		thread.setDaemon(true);
+		thread.start();
+	}
+
+	private static Scale createClipScale(Composite parent, String text, int min, int max, int selection,
+			String toolTip) {
+		Label label = new Label(parent, SWT.NONE);
+		label.setText(text);
+		Scale scale = new Scale(parent, SWT.NONE);
+		scale.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		scale.setMinimum(min);
+		scale.setMaximum(max);
+		scale.setSelection(selection);
+		scale.setToolTipText(toolTip);
+		return scale;
 	}
 
 	private static VolumeRenderer volumeRenderer() {

@@ -118,6 +118,17 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	/* The iso surface of ImageJ stacks! */
 	private final IsoSurface isoSurface = new IsoSurface();
 	private Runnable modelListener;
+	/* The clipping of the volume and the iso surface! */
+	private final Clipping clipping = new Clipping();
+	private boolean clippingDrag = false;
+	/* The measurements of the iso surface and the volume */
+	private final Measurement3d measurement;
+	{
+		/* The mask (cuts) of the clipping is applied to the data! */
+		isoSurface.setClipping(clipping);
+		volume.setClipping(clipping);
+		measurement = new Measurement3d(isoSurface, volume, clipping);
+	}
 	private int doxv;
 	private int doyv = 0;
 	private int dozv;
@@ -708,9 +719,37 @@ public class SpatialStructure implements KeyListener, MouseListener {
 
 			ecoMain();
 
-			/* The iso surface and the transparent volume after the opaque objects! */
-			isoSurface.render(gl, HeightMaps.isCartesian());
-			volume.render(gl, HeightMaps.isCartesian());
+			/*
+			 * The iso surface and the transparent volume after the opaque objects, with
+			 * the clipping (box and plane) and the slice of the cutting plane!
+			 */
+			boolean cartesian = HeightMaps.isCartesian();
+			double[] bounds = clippingBounds(cartesian);
+			/* For the mouse tools (eraser, plane) of the clipping */
+			int[] dataSize = isoSurface.isDisplayed() ? isoSurface.getDataSize() : volume.getDataSize();
+			if (dataSize != null) {
+				clipping.setDataSize(dataSize[0], dataSize[1], dataSize[2]);
+			}
+			clipping.setView(gl, bounds, HeightMaps.isFlipVertically());
+			if (clipping.isSlice() && bounds != null) {
+				volume.renderSlice(gl, cartesian, clipping.planePolygon(bounds));
+			}
+			/* A cut mesh is closed (no clip planes needed)! */
+			boolean cutMesh = clipping.isCutMesh();
+			if (cutMesh) {
+				isoSurface.render(gl, cartesian);
+			}
+			clipping.begin(gl, bounds);
+			if (!cutMesh) {
+				isoSurface.render(gl, cartesian);
+			}
+			volume.render(gl, cartesian);
+			clipping.end(gl);
+			if (bounds != null && clipping.isPlaneEnabled()) {
+				clipping.drawOutline(gl, bounds);
+			}
+			measurement.render(gl, bounds, HeightMaps.isFlipVertically(), cartesian,
+					glWindow.getSurfaceWidth() / (float) Math.max(1, glWindow.getWidth()));
 
 			gl.glPopMatrix();
 			gl.glFlush();
@@ -1163,6 +1202,18 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		prevMouseY = evt.getY();
 		mouseButton = evt.getButton();
 		mouseButton = evt.getButton();
+		/* A click on the number of a measured object selects the object (NEWT: pixel units)! */
+		if (evt.getButton() == 1 && !walkthrough && measurement.selectLabelAt(evt.getX(), evt.getY())) {
+			clippingDrag = false;
+			renderer.startDrag(new Point(evt.getX(), evt.getY()));
+			return;
+		}
+		/* The mouse tools of the clipping (eraser, plane) with the left mouse button (NEWT: pixel units)! */
+		clippingDrag = evt.getButton() == 1 && !walkthrough
+				&& clipping.toolPressed(evt.getX(), evt.getY(), evt.isShiftDown());
+		if (clippingDrag) {
+			return;
+		}
 		/* Important for the rotation! */
 		renderer.startDrag(new Point(evt.getX(), evt.getY()));
 
@@ -1171,6 +1222,10 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	public void mouseDragged(MouseEvent e) {
 		SpatialEvents.setMouseDragged(true);
 		SpatialEvents.setDragEvent(e);
+		if (clippingDrag) {
+			clipping.toolDragged(e.getX(), e.getY());
+			return;
+		}
 		if (stopMovement == false) {
 			int x = e.getX();
 			int y = e.getY();
@@ -1274,6 +1329,10 @@ public class SpatialStructure implements KeyListener, MouseListener {
 
 	public void mouseReleased(MouseEvent evt) {
 		mousePressed = false;
+		if (clippingDrag) {
+			clippingDrag = false;
+			clipping.toolReleased();
+		}
 		SpatialEvents.setMouseDragged(false);
 		SpatialEvents.setDragEvent(null);
 
@@ -1354,6 +1413,34 @@ public class SpatialStructure implements KeyListener, MouseListener {
 			return new float[] { isoSurface.getWidth(), isoSurface.getHeight(), isoSurface.getDepth() };
 		}
 		return null;
+	}
+
+	/**
+	 * Returns the clipping (box, cutting plane and slice) of the volume and the iso
+	 * surface.
+	 * 
+	 * @return the clipping
+	 */
+	public Clipping getClipping() {
+		return clipping;
+	}
+
+	/**
+	 * Returns the measurements of the iso surface and the volume.
+	 * 
+	 * @return the measurements
+	 */
+	public Measurement3d getMeasurement() {
+		return measurement;
+	}
+
+	/* The extent of a displayed stack (x0, x1, y0, y1, z0, z1) or null! */
+	private double[] clippingBounds(boolean cartesian) {
+		if (getStackExtent() == null) {
+			return null;
+		}
+		double ax = getAxisSizeX(), ay = getAxisSizeY(), az = getAxisSizeZ();
+		return cartesian ? new double[] { -ax, ax, -ay, ay, -az, az } : new double[] { 0, ax, 0, ay, 0, az };
 	}
 
 	/**

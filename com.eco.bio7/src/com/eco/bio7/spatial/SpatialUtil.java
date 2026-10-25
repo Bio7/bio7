@@ -41,6 +41,29 @@ public class SpatialUtil {
 	}
 
 	/**
+	 * Returns the clipping (box, cutting plane and slice) of the volume and the iso
+	 * surface of the 3d view.
+	 * 
+	 * @return the clipping or null if the 3d view is not opened
+	 */
+	public static Clipping getClipping() {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		return struc != null ? struc.getClipping() : null;
+	}
+
+	/**
+	 * Returns the measurements of the iso surface and the volume of the 3d view
+	 * (objects, region statistics and picked points, displayed in the Bio7
+	 * table).
+	 * 
+	 * @return the measurements or null if the 3d view is not available
+	 */
+	public static Measurement3d getMeasurement() {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		return struc != null ? struc.getMeasurement() : null;
+	}
+
+	/**
 	 * Returns the volume renderer of the 3d view (e.g., to load a stack with
 	 * VolumeRenderer.load).
 	 * 

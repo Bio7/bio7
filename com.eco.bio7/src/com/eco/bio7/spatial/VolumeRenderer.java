@@ -41,7 +41,18 @@ public class VolumeRenderer {
 
 	private static int max3dTextureSize = 0;
 
-	private ByteBuffer voxels; // RGBA, alpha = intensity
+	private ByteBuffer voxels; // RGBA, alpha = intensity (or the opacity of the transfer function)
+	/* The intensities (0 - 255), the colors of an RGB stack (else null) and the LUT */
+	private byte[] intensities;
+	private int[] rgbColors;
+	private int[] lutTable;
+	private TransferFunction transferFunction;
+	/* The clipping with the mask of the removed voxels and the mask of the texture */
+	private Clipping clipping;
+	private Clipping.Mask bakedMask;
+	private boolean maskChanged = false;
+	/* The values of the intensities 0 and 255 (the display range of the stack) */
+	private double valueMin = 0, valueMax = 255;
 	private int texWidth;
 	private int texHeight;
 	private int texDepth;
@@ -96,7 +107,9 @@ public class VolumeRenderer {
 		double range = max > min ? max - min : 1;
 		int[] lut = createLut(imp.getProcessor().getColorModel());
 
-		ByteBuffer buffer = Buffers.newDirectByteBuffer(tw * th * td * 4);
+		byte[] values = new byte[tw * th * td];
+		int[] colors = null;
+		int index = 0;
 		for (int z = 0; z < td; z++) {
 			int slice = Math.min(d, z * stepZ + 1);
 			ImageProcessor ip = stack.getProcessor(imp.getStackIndex(channel, slice, frame));
@@ -105,26 +118,24 @@ public class VolumeRenderer {
 				int py = y * stepY;
 				for (int x = 0; x < tw; x++) {
 					int px = x * stepX;
-					int color;
 					int intensity;
 					if (rgb) {
-						color = ip.getPixel(px, py);
+						int color = ip.getPixel(px, py);
 						intensity = (int) Math.round(0.299 * ((color >> 16) & 0xff) + 0.587 * ((color >> 8) & 0xff)
 								+ 0.114 * (color & 0xff));
+						if (colors == null) {
+							colors = new int[values.length];
+						}
+						colors[index] = color & 0xffffff;
 					} else {
 						/* Scaled to the display range like the image in ImageJ! */
 						double value = (ip.getf(px, py) - min) / range * 255.0;
 						intensity = Double.isNaN(value) ? 0 : (int) Math.max(0, Math.min(255, Math.round(value)));
-						color = lutColors ? lut[intensity] : (intensity << 16) | (intensity << 8) | intensity;
 					}
-					buffer.put((byte) ((color >> 16) & 0xff));
-					buffer.put((byte) ((color >> 8) & 0xff));
-					buffer.put((byte) (color & 0xff));
-					buffer.put((byte) intensity);
+					values[index++] = (byte) intensity;
 				}
 			}
 		}
-		buffer.rewind();
 
 		/* The calibrated depth of a voxel in pixel units! */
 		Calibration cal = imp.getCalibration();
@@ -132,10 +143,15 @@ public class VolumeRenderer {
 		if (cal != null && cal.pixelWidth > 0 && cal.pixelDepth > 0) {
 			voxelDepth = cal.pixelDepth / cal.pixelWidth;
 		}
-		voxels = buffer;
+		intensities = values;
+		rgbColors = colors;
+		valueMin = colors != null ? 0 : min;
+		valueMax = colors != null ? 255 : max;
+		lutTable = lut;
 		texWidth = tw;
 		texHeight = th;
 		texDepth = td;
+		voxels = bake();
 		width = w;
 		height = h;
 		depth = (float) (d * voxelDepth);
@@ -153,6 +169,186 @@ public class VolumeRenderer {
 		return image != null && load(image);
 	}
 
+	/*
+	 * The RGBA voxels: the colors of the LUT (or gray or the RGB colors) and the
+	 * intensity as alpha, or the colors and opacities of the transfer function!
+	 */
+	private ByteBuffer bake() {
+		byte[] values = intensities;
+		ByteBuffer buffer = Buffers.newDirectByteBuffer(values.length * 4);
+		int[] tfColors = null;
+		byte[] tfAlpha = null;
+		if (transferFunction != null) {
+			tfColors = transferFunction.getColorTable();
+			float[] opacity = transferFunction.getOpacityTable();
+			tfAlpha = new byte[256];
+			for (int i = 0; i < 256; i++) {
+				tfAlpha[i] = (byte) Math.round(opacity[i] * 255);
+			}
+		}
+		/* The removed voxels (transparent) */
+		Clipping.Mask mask = clipping != null ? clipping.getMask() : null;
+		bakedMask = mask;
+		int w = texWidth, h = texHeight, d = texDepth;
+		for (int i = 0; i < values.length; i++) {
+			if (mask != null) {
+				int x = i % w, y = (i / w) % h, z = i / (w * h);
+				if (mask.isRemoved((x + 0.5) / w, (y + 0.5) / h, (z + 0.5) / d)) {
+					buffer.putInt(0);
+					continue;
+				}
+			}
+			int intensity = values[i] & 0xff;
+			int color;
+			byte alpha;
+			if (tfColors != null) {
+				color = tfColors[intensity];
+				alpha = tfAlpha[intensity];
+			} else {
+				if (rgbColors != null) {
+					color = rgbColors[i];
+				} else {
+					color = lutColors ? lutTable[intensity] : (intensity << 16) | (intensity << 8) | intensity;
+				}
+				alpha = (byte) intensity;
+			}
+			buffer.put((byte) ((color >> 16) & 0xff));
+			buffer.put((byte) ((color >> 8) & 0xff));
+			buffer.put((byte) (color & 0xff));
+			buffer.put(alpha);
+		}
+		buffer.rewind();
+		return buffer;
+	}
+
+	/**
+	 * Sets a transfer function for the colors and the opacities of the voxels (the
+	 * intensity 0 - 255 is the position 0 - 1 of the function, the display range of
+	 * the stack). null uses the colors of the LUT and the intensity as opacity. The
+	 * texture is created again (the stack is not loaded again).
+	 * 
+	 * @param tf the transfer function (copied) or null
+	 */
+	public synchronized void setTransferFunction(TransferFunction tf) {
+		transferFunction = tf != null ? tf.copy() : null;
+		if (intensities != null) {
+			voxels = bake();
+			upload = true;
+		}
+	}
+
+	/**
+	 * Sets the clipping with the mask of the removed voxels (see Clipping.cutRoi
+	 * and Clipping.setMask). The texture is created again after a change of the
+	 * mask.
+	 * 
+	 * @param clipping the clipping or null
+	 */
+	public void setClipping(Clipping clipping) {
+		synchronized (this) {
+			this.clipping = clipping;
+		}
+		if (clipping != null) {
+			clipping.addChangeListener(this::clippingChanged);
+		}
+		clippingChanged();
+	}
+
+	/* The texture is created again with the next frame if the mask has been changed! */
+	private void clippingChanged() {
+		Clipping clip;
+		synchronized (this) {
+			clip = clipping;
+		}
+		Clipping.Mask mask = clip != null ? clip.getMask() : null;
+		synchronized (this) {
+			if (mask != bakedMask && intensities != null) {
+				maskChanged = true;
+			}
+		}
+	}
+
+	/* Creates the texture with a changed mask (in the OpenGL thread)! */
+	private void updateMask() {
+		if (maskChanged) {
+			maskChanged = false;
+			if (intensities != null) {
+				voxels = bake();
+				upload = true;
+			}
+		}
+	}
+
+	/** Returns the loaded ImageJ image or null. */
+	public synchronized ImagePlus getImage() {
+		return intensities != null ? image : null;
+	}
+
+	/**
+	 * Returns the opacity (0 - 1) of the displayed voxel at the relative position
+	 * (0 - 1, y = 0 is the first row) or 0.
+	 */
+	public synchronized float getOpacityAt(double rx, double ry, double rz) {
+		if (voxels == null) {
+			return 0;
+		}
+		int x = Math.max(0, Math.min(texWidth - 1, (int) (rx * texWidth)));
+		int y = Math.max(0, Math.min(texHeight - 1, (int) (ry * texHeight)));
+		int z = Math.max(0, Math.min(texDepth - 1, (int) (rz * texDepth)));
+		return (voxels.get(((z * texHeight + y) * texWidth + x) * 4 + 3) & 0xff) / 255f;
+	}
+
+	/** Returns the size of the texture (width, height, depth) or null. */
+	public synchronized int[] getDataSize() {
+		return intensities != null ? new int[] { texWidth, texHeight, texDepth } : null;
+	}
+
+	/** The data value of the position 0 of the transfer function. */
+	public synchronized double getValueMin() {
+		return valueMin;
+	}
+
+	/** The data value of the position 1 of the transfer function. */
+	public synchronized double getValueMax() {
+		return valueMax;
+	}
+
+	public synchronized TransferFunction getTransferFunction() {
+		return transferFunction != null ? transferFunction.copy() : null;
+	}
+
+	/**
+	 * Returns the histogram of the intensities (256 bins, the display range of the
+	 * stack) or null if no stack is loaded.
+	 */
+	public synchronized int[] getHistogram() {
+		if (intensities == null) {
+			return null;
+		}
+		int[] histogram = new int[256];
+		for (byte v : intensities) {
+			histogram[v & 0xff]++;
+		}
+		return histogram;
+	}
+
+	/**
+	 * Returns the LUT of the loaded stack (for a transfer function with the colors
+	 * of the image) or null.
+	 */
+	public synchronized ColorModel getColorModel() {
+		if (lutTable == null) {
+			return null;
+		}
+		byte[] r = new byte[256], g = new byte[256], b = new byte[256];
+		for (int i = 0; i < 256; i++) {
+			r[i] = (byte) (lutTable[i] >> 16);
+			g[i] = (byte) (lutTable[i] >> 8);
+			b[i] = (byte) lutTable[i];
+		}
+		return new java.awt.image.IndexColorModel(8, 256, r, g, b);
+	}
+
 	/* The RGB colors of the LUT (or a gray LUT)! */
 	private static int[] createLut(ColorModel cm) {
 		int[] lut = new int[256];
@@ -167,6 +363,8 @@ public class VolumeRenderer {
 	 */
 	public synchronized void clear() {
 		voxels = null;
+		intensities = null;
+		rgbColors = null;
 		image = null;
 		upload = true;
 	}
@@ -200,6 +398,7 @@ public class VolumeRenderer {
 			gl.glGetIntegerv(GL2.GL_MAX_3D_TEXTURE_SIZE, size, 0);
 			max3dTextureSize = size[0];
 		}
+		updateMask();
 		if (upload) {
 			uploadTexture(gl);
 		}
@@ -250,6 +449,57 @@ public class VolumeRenderer {
 
 		gl.glBindTexture(GL2.GL_TEXTURE_3D, 0);
 		gl.glPopAttrib();
+	}
+
+	/**
+	 * Renders a cross-section of the volume (an opaque polygon with the colors of
+	 * the voxels, e.g., the cutting plane of Clipping). Empty voxels (below the
+	 * threshold) are not drawn. The volume does not need to be displayed (see
+	 * setShow).
+	 * 
+	 * @param gl        the OpenGL context
+	 * @param cartesian true for the Cartesian mode
+	 * @param polygon   the corners of the polygon (scene coordinates)
+	 */
+	public synchronized void renderSlice(GL2 gl, boolean cartesian, java.util.List<double[]> polygon) {
+		updateMask();
+		if (upload) {
+			uploadTexture(gl);
+		}
+		if (textureId == 0 || polygon == null) {
+			return;
+		}
+		float w = width, h = height, d = getDepth();
+		float x0 = cartesian ? -w / 2 : 0, y0 = cartesian ? -h / 2 : 0, z0 = cartesian ? -d / 2 : 0;
+		boolean flip = HeightMaps.isFlipVertically();
+		gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT | GL2.GL_TEXTURE_BIT
+				| GL2.GL_CURRENT_BIT);
+		gl.glDisable(GL2.GL_LIGHTING);
+		gl.glDisable(GL.GL_CULL_FACE);
+		gl.glDisable(GL.GL_BLEND);
+		/* Only where data is (the alpha is the intensity or the opacity of the transfer function) */
+		gl.glEnable(GL2.GL_ALPHA_TEST);
+		gl.glAlphaFunc(GL.GL_GREATER, Math.max(0.02f, threshold));
+		gl.glDisable(GL.GL_TEXTURE_2D);
+		gl.glDepthMask(true);
+		gl.glEnable(GL2.GL_TEXTURE_3D);
+		gl.glBindTexture(GL2.GL_TEXTURE_3D, textureId);
+		/* The colors of the voxels (opaque) */
+		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_REPLACE);
+		gl.glBegin(GL2.GL_POLYGON);
+		for (double[] q : polygon) {
+			double u = (q[0] - x0) / w, v = (q[1] - y0) / h, r = (q[2] - z0) / d;
+			gl.glTexCoord3d(u, flip ? v : 1 - v, r);
+			gl.glVertex3d(q[0], q[1], q[2]);
+		}
+		gl.glEnd();
+		gl.glBindTexture(GL2.GL_TEXTURE_3D, 0);
+		gl.glPopAttrib();
+	}
+
+	/** Returns true if a stack is loaded (displayed or not). */
+	public synchronized boolean isLoaded() {
+		return intensities != null;
 	}
 
 	/*

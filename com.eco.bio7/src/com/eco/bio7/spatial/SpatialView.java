@@ -39,6 +39,9 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IToolBarManager;
+import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.swt.SwtAwt;
 import com.eco.bio7.util.Util;
 import com.jogamp.newt.MonitorDevice;
@@ -296,7 +299,19 @@ public class SpatialView extends ViewPart {
 	}
 
 	private void initializeToolBar() {
-
+		IToolBarManager toolBar = getViewSite().getActionBars().getToolBarManager();
+		Action clear = new Action("Clear Measurements") {
+			public void run() {
+				/* The object colors, numbers, selection and picked points */
+				Measurement3d measurement = SpatialUtil.getMeasurement();
+				if (measurement != null) {
+					measurement.clear();
+				}
+			}
+		};
+		clear.setToolTipText("Clears the measurements in the 3D view (object colors, numbers and picked points)");
+		clear.setImageDescriptor(Bio7Plugin.getImageDescriptor("/icons/views/deleteaction.svg"));
+		toolBar.add(clear);
 	}
 
 	public void dispose() {

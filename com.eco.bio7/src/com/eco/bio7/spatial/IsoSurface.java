@@ -26,7 +26,9 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
@@ -107,6 +109,11 @@ public class IsoSurface {
 	private float smoothing = 1.0f;
 	private int meshSmoothing = 5;
 	private int maxSize = 256;
+	/* The display is reduced to maxSize only if enabled (the measurements use the full resolution) */
+	private boolean reduceDisplay = false;
+	/* The full resolution surface for the measurements (see getMeasurementData) and its state */
+	private MeasureData fullData;
+	private Object fullKey;
 	private float zScale = 1.0f;
 	private float opacity = 1.0f;
 	private boolean headLight = true;
@@ -122,13 +129,26 @@ public class IsoSurface {
 	private double colorMax = 255;
 	private ColorModel colorLut;
 	private float[] vertexColors;
+	/* The opacity of a vertex (opacity mapping of the transfer function) or null */
+	private float[] vertexAlpha;
+	private TransferFunction transferFunction;
+	/* The color table index (0 - 255) of every vertex (for the histogram) or null */
+	private int[] vertexIndices;
+	private boolean opacityMapping = false;
 	private boolean colorsDirty = false;
+	/* The colors of the measured objects (see Measurement3d) for the mesh or null */
+	private float[] objectColors;
+	private int[] objectColorsMesh;
 	private boolean isoExplicit = false;
 	/* A color array set with setColorData (kept by setData) */
 	private boolean customColorData = false;
 	private boolean customColorRange = false;
 	private int[] customColorTable;
 	private float colorSampleDepth = 1;
+
+	/* The cut of the mesh (planes and mask) and the state of the last computation */
+	private Clipping clipping;
+	private Object computedClip;
 
 	/* The background computation */
 	private Thread worker;
@@ -150,9 +170,11 @@ public class IsoSurface {
 		int w = imp.getWidth();
 		int h = imp.getHeight();
 		int d = imp.getNSlices();
-		int sx = (w + maxSize - 1) / maxSize;
-		int sy = (h + maxSize - 1) / maxSize;
-		int sz = (d + maxSize - 1) / maxSize;
+		/* Reduced only if enabled (else the full resolution) */
+		int limit = reduceDisplay ? maxSize : Math.max(w, Math.max(h, d));
+		int sx = (w + limit - 1) / limit;
+		int sy = (h + limit - 1) / limit;
+		int sz = (d + limit - 1) / limit;
 		int tw = (w + sx - 1) / sx;
 		int th = (h + sy - 1) / sy;
 		int td = (d + sz - 1) / sz;
@@ -208,6 +230,8 @@ public class IsoSurface {
 			pixelSize = cal != null && cal.pixelWidth > 0 ? cal.pixelWidth : 1;
 			unit = cal != null ? cal.getUnit() : "pixel";
 			lut = ip instanceof ColorProcessor ? null : ip.getColorModel();
+			fullData = null;
+			fullKey = null;
 			/* A reload of the same stack keeps a selected iso value! */
 			boolean keepIso = imp == image && isoExplicit;
 			image = imp;
@@ -463,7 +487,7 @@ public class IsoSurface {
 	/**
 	 * Resets the color settings to the defaults: no color array (see
 	 * setColorData), the value range of the data, the default color map (the LUT
-	 * of the image or Viridis) and the sample depth 1. The color mode is not
+	 * of the image or Viridis), no transfer function and the sample depth 1. The color mode is not
 	 * changed. Useful at the start of a model, because the iso surface keeps the
 	 * settings of a former model.
 	 */
@@ -475,6 +499,8 @@ public class IsoSurface {
 		colorMax = displayMax;
 		customColorTable = null;
 		colorSampleDepth = 1;
+		transferFunction = null;
+		opacityMapping = false;
 		colorsDirty = true;
 	}
 
@@ -640,8 +666,9 @@ public class IsoSurface {
 			sigma = smoothing;
 			iterations = meshSmoothing;
 		}
-		Mesh mesh = computeMesh(values, w, h, d, iso, sigma, iterations);
-		setMesh(values, mesh);
+		Cut cut = currentCut();
+		Mesh mesh = computeMesh(values, w, h, d, iso, sigma, iterations, cut);
+		setMesh(values, mesh, cut);
 	}
 
 	/**
@@ -653,9 +680,104 @@ public class IsoSurface {
 	}
 
 	/**
+	 * Returns the surface for the measurements (see Measurement3d) in the full
+	 * resolution of the stack with the smoothing of the measurement (sigma in
+	 * voxels of the stack) and the iso value, mesh smoothing and cut of the
+	 * display: the displayed surface if it is equal, else computed (cached until a
+	 * change).
+	 */
+	MeasureData getMeasurementData(float sigma) {
+		MeasureData display = getMeasureData();
+		boolean equal;
+		synchronized (this) {
+			equal = image == null || (!isReduced() && smoothing == sigma);
+		}
+		if (display == null || equal) {
+			return display;
+		}
+		ImagePlus imp;
+		double iso;
+		int iterations;
+		float voxelDepth;
+		synchronized (this) {
+			imp = image;
+			iso = isoValue;
+			iterations = meshSmoothing;
+			voxelDepth = depth / imp.getNSlices();
+		}
+		Cut cut = currentCut(1, 1, voxelDepth);
+		List<Object> key = new ArrayList<>(List.of(imp, imp.getChannel(), imp.getFrame(), iso, sigma, iterations));
+		key.addAll(cut.key);
+		synchronized (this) {
+			if (fullData != null && key.equals(fullKey)) {
+				return fullData;
+			}
+		}
+		int w = imp.getWidth(), h = imp.getHeight(), d = imp.getNSlices();
+		float[] values = readChannel(imp, imp.getChannel(), 1, 1, 1, w, h, d);
+		Mesh mesh = computeMesh(values, w, h, d, iso, sigma, iterations, cut);
+		MeasureData m = new MeasureData();
+		m.vertices = mesh.vertices;
+		m.triangles = mesh.triangles;
+		m.data = values;
+		m.nx = w;
+		m.ny = h;
+		m.nz = d;
+		m.stepX = 1;
+		m.stepY = 1;
+		m.stepZ = voxelDepth;
+		m.pixelSize = display.pixelSize;
+		m.unit = display.unit;
+		m.isoValue = iso;
+		m.image = imp;
+		synchronized (this) {
+			if (image == imp) {
+				fullData = m;
+				fullKey = key;
+			}
+		}
+		return m;
+	}
+
+	/** Returns true if the display is reduced to the maximum size (see setMaxSize). */
+	public synchronized boolean isReduceDisplay() {
+		return reduceDisplay;
+	}
+
+	/**
+	 * Reduces the displayed surface of large stacks to the maximum size (faster,
+	 * see setMaxSize). The measurements always use the full resolution. Applied
+	 * when the stack is loaded (default: false, the full resolution).
+	 */
+	public synchronized void setReduceDisplay(boolean reduce) {
+		reduceDisplay = reduce;
+	}
+
+	/**
+	 * Returns true if the displayed surface of the loaded stack has been reduced
+	 * (see setReduceDisplay and setMaxSize). The measurements use the full
+	 * resolution.
+	 */
+	public synchronized boolean isReduced() {
+		return image != null && data != null
+				&& (nx < image.getWidth() || ny < image.getHeight() || nz < image.getNSlices());
+	}
+
+	/** Returns a description of the reduction ("512 x 512 x 320 -> 256 x 256 x 160") or null. */
+	public synchronized String getReduction() {
+		if (!isReduced()) {
+			return null;
+		}
+		return image.getWidth() + " x " + image.getHeight() + " x " + image.getNSlices() + " -> " + nx + " x " + ny
+				+ " x " + nz;
+	}
+
+	/**
 	 * Removes the iso surface.
 	 */
 	public synchronized void clear() {
+		fullData = null;
+		fullKey = null;
 		data = null;
 		image = null;
 		meshVertices = null;
@@ -706,24 +828,166 @@ public class IsoSurface {
 				sigma = smoothing;
 				iterations = meshSmoothing;
 			}
-			Mesh mesh = computeMesh(values, w, h, d, iso, sigma, iterations);
-			setMesh(values, mesh);
+			Cut cut = currentCut();
+			Mesh mesh = computeMesh(values, w, h, d, iso, sigma, iterations, cut);
+			setMesh(values, mesh, cut);
 		}
 	}
 
-	private static Mesh computeMesh(float[] values, int w, int h, int d, double iso, float sigma, int iterations) {
+	/* The cut of the mesh: planes in voxel coordinates and the mask of the removed voxels! */
+	private static class Cut {
+		/* a, b, c, d: kept are the voxels with a x + b y + c z + d >= 0 (distance in voxels) */
+		final List<float[]> planes = new ArrayList<>();
+		Clipping.Mask mask;
+		/* The state (for the comparison with a later state) */
+		final List<Object> key = new ArrayList<>();
+
+		boolean isEmpty() {
+			return planes.isEmpty() && mask == null;
+		}
+	}
+
+	/*
+	 * The current cut of the clipping (the planes of the box and the cutting plane
+	 * if the mesh is cut, see Clipping.setCutMesh, and the mask)!
+	 */
+	private Cut currentCut() {
+		float sx, sy, sz;
+		synchronized (this) {
+			sx = stepX;
+			sy = stepY;
+			sz = stepZ;
+		}
+		return currentCut(sx, sy, sz);
+	}
+
+	/* The cut for voxels of the size sx, sy, sz (pixels, without the z scale)! */
+	private Cut currentCut(float sx, float sy, float sz) {
+		Clipping clip;
+		boolean flip = HeightMaps.isFlipVertically();
+		float w, h, scaledDepth;
+		synchronized (this) {
+			clip = clipping;
+			w = width;
+			sz = sz * zScale;
+			h = height;
+			scaledDepth = depth * zScale;
+		}
+		Cut cut = new Cut();
+		if (clip == null) {
+			return cut;
+		}
+		cut.mask = clip.getMask();
+		cut.key.add(cut.mask);
+		if (clip.isCutMesh()) {
+			/* The scene coordinates (octant) of a voxel: (x + 0.5) * sx, flip ? (y + 0.5) * sy : h - (y + 0.5) * sy, (z + 0.5) * sz */
+			double[] bounds = { 0, w, 0, h, 0, scaledDepth };
+			for (double[] p : clip.getPlanes(bounds)) {
+				double b = flip ? p[1] * sy : -p[1] * sy;
+				double c0 = p[0] * 0.5 * sx + (flip ? p[1] * 0.5 * sy : p[1] * (h - 0.5 * sy)) + p[2] * 0.5 * sz + p[3];
+				/* The distance in voxels (of the width) */
+				cut.planes.add(new float[] { (float) (p[0]), (float) (b / sx), (float) (p[2] * sz / sx), (float) (c0 / sx) });
+				for (double v : p) {
+					cut.key.add(v);
+				}
+			}
+			cut.key.add(flip);
+		}
+		return cut;
+	}
+
+	/**
+	 * Sets the clipping for the cut of the mesh (see Clipping.setCutMesh and the
+	 * mask). The surface is computed again after a change of the cut.
+	 * 
+	 * @param clipping the clipping or null
+	 */
+	public void setClipping(Clipping clipping) {
+		synchronized (this) {
+			this.clipping = clipping;
+		}
+		if (clipping != null) {
+			clipping.addChangeListener(this::clippingChanged);
+		}
+		clippingChanged();
+	}
+
+	/* Computes the surface again if the cut has been changed! */
+	private void clippingChanged() {
+		Cut cut = currentCut();
+		synchronized (this) {
+			Object previous = computedClip;
+			if (previous == null ? cut.isEmpty() : previous.equals(cut.key)) {
+				return;
+			}
+		}
+		update();
+	}
+
+	private static Mesh computeMesh(float[] values, int w, int h, int d, double iso, float sigma, int iterations,
+			Cut cut) {
 		float[] smoothed = sigma > 0 ? gaussian(values, w, h, d, sigma) : values;
+		if (cut != null && !cut.isEmpty()) {
+			smoothed = cutField(smoothed, w, h, d, (float) iso, cut);
+		}
 		Mesh mesh = surfaceNets(smoothed, w, h, d, (float) iso);
 		taubinSmoothing(mesh, iterations);
 		return mesh;
 	}
 
+	/*
+	 * The intersection of the inside of the surface with the kept half spaces and
+	 * the kept voxels of the mask (the minimum of the signed distances), so the cut
+	 * surface is closed with caps (CSG)!
+	 */
+	private static float[] cutField(float[] f, int w, int h, int d, float iso, Cut cut) {
+		float min = Float.MAX_VALUE, max = -Float.MAX_VALUE;
+		for (float v : f) {
+			min = Math.min(min, v);
+			max = Math.max(max, v);
+		}
+		/* The slope of the distance fields (value change per voxel) */
+		float slope = Math.max(Math.max(max - iso, iso - min) / 2, 1e-6f);
+		float[] maskField = null;
+		if (cut.mask != null) {
+			/* +1 kept, -1 removed, smoothed (the boundary at 0) */
+			maskField = new float[w * h * d];
+			int i = 0;
+			for (int z = 0; z < d; z++) {
+				for (int y = 0; y < h; y++) {
+					for (int x = 0; x < w; x++) {
+						maskField[i++] = cut.mask.isRemoved((x + 0.5) / w, (y + 0.5) / h, (z + 0.5) / d) ? -1 : 1;
+					}
+				}
+			}
+			maskField = gaussian(maskField, w, h, d, 0.7f);
+		}
+		float[] g = new float[f.length];
+		int i = 0;
+		for (int z = 0; z < d; z++) {
+			for (int y = 0; y < h; y++) {
+				for (int x = 0; x < w; x++) {
+					float v = f[i] - iso;
+					for (float[] p : cut.planes) {
+						v = Math.min(v, (p[0] * x + p[1] * y + p[2] * z + p[3]) * slope);
+					}
+					if (maskField != null) {
+						v = Math.min(v, maskField[i] * slope);
+					}
+					g[i++] = v + iso;
+				}
+			}
+		}
+		return g;
+	}
+
 	/* Sets a computed mesh (if the data hasn't been changed in the meantime)! */
-	private void setMesh(float[] values, Mesh mesh) {
+	private void setMesh(float[] values, Mesh mesh, Cut cut) {
 		synchronized (this) {
 			if (values != data) {
 				return; // new data has been set
 			}
+			computedClip = cut.isEmpty() ? null : cut.key;
 			meshVertices = mesh.vertices;
 			meshTriangles = mesh.triangles;
 			bake(HeightMaps.isFlipVertically());
@@ -743,6 +1007,18 @@ public class IsoSurface {
 		}
 		colorsDirty = false;
 		vertexColors = null;
+		vertexAlpha = null;
+		vertexIndices = null;
+		if (objectColors != null) {
+			/* The colors of the measured objects (removed with a new mesh) */
+			if (objectColorsMesh == meshTriangles && meshVertices != null
+					&& objectColors.length == meshVertices.length) {
+				vertexColors = objectColors;
+				return;
+			}
+			objectColors = null;
+			objectColorsMesh = null;
+		}
 		if (colorMode == COLOR_SINGLE || meshVertices == null || colorData == null
 				|| colorData.length != nx * ny * nz) {
 			return;
@@ -769,7 +1045,18 @@ public class IsoSurface {
 		} else {
 			table = customColorTable != null ? customColorTable : colorTable(lut, true);
 		}
+		/* The transfer function: colors and (optional) opacities! */
+		float[] alphaTable = null;
+		float[] alphas = null;
+		if (transferFunction != null) {
+			table = transferFunction.getColorTable();
+			if (opacityMapping) {
+				alphaTable = transferFunction.getOpacityTable();
+				alphas = new float[n];
+			}
+		}
 		float depthInside = colorSampleDepth;
+		int[] indices = new int[n];
 		double range = colorMax > colorMin ? colorMax - colorMin : 1;
 		for (int i = 0; i < n; i++) {
 			float x = meshVertices[i * 3];
@@ -789,8 +1076,115 @@ public class IsoSurface {
 			colors[i * 3] = ((rgb >> 16) & 0xff) / 255f;
 			colors[i * 3 + 1] = ((rgb >> 8) & 0xff) / 255f;
 			colors[i * 3 + 2] = (rgb & 0xff) / 255f;
+			if (alphas != null) {
+				alphas[i] = alphaTable[index];
+			}
+			indices[i] = index;
 		}
 		vertexColors = colors;
+		vertexAlpha = alphas;
+		vertexIndices = indices;
+	}
+
+	/**
+	 * Sets a transfer function for the colors (and with the opacity mapping for
+	 * the opacities) of the surface. The color values (see the color mode and
+	 * setColorData) are mapped with the color range (see setColorRange) to the
+	 * positions 0 - 1 of the function. The color mode COLOR_SINGLE is changed to
+	 * COLOR_INTENSITY. null removes the transfer function.
+	 * 
+	 * @param tf the transfer function (copied) or null
+	 */
+	public synchronized void setTransferFunction(TransferFunction tf) {
+		transferFunction = tf != null ? tf.copy() : null;
+		if (transferFunction != null && colorMode == COLOR_SINGLE) {
+			colorMode = COLOR_INTENSITY;
+		}
+		colorsDirty = true;
+	}
+
+	public synchronized TransferFunction getTransferFunction() {
+		return transferFunction != null ? transferFunction.copy() : null;
+	}
+
+	/**
+	 * Uses the opacities of the transfer function for the vertices (like the
+	 * opacity mapping of ParaView). The surface becomes transparent where the
+	 * opacity of the function is low.
+	 */
+	public synchronized void setOpacityMapping(boolean mapping) {
+		opacityMapping = mapping;
+		colorsDirty = true;
+	}
+
+	/** The data value of the first color (the position 0 of the transfer function). */
+	public synchronized double getColorMin() {
+		return colorMin;
+	}
+
+	/** The data value of the last color (the position 1 of the transfer function). */
+	public synchronized double getColorMax() {
+		return colorMax;
+	}
+
+	public synchronized boolean isOpacityMapping() {
+		return opacityMapping;
+	}
+
+	/**
+	 * Returns the histogram (256 bins) of the color values of the surface
+	 * vertices (the values which are mapped with the transfer function) or, if no
+	 * vertex colors are available, of all color values.
+	 */
+	public synchronized int[] getSurfaceHistogram() {
+		if (colorsDirty) {
+			ensureColors();
+			// The new colors must be uploaded with the next rendering
+			upload = true;
+		}
+		if (vertexIndices == null) {
+			return getHistogram();
+		}
+		int[] histogram = new int[256];
+		for (int index : vertexIndices) {
+			histogram[index]++;
+		}
+		return histogram;
+	}
+
+	/**
+	 * Returns the position (0 - 1) of the iso value in the color range (the color
+	 * values of the same channel at the surface are close to it) or NaN.
+	 */
+	public synchronized double getIsoPosition() {
+		if (colorMode != COLOR_INTENSITY || customColorData || colorMax <= colorMin) {
+			return Double.NaN;
+		}
+		return Math.max(0, Math.min(1, (isoValue - colorMin) / (colorMax - colorMin)));
+	}
+
+	/**
+	 * Returns the histogram (256 bins) of the color values in the color range
+	 * (for the transfer function editor) or null.
+	 */
+	public synchronized int[] getHistogram() {
+		if (colorData == null) {
+			return null;
+		}
+		double range = colorMax > colorMin ? colorMax - colorMin : 1;
+		int[] histogram = new int[256];
+		for (float v : colorData) {
+			int index = (int) Math.round((v - colorMin) / range * 255);
+			if (index >= 0 && index <= 255) {
+				histogram[index]++;
+			}
+		}
+		return histogram;
+	}
+
+	/** Returns the LUT of the loaded stack (for the colors of a transfer function) or null. */
+	public synchronized ColorModel getColorModel() {
+		return colorLut != null ? colorLut : lut;
 	}
 
 	/* The colors of a LUT (or Viridis if no LUT or, optional, a gray LUT is available)! */
@@ -847,7 +1241,7 @@ public class IsoSurface {
 	}
 
 	/* Trilinear interpolation (clamped at the borders)! */
-	private static float sample(float[] f, int w, int h, int d, float x, float y, float z) {
+	static float sample(float[] f, int w, int h, int d, float x, float y, float z) {
 		x = Math.max(0, Math.min(w - 1, x));
 		y = Math.max(0, Math.min(h - 1, y));
 		z = Math.max(0, Math.min(d - 1, z));
@@ -1189,6 +1583,9 @@ public class IsoSurface {
 		if (positions != null && bakedFlip != HeightMaps.isFlipVertically()) {
 			bake(HeightMaps.isFlipVertically());
 			upload = true;
+			if (computedClip != null) {
+				update(); // the cut planes depend on the orientation
+			}
 		}
 		if (colorsDirty) {
 			ensureColors();
@@ -1255,7 +1652,7 @@ public class IsoSurface {
 			gl.glColorPointer(4, GL.GL_FLOAT, 0, 0);
 			gl.glEnableClientState(GL2.GL_COLOR_ARRAY);
 		}
-		if (opacity < 1) {
+		if (opacity < 1 || (hasColorBuffer && vertexAlpha != null)) {
 			/* Transparent: the back faces first, then the front faces! */
 			gl.glEnable(GL.GL_BLEND);
 			gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
@@ -1305,7 +1702,8 @@ public class IsoSurface {
 			int n = vertexColors.length / 3;
 			FloatBuffer col = Buffers.newDirectFloatBuffer(n * 4);
 			for (int i = 0; i < n; i++) {
-				col.put(vertexColors[i * 3]).put(vertexColors[i * 3 + 1]).put(vertexColors[i * 3 + 2]).put(opacity);
+				float a = vertexAlpha != null && vertexAlpha.length == n ? opacity * vertexAlpha[i] : opacity;
+				col.put(vertexColors[i * 3]).put(vertexColors[i * 3 + 1]).put(vertexColors[i * 3 + 2]).put(a);
 			}
 			col.rewind();
 			gl.glBindBuffer(GL.GL_ARRAY_BUFFER, buffers[3]);
@@ -1709,6 +2107,105 @@ public class IsoSurface {
 				+ " triangles";
 	}
 
+	/* A snapshot of the mesh and the data for the measurements (see Measurement3d)! */
+	static class MeasureData {
+		float[] vertices; // voxel coordinates of the data (y = row)
+		int[] triangles;
+		float[] data;
+		int nx, ny, nz;
+		float stepX, stepY, stepZ; // the size of a data voxel in pixels
+		double pixelSize;
+		String unit;
+		double isoValue;
+		ImagePlus image;
+	}
+
+	/*
+	 * Sets the colors (RGB per vertex) of the measured objects for the mesh (the
+	 * triangles) or null (the colors are removed with a new mesh)!
+	 */
+	synchronized void setObjectColors(float[] colors, int[] mesh) {
+		objectColors = colors;
+		objectColorsMesh = mesh;
+		colorsDirty = true;
+		upload = true;
+	}
+
+	/*
+	 * Draws triangles of the mesh (the indices of the triangles) in a color on the
+	 * surface (e.g., the triangles of a picked point)!
+	 */
+	synchronized void renderTriangles(GL2 gl, boolean cartesian, int[] mesh, int[] triangles, float[] rgb,
+			boolean fill, float lineWidth) {
+		if (!show || positions == null || indices == null || mesh != meshTriangles || triangles == null) {
+			return;
+		}
+		float d = depth * zScale;
+		gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT | GL2.GL_POLYGON_BIT | GL2.GL_LINE_BIT);
+		gl.glPushMatrix();
+		if (cartesian) {
+			gl.glTranslatef(-width / 2, -height / 2, -d / 2);
+		}
+		gl.glScalef(1, 1, zScale);
+		gl.glDisable(GL2.GL_LIGHTING);
+		gl.glDisable(GL.GL_TEXTURE_2D);
+		gl.glDisable(GL2.GL_TEXTURE_3D);
+		gl.glDisable(GL.GL_CULL_FACE);
+		/* In front of the surface (the outlines in front of the filled triangles) */
+		if (fill) {
+			gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2.GL_FILL);
+			gl.glEnable(GL.GL_POLYGON_OFFSET_FILL);
+			gl.glPolygonOffset(-2, -4);
+		} else {
+			gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2.GL_LINE);
+			gl.glEnable(GL2.GL_POLYGON_OFFSET_LINE);
+			gl.glPolygonOffset(-3, -8);
+			gl.glLineWidth(lineWidth);
+		}
+		gl.glColor3f(rgb[0], rgb[1], rgb[2]);
+		gl.glBegin(GL.GL_TRIANGLES);
+		for (int t : triangles) {
+			for (int k = 0; k < 3; k++) {
+				int v = indices[t * 3 + k] * 3;
+				gl.glVertex3f(positions[v], positions[v + 1], positions[v + 2]);
+			}
+		}
+		gl.glEnd();
+		gl.glPopMatrix();
+		gl.glPopAttrib();
+	}
+
+	synchronized MeasureData getMeasureData() {
+		if (data == null) {
+			return null;
+		}
+		MeasureData m = new MeasureData();
+		m.vertices = meshVertices;
+		m.triangles = meshTriangles;
+		m.data = data;
+		m.nx = nx;
+		m.ny = ny;
+		m.nz = nz;
+		m.stepX = stepX;
+		m.stepY = stepY;
+		m.stepZ = stepZ;
+		m.pixelSize = pixelSize;
+		m.unit = unit;
+		m.isoValue = isoValue;
+		m.image = image;
+		return m;
+	}
+
+	/** Returns the size of the (reduced) data (width, height, depth) or null. */
+	public synchronized int[] getDataSize() {
+		return data != null ? new int[] { nx, ny, nz } : null;
+	}
+
+	/** Returns the loaded ImageJ image (null for the data of a model). */
+	public synchronized ImagePlus getImage() {
+		return image;
+	}
+
 	public synchronized float getWidth() {
 		return width;
 	}
@@ -1793,8 +2290,11 @@ public class IsoSurface {
 		return zScale;
 	}
 
-	public synchronized void setZScale(float zScale) {
-		this.zScale = Math.max(0.01f, zScale);
+	public void setZScale(float zScale) {
+		synchronized (this) {
+			this.zScale = Math.max(0.01f, zScale);
+		}
+		clippingChanged(); // the cut planes depend on the z scale
 	}
 
 	public float getOpacity() {
