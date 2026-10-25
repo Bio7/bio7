@@ -2753,9 +2753,9 @@ public class Options3d extends ViewPart {
 			}
 		});
 
-		final Label smoothingLabel = createVolumeScaleLabel(compositeIso, "Smoothing: 1.0");
-		final Scale smoothingScale = createVolumeScale(compositeIso, 0, 30, 10,
-				"The Gaussian smoothing (sigma in voxels) of the stack before the surface is computed");
+		final Label smoothingLabel = createVolumeScaleLabel(compositeIso, "Smoothing: 0.0");
+		final Scale smoothingScale = createVolumeScale(compositeIso, 0, 30, 0,
+				"The Gaussian smoothing (sigma in voxels) of the stack before the surface is computed.\nThe measurements use the same surface (0 = the data at the iso value).");
 		smoothingScale.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				float value = smoothingScale.getSelection() / 10.0f;
@@ -3502,7 +3502,7 @@ public class Options3d extends ViewPart {
 		final Composite compositeMeasure = new Composite(scrollMeasure, SWT.NONE);
 		measureItem.setControl(scrollMeasure);
 		compositeMeasure.setLayout(new GridLayout(2, false));
-		scrollMeasure.setMinSize(200, 580);
+		scrollMeasure.setMinSize(200, 540);
 		scrollMeasure.setContent(compositeMeasure);
 		scrollMeasure.setExpandVertical(true);
 		scrollMeasure.setExpandHorizontal(true);
@@ -3532,17 +3532,6 @@ public class Options3d extends ViewPart {
 		maxSpinner.setSelection(0);
 		maxSpinner.setToolTipText("Larger objects of the iso surface are not measured (0 measures all objects)");
 
-		Label smoothLabel = new Label(compositeMeasure, SWT.NONE);
-		smoothLabel.setText("Smoothing (Voxels):");
-		final Spinner smoothSpinner = new Spinner(compositeMeasure, SWT.BORDER);
-		smoothSpinner.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		smoothSpinner.setDigits(1);
-		smoothSpinner.setMinimum(0);
-		smoothSpinner.setMaximum(50);
-		smoothSpinner.setSelection(0);
-		smoothSpinner.setToolTipText(
-				"The Gaussian smoothing of the stack for the measurements (0 = the data at the iso value).\nThe smoothing of the display is not used for the measurements.");
-
 		final Button objectsButton = new Button(compositeMeasure, SWT.PUSH);
 		GridData gd_objectsButton = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
 		gd_objectsButton.heightHint = 35;
@@ -3558,7 +3547,6 @@ public class Options3d extends ViewPart {
 				}
 				measurement.setMinObjectSize(minSpinner.getSelection());
 				measurement.setMaxObjectSize(maxSpinner.getSelection());
-				measurement.setMeasureSmoothing(smoothSpinner.getSelection() / 10f);
 				infoLabel.setText("Measuring at full resolution...");
 				Display display = objectsButton.getDisplay();
 				/* Large stacks: in the background */
@@ -3589,7 +3577,6 @@ public class Options3d extends ViewPart {
 				}
 				measurement.setMinObjectSize(minSpinner.getSelection());
 				measurement.setMaxObjectSize(maxSpinner.getSelection());
-				measurement.setMeasureSmoothing(smoothSpinner.getSelection() / 10f);
 				infoLabel.setText("Measuring the distances...");
 				Display display = distanceButton.getDisplay();
 				/* Many objects: in the background */

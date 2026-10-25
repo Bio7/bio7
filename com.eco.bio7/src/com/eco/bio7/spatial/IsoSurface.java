@@ -106,7 +106,7 @@ public class IsoSurface {
 	/* Settings */
 	private boolean show = true;
 	private double isoValue = 128;
-	private float smoothing = 1.0f;
+	private float smoothing = 0f;
 	private int meshSmoothing = 5;
 	private int maxSize = 256;
 	/* The display is reduced to maxSize only if enabled (the measurements use the full resolution) */
@@ -663,7 +663,8 @@ public class IsoSurface {
 			h = ny;
 			d = nz;
 			iso = isoValue;
-			sigma = smoothing;
+			/* The smoothing in voxels of the stack (the reduced display: in its voxels) */
+			sigma = smoothing / stepX;
 			iterations = meshSmoothing;
 		}
 		Cut cut = currentCut();
@@ -680,28 +681,28 @@ public class IsoSurface {
 	}
 
 	/**
-	 * Returns the surface for the measurements (see Measurement3d) in the full
-	 * resolution of the stack with the smoothing of the measurement (sigma in
-	 * voxels of the stack) and the iso value, mesh smoothing and cut of the
-	 * display: the displayed surface if it is equal, else computed (cached until a
-	 * change).
+	 * Returns the surface for the measurements (see Measurement3d): the displayed
+	 * surface or, if the display is reduced, the surface of the stack in the full
+	 * resolution with the same iso value, smoothing (in voxels of the stack), mesh
+	 * smoothing and cut (computed and cached until a change). So the measured
+	 * surface is the displayed surface in the full resolution and the reduction of
+	 * the display doesn't change the measurements.
 	 */
-	MeasureData getMeasurementData(float sigma) {
+	MeasureData getMeasurementData() {
 		MeasureData display = getMeasureData();
-		boolean equal;
-		synchronized (this) {
-			equal = image == null || (!isReduced() && smoothing == sigma);
-		}
-		if (display == null || equal) {
+		if (display == null || !isReduced()) {
 			return display;
 		}
 		ImagePlus imp;
 		double iso;
+		float sigma;
 		int iterations;
 		float voxelDepth;
 		synchronized (this) {
 			imp = image;
 			iso = isoValue;
+			/* The smoothing in voxels of the stack */
+			sigma = smoothing;
 			iterations = meshSmoothing;
 			voxelDepth = depth / imp.getNSlices();
 		}
@@ -825,7 +826,8 @@ public class IsoSurface {
 				h = ny;
 				d = nz;
 				iso = isoValue;
-				sigma = smoothing;
+				/* The smoothing in voxels of the stack (the reduced display: in its voxels) */
+				sigma = smoothing / stepX;
 				iterations = meshSmoothing;
 			}
 			Cut cut = currentCut();
@@ -2251,7 +2253,8 @@ public class IsoSurface {
 	}
 
 	/**
-	 * The sigma (voxels) of the Gaussian smoothing of the stack (0 = off).
+	 * The sigma (voxels of the stack) of the Gaussian smoothing of the stack (0 =
+	 * off, the default). The measurements use the same smoothing.
 	 */
 	public void setSmoothing(float smoothing) {
 		synchronized (this) {

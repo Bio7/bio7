@@ -77,8 +77,6 @@ public class Measurement3d {
 	private int minObjectSize = 10;
 	/* 0 = no maximum */
 	private int maxObjectSize = 0;
-	/* The smoothing of the measured stack (sigma in voxels) */
-	private float measureSmoothing = 0;
 
 	/* The measured objects: the mesh, the object number of the vertices and the labels */
 	private boolean highlightObjects = true;
@@ -126,21 +124,6 @@ public class Measurement3d {
 		minObjectSize = Math.max(0, voxels);
 	}
 
-	/** Returns the smoothing of the measured stack (sigma in voxels, default 0). */
-	public synchronized float getMeasureSmoothing() {
-		return measureSmoothing;
-	}
-
-	/**
-	 * Sets the Gaussian smoothing of the stack for the measurements (sigma in
-	 * voxels of the stack, e.g., for noisy data). 0 (the default) measures the
-	 * surface of the data at the iso value. The smoothing of the display (see
-	 * IsoSurface.setSmoothing) is not used for the measurements.
-	 */
-	public synchronized void setMeasureSmoothing(float sigma) {
-		measureSmoothing = Math.max(0, sigma);
-	}
-
 	/** Returns the maximum size of a measured object (voxels of the data, 0 = no maximum). */
 	public synchronized int getMaxObjectSize() {
 		return maxObjectSize;
@@ -181,7 +164,7 @@ public class Measurement3d {
 	 */
 	public double[][] measureIsoSurface(boolean showTable) {
 		/* The full resolution (also if the display is reduced) */
-		IsoSurface.MeasureData m = iso.getMeasurementData(getMeasureSmoothing());
+		IsoSurface.MeasureData m = iso.getMeasurementData();
 		IsoSurface.MeasureData display = iso.getMeasureData();
 		if (m == null || m.vertices == null || m.triangles == null || m.triangles.length == 0 || display == null
 				|| display.vertices == null) {
@@ -1419,7 +1402,7 @@ public class Measurement3d {
 		}
 		Clipping.Region region = clipping.getRegion(extent, HeightMaps.isFlipVertically());
 		double[] displayHit = intersect(display, ray, region);
-		IsoSurface.MeasureData full = iso.getMeasurementData(getMeasureSmoothing());
+		IsoSurface.MeasureData full = iso.getMeasurementData();
 		double[] hit = full == null || full.triangles == display.triangles ? displayHit : intersect(full, ray, region);
 		if (hit == null) {
 			return;
