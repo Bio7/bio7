@@ -219,8 +219,9 @@ public class Measurement3d {
 				min[c][k] = Math.min(min[c][k], p[i * 3 + k]);
 				max[c][k] = Math.max(max[c][k], p[i * 3 + k]);
 			}
-			valueSum[c] += IsoSurface.sample(m.data, m.nx, m.ny, m.nz, v[i * 3] - normals[i * 3],
-					v[i * 3 + 1] - normals[i * 3 + 1], v[i * 3 + 2] - normals[i * 3 + 2]);
+			valueSum[c] += m.data == null ? Double.NaN
+					: IsoSurface.sample(m.data, m.nx, m.ny, m.nz, v[i * 3] - normals[i * 3],
+							v[i * 3 + 1] - normals[i * 3 + 1], v[i * 3 + 2] - normals[i * 3 + 2]);
 		}
 		/* Volume, moments (signed tetrahedra with the origin) and area of the triangles */
 		for (int i = 0; i < t.length; i += 3) {
@@ -302,7 +303,7 @@ public class Measurement3d {
 			double[] row = rows.get(i);
 			number[(int) row[ISO_COLUMNS.length]] = i + 1;
 			labels[i] = new double[] { row[3] / sizeX, row[4] / sizeY, row[5] / sizeZ, i + 1 };
-			result[i] = java.util.Arrays.copyOf(row, ISO_COLUMNS.length);
+			result[i] = toFileCoordinates(java.util.Arrays.copyOf(row, ISO_COLUMNS.length), m.origin);
 		}
 		int[] objectOfVertex = new int[nv];
 		for (int i = 0; i < nv; i++) {
@@ -372,6 +373,27 @@ public class Measurement3d {
 			}
 		}
 		return result;
+	}
+
+	/*
+	 * An imported mesh: the centroid and the bounding box in the coordinates of
+	 * the file (the y axis upwards), else unchanged!
+	 */
+	private static double[] toFileCoordinates(double[] row, double[] origin) {
+		if (origin == null) {
+			return row;
+		}
+		row[3] = origin[0] + row[3];
+		row[4] = origin[1] - row[4];
+		row[5] = origin[2] + row[5];
+		double minY = origin[1] - row[18], maxY = origin[1] - row[15];
+		row[14] = origin[0] + row[14];
+		row[17] = origin[0] + row[17];
+		row[15] = minY;
+		row[18] = maxY;
+		row[16] = origin[2] + row[16];
+		row[19] = origin[2] + row[19];
+		return row;
 	}
 
 	/**
@@ -1211,7 +1233,8 @@ public class Measurement3d {
 		IsoSurface.MeasureData m = iso.getMeasureData();
 		ImagePlus imp = m != null ? m.image : volume.getImage();
 		double[] extent = displayedExtent();
-		if ((imp == null && m == null) || extent == null) {
+		/* Not for an imported mesh (no voxels) */
+		if ((imp == null && (m == null || m.data == null)) || extent == null) {
 			return null;
 		}
 		Clipping.Region region = clipping.getRegion(extent, HeightMaps.isFlipVertically());
@@ -1555,6 +1578,13 @@ public class Measurement3d {
 		Scale s = scale();
 		double[] r = points.get(i);
 		double x = r[0] * s.sizeX, y = r[1] * s.sizeY, z = r[2] * s.sizeZ;
+		IsoSurface.MeasureData md = iso.getMeasureData();
+		if (md != null && md.origin != null) {
+			/* An imported mesh: the coordinates of the file */
+			x = md.origin[0] + x;
+			y = md.origin[1] - y;
+			z = md.origin[2] + z;
+		}
 		double distance = 0, length = 0;
 		for (int j = 1; j <= i; j++) {
 			double[] p0 = points.get(j - 1), p1 = points.get(j);
@@ -1579,7 +1609,7 @@ public class Measurement3d {
 			ip.setCalibrationTable(imp.getProcessor().getCalibrationTable());
 			return ip.getPixelValue(x, y);
 		}
-		if (m != null) {
+		if (m != null && m.data != null) {
 			return IsoSurface.sample(m.data, m.nx, m.ny, m.nz, (float) (r[0] * m.nx - 0.5),
 					(float) (r[1] * m.ny - 0.5), (float) (r[2] * m.nz - 0.5));
 		}

@@ -18,6 +18,7 @@ import javax.swing.SwingUtilities;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
+import com.eco.bio7.loader3d.MeshModel;
 import com.eco.bio7.loader3d.OBJModel;
 import com.jogamp.opengl.util.awt.Overlay;
 
@@ -570,13 +571,18 @@ public class SpatialUtil {
 	 * @return an object of type OBJModel.
 	 */
 	public static OBJModel getObjModel() {
-		OBJModel model = null;
-		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		MeshModel model = getModel();
+		return model instanceof OBJModel ? (OBJModel) model : null;
+	}
 
-		if (struc != null) {
-			model = struc.model;
-		}
-		return model;
+	/**
+	 * Returns the model of the Model tab (a mesh file: OBJ, STL, PLY or OFF).
+	 * 
+	 * @return the model or null
+	 */
+	public static MeshModel getModel() {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		return struc != null ? struc.model : null;
 	}
 
 	/**

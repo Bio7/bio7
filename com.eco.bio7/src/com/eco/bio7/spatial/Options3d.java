@@ -1966,18 +1966,20 @@ public class Options3d extends ViewPart {
 		text = new Text(compositeModel, SWT.BORDER);
 		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
 		text.setText(store.getString("objectFile"));
-		text.setToolTipText("The *.obj file of the model");
+		text.setToolTipText("The mesh file of the model (*.obj with materials, *.stl, *.ply, *.off)");
 		final Text pathText = text;
 		pathText.addModifyListener(e -> store.setValue("objectFile", pathText.getText()));
 		final Button browseButton = new Button(compositeModel, SWT.NONE);
 		browseButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		browseButton.setText("Browse...");
-		browseButton.setToolTipText("Selects an *.obj file");
+		browseButton.setToolTipText("Selects a mesh file (*.obj, *.stl, *.ply, *.off)");
 		browseButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				FileDialog fd = new FileDialog(browseButton.getShell(), SWT.OPEN);
 				fd.setText("Load");
-				fd.setFilterExtensions(new String[] { "*.obj", "*.*" });
+				fd.setFilterExtensions(new String[] { "*.obj;*.stl;*.ply;*.off", "*.obj", "*.stl", "*.ply", "*.off", "*.*" });
+				fd.setFilterNames(new String[] { "Mesh Files (*.obj, *.stl, *.ply, *.off)", "OBJ (*.obj)", "STL (*.stl)",
+						"PLY (*.ply)", "OFF (*.off)", "All Files" });
 				String path = fd.open();
 				if (path != null) {
 					objectPath = fd.getFilterPath() + java.io.File.separator;
@@ -1994,7 +1996,8 @@ public class Options3d extends ViewPart {
 		gd_loadButton.heightHint = 40;
 		loadButton.setLayoutData(gd_loadButton);
 		loadButton.setText("Load Model");
-		loadButton.setToolTipText("Loads (or reloads) the *.obj model (with materials and textures)");
+		loadButton.setToolTipText(
+				"Loads (or reloads) the model: *.obj (with materials and textures), *.stl, *.ply (with colors), *.off");
 		loadButton.moveAbove(showButton);
 		loadButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -2002,8 +2005,13 @@ public class Options3d extends ViewPart {
 				if (grid == null) {
 					return;
 				}
-				if (!new java.io.File(pathText.getText()).isFile()) {
-					infoLabel.setText("The *.obj file doesn't exist!");
+				java.io.File file = new java.io.File(pathText.getText());
+				if (!file.isFile()) {
+					infoLabel.setText("The file doesn't exist!");
+					return;
+				}
+				if (!com.eco.bio7.loader3d.MeshReader.isSupported(file)) {
+					infoLabel.setText("Unknown format (supported: *.obj, *.stl, *.ply, *.off)!");
 					return;
 				}
 				grid.setModelListener(updateInfo);
@@ -2178,6 +2186,64 @@ public class Options3d extends ViewPart {
 				}
 			}
 		});
+
+		/* The model as an iso surface (measurements, clipping, colors and export) */
+		final Label measureLabel = new Label(compositeModel, SWT.WRAP);
+		GridData gd_measureLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 4, 1);
+		gd_measureLabel.verticalIndent = 10;
+		measureLabel.setLayoutData(gd_measureLabel);
+		measureLabel.setText("Measure the Model (as Iso Surface):");
+		createModelRowLabel(compositeModel, "Unit:");
+		final Text unitText = new Text(compositeModel, SWT.BORDER);
+		unitText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		unitText.setText("unit");
+		unitText.setToolTipText("The unit of the measurements (e.g., mm or micron)");
+		Label factorLabel = new Label(compositeModel, SWT.NONE);
+		factorLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		factorLabel.setText("Scale:");
+		final Text factorText = new Text(compositeModel, SWT.BORDER);
+		factorText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		factorText.setText("1");
+		factorText.setToolTipText(
+				"The size of one unit of the file in the unit (e.g., 1000 for a file in mm and the unit micron)");
+		final Button measureButton = new Button(compositeModel, SWT.NONE);
+		GridData gd_measureButton = new GridData(SWT.FILL, SWT.FILL, true, false, 4, 1);
+		gd_measureButton.heightHint = 40;
+		measureButton.setLayoutData(gd_measureButton);
+		measureButton.setText("Use as Iso Surface (Measure)");
+		measureButton.setToolTipText(
+				"Displays the model (duplicate vertices merged) as iso surface for the measurements (Measure tab), the clipping, the colors and the export");
+		measureButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				IsoSurface iso = isoSurface();
+				if (grid == null || iso == null || grid.model == null) {
+					infoLabel.setText("Load a model first!");
+					return;
+				}
+				double factor;
+				try {
+					factor = Double.parseDouble(factorText.getText().trim().replace(',', '.'));
+				} catch (NumberFormatException ex) {
+					infoLabel.setText("The scale is not a number!");
+					return;
+				}
+				if (!(factor > 0)) {
+					infoLabel.setText("The scale must be larger than 0!");
+					return;
+				}
+				com.eco.bio7.loader3d.MeshModel model = grid.model;
+				iso.setMesh(model.getWeldedMesh(), factor, unitText.getText().trim());
+				iso.setShow(true);
+				/* The model is displayed as iso surface (not twice) */
+				grid.setLoadModel(false);
+				showButton.setSelection(false);
+				com.eco.bio7.loader3d.MeshData.Report report = model.getReport();
+				infoLabel.setText(model.getName() + " is displayed as iso surface (Measure tab)"
+						+ (report.isWatertight() ? "." : ". Not watertight: the volumes are not reliable!"));
+			}
+		});
+		scrollModel.setMinSize(200, 560);
 	}
 
 	private static void createModelRowLabel(Composite parent, String text) {

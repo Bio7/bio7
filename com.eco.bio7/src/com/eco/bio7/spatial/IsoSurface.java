@@ -109,6 +109,11 @@ public class IsoSurface {
 	private float smoothing = 0f;
 	private int meshSmoothing = 5;
 	private int maxSize = 256;
+	/* An imported mesh (see setMesh): no voxel data, the colors of the file and the origin */
+	private boolean meshOnly = false;
+	private float[] meshFileColors;
+	private String meshName;
+	private double[] meshOrigin;
 	/* The display is reduced to maxSize only if enabled (the measurements use the full resolution) */
 	private boolean reduceDisplay = false;
 	/* The full resolution surface for the measurements (see getMeasurementData) and its state */
@@ -211,6 +216,8 @@ public class IsoSurface {
 			iso = (imp.getDisplayRangeMin() + imp.getDisplayRangeMax()) / 2.0;
 		}
 		synchronized (this) {
+			meshOnly = false;
+			meshFileColors = null;
 			data = values;
 			nx = tw;
 			ny = th;
@@ -379,6 +386,8 @@ public class IsoSurface {
 			max = Math.max(max, copy[i]);
 		}
 		synchronized (this) {
+			meshOnly = false;
+			meshFileColors = null;
 			data = copy;
 			nx = w;
 			ny = h;
@@ -777,6 +786,8 @@ public class IsoSurface {
 	 * Removes the iso surface.
 	 */
 	public synchronized void clear() {
+		meshOnly = false;
+		meshFileColors = null;
 		fullData = null;
 		fullKey = null;
 		data = null;
@@ -1020,6 +1031,14 @@ public class IsoSurface {
 			}
 			objectColors = null;
 			objectColorsMesh = null;
+		}
+		if (meshOnly) {
+			/* An imported mesh: the colors of the file */
+			if (colorMode != COLOR_SINGLE && meshFileColors != null && meshVertices != null
+					&& meshFileColors.length == meshVertices.length) {
+				vertexColors = meshFileColors;
+			}
+			return;
 		}
 		if (colorMode == COLOR_SINGLE || meshVertices == null || colorData == null
 				|| colorData.length != nx * ny * nz) {
@@ -1574,7 +1593,7 @@ public class IsoSurface {
 	 * Returns true if an iso surface is loaded and displayed.
 	 */
 	public synchronized boolean isDisplayed() {
-		return show && data != null;
+		return show && (data != null || meshOnly);
 	}
 
 	/**
@@ -2099,6 +2118,11 @@ public class IsoSurface {
 	 * Returns a description of the stack and the iso surface.
 	 */
 	public synchronized String getInfo() {
+		if (meshOnly) {
+			int triangles = indices != null ? indices.length / 3 : 0;
+			return meshName + " (mesh): " + (meshVertices != null ? meshVertices.length / 3 : 0) + " vertices, "
+					+ triangles + " triangles";
+		}
 		if (data == null) {
 			return "No stack loaded";
 		}
@@ -2120,6 +2144,11 @@ public class IsoSurface {
 		String unit;
 		double isoValue;
 		ImagePlus image;
+		/*
+		 * An imported mesh: the file coordinates of the position 0 (x, y with the y axis
+		 * downwards, z) or null
+		 */
+		double[] origin;
 	}
 
 	/*
@@ -2178,7 +2207,7 @@ public class IsoSurface {
 	}
 
 	synchronized MeasureData getMeasureData() {
-		if (data == null) {
+		if (data == null && !meshOnly) {
 			return null;
 		}
 		MeasureData m = new MeasureData();
@@ -2195,12 +2224,91 @@ public class IsoSurface {
 		m.unit = unit;
 		m.isoValue = isoValue;
 		m.image = image;
+		m.origin = meshOnly ? meshOrigin.clone() : null;
 		return m;
 	}
 
 	/** Returns the size of the (reduced) data (width, height, depth) or null. */
 	public synchronized int[] getDataSize() {
-		return data != null ? new int[] { nx, ny, nz } : null;
+		return data != null || meshOnly ? new int[] { nx, ny, nz } : null;
+	}
+
+	/**
+	 * Displays an imported mesh (e.g., of the Model tab, see MeshModel) instead of
+	 * the iso surface of a stack. The mesh can be measured (see Measurement3d),
+	 * clipped, colored and exported like an iso surface (without the functions of
+	 * the voxels, e.g., the region statistics).
+	 *
+	 * @param mesh  the mesh (duplicate vertices merged, see MeshData.weld)
+	 * @param scale the size of a unit of the file in the unit (e.g., 0.001 for a
+	 *              file in mm and the unit m)
+	 * @param unit  the unit of the measurements
+	 */
+	public void setMesh(com.eco.bio7.loader3d.MeshData mesh, double scale, String unit) {
+		float[] b = mesh.getBounds();
+		float extent = Math.max(b[3] - b[0], Math.max(b[4] - b[1], b[5] - b[2]));
+		/* The display: the largest dimension 512 pixels (s units of the file per pixel) */
+		float s = extent > 0 ? extent / 512f : 1;
+		int w = Math.max(1, (int) Math.ceil((b[3] - b[0]) / s));
+		int h = Math.max(1, (int) Math.ceil((b[4] - b[1]) / s));
+		int d = Math.max(1, (int) Math.ceil((b[5] - b[2]) / s));
+		/* Like a stack: the first row at the top (y downwards) */
+		float[] p = mesh.positions;
+		float[] v = new float[p.length];
+		for (int i = 0; i < p.length; i += 3) {
+			v[i] = (p[i] - b[0]) / s - 0.5f;
+			v[i + 1] = (b[4] - p[i + 1]) / s - 0.5f;
+			v[i + 2] = (p[i + 2] - b[2]) / s - 0.5f;
+		}
+		/* The mirrored y axis reverses the orientation of the triangles */
+		int[] t = mesh.triangles.clone();
+		for (int i = 0; i < t.length; i += 3) {
+			int tmp = t[i + 1];
+			t[i + 1] = t[i + 2];
+			t[i + 2] = tmp;
+		}
+		synchronized (this) {
+			data = null;
+			image = null;
+			fullData = null;
+			fullKey = null;
+			meshOnly = true;
+			meshName = mesh.name;
+			meshFileColors = mesh.colors;
+			meshOrigin = new double[] { b[0] * scale, b[4] * scale, b[2] * scale };
+			nx = w;
+			ny = h;
+			nz = d;
+			stepX = 1;
+			stepY = 1;
+			stepZ = 1;
+			width = w;
+			height = h;
+			depth = d;
+			pixelSize = s * scale;
+			this.unit = unit != null ? unit : "unit";
+			displayMin = 0;
+			displayMax = 1;
+			lut = null;
+			colorData = null;
+			imageColors = null;
+			customColorData = false;
+			objectColors = null;
+			objectColorsMesh = null;
+			/* The colors of the file */
+			colorMode = mesh.colors != null ? COLOR_IMAGE : COLOR_SINGLE;
+			meshVertices = v;
+			meshTriangles = t;
+			bake(HeightMaps.isFlipVertically());
+			colorsDirty = true;
+			upload = true;
+		}
+		notifyListener();
+	}
+
+	/** Returns true if an imported mesh is displayed (see setMesh). */
+	public synchronized boolean isMesh() {
+		return meshOnly;
 	}
 
 	/** Returns the loaded ImageJ image (null for the data of a model). */

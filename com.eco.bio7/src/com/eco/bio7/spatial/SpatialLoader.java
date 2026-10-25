@@ -24,6 +24,7 @@ import javax.imageio.ImageIO;
 import org.eclipse.jface.preference.IPreferenceStore;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.loader3d.MeshModel;
 import com.eco.bio7.loader3d.OBJModel;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLProfile;
@@ -127,6 +128,7 @@ public class SpatialLoader {
 	protected void loadObjModel() {
 		SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
 		grid.model = null;
+		grid.modelError = null;
 		// Get the filepath from the pref. store!
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		String op = store.getString("objectFile");
@@ -135,17 +137,35 @@ public class SpatialLoader {
 		if (file.exists()) {
 			objectPath = file.getParent() + "/";
 			objectName = getFileName(op);
-
+			/* A mesh file (OBJ, STL, PLY or OFF) */
 			try {
-				grid.model = new OBJModel(objectName, objectPath, 1000.0f, gl, false);
-			} catch (RuntimeException e) {
-				// TODO Auto-generated catch block
+				grid.model = MeshModel.load(file, 1000.0f);
+			} catch (IOException | RuntimeException e) {
 				e.printStackTrace();
 				grid.model = null;
+				grid.modelError = e.getMessage();
 			}
 
+		} else {
+			grid.modelError = "The file doesn't exist: " + op;
 		}
 
+	}
+
+	/**
+	 * Loads a mesh file (OBJ with materials, STL, PLY or OFF) as a model.
+	 * 
+	 * @param path the path of the file
+	 * @param size the size of the largest dimension in the 3D view
+	 * @return the model or null if the file can't be loaded
+	 */
+	public static MeshModel loadMesh(String path, float size) {
+		try {
+			return MeshModel.load(new File(path), size);
+		} catch (IOException | RuntimeException e) {
+			System.out.println(e.getMessage());
+			return null;
+		}
 	}
 
 	/**

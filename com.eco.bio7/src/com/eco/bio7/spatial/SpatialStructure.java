@@ -50,7 +50,7 @@ import org.eclipse.ui.PlatformUI;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.compile.Model;
 import com.eco.bio7.loader3d.ModelDimensions;
-import com.eco.bio7.loader3d.OBJModel;
+import com.eco.bio7.loader3d.MeshModel;
 import com.eco.bio7.methods.Compiled;
 import com.eco.bio7.spatial.preferences.Preferences3d;
 import com.eco.bio7.util.Util;
@@ -132,7 +132,10 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	private int doxv;
 	private int doyv = 0;
 	private int dozv;
-	public OBJModel model = null;
+	/* The model of a mesh file (OBJ, STL, PLY or OFF, see the Model tab) */
+	public MeshModel model = null;
+	/* The error of the last load of the model or null */
+	String modelError;
 	private static boolean reloadModel;// For the model reload!
 	private static boolean walkthrough = false;
 	private static long period = 1000000000L;
@@ -1475,13 +1478,16 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	 * @return the description
 	 */
 	public String getModelInfo() {
-		OBJModel m = model;
+		MeshModel m = model;
 		if (m == null) {
+			if (modelError != null) {
+				return "The model can't be loaded: " + modelError;
+			}
 			return loadModel ? "The model can't be loaded (see the error log)" : "No model loaded";
 		}
 		ModelDimensions dims = m.getModelDims();
 		String size = String.format("%.4g x %.4g x %.4g", dims.getWidth(), dims.getHeight(), dims.getDepth());
-		return m.getName() + ": " + m.getNumVertices() + " vertices, " + m.getNumFaces() + " faces, size " + size
+		return m.getName() + " (" + m.getFormat() + "): " + m.getReport() + ", size " + size
 				+ (loadModel ? "" : " (hidden)");
 	}
 
