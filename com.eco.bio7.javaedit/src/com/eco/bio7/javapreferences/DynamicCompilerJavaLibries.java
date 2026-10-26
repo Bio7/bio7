@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.URIUtil;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.Dialog;
@@ -275,7 +276,8 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
         try {
             URL installURL = Platform.getInstallLocation().getURL();
             if (installURL != null) {
-                Path path = Paths.get(installURL.toURI());
+                /* URIUtil encodes spaces (URL.toURI() fails for paths with spaces)! */
+                Path path = URIUtil.toFile(URIUtil.toURI(installURL)).toPath();
                 if (Files.exists(path)) {
                     return path;
                 }

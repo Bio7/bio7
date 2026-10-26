@@ -1,17 +1,12 @@
 package com.eco.bio7.javapreferences;
 
 import com.eco.bio7.compile.JavaVersions;
-import java.io.File;
-import java.net.URISyntaxException;
-import java.net.URL;
 
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.util.Util;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
@@ -81,22 +76,10 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		 * PreferenceConverter.setDefault(storeJava, "colourkeyfont6", f.getFontData());
 		 * PreferenceConverter.setDefault(storeJava, "colourkeyfont7", f.getFontData());
 		 */
-		URL url = Platform.getInstallLocation().getURL();
-		File file = null;
-		try {
-			file = new File(url.toURI());
-		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		String path;
-		
-		if (Util.isMac()) {
-			path = file.getAbsolutePath() + "";
-		} else {
-			path = file.getAbsolutePath() + "";
-		}
-		path = path.replace("\\", "/");
+		/*
+		 * Don't compute the install path here with URL.toURI(): it fails for paths with
+		 * spaces and the remaining defaults (e.g., the compiler version) are not set!
+		 */
 		//storeJava.setDefault("JAVA_MODULES_PATH", path);
 		//storeJava.setDefault("JAVA_MODULES","javafx.controls,javafx.base,javafx.fxml,javafx.graphics,javafx.media,javafx.swing,javafx.web,javafx.swt");
 		storeJava.setDefault("compiler_version", JavaVersions.COMPILER_VERSION);

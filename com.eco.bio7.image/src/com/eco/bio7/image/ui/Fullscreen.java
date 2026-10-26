@@ -28,14 +28,18 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.dialogs.ListDialog;
 
 import ij.ImagePlus;
 import ij.WindowManager;
+import ij.gui.ImageWindow;
 
 /**
  * Displays the current image in a fullscreen shell (toggled with F2, closed
@@ -51,6 +55,60 @@ public class Fullscreen {
 	private static CTabItem oldItem;
 	/* The image in fullscreen mode! */
 	private static ImagePlus image;
+	/* True if the fullscreen image was activated last (by the user)! */
+	private static boolean activatedLast;
+
+	/*
+	 * If another shell (e.g., the Bio7 window to open a menu) is activated, the
+	 * focus is restored to the canvas of the selected tab, which makes this image
+	 * the current image. So the fullscreen image is made the current image again,
+	 * unless another image or menu item was clicked!
+	 */
+	private static final Listener ACTIVATION_FILTER = new Listener() {
+		public void handleEvent(Event e) {
+			if (!isActive()) {
+				return;
+			}
+			if (e.type == SWT.MouseDown) {
+				if (e.widget instanceof Control) {
+					Control control = (Control) e.widget;
+					if (control.getShell() == shell) {
+						/* A click in the fullscreen shell activates its image (even without an activation event)! */
+						activatedLast = true;
+						activateImage();
+					} else if (!(control instanceof ToolBar) && imageFor(control) != null) {
+						/*
+						 * Only a click on another image (canvas, tab or detached view) selects another
+						 * image. A click on a toolbar (e.g., the Window menu in the top right of the
+						 * tab folder) keeps the fullscreen image!
+						 */
+						activatedLast = false;
+					}
+				}
+			} else if (e.type == SWT.Show) {
+				/*
+				 * A menu is opened (e.g., the Window menu) before an asynchronous runnable is
+				 * executed, so the image is activated before the menu items are created!
+				 */
+				if (e.widget instanceof Menu && activatedLast) {
+					activateImage();
+				}
+			} else if (e.type == SWT.Selection) {
+				if (e.widget instanceof MenuItem) {
+					activatedLast = false;
+				}
+			} else if (e.type == SWT.Activate) {
+				if (e.widget instanceof Shell && e.widget != shell && activatedLast) {
+					/* After the focus has been restored (a click is processed before)! */
+					e.display.asyncExec(() -> {
+						if (activatedLast && isActive()) {
+							activateImage();
+						}
+					});
+				}
+			}
+		}
+	};
 
 	/* Installed once by Bio7ImageJ! */
 	static final Listener KEY_FILTER = new Listener() {
@@ -239,6 +297,16 @@ public class Fullscreen {
 		shell.setLayout(new FillLayout());
 		shell.setBackground(holder.getDisplay().getSystemColor(SWT.COLOR_BLACK));
 		shell.addListener(SWT.Close, _ -> restore());
+		/* Clicking the fullscreen shell makes the image the current image (like a tab)! */
+		shell.addListener(SWT.Activate, _ -> {
+			activatedLast = true;
+			activateImage();
+		});
+		Display display = holder.getDisplay();
+		display.addFilter(SWT.MouseDown, ACTIVATION_FILTER);
+		display.addFilter(SWT.Selection, ACTIVATION_FILTER);
+		display.addFilter(SWT.Activate, ACTIVATION_FILTER);
+		display.addFilter(SWT.Show, ACTIVATION_FILTER);
 		if (oldItem != null) {
 			oldItem.setControl(null);
 		}
@@ -260,6 +328,19 @@ public class Fullscreen {
 		shell.layout(true, true);
 		if (imp.getCanvas() != null) {
 			imp.getCanvas().setFocus();
+		}
+		activateImage();
+	}
+
+	/* Makes the fullscreen image the current ImageJ image (selected in the window menu)! */
+	private static void activateImage() {
+		if (image == null) {
+			return;
+		}
+		ImageWindow win = image.getWindow();
+		if (win != null && !win.isClosed()) {
+			WindowManager.setTempCurrentImage(image);
+			WindowManager.setCurrentWindow(win);
 		}
 	}
 
@@ -288,6 +369,14 @@ public class Fullscreen {
 
 	/* Moves the holder back to the tab or view! */
 	private static void restore() {
+		Display display = Display.getCurrent();
+		if (display != null) {
+			display.removeFilter(SWT.MouseDown, ACTIVATION_FILTER);
+			display.removeFilter(SWT.Selection, ACTIVATION_FILTER);
+			display.removeFilter(SWT.Activate, ACTIVATION_FILTER);
+			display.removeFilter(SWT.Show, ACTIVATION_FILTER);
+		}
+		activatedLast = false;
 		if (holder != null && !holder.isDisposed()) {
 			if (oldParent != null && !oldParent.isDisposed()) {
 				holder.setParent(oldParent);

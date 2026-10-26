@@ -62,6 +62,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
+import com.eco.bio7.compile.JavaVersions;
 import com.eco.bio7.compile.utils.ScanClassPath;
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 //import com.sun.tools.javac.api.JavacTool;
@@ -201,6 +202,10 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 	public Class<?> findClass(String className) throws ClassNotFoundException {
 		IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
 		String version = store.getString("compiler_version");
+		/* Fallback if the preference defaults were not initialized! */
+		if (version == null || version.isBlank()) {
+			version = String.valueOf(JavaVersions.COMPILER_VERSION);
+		}
 		boolean debug = store.getBoolean("compiler_debug");
 		boolean verbose = store.getBoolean("compiler_verbose");
 		boolean warnings = store.getBoolean("compiler_warnings");
