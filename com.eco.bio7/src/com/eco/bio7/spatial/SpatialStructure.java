@@ -1389,6 +1389,8 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		/* The time: one step per second */
 		period = 1000000000L;
 		hold = false;
+		/* The check boxes of the camera tab (split view, custom camera, ...) */
+		Options3d.updateCameraModes();
 		showFramerate = false;
 		showUpdateFramerate = false;
 		/* The lights */
@@ -2048,7 +2050,11 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	}
 
 	public static void setWalkthrough(boolean walkthrough) {
+		boolean changed = SpatialStructure.walkthrough != walkthrough;
 		SpatialStructure.walkthrough = walkthrough;
+		if (changed) {
+			Options3d.updateCameraModes();
+		}
 	}
 
 	public GL2 getGl() {
@@ -2076,7 +2082,34 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	}
 
 	public void setSplitView(boolean splitView) {
+		boolean changed = this.splitView != splitView;
 		this.splitView = splitView;
+		if (changed) {
+			/* The check boxes of the camera tab show the state */
+			Options3d.updateCameraModes();
+		}
+	}
+
+	/**
+	 * Returns true if the custom camera is used (see setCustomCamera).
+	 * 
+	 * @return true if the custom camera is enabled
+	 */
+	public boolean isCustomCamera() {
+		return customCamera;
+	}
+
+	/**
+	 * Enables the custom camera (the position and the look at of setCustomCamera).
+	 * 
+	 * @param enabled true to use the custom camera
+	 */
+	public void setCustomCameraEnabled(boolean enabled) {
+		boolean changed = customCamera != enabled;
+		customCamera = enabled;
+		if (changed) {
+			Options3d.updateCameraModes();
+		}
 	}
 
 	public static HeightMaps getHeightMapInstance() {

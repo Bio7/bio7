@@ -96,6 +96,8 @@ public class Options3d extends ViewPart {
 	private Button showQuadButton;
 	/* The axis numbers (enabled with the plot view) */
 	private Button btnDrawnumbers;
+	/* The camera modes (see updateCameraModes) */
+	private static Button walkthroughButton, flythroughButton, splitViewCheck, customCameraCheck, stereoCheck;
 	/* The grid planes XY, XZ, YZ of the plot view (see updatePlotGrids) */
 	private static final Button[] plotGridButtons = new Button[3];
 	private Point3d p;
@@ -989,6 +991,7 @@ public class Options3d extends ViewPart {
 		final Group walkGroup = createGroup(composite_4, "Walkthrough");
 		final Button enableWalkthroughButton = check(walkGroup, "Enable Walkthrough",
 				"Moves the camera with the arrow keys (Ctrl: sideways)");
+		walkthroughButton = enableWalkthroughButton;
 		enableWalkthroughButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				SpatialStructure.setWalkthrough(enableWalkthroughButton.getSelection());
@@ -996,6 +999,7 @@ public class Options3d extends ViewPart {
 		});
 		final Button enableFlythroughButton = check(walkGroup, "Enable Flythrough",
 				"The walkthrough also moves the camera up and down in the view direction");
+		flythroughButton = enableFlythroughButton;
 		enableFlythroughButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
@@ -1020,6 +1024,7 @@ public class Options3d extends ViewPart {
 		/* The split view: a second camera (position and look at) in a part of the view */
 		final Group splitGroup = createGroup(composite_4, "Split View", 4, true);
 		final Button splitViewButton = check(splitGroup, "Split View", "Shows a second camera in the bottom left corner of the view");
+		splitViewCheck = splitViewButton;
 		((GridData) splitViewButton.getLayoutData()).horizontalSpan = 4;
 		splitViewButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -1074,16 +1079,20 @@ public class Options3d extends ViewPart {
 		/* The camera modes */
 		final Group modesGroup = createGroup(composite_4, "Camera Modes");
 		final Button customCameraButton = check(modesGroup, "Custom Camera",
-				"Uses the camera coordinates of the custom camera (e.g., set by a script)");
+				"Uses the camera coordinates of the custom camera (e.g., set by a script with SpatialUtil.setCustomCamera)");
+		customCameraCheck = customCameraButton;
 		customCameraButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
 				if (grid != null) {
-					grid.customCamera = customCameraButton.getSelection();
+					grid.setCustomCameraEnabled(customCameraButton.getSelection());
 				}
 			}
 		});
 		final Button stereoButton = check(modesGroup, "Stereo", "An anaglyph stereo view (red/cyan glasses)");
+		stereoCheck = stereoButton;
+		/* The current state of the camera modes (e.g., set by a script) */
+		updateCameraModes();
 		stereoButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
@@ -2241,6 +2250,32 @@ public class Options3d extends ViewPart {
 			}
 		});
 		return text;
+	}
+
+	/**
+	 * Updates the check boxes of the camera modes (walkthrough, flythrough, split
+	 * view, custom camera, stereo) with the state of the 3D view, e.g., after a
+	 * script changed them. Can be called from any thread.
+	 */
+	public static void updateCameraModes() {
+		Display display = Display.getDefault();
+		if (display.isDisposed()) {
+			return;
+		}
+		display.asyncExec(() -> {
+			SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+			if (grid == null) {
+				return;
+			}
+			Button[] buttons = { walkthroughButton, flythroughButton, splitViewCheck, customCameraCheck, stereoCheck };
+			boolean[] states = { SpatialStructure.isWalkthrough(), grid.flythrough, grid.isSplitView(), grid.isCustomCamera(),
+					grid.stereo };
+			for (int i = 0; i < buttons.length; i++) {
+				if (buttons[i] != null && !buttons[i].isDisposed()) {
+					buttons[i].setSelection(states[i]);
+				}
+			}
+		});
 	}
 
 	/**

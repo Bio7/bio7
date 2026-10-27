@@ -331,6 +331,46 @@ public class SpatialUtil {
 	}
 
 	/**
+	 * Sets the custom camera (the position and the look at) and enables it (see
+	 * the Camera tab, the check box is updated).
+	 * 
+	 * @param xpos  the x-position of the camera
+	 * @param ypos  the y-position of the camera
+	 * @param zpos  the z-position of the camera
+	 * @param xlook the x look at coordinate
+	 * @param ylook the y look at coordinate
+	 * @param zlook the z look at coordinate
+	 */
+	public static void setCustomCamera(double xpos, double ypos, double zpos, double xlook, double ylook,
+			double zlook) {
+		SpatialStructure.setCustomCamera(xpos, ypos, zpos, xlook, ylook, zlook);
+		setCustomCamera(true);
+	}
+
+	/**
+	 * Enables or disables the custom camera (the check box in the Camera tab is
+	 * updated).
+	 * 
+	 * @param enabled true to use the custom camera
+	 */
+	public static void setCustomCamera(boolean enabled) {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		if (struc != null) {
+			struc.setCustomCameraEnabled(enabled);
+		}
+	}
+
+	/**
+	 * Returns true if the custom camera is used.
+	 * 
+	 * @return true if the custom camera is enabled
+	 */
+	public static boolean isCustomCamera() {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		return struc != null && struc.isCustomCamera();
+	}
+
+	/**
 	 * This methods triggers the switch from split view to normal view.
 	 * 
 	 * @param splitView a boolean value.
