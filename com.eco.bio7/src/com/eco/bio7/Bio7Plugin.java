@@ -25,6 +25,15 @@ public class Bio7Plugin extends AbstractUIPlugin {
         super.start(bundleContext);
         plugin = this;
         context = bundleContext;
+        /*
+         * JOGL NEWT replaces the application (Dock) icon on macOS with the JogAmp
+         * icon of the property 'newt.window.icons' when the 3D view is opened. With
+         * icons which don't exist the Bio7 icon is kept (if not set by the user)!
+         */
+        if (System.getProperty("os.name").toLowerCase().startsWith("mac")
+                && System.getProperty("newt.window.icons") == null) {
+            System.setProperty("newt.window.icons", "com/eco/bio7/no-icon-16x16.png com/eco/bio7/no-icon-32x32.png");
+        }
         
         // Initialize fragment loader
         fragmentLoader = new Bio7FragmentLoader(bundleContext);

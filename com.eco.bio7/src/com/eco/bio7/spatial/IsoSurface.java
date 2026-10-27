@@ -122,6 +122,9 @@ public class IsoSurface {
 	private float zScale = 1.0f;
 	private float opacity = 1.0f;
 	private boolean headLight = true;
+	/* The triangles of the surface as lines over the surface */
+	private volatile boolean wireframe;
+	private float[] wireframeColor = { 0.1f, 0.1f, 0.1f };
 	private boolean lutColor = true;
 	private float[] color = DEFAULT_COLOR.clone();
 
@@ -1620,7 +1623,7 @@ public class IsoSurface {
 		}
 		float d = depth * zScale;
 		gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_LIGHTING_BIT | GL2.GL_CURRENT_BIT | GL2.GL_COLOR_BUFFER_BIT
-				| GL2.GL_DEPTH_BUFFER_BIT | GL2.GL_POLYGON_BIT);
+				| GL2.GL_DEPTH_BUFFER_BIT | GL2.GL_POLYGON_BIT | GL2.GL_LINE_BIT);
 		gl.glPushMatrix();
 		if (cartesian) {
 			gl.glTranslatef(-width / 2, -height / 2, -d / 2);
@@ -1685,6 +1688,23 @@ public class IsoSurface {
 			gl.glDrawElements(GL.GL_TRIANGLES, indexCount, GL.GL_UNSIGNED_INT, 0);
 		} else {
 			gl.glDisable(GL.GL_BLEND);
+			gl.glDrawElements(GL.GL_TRIANGLES, indexCount, GL.GL_UNSIGNED_INT, 0);
+		}
+		if (wireframe) {
+			/* The triangles as lines in front of the surface (without lighting and colors)! */
+			gl.glDisableClientState(GL2.GL_COLOR_ARRAY);
+			gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
+			gl.glDisable(GL2.GL_LIGHTING);
+			gl.glDisable(GL2.GL_COLOR_MATERIAL);
+			gl.glDisable(GL.GL_CULL_FACE);
+			gl.glDepthMask(false);
+			gl.glEnable(GL.GL_BLEND);
+			gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+			gl.glPolygonMode(GL.GL_FRONT_AND_BACK, GL2.GL_LINE);
+			gl.glEnable(GL2.GL_POLYGON_OFFSET_LINE);
+			gl.glPolygonOffset(-1, -2);
+			gl.glLineWidth(1);
+			gl.glColor4f(wireframeColor[0], wireframeColor[1], wireframeColor[2], Math.max(0.35f, opacity));
 			gl.glDrawElements(GL.GL_TRIANGLES, indexCount, GL.GL_UNSIGNED_INT, 0);
 		}
 		gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
@@ -1766,7 +1786,80 @@ public class IsoSurface {
 		float opacity;
 		String title;
 		String unit;
-		double isoValue;
+		double isoValue = Double.NaN;
+		/* The kind of the mesh in the comments of the files */
+		String kind = "iso surface";
+		/* u, v per vertex (v from the top of the image) and the texture image or null */
+		float[] texCoords;
+		java.awt.image.BufferedImage texture;
+	}
+
+	/**
+	 * Exports a triangle mesh (e.g., of a height map) like the iso surface (see
+	 * export). The format is selected by the file extension (see EXPORT_FORMATS).
+	 * 
+	 * @param file         the file
+	 * @param positions    x, y, z per vertex
+	 * @param indices      three vertex indices per triangle
+	 * @param vertexColors r, g, b (0 - 1) per vertex or null
+	 * @param kind         the kind of the mesh (for the comments of the files)
+	 * @param title        the title (e.g., of the image)
+	 * @param unit         the unit of the coordinates
+	 * @throws IOException if the file can't be written or the format is unknown
+	 */
+	public static void exportMesh(File file, float[] positions, int[] indices, float[] vertexColors, String kind,
+			String title, String unit) throws IOException {
+		exportMesh(file, positions, indices, vertexColors, null, null, kind, title, unit);
+	}
+
+	/**
+	 * Exports a triangle mesh with a texture: OBJ (with a *.png file of the
+	 * texture, see the *.mtl file) and glTF binary (the texture embedded, without
+	 * the vertex colors which would be multiplied with the texture). The other
+	 * formats use the vertex colors.
+	 * 
+	 * @param texCoords u, v (0 - 1, v from the top of the image) per vertex or null
+	 * @param texture   the texture image or null
+	 * @see #exportMesh(File, float[], int[], float[], String, String, String)
+	 */
+	public static void exportMesh(File file, float[] positions, int[] indices, float[] vertexColors,
+			float[] texCoords, java.awt.image.BufferedImage texture, String kind, String title, String unit)
+			throws IOException {
+		ExportData e = new ExportData();
+		if (texCoords != null && texture != null) {
+			e.texCoords = texCoords;
+			e.texture = texture;
+		}
+		e.positions = positions;
+		e.indices = indices;
+		e.normals = computeNormals(positions, indices);
+		e.vertexColors = vertexColors;
+		e.color = DEFAULT_COLOR.clone();
+		e.opacity = 1;
+		e.kind = kind;
+		e.title = title;
+		e.unit = unit;
+		String name = file.getName().toLowerCase();
+		String extension = name.contains(".") ? name.substring(name.lastIndexOf('.') + 1) : "";
+		switch (extension) {
+		case "obj":
+			writeObj(file, e);
+			break;
+		case "stl":
+			writeStl(file, e);
+			break;
+		case "ply":
+			writePly(file, e);
+			break;
+		case "glb":
+			writeGlb(file, e);
+			break;
+		case "vtk":
+			writeVtk(file, e);
+			break;
+		default:
+			throw new IOException("Unknown export format: " + file.getName());
+		}
 	}
 
 	private ExportData exportData() throws IOException {
@@ -1844,14 +1937,24 @@ public class IsoSurface {
 	 * @throws IOException if the file can't be written
 	 */
 	public void exportObj(File file) throws IOException {
-		ExportData e = exportData();
+		writeObj(file, exportData());
+	}
+
+	private static void writeObj(File file, ExportData e) throws IOException {
 		float[] c = e.color;
 		String name = file.getName();
 		String base = name.toLowerCase().endsWith(".obj") ? name.substring(0, name.length() - 4) : name;
 		File mtlFile = new File(file.getParentFile(), base + ".mtl");
 		try (BufferedWriter out = new BufferedWriter(new FileWriter(mtlFile))) {
-			out.write("# Bio7 iso surface material\n");
+			out.write("# Bio7 " + e.kind + " material\n");
 			out.write("newmtl isosurface\n");
+			if (e.texture != null) {
+				/* The texture image next to the *.obj file (white: not multiplied) */
+				File textureFile = new File(file.getParentFile(), base + ".png");
+				javax.imageio.ImageIO.write(e.texture, "png", textureFile);
+				c = new float[] { 1, 1, 1 };
+				out.write("map_Kd " + textureFile.getName() + "\n");
+			}
 			out.write("Ka " + c[0] * 0.25f + " " + c[1] * 0.25f + " " + c[2] * 0.25f + "\n");
 			out.write("Kd " + c[0] + " " + c[1] + " " + c[2] + "\n");
 			out.write("Ks 0.35 0.35 0.35\n");
@@ -1859,7 +1962,8 @@ public class IsoSurface {
 			out.write("d " + e.opacity + "\n");
 		}
 		try (BufferedWriter out = new BufferedWriter(new FileWriter(file), 1 << 16)) {
-			out.write("# Bio7 iso surface of " + e.title + ", iso value " + e.isoValue + ", unit " + e.unit + "\n");
+			out.write("# Bio7 " + e.kind + " of " + e.title + (Double.isNaN(e.isoValue) ? "" : ", iso value " + e.isoValue)
+					+ ", unit " + e.unit + "\n");
 			out.write("mtllib " + mtlFile.getName() + "\n");
 			out.write("o " + base.replace(' ', '_') + "\n");
 			StringBuilder sb = new StringBuilder(64);
@@ -1882,14 +1986,31 @@ public class IsoSurface {
 						.append('\n');
 				out.write(sb.toString());
 			}
+			float[] uv = e.texture != null ? e.texCoords : null;
+			if (uv != null) {
+				/* OBJ: v from the bottom of the image */
+				for (int i = 0; i < uv.length; i += 2) {
+					sb.setLength(0);
+					sb.append("vt ").append(uv[i]).append(' ').append(1 - uv[i + 1]).append('\n');
+					out.write(sb.toString());
+				}
+			}
 			out.write("usemtl isosurface\n");
 			out.write("s 1\n");
 			int[] idx = e.indices;
+			String separator = uv != null ? "/" : "//";
 			for (int i = 0; i < idx.length; i += 3) {
-				int a = idx[i] + 1, b = idx[i + 1] + 1, cc = idx[i + 2] + 1;
 				sb.setLength(0);
-				sb.append("f ").append(a).append("//").append(a).append(' ').append(b).append("//").append(b)
-						.append(' ').append(cc).append("//").append(cc).append('\n');
+				sb.append('f');
+				for (int k = 0; k < 3; k++) {
+					int v = idx[i + k] + 1;
+					sb.append(' ').append(v).append(separator);
+					if (uv != null) {
+						sb.append(v).append('/');
+					}
+					sb.append(v);
+				}
+				sb.append('\n');
 				out.write(sb.toString());
 			}
 		}
@@ -1902,13 +2023,16 @@ public class IsoSurface {
 	 * @throws IOException if the file can't be written
 	 */
 	public void exportStl(File file) throws IOException {
-		ExportData e = exportData();
+		writeStl(file, exportData());
+	}
+
+	private static void writeStl(File file, ExportData e) throws IOException {
 		float[] p = e.positions;
 		int[] idx = e.indices;
 		int triangles = idx.length / 3;
 		ByteBuffer buffer = ByteBuffer.allocate(84 + triangles * 50).order(ByteOrder.LITTLE_ENDIAN);
 		byte[] header = new byte[80];
-		byte[] text = ("Bio7 iso surface of " + e.title + ", unit " + e.unit).getBytes(StandardCharsets.US_ASCII);
+		byte[] text = ("Bio7 " + e.kind + " of " + e.title + ", unit " + e.unit).getBytes(StandardCharsets.US_ASCII);
 		/* A header must not start with "solid" (ASCII STL)! */
 		System.arraycopy(text, 0, header, 0, Math.min(80, text.length));
 		buffer.put(header);
@@ -1941,14 +2065,17 @@ public class IsoSurface {
 	 * @throws IOException if the file can't be written
 	 */
 	public void exportPly(File file) throws IOException {
-		ExportData e = exportData();
+		writePly(file, exportData());
+	}
+
+	private static void writePly(File file, ExportData e) throws IOException {
 		float[] p = e.positions;
 		float[] n = e.normals;
 		int[] idx = e.indices;
 		int vertices = p.length / 3;
 		int triangles = idx.length / 3;
-		String header = "ply\nformat binary_little_endian 1.0\ncomment Bio7 iso surface of " + e.title.replace('\n', ' ')
-				+ ", iso value " + e.isoValue + ", unit " + e.unit + "\nelement vertex " + vertices
+		String header = "ply\nformat binary_little_endian 1.0\ncomment Bio7 " + e.kind + " of " + e.title.replace('\n', ' ')
+				+ (Double.isNaN(e.isoValue) ? "" : ", iso value " + e.isoValue) + ", unit " + e.unit + "\nelement vertex " + vertices
 				+ "\nproperty float x\nproperty float y\nproperty float z\nproperty float nx\nproperty float ny\nproperty float nz\nproperty uchar red\nproperty uchar green\nproperty uchar blue\nelement face "
 				+ triangles + "\nproperty list uchar int vertex_indices\nend_header\n";
 		byte[] head = header.getBytes(StandardCharsets.US_ASCII);
@@ -1982,7 +2109,10 @@ public class IsoSurface {
 	 * @throws IOException if the file can't be written
 	 */
 	public void exportGlb(File file) throws IOException {
-		ExportData e = exportData();
+		writeGlb(file, exportData());
+	}
+
+	private static void writeGlb(File file, ExportData e) throws IOException {
 		float[] p = e.positions;
 		float[] n = e.normals;
 		int[] idx = e.indices;
@@ -1995,37 +2125,78 @@ public class IsoSurface {
 				max[k] = Math.max(max[k], p[i + k]);
 			}
 		}
+		boolean textured = e.texture != null;
+		/* With a texture without the vertex colors (they are multiplied with the texture)! */
+		float[] vc = textured ? null : e.vertexColors;
+		byte[] png = null;
+		if (textured) {
+			java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+			javax.imageio.ImageIO.write(e.texture, "png", bytes);
+			png = bytes.toByteArray();
+		}
 		int positionBytes = p.length * 4;
 		int normalBytes = n.length * 4;
 		int indexBytes = idx.length * 4;
-		float[] vc = e.vertexColors;
 		int colorBytes = vc != null ? vc.length * 4 : 0;
-		int binLength = positionBytes + normalBytes + indexBytes + colorBytes;
-		/* With vertex colors the base color is white (it is multiplied)! */
-		float[] c = vc != null ? new float[] { 1, 1, 1 } : e.color;
-		String json = "{\"asset\":{\"version\":\"2.0\",\"generator\":\"Bio7 iso surface\"},"
+		int uvBytes = textured ? e.texCoords.length * 4 : 0;
+		int pngBytes = png != null ? png.length : 0;
+		int colorOffset = positionBytes + normalBytes + indexBytes;
+		int uvOffset = colorOffset + colorBytes;
+		int pngOffset = uvOffset + uvBytes;
+		/* The chunks are aligned to 4 bytes */
+		int binLength = (pngOffset + pngBytes + 3) & ~3;
+		/* With vertex colors or a texture the base color is white (it is multiplied)! */
+		float[] c = vc != null || textured ? new float[] { 1, 1, 1 } : e.color;
+		StringBuilder attributes = new StringBuilder("\"POSITION\":0,\"NORMAL\":1");
+		StringBuilder views = new StringBuilder();
+		views.append("{\"buffer\":0,\"byteOffset\":0,\"byteLength\":").append(positionBytes).append(",\"target\":34962},");
+		views.append("{\"buffer\":0,\"byteOffset\":").append(positionBytes).append(",\"byteLength\":").append(normalBytes)
+				.append(",\"target\":34962},");
+		views.append("{\"buffer\":0,\"byteOffset\":").append(positionBytes + normalBytes).append(",\"byteLength\":")
+				.append(indexBytes).append(",\"target\":34963}");
+		StringBuilder accessors = new StringBuilder();
+		accessors.append("{\"bufferView\":0,\"componentType\":5126,\"count\":").append(vertices)
+				.append(",\"type\":\"VEC3\",\"min\":[").append(min[0]).append(',').append(min[1]).append(',').append(min[2])
+				.append("],\"max\":[").append(max[0]).append(',').append(max[1]).append(',').append(max[2]).append("]},");
+		accessors.append("{\"bufferView\":1,\"componentType\":5126,\"count\":").append(vertices).append(",\"type\":\"VEC3\"},");
+		accessors.append("{\"bufferView\":2,\"componentType\":5125,\"count\":").append(idx.length)
+				.append(",\"type\":\"SCALAR\"}");
+		int view = 3;
+		if (vc != null) {
+			views.append(",{\"buffer\":0,\"byteOffset\":").append(colorOffset).append(",\"byteLength\":").append(colorBytes)
+					.append(",\"target\":34962}");
+			accessors.append(",{\"bufferView\":").append(view).append(",\"componentType\":5126,\"count\":").append(vertices)
+					.append(",\"type\":\"VEC3\"}");
+			attributes.append(",\"COLOR_0\":").append(view);
+			view++;
+		}
+		String texture = "";
+		String extra = "";
+		if (textured) {
+			views.append(",{\"buffer\":0,\"byteOffset\":").append(uvOffset).append(",\"byteLength\":").append(uvBytes)
+					.append(",\"target\":34962}");
+			accessors.append(",{\"bufferView\":").append(view).append(",\"componentType\":5126,\"count\":").append(vertices)
+					.append(",\"type\":\"VEC2\"}");
+			attributes.append(",\"TEXCOORD_0\":").append(view);
+			view++;
+			views.append(",{\"buffer\":0,\"byteOffset\":").append(pngOffset).append(",\"byteLength\":").append(pngBytes)
+					.append('}');
+			texture = ",\"baseColorTexture\":{\"index\":0}";
+			extra = ",\"images\":[{\"bufferView\":" + view + ",\"mimeType\":\"image/png\"}],"
+					+ "\"samplers\":[{\"magFilter\":9729,\"minFilter\":9987,\"wrapS\":33071,\"wrapT\":33071}],"
+					+ "\"textures\":[{\"sampler\":0,\"source\":0}]";
+		}
+		String json = "{\"asset\":{\"version\":\"2.0\",\"generator\":\"Bio7 " + jsonText(e.kind) + "\"},"
 				+ "\"scene\":0,\"scenes\":[{\"nodes\":[0]}],\"nodes\":[{\"mesh\":0,\"name\":\"" + jsonText(e.title) + "\"}],"
-				+ "\"meshes\":[{\"name\":\"isosurface\",\"primitives\":[{\"attributes\":{\"POSITION\":0,\"NORMAL\":1" + (vc != null ? ",\"COLOR_0\":3" : "") + "},\"indices\":2,\"material\":0,\"mode\":4}]}],"
+				+ "\"meshes\":[{\"name\":\"isosurface\",\"primitives\":[{\"attributes\":{" + attributes
+				+ "},\"indices\":2,\"material\":0,\"mode\":4}]}],"
 				+ "\"materials\":[{\"name\":\"isosurface\",\"doubleSided\":true,"
 				+ (e.opacity < 1 ? "\"alphaMode\":\"BLEND\"," : "")
 				+ "\"pbrMetallicRoughness\":{\"baseColorFactor\":[" + c[0] + "," + c[1] + "," + c[2] + "," + e.opacity
-				+ "],\"metallicFactor\":0.0,\"roughnessFactor\":0.5}}],"
+				+ "]" + texture + ",\"metallicFactor\":0.0,\"roughnessFactor\":0.5}}]" + extra + ","
 				+ "\"buffers\":[{\"byteLength\":" + binLength + "}],"
-				+ "\"bufferViews\":[{\"buffer\":0,\"byteOffset\":0,\"byteLength\":" + positionBytes + ",\"target\":34962},"
-				+ "{\"buffer\":0,\"byteOffset\":" + positionBytes + ",\"byteLength\":" + normalBytes + ",\"target\":34962},"
-				+ "{\"buffer\":0,\"byteOffset\":" + (positionBytes + normalBytes) + ",\"byteLength\":" + indexBytes
-				+ ",\"target\":34963}"
-				+ (vc != null ? ",{\"buffer\":0,\"byteOffset\":" + (positionBytes + normalBytes + indexBytes)
-						+ ",\"byteLength\":" + colorBytes + ",\"target\":34962}" : "")
-				+ "],"
-				+ "\"accessors\":[{\"bufferView\":0,\"componentType\":5126,\"count\":" + vertices
-				+ ",\"type\":\"VEC3\",\"min\":[" + min[0] + "," + min[1] + "," + min[2] + "],\"max\":[" + max[0] + ","
-				+ max[1] + "," + max[2] + "]}," + "{\"bufferView\":1,\"componentType\":5126,\"count\":" + vertices
-				+ ",\"type\":\"VEC3\"}," + "{\"bufferView\":2,\"componentType\":5125,\"count\":" + idx.length
-				+ ",\"type\":\"SCALAR\"}"
-				+ (vc != null ? ",{\"bufferView\":3,\"componentType\":5126,\"count\":" + vertices + ",\"type\":\"VEC3\"}"
-						: "")
-				+ "]}";
+				+ "\"bufferViews\":[" + views + "],"
+				+ "\"accessors\":[" + accessors + "]}";
 		byte[] jsonBytes = json.getBytes(StandardCharsets.UTF_8);
 		/* The chunks are aligned to 4 bytes (JSON with spaces)! */
 		int jsonLength = (jsonBytes.length + 3) & ~3;
@@ -2052,6 +2223,13 @@ public class IsoSurface {
 				buffer.putFloat(v);
 			}
 		}
+		if (textured) {
+			for (float v : e.texCoords) {
+				buffer.putFloat(v);
+			}
+			buffer.put(png);
+		}
+		/* The padding of the binary chunk (zeros) */
 		Files.write(file.toPath(), buffer.array());
 	}
 
@@ -2077,7 +2255,10 @@ public class IsoSurface {
 	 * @throws IOException if the file can't be written
 	 */
 	public void exportVtk(File file) throws IOException {
-		ExportData e = exportData();
+		writeVtk(file, exportData());
+	}
+
+	private static void writeVtk(File file, ExportData e) throws IOException {
 		float[] p = e.positions;
 		float[] n = e.normals;
 		int[] idx = e.indices;
@@ -2086,7 +2267,7 @@ public class IsoSurface {
 		/* The binary legacy VTK format is big endian! */
 		try (DataOutputStream out = new DataOutputStream(
 				new BufferedOutputStream(new FileOutputStream(file), 1 << 16))) {
-			String title = ("Bio7 iso surface of " + e.title + ", unit " + e.unit).replace('\n', ' ');
+			String title = ("Bio7 " + e.kind + " of " + e.title + ", unit " + e.unit).replace('\n', ' ');
 			out.write(("# vtk DataFile Version 3.0\n" + (title.length() > 250 ? title.substring(0, 250) : title)
 					+ "\nBINARY\nDATASET POLYDATA\nPOINTS " + vertices + " float\n").getBytes(StandardCharsets.US_ASCII));
 			for (float v : p) {
@@ -2437,6 +2618,35 @@ public class IsoSurface {
 	 */
 	public void setHeadLight(boolean headLight) {
 		this.headLight = headLight;
+	}
+
+	/**
+	 * Returns true if the triangles of the surface are drawn as lines over the
+	 * surface.
+	 * 
+	 * @return true if the wireframe is shown
+	 */
+	public boolean isWireframe() {
+		return wireframe;
+	}
+
+	/**
+	 * Shows the triangles of the surface as lines over the surface (e.g., to see
+	 * the resolution of the mesh).
+	 * 
+	 * @param wireframe true to show the wireframe
+	 */
+	public void setWireframe(boolean wireframe) {
+		this.wireframe = wireframe;
+	}
+
+	/**
+	 * Sets the color of the wireframe (r, g, b from 0 to 1).
+	 * 
+	 * @param rgb the color
+	 */
+	public void setWireframeColor(float[] rgb) {
+		this.wireframeColor = rgb.clone();
 	}
 
 	public boolean isLutColor() {

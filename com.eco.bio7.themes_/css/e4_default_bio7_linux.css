@@ -251,8 +251,8 @@ background-color: #ffffff;
 
 }
 
+/*No fixed tab height on GTK: the minimize/maximize toolbar of the empty editor area is higher!*/
 #org-eclipse-ui-editorss {
-	swt-tab-height: 8.0px;
 	padding: 0.0px 5.0px 7.0px;
 }
 
@@ -293,10 +293,10 @@ font-weight: normal;
 MenuItem {
 background-color: #dddddd;
 }
-/**/
-Shell {
+/*No Shell background on GTK: the composites of dialogs keep the GTK background (lighter grey)!*/
+/*Shell {
 background-color: #eeeeee;
-}
+}*/
 Menu {
 background-color: #ffffff;
 }

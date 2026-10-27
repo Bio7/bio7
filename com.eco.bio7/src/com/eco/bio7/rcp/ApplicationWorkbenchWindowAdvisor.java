@@ -732,6 +732,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		/* A default FPS setting for the 3d view! */
 		store.setDefault("fixedFps", 60);
+		/* The newest OpenGL compatibility profile for the 3d view (e.g., OpenGL 4 on Windows and Linux)! */
+		store.setDefault("openglMaxCompatible", true);
 		/*
 		 * Default Colours for the Bio7 editors!
 		 */

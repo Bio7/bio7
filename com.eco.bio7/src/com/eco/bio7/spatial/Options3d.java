@@ -42,6 +42,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
@@ -55,6 +56,8 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.part.ViewPart;
 import com.eco.bio7.Bio7Plugin;
+import com.eco.bio7.info.LinearSlider;
+import com.eco.bio7.info.SpeedSlider;
 import com.eco.bio7.spatial.preferences.Bio7PrefConverterSpatial;
 import com.eco.bio7.spatial.preferences.Point3d;
 import org.eclipse.swt.layout.FormLayout;
@@ -82,15 +85,17 @@ public class Options3d extends ViewPart {
 	private Label sizeXLabel;
 	private Label sizeYLabel;
 	private Label sizeZLabel;
-	private Scale scale_2;
-	private Scale scale_1;
-	private Scale scale;
+	private LinearSlider scale_2;
+	private LinearSlider scale_1;
+	private LinearSlider scale;
 	private Label errorLabelSplit;
 	private DisplayMode[] d;
 	private Button showGridButton;
 	private Button showAxesButton;
 	private Button octantButton;
 	private Button showQuadButton;
+	/* The axis numbers (enabled with the plot view) */
+	private Button btnDrawnumbers;
 	private Point3d p;
 	private Point3d p2;
 	private Point3d p3;
@@ -208,9 +213,9 @@ public class Options3d extends ViewPart {
 		ScrolledComposite scroll = new ScrolledComposite(expandBar, SWT.V_SCROLL);
 		final Composite composite = new Composite(scroll, SWT.NONE);
 		newItemExpandItem.setControl(scroll);
-		composite.setLayout(new GridLayout(3, true));
+		composite.setLayout(new GridLayout(2, true));
 
-		scroll.setMinSize(200, 700);
+		scroll.setMinSize(200, 760);
 		scroll.setContent(composite);
 		scroll.setExpandVertical(true);
 		scroll.setExpandHorizontal(true);
@@ -226,272 +231,88 @@ public class Options3d extends ViewPart {
 		 */
 		d = graphicDevice.getDisplayModes();
 
-		new Label(composite, SWT.NONE);
-		new Label(composite, SWT.NONE);
-		new Label(composite, SWT.NONE);
-		sizeXLabel = new Label(composite, SWT.NONE);
-		GridData gd_sizeXLabel = new GridData(SWT.CENTER, SWT.CENTER, true, false, 3, 1);
-		gd_sizeXLabel.heightHint = 25;
-		gd_sizeXLabel.widthHint = 100;
-		sizeXLabel.setLayoutData(gd_sizeXLabel);
-		scale = new Scale(composite, SWT.NONE);
-		scale.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
-
-		scale.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				SpatialStructure sg = SpatialStructure.getSpatialStructureInstance();
-				if (sg != null) {
-					sg.setSizeX(scale.getSelection());
-				}
-
-				store.setValue("spatialX", scale.getSelection());
-				sizeXLabel.setText("Size X: " + scale.getSelection() * 2);
-				scale.setToolTipText("-" + scale.getSelection() + " to +" + scale.getSelection());
+		/* The size of the space (the axes from -size to +size) */
+		final Group sizeGroup = createGroup(composite, "Space Size", 3, false);
+		scale = sizeSlider(sizeGroup, "X", "spatialX", v -> {
+			SpatialStructure sg = SpatialStructure.getSpatialStructureInstance();
+			if (sg != null) {
+				sg.setSizeX(v);
 			}
 		});
-
-		scale.setMaximum((int) halfExtent);
-
-		scale.setSelection(1000);
-		sizeXLabel.setText("Size X: " + scale.getSelection() * 2);
-		new Label(composite, SWT.NONE);
-		new Label(composite, SWT.NONE);
-		new Label(composite, SWT.NONE);
-
-		sizeYLabel = new Label(composite, SWT.NONE);
-		GridData gd_sizeYLabel = new GridData(SWT.CENTER, SWT.FILL, true, false, 3, 1);
-		gd_sizeYLabel.heightHint = 25;
-		gd_sizeYLabel.widthHint = 100;
-		sizeYLabel.setLayoutData(gd_sizeYLabel);
-		scale_1 = new Scale(composite, SWT.NONE);
-		scale_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
-
-		scale_1.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				SpatialStructure sg = SpatialStructure.getSpatialStructureInstance();
-				if (sg != null) {
-					sg.setSizeY(scale_1.getSelection());
-				}
-
-				store.setValue("spatialY", scale_1.getSelection());
-				sizeYLabel.setText("Size Y: " + scale_1.getSelection() * 2);
-				scale_1.setToolTipText("-" + scale_1.getSelection() + " to +" + scale_1.getSelection());
+		sizeXLabel = (Label) sizeGroup.getChildren()[sizeGroup.getChildren().length - 1];
+		scale_1 = sizeSlider(sizeGroup, "Y", "spatialY", v -> {
+			SpatialStructure sg = SpatialStructure.getSpatialStructureInstance();
+			if (sg != null) {
+				sg.setSizeY(v);
 			}
 		});
-
-		scale_1.setMaximum((int) halfExtent);
-		scale_1.setSelection(1000);
-
-		sizeZLabel = new Label(composite, SWT.NONE);
-		GridData gd_sizeZLabel = new GridData(SWT.CENTER, SWT.FILL, true, false, 3, 1);
-		gd_sizeZLabel.heightHint = 25;
-		gd_sizeZLabel.widthHint = 100;
-		sizeZLabel.setLayoutData(gd_sizeZLabel);
-		scale_2 = new Scale(composite, SWT.NONE);
-		scale_2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
-
-		scale_2.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				SpatialStructure sg = SpatialStructure.getSpatialStructureInstance();
-				if (sg != null) {
-					sg.setSizeZ(scale_2.getSelection());
-				}
-
-				store.setValue("spatialZ", scale_2.getSelection());
-				sizeZLabel.setText("Size Z: " + scale_2.getSelection() * 2);
-				scale_2.setToolTipText("-" + scale_2.getSelection() + " to +" + scale_2.getSelection());
+		sizeYLabel = (Label) sizeGroup.getChildren()[sizeGroup.getChildren().length - 1];
+		scale_2 = sizeSlider(sizeGroup, "Z", "spatialZ", v -> {
+			SpatialStructure sg = SpatialStructure.getSpatialStructureInstance();
+			if (sg != null) {
+				sg.setSizeZ(v);
 			}
 		});
-		scale_2.setMaximum((int) halfExtent);
-		scale_2.setSelection(1000);
+		sizeZLabel = (Label) sizeGroup.getChildren()[sizeGroup.getChildren().length - 1];
 
-		final Label label_3 = new Label(composite, SWT.HORIZONTAL | SWT.SEPARATOR);
-		GridData gd_label_3 = new GridData(SWT.FILL, SWT.CENTER, false, false, 3, 1);
-		gd_label_3.heightHint = 25;
-		label_3.setLayoutData(gd_label_3);
-		label_3.setText("Label");
-
-		octantButton = new Button(composite, SWT.CHECK);
-		GridData gd_octantButton = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
-		gd_octantButton.heightHint = 25;
-		octantButton.setLayoutData(gd_octantButton);
-		octantButton.setToolTipText("Changes the visualization to the first octant.");
+		/* The display of the space */
+		final Group displayGroup = createGroup(composite, "Display");
+		octantButton = check(displayGroup, "Octant", "Changes the visualization to the first octant.");
 		octantButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (SpatialStructure.hMap.isCartesian()) {
-					SpatialStructure.hMap.setCartesian(false);
-				} else {
-					SpatialStructure.hMap.setCartesian(true);
-				}
+				SpatialStructure.hMap.setCartesian(!SpatialStructure.hMap.isCartesian());
 			}
 		});
-		octantButton.setText("Octant");
-
-		showAxesButton = new Button(composite, SWT.CHECK);
-		GridData gd_showAxesButton = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
-		gd_showAxesButton.heightHint = 25;
-		showAxesButton.setLayoutData(gd_showAxesButton);
+		showAxesButton = check(displayGroup, "Show Axes", "Shows the x, y and z axes");
 		showAxesButton.setSelection(true);
 		showAxesButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				SpatialStructure sg = SpatialStructure.getSpatialStructureInstance();
 				if (sg != null) {
-					if (showAxesButton.getSelection()) {
-						sg.showAxes = true;
-					} else {
-						sg.showAxes = false;
-					}
+					sg.showAxes = showAxesButton.getSelection();
 				}
-
 			}
 		});
-		showAxesButton.setText("Show Axes");
-
-		showQuadButton = new Button(composite, SWT.CHECK);
-		GridData gd_showQuadButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-		gd_showQuadButton.heightHint = 25;
-		showQuadButton.setLayoutData(gd_showQuadButton);
+		showQuadButton = check(displayGroup, "Show Box", "Shows the box fitted to the displayed data (Cartesian mode)");
 		showQuadButton.setSelection(true);
 		showQuadButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				SpatialStructure sg = SpatialStructure.getSpatialStructureInstance();
 				if (sg != null) {
-					if (showQuadButton.getSelection()) {
-						sg.showQuad = true;
-					} else {
-						sg.showQuad = false;
-					}
+					sg.showQuad = showQuadButton.getSelection();
 				}
-
 			}
 		});
-		showQuadButton.setText("Show Quad");
-
-		final Label label = new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL);
-		GridData gd_label = new GridData(SWT.FILL, SWT.CENTER, false, false, 3, 1);
-		gd_label.heightHint = 25;
-		label.setLayoutData(gd_label);
-
-		showGridButton = new Button(composite, SWT.CHECK);
-		GridData gd_showGridButton = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
-		gd_showGridButton.heightHint = 25;
-		showGridButton.setLayoutData(gd_showGridButton);
-		showGridButton.setSelection(true);
-		showGridButton.addSelectionListener(new SelectionAdapter() {
+		/* The axis orientation overlay in the top right corner (stored in the preferences)! */
+		final Button axisGizmoButton = check(displayGroup, "Axis Orientation",
+				"Shows the orientation of the x, y and z axes in the top right corner of the 3D view");
+		store.setDefault("showAxisGizmo", true);
+		axisGizmoButton.setSelection(store.getBoolean("showAxisGizmo"));
+		axisGizmoButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
+				store.setValue("showAxisGizmo", axisGizmoButton.getSelection());
 				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
 				if (grid != null) {
-					if (showGridButton.getSelection()) {
-						grid.showGrid = true;
-					} else {
-						grid.showGrid = false;
-					}
+					grid.showAxisGizmo = axisGizmoButton.getSelection();
 				}
 			}
 		});
-		showGridButton.setText("Show Grid");
-
-		final Spinner spinner_12 = new Spinner(composite, SWT.BORDER);
-		GridData gd_spinner_12 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-		gd_spinner_12.heightHint = 25;
-		spinner_12.setLayoutData(gd_spinner_12);
-		spinner_12.setSelection(50);
-		spinner_12.setMaximum(1000);
-		spinner_12.setMinimum(1);
-		spinner_12.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-				if (grid != null) {
-					grid.gridSize = spinner_12.getSelection();
-				}
-			}
-		});
-
-		final Label girdSizeLabel = new Label(composite, SWT.NONE);
-		GridData gd_girdSizeLabel = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-		gd_girdSizeLabel.heightHint = 25;
-		girdSizeLabel.setLayoutData(gd_girdSizeLabel);
-		girdSizeLabel.setText("Size");
-
-		final Button xzButton = new Button(composite, SWT.CHECK);
-		GridData gd_xzButton = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
-		gd_xzButton.heightHint = 25;
-		xzButton.setLayoutData(gd_xzButton);
-		xzButton.setText("XZ");
-		xzButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-				if (grid != null) {
-					if (xzButton.getSelection()) {
-						grid.layerXZGrid = true;
-					} else {
-						grid.layerXZGrid = false;
-
-					}
-				}
-			}
-		});
-
-		final Button yzButton = new Button(composite, SWT.CHECK);
-		GridData gd_yzButton = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
-		gd_yzButton.heightHint = 25;
-		yzButton.setLayoutData(gd_yzButton);
-		yzButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-				if (grid != null) {
-					if (yzButton.getSelection()) {
-						grid.layerYZGrid = true;
-					} else {
-						grid.layerYZGrid = false;
-
-					}
-				}
-			}
-
-		});
-		yzButton.setText("YZ");
-
-		final Button xyButton = new Button(composite, SWT.CHECK);
-		GridData gd_xyButton = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
-		gd_xyButton.heightHint = 25;
-		xyButton.setLayoutData(gd_xyButton);
-		xyButton.setSelection(true);
-		xyButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-				if (grid != null) {
-					if (xyButton.getSelection()) {
-						grid.layerXYGrid = true;
-					} else {
-						grid.layerXYGrid = false;
-
-					}
-				}
-			}
-		});
-		xyButton.setText("XY");
-
-		Button btnDrawnumbers = new Button(composite, SWT.CHECK);
+		btnDrawnumbers = check(displayGroup, "Draw Axis Numbers", "Draws the numbers and ticks of the axes");
 		btnDrawnumbers.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				SpatialStructure st = SpatialStructure.getSpatialStructureInstance();
-
-				AxisLabelsRenderer axisLabelsRenderer = st.getAxisLabelsRenderer();
-				if (axisLabelsRenderer.isEnabled()) {
-					axisLabelsRenderer.setEnabled(false);
-				} else {
-					axisLabelsRenderer.setEnabled(true);
+				if (st != null && st.getAxisLabelsRenderer() != null) {
+					st.getAxisLabelsRenderer().setEnabled(btnDrawnumbers.getSelection());
 				}
-
 			}
 		});
-		btnDrawnumbers.setText("Draw Axis Numbers");
+		SpatialStructure current3d = SpatialStructure.getSpatialStructureInstance();
+		btnDrawnumbers.setSelection(current3d != null && current3d.getAxisLabelsRenderer() != null
+				? current3d.getAxisLabelsRenderer().isEnabled() : store.getBoolean("plotView"));
 		/* Label the x and y axes with the pixel coordinates of a displayed texture! */
 		AxisLabelsRenderer.setImageCoordinates(store.getBoolean("axisImageCoordinates"));
-		final Button imageCoordinatesButton = new Button(composite, SWT.CHECK);
-		imageCoordinatesButton.setToolTipText(
+		final Button imageCoordinatesButton = check(displayGroup, "Image Coordinates",
 				"Displays the axis numbers as pixel coordinates of the texture image.\nThe y coordinates increase from the top of the image like in ImageJ.");
 		imageCoordinatesButton.setSelection(AxisLabelsRenderer.isImageCoordinates());
 		imageCoordinatesButton.addSelectionListener(new SelectionAdapter() {
@@ -501,100 +322,160 @@ public class Options3d extends ViewPart {
 				store.setValue("axisImageCoordinates", imageCoordinatesButton.getSelection());
 			}
 		});
-		imageCoordinatesButton.setText("Image Coordinates");
-		new Label(composite, SWT.NONE);
 
-		final Label label_2 = new Label(composite, SWT.HORIZONTAL | SWT.SEPARATOR);
-		GridData gd_label_2 = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
-		gd_label_2.heightHint = 25;
-		label_2.setLayoutData(gd_label_2);
-		label_2.setText("Label");
-		sizeYLabel.setText("Size Y: " + scale_1.getSelection() * 2);
+		/* The grids: through the origin, at the far sides of the box and of the plot view */
+		final Group gridGroup = createGroup(composite, "Grid", 3, true);
+		showGridButton = check(gridGroup, "Show Grid", "Shows the grids");
+		showGridButton.setSelection(true);
+		showGridButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					grid.showGrid = showGridButton.getSelection();
+				}
+			}
+		});
+		final Label girdSizeLabel = new Label(gridGroup, SWT.NONE);
+		girdSizeLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false, 1, 1));
+		girdSizeLabel.setText("Grid Size");
+		final Spinner spinner_12 = new Spinner(gridGroup, SWT.BORDER);
+		spinner_12.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		spinner_12.setMaximum(1000);
+		spinner_12.setMinimum(1);
+		spinner_12.setSelection(50);
+		spinner_12.setToolTipText("The distance of the grid lines");
+		spinner_12.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					grid.gridSize = spinner_12.getSelection();
+				}
+			}
+		});
+		String[] planes = { "XY", "XZ", "YZ" };
+		/* The grids through the origin (XY on by default) */
+		for (int k = 0; k < 3; k++) {
+			final int plane = k;
+			final Button button = check(gridGroup, planes[k], "The " + planes[k] + " grid through the origin");
+			button.setSelection(k == 0);
+			button.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(final SelectionEvent e) {
+					SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+					if (grid != null) {
+						boolean selected = button.getSelection();
+						if (plane == 0) {
+							grid.layerXYGrid = selected;
+						} else if (plane == 1) {
+							grid.layerXZGrid = selected;
+						} else {
+							grid.layerYZGrid = selected;
+						}
+					}
+				}
+			});
+		}
+		/* The grids at the far sides of the box (fitted to the displayed rendering)! */
+		String[] maxNames = { "XY (Z Max)", "XZ (Y Max)", "YZ (X Max)" };
+		for (int k = 0; k < 3; k++) {
+			final int plane = k;
+			final Button button = check(gridGroup, maxNames[k],
+					"The " + planes[k] + " grid at the far side (" + maxNames[k].substring(4, 5).toLowerCase() + " max) of the box");
+			button.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(final SelectionEvent e) {
+					SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+					if (grid != null) {
+						boolean selected = button.getSelection();
+						if (plane == 0) {
+							grid.layerXYGridMax = selected;
+						} else if (plane == 1) {
+							grid.layerXZGridMax = selected;
+						} else {
+							grid.layerYZGridMax = selected;
+						}
+					}
+				}
+			});
+		}
+		/* The grid planes of the plot view (see the Heightmap tab), behind the data! */
+		for (int k = 0; k < 3; k++) {
+			final int plane = k;
+			final Button button = check(gridGroup, planes[k] + " (Plot)",
+					"The " + planes[k] + " grid of the plot view (behind the data, see 'Plot View' in the Heightmap tab)");
+			/* The floor (XY) is hidden by the height map by default */
+			button.setSelection(k != 0);
+			button.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(final SelectionEvent e) {
+					SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+					if (grid != null) {
+						boolean selected = button.getSelection();
+						if (plane == 0) {
+							grid.plotGridXY = selected;
+						} else if (plane == 1) {
+							grid.plotGridXZ = selected;
+						} else {
+							grid.plotGridYZ = selected;
+						}
+					}
+				}
+			});
+		}
 
-		final Button colourButton = new Button(composite, SWT.NONE);
-		GridData gd_colourButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_colourButton.heightHint = 40;
-		colourButton.setLayoutData(gd_colourButton);
+		/* The colors of the background and the lines */
+		final Group colorGroup = createGroup(composite, "Colors");
+		final Button colourButton = new Button(colorGroup, SWT.NONE);
+		colourButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		colourButton.setText("Background Color...");
+		colourButton.setToolTipText("The background color of the space");
 		colourButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				RGB color = getColour();
 				if (color != null) {
 					SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
 					if (grid != null) {
-						float r = (float) (color.red) / 255;
-						float g = (float) (color.green) / 255;
-						float b = (float) (color.blue) / 255;
-
-						grid.setColorBackground(new float[] { r, g, b, 1.0f });
+						grid.setColorBackground(new float[] { color.red / 255f, color.green / 255f, color.blue / 255f, 1.0f });
 						grid.backgroundColour = true;
 					}
 				}
-
 			}
 		});
-		colourButton.setText("Colour Space");
-
-		final Button colourLinesButton = new Button(composite, SWT.NONE);
-		GridData gd_colourLinesButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_colourLinesButton.heightHint = 40;
-		colourLinesButton.setLayoutData(gd_colourLinesButton);
+		final Button colourLinesButton = new Button(colorGroup, SWT.NONE);
+		colourLinesButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		colourLinesButton.setText("Line Color...");
+		colourLinesButton.setToolTipText("The color of the grids, axes and the box");
 		colourLinesButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				RGB color = getColour();
 				if (color != null) {
 					SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
 					if (grid != null) {
-						float r = (float) (color.red) / 255;
-						float g = (float) (color.green) / 255;
-						float b = (float) (color.blue) / 255;
-
-						grid.getScene().setColorCubeLines(new float[] { r, g, b, 1.0f });
+						grid.getScene().setColorCubeLines(new float[] { color.red / 255f, color.green / 255f, color.blue / 255f, 1.0f });
 					}
 				}
-
 			}
 		});
-		colourLinesButton.setText("Colour Lines");
-		new Label(composite, SWT.NONE);
 
-		final Label label_2_1 = new Label(composite, SWT.HORIZONTAL | SWT.SEPARATOR);
-		GridData gd_label_2_1 = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
-		gd_label_2_1.heightHint = 25;
-		label_2_1.setLayoutData(gd_label_2_1);
-		label_2_1.setText("Label");
-
-		Label lblSpeedDistance = new Label(composite, SWT.NONE);
-		GridData gd_lblSpeedDistance = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-		gd_lblSpeedDistance.heightHint = 25;
-		lblSpeedDistance.setLayoutData(gd_lblSpeedDistance);
+		/* The camera: the drag speed, the extent of the world and the view distance */
+		final Group cameraGroup = createGroup(composite, "Camera");
+		final Label lblSpeedDistance = new Label(cameraGroup, SWT.NONE);
+		lblSpeedDistance.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		lblSpeedDistance.setText("Speed Drag Distance");
-
-		final Label worldExtentLabel = new Label(composite, SWT.NONE);
-		GridData gd_worldExtentLabel = new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1);
-		gd_worldExtentLabel.heightHint = 25;
-		worldExtentLabel.setLayoutData(gd_worldExtentLabel);
-		worldExtentLabel.setText("World Extent");
-
-		new Label(composite, SWT.NONE);
-
-		multiplyDragCameraSpeedSpinner = new Spinner(composite, SWT.BORDER);
-		GridData gd_multiplyDragCameraSpeedSpinner = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-		gd_multiplyDragCameraSpeedSpinner.heightHint = 25;
-		multiplyDragCameraSpeedSpinner.setLayoutData(gd_multiplyDragCameraSpeedSpinner);
+		multiplyDragCameraSpeedSpinner = new Spinner(cameraGroup, SWT.BORDER);
+		multiplyDragCameraSpeedSpinner.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		multiplyDragCameraSpeedSpinner.setToolTipText("A factor for the speed of the zoom with the mouse");
+		multiplyDragCameraSpeedSpinner.setMaximum(10000);
+		multiplyDragCameraSpeedSpinner.setMinimum(1);
+		multiplyDragCameraSpeedSpinner.setSelection(1);
 		multiplyDragCameraSpeedSpinner.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				SpatialStructure.setMultiplyDragCameraSpeed(multiplyDragCameraSpeedSpinner.getSelection());
 			}
 		});
-		multiplyDragCameraSpeedSpinner.setMaximum(10000);
-		multiplyDragCameraSpeedSpinner.setMinimum(1);
-		multiplyDragCameraSpeedSpinner.setSelection(1);
-
-		worldExtent = new Text(composite, SWT.BORDER);
-		GridData gd_worldExtent = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_worldExtent.heightHint = 25;
-		worldExtent.setLayoutData(gd_worldExtent);
+		final Label worldExtentLabel = new Label(cameraGroup, SWT.NONE);
+		worldExtentLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		worldExtentLabel.setText("World Extent");
+		worldExtent = new Text(cameraGroup, SWT.BORDER);
+		worldExtent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		worldExtent.setToolTipText("Set the world extent");
 		worldExtent.setText("100000.0");
 		worldExtent.addListener(SWT.Modify, new Listener() {
@@ -602,23 +483,23 @@ public class Options3d extends ViewPart {
 			public void handleEvent(Event event) {
 
 				try {
-					double extent = new Double(worldExtent.getText());
+					double extent = Double.parseDouble(worldExtent.getText());
 					store.setValue("spatialExtent", extent);
-					worldExtent.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
+					worldExtent.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
 					worldExtentError.setText("");
 				} catch (Exception e) {
-					worldExtent.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
+					worldExtent.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
 					worldExtentError.setText("Number input incorrect!");
 				}
 			}
 
 		});
-		new Label(composite, SWT.NONE);
-
-		Button btnResetView = new Button(composite, SWT.NONE);
-		GridData gd_btnResetView = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-		gd_btnResetView.heightHint = 40;
-		btnResetView.setLayoutData(gd_btnResetView);
+		worldExtentError = new Label(cameraGroup, SWT.NONE);
+		worldExtentError.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		Button btnResetView = new Button(cameraGroup, SWT.NONE);
+		btnResetView.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		btnResetView.setText("Reset View Distance");
+		btnResetView.setToolTipText("The default view distance (fitted to the displayed data)");
 		btnResetView.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -627,17 +508,8 @@ public class Options3d extends ViewPart {
 					/* Fitted to a displayed texture! */
 					struc.setDoz(struc.getDefaultViewDistance());
 				}
-
 			}
 		});
-		btnResetView.setText("Reset View Distance");
-		sizeZLabel.setText("Size Z: " + scale_2.getSelection() * 2);
-		new Label(composite, SWT.NONE);
-		new Label(composite, SWT.NONE);
-		new Label(composite, SWT.NONE);
-		worldExtentError = new Label(composite, SWT.NONE);
-		worldExtentError.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
-		new Label(composite, SWT.NONE);
 
 		if (we != 0) {
 			worldExtent.setText("" + we);
@@ -710,25 +582,31 @@ public class Options3d extends ViewPart {
 		label_4.setLayoutData(gd_label_4);
 
 		final Label framerateLabel = new Label(composite_2, SWT.NONE);
-		GridData gd_framerateLabel = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-		gd_framerateLabel.heightHint = 25;
-		framerateLabel.setLayoutData(gd_framerateLabel);
-		framerateLabel.setText("Step rate");
-		new Label(composite_2, SWT.NONE);
+		framerateLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		framerateLabel.setText("Speed (canStep)");
 
-		final Scale scale_7 = new Scale(composite_2, SWT.NONE);
-		scale_7.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1));
-		scale_7.setToolTipText("The speed of the canStep() function can be adjusted with this slider");
-
-		scale_7.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				SpatialStructure.setPeriod(scale_7.getSelection() * 1000000);
-			}
+		/* A logarithmic speed slider like in the control view of Bio7 (steps per second)! */
+		final SpeedSlider stepRateSlider = new SpeedSlider(composite_2, SWT.NONE, 0.1, 1000);
+		stepRateSlider.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		stepRateSlider.setBackground(composite_2.getBackground());
+		stepRateSlider.setValue(1e9 / Math.max(1, SpatialStructure.getPeriod()));
+		stepRateSlider.setToolTipText("The speed of the canStep() function in steps (frames) per second (at most the frame rate of the view):\n"
+				+ "left slower, right faster. Keys: Left/Right one step (8%), Shift+Left/Right or PageDown/PageUp 10 steps,\nHome/End minimum/maximum.");
+		final Label stepRateInfo = new Label(composite_2, SWT.NONE);
+		stepRateInfo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		final Runnable updateStepRate = () -> {
+			double rate = stepRateSlider.getValue();
+			double ms = 1000 / rate;
+			/* Like the control view: the fps and the milliseconds per step */
+			String millis = ms >= 10 ? String.format(java.util.Locale.ROOT, "%.0f", ms)
+					: String.format(java.util.Locale.ROOT, "%.2f", ms).replaceAll("0+$", "").replaceAll("\\.$", "");
+			stepRateInfo.setText("Speed: " + SpeedSlider.format(rate) + " fps (" + millis + " ms per step)");
+		};
+		updateStepRate.run();
+		stepRateSlider.addListener(SWT.Selection, _ -> {
+			SpatialStructure.setPeriod(Math.round(1e9 / stepRateSlider.getValue()));
+			updateStepRate.run();
 		});
-		scale_7.setMaximum(1000);
-		scale_7.setSelection(1000);
-		new Label(composite_2, SWT.NONE);
-		new Label(composite_2, SWT.NONE);
 
 		final Button haltButton = new Button(composite_2, SWT.CHECK);
 		GridData gd_haltButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
@@ -833,84 +711,86 @@ public class Options3d extends ViewPart {
 		setFixedFPS.setMaximum(10000);
 		setFixedFPS.setMinimum(1);
 
+		final Button newestOpenGlButton = new Button(composite_2, SWT.CHECK);
+		GridData gd_newestOpenGlButton = new GridData(SWT.FILL, SWT.FILL, false, false, 2, 1);
+		gd_newestOpenGlButton.heightHint = 25;
+		newestOpenGlButton.setLayoutData(gd_newestOpenGlButton);
+		store.setDefault("openglMaxCompatible", true);
+		newestOpenGlButton.setSelection(store.getBoolean("openglMaxCompatible"));
+		newestOpenGlButton.setText("Newest OpenGL profile");
+		newestOpenGlButton.setToolTipText(
+				"Uses the newest OpenGL compatibility profile for the 3D view\n(e.g., OpenGL 4 on Windows and Linux, OpenGL 2.1 on macOS).\nIf not selected: the default profile of the system.");
+		newestOpenGlButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				store.setValue("openglMaxCompatible", newestOpenGlButton.getSelection());
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					grid.recreateSceneContext();
+				}
+			}
+		});
+
 		createModelTab(expandBar);
 
-		createTextureTab(expandBar);
+		/* The texture and in addition the height map (surface plot) in one tab! */
+		Composite compositeTexture = createTextureTab(expandBar);
+		final Group composite_3 = createGroup(compositeTexture, "Height Map (Surface Plot)");
+		composite_3.setToolTipText("The heights of the active ImageJ image. Visible if a texture is displayed!");
 
-		final CTabItem newItemExpandItem_4 = new CTabItem(expandBar, SWT.NONE);
-		// newItemExpandItem_4.setHeight(300);
-		newItemExpandItem_4.setText("Height Map");
-
-		ScrolledComposite scroll_3 = new ScrolledComposite(expandBar, SWT.V_SCROLL);
-		final Composite composite_3 = new Composite(scroll_3, SWT.NONE);
-		composite_3.setToolTipText("Enables the height map. Visible if a texture is active!");
-		newItemExpandItem_4.setControl(scroll_3);
-		composite_3.setLayout(new GridLayout(2, true));
-		scroll_3.setMinSize(200, 300);
-		scroll_3.setContent(composite_3);
-		scroll_3.setExpandVertical(true);
-		scroll_3.setExpandHorizontal(true);
-		scroll_3.setAlwaysShowScrollBars(true);
-
-		final Button enableHeightMapButton = new Button(composite_3, SWT.CHECK);
-		GridData gd_enableHeightMapButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_enableHeightMapButton.heightHint = 25;
-		enableHeightMapButton.setLayoutData(gd_enableHeightMapButton);
-		enableHeightMapButton.setToolTipText("Enable the height map");
+		final Button enableHeightMapButton = check(composite_3, "Enable Height Map", "Enables the height map (visible if a texture is displayed)");
 		enableHeightMapButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
 				if (grid != null) {
-					if (enableHeightMapButton.getSelection()) {
-						grid.setHeightMap(true);
-					} else {
-						grid.setHeightMap(false);
+					grid.setHeightMap(enableHeightMapButton.getSelection());
+				}
+			}
+		});
+
+		/* A plot view: the grids behind the data and the axes at the box (stored in the preferences)! */
+		final Button plotViewButton = check(composite_3, "Plot View",
+				"A 3D plot of the height map (or volume, iso surface): the grids at the sides of the box\nbehind the data and the axes (with the numbers, see 'Draw Axis Numbers') at the front edges.\nThe grid planes can be selected in the Space tab. The setting is stored.");
+		store.setDefault("plotView", false);
+		plotViewButton.setSelection(store.getBoolean("plotView"));
+		plotViewButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				store.setValue("plotView", plotViewButton.getSelection());
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					grid.plotView = plotViewButton.getSelection();
+					/* A plot view with the axis numbers */
+					if (grid.plotView && grid.getAxisLabelsRenderer() != null) {
+						grid.getAxisLabelsRenderer().setEnabled(true);
+						if (btnDrawnumbers != null && !btnDrawnumbers.isDisposed()) {
+							btnDrawnumbers.setSelection(true);
+						}
 					}
 				}
 			}
 		});
-		enableHeightMapButton.setText("Enable Height Map");
 
-		final Button gcButton = new Button(composite_3, SWT.CHECK);
-		GridData gd_gcButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_gcButton.heightHint = 25;
-		gcButton.setLayoutData(gd_gcButton);
-		gcButton.addSelectionListener(new SelectionAdapter() {
+		final Button heightMapTrianglesButton = check(composite_3, "Show Triangles",
+				"Draws the triangles of the height map as lines over the surface (see 'Level of Detail')");
+		heightMapTrianglesButton.setSelection(HeightMaps.isWireframe());
+		heightMapTrianglesButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (gcButton.getSelection()) {
-					HeightMaps.setGraphicsCardSwitch(true);
-				} else {
-					HeightMaps.setGraphicsCardSwitch(false);
+				HeightMaps.setWireframe(heightMapTrianglesButton.getSelection());
+			}
+		});
+
+		final Button lightenedButton = check(composite_3, "Lighted", "Enables the lighting of the height map");
+		lightenedButton.setSelection(true);
+		lightenedButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					grid.lightenedHeightMap = lightenedButton.getSelection();
 				}
 			}
 		});
-		gcButton.setToolTipText(
-				"This is a special switch for the texture.\n For some graphics cards it seems to be necessary\n to assign the texture differently!");
-		gcButton.setText("Gc");
-		new Label(composite_3, SWT.NONE);
 
-		final Button geoButton = new Button(composite_3, SWT.CHECK);
-		GridData gd_geoButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_geoButton.heightHint = 25;
-		geoButton.setLayoutData(gd_geoButton);
-		geoButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				if (geoButton.getSelection()) {
-					HeightMaps.setInverse(true);
-				} else {
-					HeightMaps.setInverse(false);
-				}
-			}
-		});
-		geoButton.setToolTipText("Scales the values negative for a correct \ngeographic view");
-		geoButton.setText("Geo");
-
-		final Button staticHeightButton = new Button(composite_3, SWT.CHECK);
-		GridData gd_staticHeightButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_staticHeightButton.heightHint = 25;
-		staticHeightButton.setLayoutData(gd_staticHeightButton);
-		staticHeightButton.setToolTipText(
-				"If dynamic is selected the height values are updated directly from the active ImageJ image");
+		final Button staticHeightButton = check(composite_3, "Dynamic Heights",
+				"If selected the heights are updated directly from the active ImageJ image");
 		staticHeightButton.setSelection(true);
 		staticHeightButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -922,75 +802,166 @@ public class Options3d extends ViewPart {
 				}
 			}
 		});
-		staticHeightButton.setText("Dynamic");
 
-		final Button lightenedButton = new Button(composite_3, SWT.CHECK);
-		GridData gd_lightenedButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_lightenedButton.heightHint = 25;
-		lightenedButton.setLayoutData(gd_lightenedButton);
-		lightenedButton.addSelectionListener(new SelectionAdapter() {
+		final Button geoButton = check(composite_3, "Negative Heights (Geo)",
+				"Scales the heights negative for a correct geographic view");
+		geoButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-				if (grid != null) {
-					if (lightenedButton.getSelection()) {
-						grid.lightenedHeightMap = true;
-					} else {
-						grid.lightenedHeightMap = false;
-					}
-				}
+				HeightMaps.setInverse(geoButton.getSelection());
 			}
 		});
-		lightenedButton.setToolTipText("Enables the lightening for the height map");
-		lightenedButton.setSelection(true);
-		lightenedButton.setText("Lighted");
-		new Label(composite_3, SWT.NONE);
-		new Label(composite_3, SWT.NONE);
 
-		final Scale scale_8 = new Scale(composite_3, SWT.NONE);
-		scale_8.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-		scale_8.setToolTipText("Adjusts the amount of triangles for the height map.");
-		scale_8.setSelection(15);
+		/* The level of detail: the distance of the vertices in pixels (left: more triangles) */
+		final Label levelOfDetailLabel_1 = new Label(composite_3, SWT.NONE);
+		levelOfDetailLabel_1.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		final LinearSlider scale_8 = new LinearSlider(composite_3, SWT.NONE);
+		scale_8.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		scale_8.setMinimum(1);
+		scale_8.setMaximum(100);
+		scale_8.setSelection(SpatialStructure.hMap != null ? SpatialStructure.hMap.detail : 16);
+		scale_8.setToolTipText("The distance of the vertices of the height map in pixels: left more triangles (finer), right less.\n"
+				+ "Keys: Left/Right one pixel, Shift+Left/Right or PageDown/PageUp one major tick, Home/End minimum/maximum.");
+		final Runnable updateDetail = () -> levelOfDetailLabel_1
+				.setText("Level of Detail: " + scale_8.getSelection() + (scale_8.getSelection() == 1 ? " pixel" : " pixels"));
+		updateDetail.run();
 		scale_8.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				HeightMaps height = SpatialStructure.getHeightMapInstance();
-
-				height.setDetail(scale_8.getSelection());
+				if (height != null) {
+					height.setDetail(scale_8.getSelection());
+				}
+				updateDetail.run();
 			}
 		});
-		scale_8.setMinimum(1);
 
-		final Label levelOfDetailLabel_1 = new Label(composite_3, SWT.NONE);
-		GridData gd_levelOfDetailLabel_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-		gd_levelOfDetailLabel_1.heightHint = 25;
-		levelOfDetailLabel_1.setLayoutData(gd_levelOfDetailLabel_1);
-		levelOfDetailLabel_1.setText("Level of Detail");
-
-		final Scale scaleHeight = new Scale(composite_3, SWT.NONE);
-		GridData gd_scaleHeight = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-		gd_scaleHeight.widthHint = 200;
-		scaleHeight.setLayoutData(gd_scaleHeight);
-		scaleHeight.setToolTipText("A scaling factor for the height map");
-		scaleHeight.setSelection(100);
-		scaleHeight.setPageIncrement(1);
-		scaleHeight.setMinimum(1);
-		scaleHeight.addSelectionListener(new SelectionAdapter() {
+		/* A logarithmic height factor (e.g., low for large values like spectra) */
+		final Label factorHeightLabel = new Label(composite_3, SWT.NONE);
+		factorHeightLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		final SpeedSlider scaleHeight = new SpeedSlider(composite_3, SWT.NONE, 0.000001, 100);
+		scaleHeight.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		scaleHeight.setValue(SpatialStructure.hMap != null ? SpatialStructure.hMap.getScale() : 1);
+		scaleHeight.setToolTipText("A scaling factor for the heights (low for large values): left lower, right higher.\n"
+				+ "Keys: Left/Right one step (8%), Shift+Left/Right or PageDown/PageUp 10 steps, Home/End minimum/maximum.");
+		final Runnable updateFactor = () -> factorHeightLabel.setText("Height Factor: " + SpeedSlider.format(scaleHeight.getValue()));
+		updateFactor.run();
+		scaleHeight.addListener(SWT.Selection, _ -> {
+			SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+			if (grid != null) {
+				grid.hMap.setScale((float) scaleHeight.getValue());
+			}
+			updateFactor.run();
+		});
+		final Button fitHeightButton = new Button(composite_3, SWT.NONE);
+		fitHeightButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		fitHeightButton.setText("Fit Height");
+		fitHeightButton.setToolTipText(
+				"Sets the height factor so that the range of the heights is half of the longer side of the image");
+		fitHeightButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-				if (grid != null) {
-					int selection = scaleHeight.getSelection();
-					float scale = selection;
-					float h = 1 / (100 / scale);
-					scaleHeight.setToolTipText("scale: " + h);
-					grid.hMap.setScale(h);
+				ImagePlus imp = WindowManager.getCurrentImage();
+				if (grid == null || imp == null) {
+					return;
 				}
+				/* The range of the heights without the factor (with the height map enabled) */
+				float[] range = grid.hMap.getHeightRange();
+				float scale = grid.hMap.getScale();
+				if (range == null || scale == 0) {
+					factorHeightLabel.setText("Enable the height map to fit the height!");
+					return;
+				}
+				double heights = (range[1] - range[0]) / Math.abs(scale);
+				if (heights <= 0) {
+					return;
+				}
+				double factor = 0.5 * Math.max(imp.getWidth(), imp.getHeight()) / heights;
+				scaleHeight.setValue(factor);
+				grid.hMap.setScale((float) scaleHeight.getValue());
+				updateFactor.run();
 			}
 		});
 
-		final Label factorHeightLabel = new Label(composite_3, SWT.NONE);
-		GridData gd_factorHeightLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-		gd_factorHeightLabel.heightHint = 25;
-		factorHeightLabel.setLayoutData(gd_factorHeightLabel);
-		factorHeightLabel.setText("Factor Height");
+		final Button gcButton = check(composite_3, "Texture Workaround (Gc)",
+				"A special switch for the texture: for some graphics cards it seems to be necessary\nto assign the texture differently!");
+		gcButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				HeightMaps.setGraphicsCardSwitch(gcButton.getSelection());
+			}
+		});
+
+		final Group exportGroup = createGroup(compositeTexture, "Export");
+
+		/* The export of the height map (with the colors of the image) as a mesh, e.g., for Blender! */
+		final Button exportTextureButton = new Button(exportGroup, SWT.CHECK);
+		GridData gd_exportTextureButton = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		gd_exportTextureButton.heightHint = 25;
+		exportTextureButton.setLayoutData(gd_exportTextureButton);
+		exportTextureButton.setText("Export the Image as Texture");
+		exportTextureButton.setToolTipText(
+				"Exports the image (with the LUT) as a texture of the height map:\n*.glb (embedded) or *.obj (a *.png file next to the *.obj file, see the *.mtl file).\nThe other formats contain the colors of the vertices.");
+		exportTextureButton.setSelection(true);
+		final Button exportHeightMapButton = new Button(exportGroup, SWT.NONE);
+		GridData gd_exportHeightMapButton = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		gd_exportHeightMapButton.heightHint = 40;
+		exportHeightMapButton.setLayoutData(gd_exportHeightMapButton);
+		exportHeightMapButton.setText("Export Height Map...");
+		exportHeightMapButton.setToolTipText(
+				"Exports the height map of the active ImageJ image as a 3D mesh with the colors of the image (LUT):\nglTF binary (*.glb, with the texture, e.g., for Blender), OBJ (with the texture as *.png),\nPLY (with vertex colors), STL (3D printing) or VTK. z is the height multiplied by the height factor.");
+		final Label exportHeightMapLabel = new Label(exportGroup, SWT.WRAP);
+		GridData gd_exportHeightMapLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
+		gd_exportHeightMapLabel.heightHint = 40;
+		exportHeightMapLabel.setLayoutData(gd_exportHeightMapLabel);
+		exportHeightMapButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				final ImagePlus imp = WindowManager.getCurrentImage();
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (imp == null || grid == null) {
+					exportHeightMapLabel.setText("No image opened in ImageJ!");
+					return;
+				}
+				FileDialog dialog = new FileDialog(exportHeightMapButton.getShell(), SWT.SAVE);
+				dialog.setFilterExtensions(new String[] { "*.glb", "*.ply", "*.obj", "*.stl", "*.vtk" });
+				dialog.setFilterNames(new String[] { "glTF binary (*.glb)", "PLY binary (*.ply)",
+						"Wavefront OBJ (*.obj)", "STL binary (*.stl)", "VTK legacy (*.vtk)" });
+				dialog.setFileName("heightmap.glb");
+				final boolean withTexture = exportTextureButton.getSelection();
+				dialog.setOverwrite(true);
+				String path = dialog.open();
+				if (path == null) {
+					return;
+				}
+				/* Without a known extension the extension of the selected file type! */
+				String[] formats = { "glb", "ply", "obj", "stl", "vtk" };
+				String lower = path.toLowerCase();
+				boolean known = false;
+				for (String format : formats) {
+					known |= lower.endsWith("." + format);
+				}
+				if (!known) {
+					path = path + "." + formats[Math.max(0, dialog.getFilterIndex())];
+				}
+				final String file = path;
+				final HeightMaps heightMaps = grid.hMap;
+				exportHeightMapLabel.setText("Exporting...");
+				/* Large images: export in the background! */
+				Thread export = new Thread(() -> {
+					String message;
+					try {
+						message = "Exported: " + heightMaps.export(imp, new java.io.File(file), 1, withTexture);
+					} catch (java.io.IOException | RuntimeException ex) {
+						message = "Export failed: " + ex.getMessage();
+					}
+					final String text = message;
+					Display.getDefault().asyncExec(() -> {
+						if (!exportHeightMapLabel.isDisposed()) {
+							exportHeightMapLabel.setText(text);
+						}
+					});
+				}, "Bio7 Height Map Export");
+				export.setDaemon(true);
+				export.start();
+			}
+		});
 
 		createVolumeTab(expandBar);
 		createIsoSurfaceTab(expandBar);
@@ -1003,360 +974,120 @@ public class Options3d extends ViewPart {
 		ScrolledComposite scroll_4 = new ScrolledComposite(expandBar, SWT.V_SCROLL);
 		final Composite composite_4 = new Composite(scroll_4, SWT.NONE);
 		newItemExpandItem_5.setControl(scroll_4);
-		composite_4.setLayout(new GridLayout(3, true));
-		scroll_4.setMinSize(200, 500);
+		composite_4.setLayout(new GridLayout(2, true));
+		scroll_4.setMinSize(200, 560);
 		scroll_4.setContent(composite_4);
 		scroll_4.setExpandVertical(true);
 		scroll_4.setExpandHorizontal(true);
 		scroll_4.setAlwaysShowScrollBars(true);
 
-		final Button enableWalkthroughButton = new Button(composite_4, SWT.CHECK);
-		GridData gd_enableWalkthroughButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_enableWalkthroughButton.heightHint = 25;
-		enableWalkthroughButton.setLayoutData(gd_enableWalkthroughButton);
-		enableWalkthroughButton.setToolTipText("Enable the walkthrough");
+		/* The walkthrough (arrow keys) and the flythrough with the speeds */
+		final Group walkGroup = createGroup(composite_4, "Walkthrough");
+		final Button enableWalkthroughButton = check(walkGroup, "Enable Walkthrough",
+				"Moves the camera with the arrow keys (Ctrl: sideways)");
 		enableWalkthroughButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (enableWalkthroughButton.getSelection()) {
-					SpatialStructure.setWalkthrough(true);
-				} else {
-					SpatialStructure.setWalkthrough(false);
-				}
+				SpatialStructure.setWalkthrough(enableWalkthroughButton.getSelection());
 			}
 		});
-		enableWalkthroughButton.setText("Enable Walkthrough");
-
-		final Scale scale_3 = new Scale(composite_4, SWT.NONE);
-		scale_3.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-		scale_3.setToolTipText("Horizontal speed");
-		scale_3.setMaximum(1000);
-		scale_3.setSelection(2);
-		scale_3.setMinimum(2);
-		scale_3.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-				if (grid != null) {
-					grid.SPEED = scale_3.getSelection() / 10;
-
-				}
-			}
-		});
-
-		final Button enableFlythroughButton = new Button(composite_4, SWT.CHECK);
-		GridData gd_enableFlythroughButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_enableFlythroughButton.heightHint = 25;
-		enableFlythroughButton.setLayoutData(gd_enableFlythroughButton);
-		enableFlythroughButton.setToolTipText("Enable flythrough");
+		final Button enableFlythroughButton = check(walkGroup, "Enable Flythrough",
+				"The walkthrough also moves the camera up and down in the view direction");
 		enableFlythroughButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
 				if (grid != null) {
-					if (enableFlythroughButton.getSelection()) {
-						grid.flythrough = true;
-					} else {
-						grid.flythrough = false;
-					}
+					grid.flythrough = enableFlythroughButton.getSelection();
 				}
 			}
 		});
-		enableFlythroughButton.setText("Enable Flythrough");
-
-		final Scale scale_3_1 = new Scale(composite_4, SWT.NONE);
-		scale_3_1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-		scale_3_1.setToolTipText("Vertical speed");
-		scale_3_1.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-				if (grid != null) {
-					grid.heightSpeed = scale_3_1.getSelection() / 10;
-
-				}
-
+		speedRow(walkGroup, "Horizontal Speed", "The horizontal speed of the walkthrough", 2, v -> {
+			SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+			if (grid != null) {
+				grid.SPEED = v;
 			}
 		});
-		scale_3_1.setSelection(1);
-		scale_3_1.setMinimum(1);
-		scale_3_1.setMaximum(1000);
-
-		final Label label_1_1 = new Label(composite_4, SWT.HORIZONTAL | SWT.SEPARATOR);
-		GridData gd_label_1_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
-		gd_label_1_1.heightHint = 25;
-		label_1_1.setLayoutData(gd_label_1_1);
-		label_1_1.setText("Label");
-
-		final Button customCameraButton = new Button(composite_4, SWT.CHECK);
-		GridData gd_customCameraButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_customCameraButton.heightHint = 25;
-		customCameraButton.setLayoutData(gd_customCameraButton);
-		customCameraButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-				if (grid != null) {
-					if (customCameraButton.getSelection()) {
-						grid.customCamera = true;
-
-					} else {
-						grid.customCamera = false;
-					}
-				}
+		speedRow(walkGroup, "Vertical Speed", "The vertical speed of the flythrough", 0.1, v -> {
+			SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+			if (grid != null) {
+				grid.heightSpeed = v;
 			}
 		});
-		customCameraButton.setText("Custom Camera");
-		new Label(composite_4, SWT.NONE);
-		new Label(composite_4, SWT.NONE);
 
-		final Button splitViewButton = new Button(composite_4, SWT.CHECK);
-		GridData gd_splitViewButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_splitViewButton.heightHint = 25;
-		splitViewButton.setLayoutData(gd_splitViewButton);
+		/* The split view: a second camera (position and look at) in a part of the view */
+		final Group splitGroup = createGroup(composite_4, "Split View", 4, true);
+		final Button splitViewButton = check(splitGroup, "Split View", "Shows a second camera in the bottom left corner of the view");
+		((GridData) splitViewButton.getLayoutData()).horizontalSpan = 4;
 		splitViewButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
 				if (grid != null) {
-					if (splitViewButton.getSelection()) {
-						grid.setSplitView(true);
-					} else {
-						grid.setSplitView(false);
-					}
+					grid.setSplitView(splitViewButton.getSelection());
 				}
 			}
 		});
-		splitViewButton.setText("Split View");
-		new Label(composite_4, SWT.NONE);
-		new Label(composite_4, SWT.NONE);
-
-		final Label coordinatesLabel = new Label(composite_4, SWT.NONE);
-		GridData gd_coordinatesLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_coordinatesLabel.heightHint = 25;
-		coordinatesLabel.setLayoutData(gd_coordinatesLabel);
-		coordinatesLabel.setText("x");
-
-		final Label yLabel = new Label(composite_4, SWT.NONE);
-		GridData gd_yLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_yLabel.heightHint = 25;
-		yLabel.setLayoutData(gd_yLabel);
-		yLabel.setText("y");
-
-		final Label zLabel = new Label(composite_4, SWT.NONE);
-		GridData gd_zLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_zLabel.heightHint = 25;
-		zLabel.setLayoutData(gd_zLabel);
-		zLabel.setText("z");
-
-		splitCamX = new Text(composite_4, SWT.BORDER);
-		GridData gd_splitCamX = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_splitCamX.heightHint = 25;
-		splitCamX.setLayoutData(gd_splitCamX);
-		splitCamX.setText("" + p.x);
-		splitCamX.addListener(SWT.Modify, new Listener() {
-			private Double value;
-
-			public void handleEvent(Event event) {
-				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-				if (grid != null) {
-					try {
-						value = new Double(splitCamX.getText());
-						grid.xCamSplit = value;
-						splitCamX.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
-
-						errorLabelSplit.setText("");
-					} catch (Exception e) {
-						splitCamX.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
-						errorLabelSplit.setText("Number input incorrect!");
-					}
-				}
-			}
-		});
-
-		splitCamY = new Text(composite_4, SWT.BORDER);
-		GridData gd_splitCamY = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_splitCamY.heightHint = 25;
-		splitCamY.setLayoutData(gd_splitCamY);
-		splitCamY.setText("" + p.y);
-		splitCamY.addListener(SWT.Modify, new Listener() {
-			private Double value;
-
-			public void handleEvent(Event event) {
-				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-				if (grid != null) {
-					try {
-						value = new Double(splitCamY.getText());
-						grid.yCamSplit = value;
-						splitCamY.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
-
-						errorLabelSplit.setText("");
-					} catch (Exception e) {
-						splitCamY.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
-						errorLabelSplit.setText("Number input incorrect!");
-					}
-				}
-			}
-		});
-
-		splitCamZ = new Text(composite_4, SWT.BORDER);
-		GridData gd_splitCamZ = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_splitCamZ.heightHint = 25;
-		splitCamZ.setLayoutData(gd_splitCamZ);
-		splitCamZ.setText("" + p.z);
-		splitCamZ.addListener(SWT.Modify, new Listener() {
-			private Double value;
-
-			public void handleEvent(Event event) {
-				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-				if (grid != null) {
-					try {
-						value = new Double(splitCamZ.getText());
-						grid.zCamSplit = value;
-						splitCamZ.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
-
-						errorLabelSplit.setText("");
-					} catch (Exception e) {
-						splitCamZ.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
-						errorLabelSplit.setText("Number input incorrect!");
-					}
-				}
-			}
-		});
-
-		final Label positionLabel_2 = new Label(composite_4, SWT.NONE);
-		GridData gd_positionLabel_2 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_positionLabel_2.heightHint = 25;
-		positionLabel_2.setLayoutData(gd_positionLabel_2);
-		positionLabel_2.setText("Position");
-		new Label(composite_4, SWT.NONE);
-		new Label(composite_4, SWT.NONE);
-
-		lookAtX = new Text(composite_4, SWT.BORDER);
-		GridData gd_lookAtX = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_lookAtX.heightHint = 25;
-		lookAtX.setLayoutData(gd_lookAtX);
-		lookAtX.setText("" + p2.x);
-		lookAtX.addListener(SWT.Modify, new Listener() {
-			private Double value;
-
-			public void handleEvent(Event event) {
-				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-				if (grid != null) {
-					try {
-						value = new Double(lookAtX.getText());
-						grid.xSplitLookAt = value;
-						lookAtX.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
-
-						errorLabelSplit.setText("");
-					} catch (Exception e) {
-						lookAtX.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
-						errorLabelSplit.setText("Number input incorrect!");
-					}
-				}
-			}
-		});
-
-		lookAtY = new Text(composite_4, SWT.BORDER);
-		GridData gd_lookAtY = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_lookAtY.heightHint = 25;
-		lookAtY.setLayoutData(gd_lookAtY);
-		lookAtY.setText("" + p2.y);
-		lookAtY.addListener(SWT.Modify, new Listener() {
-			private Double value;
-
-			public void handleEvent(Event event) {
-				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-				if (grid != null) {
-					try {
-						value = new Double(lookAtY.getText());
-						grid.ySplitLookAt = value;
-						lookAtY.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
-
-						errorLabelSplit.setText("");
-					} catch (Exception e) {
-						lookAtY.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
-						errorLabelSplit.setText("Number input incorrect!");
-					}
-				}
-			}
-		});
-
-		lookAtZ = new Text(composite_4, SWT.BORDER);
-		GridData gd_lookAtZ = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_lookAtZ.heightHint = 25;
-		lookAtZ.setLayoutData(gd_lookAtZ);
-		lookAtZ.setText("" + p2.z);
-		lookAtZ.addListener(SWT.Modify, new Listener() {
-			private Double value;
-
-			public void handleEvent(Event event) {
-				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-				if (grid != null) {
-					try {
-						value = new Double(lookAtZ.getText());
-						grid.zSplitLookAt = value;
-						lookAtZ.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
-
-						errorLabelSplit.setText("");
-					} catch (Exception e) {
-						lookAtZ.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
-						errorLabelSplit.setText("Number input incorrect!");
-					}
-				}
-			}
-		});
-
-		final Label lookatLabel = new Label(composite_4, SWT.NONE);
-		GridData gd_lookatLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_lookatLabel.heightHint = 25;
-		lookatLabel.setLayoutData(gd_lookatLabel);
-		lookatLabel.setText("LookAt");
-
-		final Button storeButton = new Button(composite_4, SWT.NONE);
-		GridData gd_storeButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_storeButton.heightHint = 40;
-		storeButton.setLayoutData(gd_storeButton);
+		new Label(splitGroup, SWT.NONE);
+		for (String axis : new String[] { "x", "y", "z" }) {
+			Label header = new Label(splitGroup, SWT.CENTER);
+			header.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+			header.setText(axis);
+		}
+		/* The stored camera of the split view */
+		Point3d splitLocation = Bio7PrefConverterSpatial.getPoint(store, "splitCameraLoc");
+		Point3d splitLookAt = Bio7PrefConverterSpatial.getPoint(store, "splitCameraLookAt");
+		Label positionLabel = new Label(splitGroup, SWT.NONE);
+		positionLabel.setText("Position");
+		splitCamX = coordinateText(splitGroup, splitLocation.x, v -> SpatialStructure.getSpatialStructureInstance().xCamSplit = v);
+		splitCamY = coordinateText(splitGroup, splitLocation.y, v -> SpatialStructure.getSpatialStructureInstance().yCamSplit = v);
+		splitCamZ = coordinateText(splitGroup, splitLocation.z, v -> SpatialStructure.getSpatialStructureInstance().zCamSplit = v);
+		Label lookAtLabel = new Label(splitGroup, SWT.NONE);
+		lookAtLabel.setText("Look At");
+		lookAtX = coordinateText(splitGroup, splitLookAt.x, v -> SpatialStructure.getSpatialStructureInstance().xSplitLookAt = v);
+		lookAtY = coordinateText(splitGroup, splitLookAt.y, v -> SpatialStructure.getSpatialStructureInstance().ySplitLookAt = v);
+		lookAtZ = coordinateText(splitGroup, splitLookAt.z, v -> SpatialStructure.getSpatialStructureInstance().zSplitLookAt = v);
+		errorLabelSplit = new Label(splitGroup, SWT.NONE);
+		errorLabelSplit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+		errorLabelSplit.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+		final Button storeButton = new Button(splitGroup, SWT.NONE);
+		storeButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		storeButton.setText("Store");
+		storeButton.setToolTipText("Stores the position and the look at of the split view camera");
 		storeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
 				if (grid != null) {
-					grid.getPref3d().storeSplitViewCameraLocation(new Double(splitCamX.getText()),
-							new Double(splitCamY.getText()), new Double(splitCamZ.getText()));
-					grid.getPref3d().storeSplitViewCameraLookAt(new Double(lookAtX.getText()),
-							new Double(lookAtY.getText()), new Double(lookAtZ.getText()));
-				}
-			}
-		});
-		storeButton.setText("Store");
-		new Label(composite_4, SWT.NONE);
-
-		errorLabelSplit = new Label(composite_4, SWT.NONE);
-		GridData gd_errorLabelSplit = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
-		gd_errorLabelSplit.heightHint = 25;
-		errorLabelSplit.setLayoutData(gd_errorLabelSplit);
-		errorLabelSplit.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
-
-		final Label label_1 = new Label(composite_4, SWT.SEPARATOR | SWT.HORIZONTAL);
-		GridData gd_label_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
-		gd_label_1.heightHint = 25;
-		label_1.setLayoutData(gd_label_1);
-
-		final Button stereoButton = new Button(composite_4, SWT.CHECK);
-		GridData gd_stereoButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_stereoButton.heightHint = 25;
-		stereoButton.setLayoutData(gd_stereoButton);
-		stereoButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-				if (grid != null) {
-					if (stereoButton.getSelection()) {
-						grid.stereo = true;
-					} else {
-						grid.stereo = false;
+					try {
+						grid.getPref3d().storeSplitViewCameraLocation(Double.parseDouble(splitCamX.getText()),
+								Double.parseDouble(splitCamY.getText()), Double.parseDouble(splitCamZ.getText()));
+						grid.getPref3d().storeSplitViewCameraLookAt(Double.parseDouble(lookAtX.getText()),
+								Double.parseDouble(lookAtY.getText()), Double.parseDouble(lookAtZ.getText()));
+					} catch (NumberFormatException ex) {
+						errorLabelSplit.setText("Number input incorrect!");
 					}
 				}
 			}
 		});
-		stereoButton.setText("Stereo");
-		new Label(composite_4, SWT.NONE);
-		new Label(composite_4, SWT.NONE);
-		Point3d p = Bio7PrefConverterSpatial.getPoint(store, "splitCameraLoc");
-		Point3d p2 = Bio7PrefConverterSpatial.getPoint(store, "splitCameraLookAt");
+
+		/* The camera modes */
+		final Group modesGroup = createGroup(composite_4, "Camera Modes");
+		final Button customCameraButton = check(modesGroup, "Custom Camera",
+				"Uses the camera coordinates of the custom camera (e.g., set by a script)");
+		customCameraButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					grid.customCamera = customCameraButton.getSelection();
+				}
+			}
+		});
+		final Button stereoButton = check(modesGroup, "Stereo", "An anaglyph stereo view (red/cyan glasses)");
+		stereoButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					grid.stereo = stereoButton.getSelection();
+				}
+			}
+		});
 
 		final CTabItem newItemExpandItem_6 = new CTabItem(expandBar, SWT.NONE);
 		// newItemExpandItem_6.setHeight(350);
@@ -2278,22 +2009,25 @@ public class Options3d extends ViewPart {
 	 * The tab for the texture (a static texture from an ImageJ image or a file or
 	 * a dynamic texture from the active ImageJ image)!
 	 */
-	private void createTextureTab(CTabFolder tabFolder) {
+	private Composite createTextureTab(CTabFolder tabFolder) {
 		final CTabItem textureItem = new CTabItem(tabFolder, SWT.NONE);
-		textureItem.setText("Texture");
+		textureItem.setText("Heightmap");
 		ScrolledComposite scrollTexture = new ScrolledComposite(tabFolder, SWT.V_SCROLL);
 		final Composite compositeTexture = new Composite(scrollTexture, SWT.NONE);
 		textureItem.setControl(scrollTexture);
 		compositeTexture.setLayout(new GridLayout(2, true));
-		scrollTexture.setMinSize(200, 300);
+		scrollTexture.setMinSize(200, 760);
 		scrollTexture.setContent(compositeTexture);
 		scrollTexture.setExpandVertical(true);
 		scrollTexture.setExpandHorizontal(true);
 		scrollTexture.setAlwaysShowScrollBars(true);
 
-		final Label infoLabel = new Label(compositeTexture, SWT.WRAP);
+		/* The texture, the height map and the export in separate groups! */
+		final Group textureGroup = createGroup(compositeTexture, "Texture");
+
+		final Label infoLabel = new Label(textureGroup, SWT.WRAP);
 		GridData gd_infoLabel = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-		gd_infoLabel.heightHint = 40;
+		gd_infoLabel.heightHint = 34;
 		infoLabel.setLayoutData(gd_infoLabel);
 		/* Shows the source and the size of a created texture! */
 		final Runnable updateInfo = () -> Display.getDefault().asyncExec(() -> {
@@ -2308,10 +2042,10 @@ public class Options3d extends ViewPart {
 			current.setUpdateListener(updateInfo);
 		}
 
-		final Label sourceLabel = new Label(compositeTexture, SWT.NONE);
+		final Label sourceLabel = new Label(textureGroup, SWT.NONE);
 		sourceLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		sourceLabel.setText("Source:");
-		final Combo sourceCombo = new Combo(compositeTexture, SWT.READ_ONLY);
+		final Combo sourceCombo = new Combo(textureGroup, SWT.READ_ONLY);
 		sourceCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		sourceCombo.setItems("ImageJ Image (Static)", "ImageJ Image (Dynamic)", "Image File");
 		sourceCombo.setToolTipText(
@@ -2325,12 +2059,12 @@ public class Options3d extends ViewPart {
 			}
 		}
 
-		final Text pathText = new Text(compositeTexture, SWT.BORDER);
+		final Text pathText = new Text(textureGroup, SWT.BORDER);
 		pathText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		pathText.setText(store.getString("spatialImage"));
 		pathText.setToolTipText("The image file of the texture");
 		pathText.addModifyListener(e -> store.setValue("spatialImage", pathText.getText()));
-		final Button browseButton = new Button(compositeTexture, SWT.NONE);
+		final Button browseButton = new Button(textureGroup, SWT.NONE);
 		browseButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		browseButton.setText("Browse...");
 		browseButton.setToolTipText("Selects an image file for the texture");
@@ -2357,9 +2091,9 @@ public class Options3d extends ViewPart {
 			}
 		});
 
-		final Button showButton = new Button(compositeTexture, SWT.CHECK);
+		final Button showButton = new Button(textureGroup, SWT.CHECK);
 
-		final Button loadButton = new Button(compositeTexture, SWT.NONE);
+		final Button loadButton = new Button(textureGroup, SWT.NONE);
 		GridData gd_loadButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_loadButton.heightHint = 40;
 		loadButton.setLayoutData(gd_loadButton);
@@ -2398,7 +2132,7 @@ public class Options3d extends ViewPart {
 			}
 		});
 
-		final Button removeButton = new Button(compositeTexture, SWT.NONE);
+		final Button removeButton = new Button(textureGroup, SWT.NONE);
 		GridData gd_removeButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 		gd_removeButton.heightHint = 40;
 		removeButton.setLayoutData(gd_removeButton);
@@ -2418,7 +2152,7 @@ public class Options3d extends ViewPart {
 
 		showButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		showButton.setText("Show Texture");
-		showButton.setToolTipText("Displays the texture (and the height map, see the Height Map tab)");
+		showButton.setToolTipText("Displays the texture (and the height map, see below)");
 		showButton.setSelection(current != null && current.isShowTexture());
 		showButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -2432,7 +2166,7 @@ public class Options3d extends ViewPart {
 
 		/* The texture and height map like the image in ImageJ (0,0 at the top left) or flipped! */
 		HeightMaps.setFlipVertically(store.getBoolean("textureFlipVertically"));
-		final Button flipTextureButton = new Button(compositeTexture, SWT.CHECK);
+		final Button flipTextureButton = new Button(textureGroup, SWT.CHECK);
 		flipTextureButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		flipTextureButton.setToolTipText(
 				"Displays the texture, height map, volume and iso surface vertically flipped.\nBy default the image is displayed like in ImageJ (0,0 at the top left).");
@@ -2444,6 +2178,112 @@ public class Options3d extends ViewPart {
 			}
 		});
 		flipTextureButton.setText("Flip Vertically");
+		return compositeTexture;
+	}
+
+	/* A row with a name, a logarithmic speed slider (0.1 - 100) and the value! */
+	private static void speedRow(Composite parent, String name, String toolTip, double value,
+			java.util.function.DoubleConsumer apply) {
+		Label label = new Label(parent, SWT.NONE);
+		label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		final SpeedSlider slider = new SpeedSlider(parent, SWT.NONE, 0.1, 100);
+		slider.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		slider.setValue(value);
+		slider.setToolTipText(toolTip + " in units per frame: left slower, right faster.\n"
+				+ "Keys: Left/Right one step (8%), Shift+Left/Right or PageDown/PageUp 10 steps, Home/End minimum/maximum.");
+		final Runnable update = () -> label.setText(name + ": " + SpeedSlider.format(slider.getValue()) + " units per frame");
+		update.run();
+		apply.accept(slider.getValue());
+		slider.addListener(SWT.Selection, _ -> {
+			apply.accept(slider.getValue());
+			update.run();
+		});
+	}
+
+	/* A text field for a coordinate of the split view camera (red if it is not a number)! */
+	private Text coordinateText(Composite parent, double value, java.util.function.DoubleConsumer apply) {
+		final Text text = new Text(parent, SWT.BORDER);
+		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		text.setText("" + value);
+		text.addListener(SWT.Modify, _ -> {
+			try {
+				double v = Double.parseDouble(text.getText());
+				if (SpatialStructure.getSpatialStructureInstance() != null) {
+					apply.accept(v);
+				}
+				text.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
+				errorLabelSplit.setText("");
+			} catch (NumberFormatException e) {
+				text.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+				errorLabelSplit.setText("Number input incorrect!");
+			}
+		});
+		return text;
+	}
+
+	/* A group over the whole width with the columns! */
+	private static Group createGroup(Composite parent, String text, int columns, boolean equalWidth) {
+		Group group = createGroup(parent, text);
+		GridLayout layout = (GridLayout) group.getLayout();
+		layout.numColumns = columns;
+		layout.makeColumnsEqualWidth = equalWidth;
+		return group;
+	}
+
+	/*
+	 * A row for the size of an axis: the name, a slider (the half size, the labels
+	 * show the size from -size to +size) and the size. Returns the slider, the last
+	 * child of the parent is the label of the size!
+	 */
+	private LinearSlider sizeSlider(Composite parent, String axis, String key, java.util.function.IntConsumer apply) {
+		Label name = new Label(parent, SWT.NONE);
+		name.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
+		name.setText(axis);
+		final LinearSlider slider = new LinearSlider(parent, SWT.NONE);
+		slider.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		slider.setMinimum(0);
+		slider.setMaximum((int) halfExtent);
+		slider.setLabelFactor(2);
+		slider.setSelection(1000);
+		final Label value = new Label(parent, SWT.RIGHT);
+		GridData gd = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
+		gd.widthHint = 60;
+		value.setLayoutData(gd);
+		final Runnable update = () -> {
+			value.setText(String.valueOf(slider.getSelection() * 2));
+			slider.setToolTipText("The size of the " + axis.toLowerCase() + " axis: -" + slider.getSelection() + " to +"
+					+ slider.getSelection() + "\nKeys: Left/Right one unit, Shift+Left/Right or PageDown/PageUp one major tick, Home/End minimum/maximum.");
+		};
+		update.run();
+		slider.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				apply.accept(slider.getSelection());
+				store.setValue(key, slider.getSelection());
+				update.run();
+			}
+		});
+		return slider;
+	}
+
+	/* A group with two columns over the whole width (a section of a tab)! */
+	private static Group createGroup(Composite parent, String text) {
+		Group group = new Group(parent, SWT.NONE);
+		group.setText(text);
+		group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		GridLayout layout = new GridLayout(2, true);
+		layout.marginHeight = 8;
+		layout.verticalSpacing = 6;
+		group.setLayout(layout);
+		return group;
+	}
+
+	/* A check box in one column! */
+	private static Button check(Composite parent, String text, String toolTip) {
+		Button button = new Button(parent, SWT.CHECK);
+		button.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		button.setText(text);
+		button.setToolTipText(toolTip);
+		return button;
 	}
 
 	private static Textures textures() {
@@ -2774,6 +2614,20 @@ public class Options3d extends ViewPart {
 				IsoSurface iso = isoSurface();
 				if (iso != null) {
 					iso.setHeadLight(headLightButton.getSelection());
+				}
+			}
+		});
+
+		final Button wireframeButton = new Button(compositeIso, SWT.CHECK);
+		wireframeButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		wireframeButton.setText("Show Triangles");
+		wireframeButton.setToolTipText("Draws the triangles of the surface as lines over the surface");
+		wireframeButton.moveAbove(isoValueLabel);
+		wireframeButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				IsoSurface iso = isoSurface();
+				if (iso != null) {
+					iso.setWireframe(wireframeButton.getSelection());
 				}
 			}
 		});

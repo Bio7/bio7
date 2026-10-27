@@ -62,10 +62,13 @@ import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.newt.event.MouseListener;
 import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.newt.swt.NewtCanvasSWT;
+import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GL2ES2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLEventListener;
+import com.jogamp.opengl.GLException;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.awt.TextRenderer;
@@ -192,6 +195,21 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	public boolean layerYZGrid = false;
 	public boolean layerXZGrid = false;
 	public boolean layerXYGrid = true;
+	/* The grids at the far sides of the box (z max, y max, x max) */
+	public boolean layerXYGridMax = false;
+	public boolean layerXZGridMax = false;
+	public boolean layerYZGridMax = false;
+	/* A plot view: the grids at all sides of the box (a cage) */
+	public boolean plotView = false;
+	/* The grid planes of the plot view (behind the data) */
+	public boolean plotGridXY = false;
+	public boolean plotGridXZ = true;
+	public boolean plotGridYZ = true;
+	/* The axis orientation overlay in the top right corner */
+	public boolean showAxisGizmo = true;
+	private final AxisGizmo axisGizmo = new AxisGizmo();
+	/* The pixels per point of the canvas (HiDPI, updated when the canvas is resized) */
+	private volatile float canvasPixelScale = 1;
 	public boolean hold; // Halt the execution;
 	public long fpsTimeDiff2;
 	public int fpsTimeDiff;
@@ -237,7 +255,8 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	public int splitOriginY;
 	public int splitHeight;
 	public int splitWidth;
-	public double heightSpeed;
+	/* The vertical speed of the flythrough (see the Camera tab) */
+	public double heightSpeed = 0.1;
 	private boolean isSplitPanelDrawing;
 	public double spatialExtent = 100000.0f;// The perspective variable
 	private static int renderImageTo = 500;
@@ -245,6 +264,13 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	private int fixedFps = 60;
 	public GLWindow glWindow;
 	private AxisLabelsRenderer axisLabelsRenderer;
+	/* The renderer of a compiled model with an own profile (without the Bio7 scene)! */
+	private final ModelRenderer modelRenderer = new ModelRenderer();
+	/* The profile of the compiled model (null = the Bio7 scene) */
+	private volatile String modelProfile;
+	/* A profile which is not available (the Bio7 scene is used) */
+	private volatile String rejectedProfile;
+	private volatile boolean profileSwitchPending;
 
 	SpatialStructure(SpatialView view) {
 		this.view = view;
@@ -258,13 +284,15 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		 * canvasHeight));
 		 */
 
-		GLProfile glprofile = GLProfile.getDefault();
+		GLProfile glprofile = getSceneProfile();
 
 		glWindow = GLWindow.create(new GLCapabilities(glprofile));
 		// canvas = new GLCanvas(new GLCapabilities(glprofile));
 
 		canvas = new NewtCanvasSWT(view.top, SWT.NO_BACKGROUND, glWindow);
 		canvas.setSize(canvasWidth, canvasHeight);
+		/* The HiDPI scale (NEWT sizes are pixels on some platforms) for the overlays! */
+		canvas.addListener(SWT.Resize, _ -> updateCanvasPixelScale());
 		/*
 		 * Workaround for HiDPI scaling on Windows: NewtCanvasSWT sizes the NEWT window
 		 * with the SWT client area in points but NEWT on Windows expects pixels. Our
@@ -298,6 +326,11 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		/* Default value for the fps Animator! */
 		store.setDefault("fps", true);
 		store.setDefault("spatialExtent", 100000.0);
+		/* The plot view (the grids at all sides of the box) from the preferences! */
+		store.setDefault("plotView", false);
+		plotView = store.getBoolean("plotView");
+		store.setDefault("showAxisGizmo", true);
+		showAxisGizmo = store.getBoolean("showAxisGizmo");
 		/* Get the split view coordinates from the preferences! */
 		pref3d.getSplitViewCameraValues();
 
@@ -310,6 +343,201 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		textures.createNewTexture = true;
 
 		initViewerPosn();
+	}
+
+	/**
+	 * Returns the OpenGL profile of the Bio7 scene: the newest compatibility
+	 * profile with the fixed function pipeline (e.g., OpenGL 4 on Windows and
+	 * Linux, OpenGL 2.1 on macOS) or the default profile (see the preference
+	 * "openglMaxCompatible").
+	 * 
+	 * @return the profile
+	 */
+	public static GLProfile getSceneProfile() {
+		IPreferenceStore prefs = Bio7Plugin.getDefault().getPreferenceStore();
+		prefs.setDefault("openglMaxCompatible", true);
+		if (prefs.getBoolean("openglMaxCompatible")) {
+			try {
+				GLProfile profile = GLProfile.getMaxFixedFunc(true);
+				if (profile != null && profile.isGL2()) {
+					return profile;
+				}
+			} catch (GLException e) {
+				System.out.println("No compatibility profile available: " + e.getMessage());
+			}
+		}
+		return GLProfile.getDefault();
+	}
+
+	/* The profile requested by the compiled model (null = the Bio7 scene)! */
+	private String requestedProfile() {
+		Model eco = Compiled.getModel();
+		if (eco == null) {
+			return null;
+		}
+		String profile;
+		try {
+			profile = eco.getGLProfile();
+		} catch (RuntimeException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return profile != null && !profile.equals(rejectedProfile) ? profile : null;
+	}
+
+	/*
+	 * Called in the OpenGL thread: true if the compiled model requests another
+	 * profile (the OpenGL window is created again in the SWT thread)!
+	 */
+	private boolean profileChanged() {
+		if (profileSwitchPending) {
+			return true;
+		}
+		String requested = requestedProfile();
+		if (java.util.Objects.equals(requested, modelProfile)) {
+			return false;
+		}
+		profileSwitchPending = true;
+		Display.getDefault().asyncExec(() -> switchProfile(requested));
+		return true;
+	}
+
+	/* Creates the OpenGL window with the profile (null = the Bio7 scene)! */
+	private void switchProfile(String profileName) {
+		try {
+			if (canvas.isDisposed()) {
+				return;
+			}
+			GLProfile profile;
+			if (profileName == null) {
+				profile = getSceneProfile();
+			} else {
+				try {
+					profile = GLProfile.get(profileName);
+				} catch (GLException e) {
+					/* Not available: the Bio7 scene */
+					rejectedProfile = profileName;
+					System.out.println("The OpenGL profile " + profileName + " of the model is not available: " + e.getMessage());
+					return;
+				}
+			}
+			GLWindow oldWindow = glWindow;
+			if (animator != null) {
+				animator.remove(oldWindow);
+			}
+			GLWindow window = GLWindow.create(new GLCapabilities(profile));
+			window.addGLEventListener(profileName == null ? renderer : modelRenderer);
+			window.addKeyListener(this);
+			window.addMouseListener(this);
+			modelProfile = profileName;
+			glWindow = window;
+			canvas.setNEWTChild(window);
+			oldWindow.destroy();
+			if (animator != null) {
+				animator.add(window);
+			}
+			System.out.println("3D view: OpenGL profile " + profile.getName()
+					+ (profileName == null ? " (Bio7 scene)" : " (model without the Bio7 scene)"));
+		} finally {
+			profileSwitchPending = false;
+		}
+	}
+
+	/**
+	 * Creates the OpenGL context of the Bio7 scene again, e.g., after the
+	 * preference "openglMaxCompatible" was changed (not if a compiled model has
+	 * an own profile).
+	 */
+	public void recreateSceneContext() {
+		if (modelProfile == null && !profileSwitchPending) {
+			profileSwitchPending = true;
+			Display.getDefault().asyncExec(() -> switchProfile(null));
+		}
+	}
+
+	/**
+	 * Returns true if the compiled model renders with an own profile without the
+	 * Bio7 scene (see Model.getGLProfile).
+	 * 
+	 * @return true if the model has an own profile
+	 */
+	public boolean isModelProfile() {
+		return modelProfile != null;
+	}
+
+	/* Unbinds the shader program, the vertex array and the buffers of a model! */
+	private static void resetModelState(GL gl) {
+		if (gl.isGL2ES2()) {
+			GL2ES2 es2 = gl.getGL2ES2();
+			es2.glUseProgram(0);
+			if (gl.isFunctionAvailable("glBindVertexArray")) {
+				gl.getGL2ES3().glBindVertexArray(0);
+			}
+		}
+		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
+		gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0);
+		gl.glActiveTexture(GL.GL_TEXTURE0);
+	}
+
+	/*
+	 * The renderer of a compiled model with an own profile (see
+	 * Model.getGLProfile): only the model draws (without the Bio7 scene)!
+	 */
+	private class ModelRenderer implements GLEventListener {
+
+		public void init(GLAutoDrawable drawable) {
+			drawable.getGL().setSwapInterval(0);
+			drawable_ = drawable;
+			Model eco = Compiled.getModel();
+			if (eco != null) {
+				try {
+					eco.setup(drawable);
+				} catch (RuntimeException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		public void display(GLAutoDrawable drawable) {
+			if (profileChanged()) {
+				return;
+			}
+			/* The step timing of the control panel (canStep)! */
+			renderer.getFps(drawable);
+			Model eco = Compiled.getModel();
+			if (eco == null) {
+				return;
+			}
+			try {
+				if (setup) {
+					setup = false;
+					eco.setup(drawable);
+				}
+				if (fromOpenGl) {
+					eco.run(drawable);
+				}
+			} catch (RuntimeException e) {
+				e.printStackTrace();
+			}
+		}
+
+		public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
+			drawable.getGL().glViewport(0, 0, width, Math.max(1, height));
+		}
+
+		public void dispose(GLAutoDrawable drawable) {
+		}
+	}
+
+	private void updateCanvasPixelScale() {
+		if (canvas.isDisposed()) {
+			return;
+		}
+		Rectangle points = canvas.getClientArea();
+		Rectangle pixels = SWTAccessor.getClientAreaInPixels(canvas);
+		if (points.width > 0 && pixels.width > 0) {
+			canvasPixelScale = pixels.width / (float) points.width;
+		}
 	}
 
 	/* Resize the NEWT window to the client area of the canvas in pixels! */
@@ -350,7 +578,10 @@ public class SpatialStructure implements KeyListener, MouseListener {
 			textRenderer = new TextRenderer(font, true, false);
 			space = new SpatialLoader(gl);
 			scene = new SpatialScene();
+			/* A new context: the axis numbers stay enabled, a (stored) plot view with the numbers */
+			boolean numbers = axisLabelsRenderer != null && axisLabelsRenderer.isEnabled();
 			axisLabelsRenderer = new AxisLabelsRenderer(0, 1000, 0, 1000, 0, 1000);
+			axisLabelsRenderer.setEnabled(numbers || plotView);
 			/* A new context: the volume texture is created again! */
 			volume.contextLost();
 			isoSurface.contextLost();
@@ -497,6 +728,10 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		}
 
 		public void display(GLAutoDrawable drawable) {
+			/* The compiled model requests an own profile (without the Bio7 scene)! */
+			if (profileChanged()) {
+				return;
+			}
 			gl = drawable.getGL().getGL2();
 			gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 			if (backgroundColour) {
@@ -576,6 +811,10 @@ public class SpatialStructure implements KeyListener, MouseListener {
 
 				getFps(drawable);
 
+			}
+			/* The axis orientation overlay in the top right corner (like in Blender)! */
+			if (showAxisGizmo) {
+				axisGizmo.render(gl, width, height, canvasPixelScale);
 			}
 
 		}
@@ -877,10 +1116,12 @@ public class SpatialStructure implements KeyListener, MouseListener {
 			if (eco != null) {
 				try {
 					eco.setup(gl, glu, glut);
+					eco.setup(drawable_);
 				} catch (RuntimeException e) {
 
 					e.printStackTrace();
 				}
+				resetModelState(gl);
 			}
 
 		}
@@ -891,10 +1132,12 @@ public class SpatialStructure implements KeyListener, MouseListener {
 				if (eco != null) {
 					try {
 						eco.run(gl, glu, glut);
+						eco.run(drawable_);
 					} catch (RuntimeException e) {
 						eco = null;
 						e.printStackTrace();
 					}
+					resetModelState(gl);
 
 				}
 			}
@@ -934,11 +1177,13 @@ public class SpatialStructure implements KeyListener, MouseListener {
 
 			}
 
-			if (showUpdateFramerate) {
+			/* The text is not drawn with the profile of a model (no fixed function)! */
+			boolean scene = modelProfile == null;
+			if (showUpdateFramerate && scene) {
 				upsrate(drawable);
 			}
 			/** ************************************************** */
-			if (showFramerate) {
+			if (showFramerate && scene) {
 				textRenderer.beginRendering(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
 				textRenderer.setColor(0, 0, 0, 1);
 
@@ -1097,6 +1342,99 @@ public class SpatialStructure implements KeyListener, MouseListener {
 			}
 		} else {
 			processKey(evt);// The walkthrough keys!
+		}
+	}
+
+	/**
+	 * Resets the camera and the display settings of the 3D view to the defaults
+	 * (like at the first start): the rotation, the zoom and the translation, the
+	 * camera modes (walkthrough, split view, stereo), the size of the space, the grids, axes, box, plot
+	 * view and the axis orientation overlay, the lights, the colors, the step
+	 * rate and the settings of the height map. The loaded data (texture, volume,
+	 * iso surface, model) is kept.
+	 */
+	public void resetToDefaults() {
+		synchronized (matrixLock) {
+			LastRot.setIdentity();
+			ThisRot.setIdentity();
+		}
+		transx = 0;
+		transy = 0;
+		transz = 0;
+		rotatx = 0;
+		rotaty = 0;
+		rotatz = 0;
+		scaleValue = 1.0f;
+		dox = 0;
+		doy = 0;
+		doxv = 0;
+		doyv = 0;
+		walkthrough = false;
+		flythrough = false;
+		SPEED = 2.0;
+		heightSpeed = 0.1;
+		splitView = false;
+		stereo = false;
+		customCamera = false;
+		initViewerPosn();
+		/* The camera distance fitted to the displayed data */
+		doz = getDefaultViewDistance();
+		/* The time: one step per second */
+		period = 1000000000L;
+		hold = false;
+		showFramerate = false;
+		showUpdateFramerate = false;
+		/* The lights */
+		light1 = true;
+		light2 = false;
+		light3 = false;
+		light4 = false;
+		localLight = true;
+		setLightPos1(0, 1000, 1000);
+		setLightPos2(1000, 1000, -2000);
+		setLightPos3(0, 1000, 1000);
+		setLightPos4(1000, 1000, -2000);
+		/* The size of the space (Size X, Y, Z: -1000 to +1000) */
+		sizeX = 1000;
+		sizeY = 1000;
+		sizeZ = 1000;
+		/* The grids, axes, box and overlays */
+		showAxes = true;
+		showQuad = true;
+		gridSize = 50;
+		showGrid = true;
+		layerXYGrid = true;
+		layerXZGrid = false;
+		layerYZGrid = false;
+		layerXYGridMax = false;
+		layerXZGridMax = false;
+		layerYZGridMax = false;
+		plotView = false;
+		plotGridXY = false;
+		plotGridXZ = true;
+		plotGridYZ = true;
+		showAxisGizmo = true;
+		if (axisLabelsRenderer != null) {
+			axisLabelsRenderer.setEnabled(false);
+		}
+		if (scene != null) {
+			scene.setColorCubeLines(new float[] { 0, 0, 0, 1 });
+		}
+		colorBackground = new float[] { 0.438f, 0.599f, 1.0f, 0.5f };
+		backgroundColour = true;
+		/* The height map (Cartesian mode like at the start) */
+		heightMap = false;
+		lightenedHeightMap = true;
+		lightenedObjModel = true;
+		HeightMaps.cartesian = true;
+		HeightMaps.setInverse(false);
+		HeightMaps.setFlipVertically(false);
+		HeightMaps.setDynamicMap(true);
+		HeightMaps.setWireframe(false);
+		HeightMaps.setGraphicsCardSwitch(false);
+		if (hMap != null) {
+			hMap.detail = 16;
+			hMap.setScale(1);
 		}
 	}
 
@@ -1435,6 +1773,36 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	 */
 	public Measurement3d getMeasurement() {
 		return measurement;
+	}
+
+	/**
+	 * Returns the bounds (x0, x1, y0, y1, z0, z1) of the box fitted to the
+	 * displayed rendering: the extent of a volume or iso surface, of a texture
+	 * (with the range of the heights of a height map) or else the size of the
+	 * space (Size X, Y, Z).
+	 * 
+	 * @return the bounds
+	 */
+	public double[] getSceneBounds() {
+		boolean cartesian = HeightMaps.isCartesian();
+		double[] stack = clippingBounds(cartesian);
+		if (stack != null) {
+			return stack;
+		}
+		float[] extent = getTextureExtent();
+		if (extent != null) {
+			double w = extent[0], h = extent[1];
+			double z0 = 0, z1 = 0;
+			float[] heights = hMap != null ? hMap.getHeightRange() : null;
+			if (heights != null) {
+				z0 = heights[0];
+				z1 = heights[1];
+			}
+			return cartesian ? new double[] { -w / 2, w / 2, -h / 2, h / 2, z0, z1 }
+					: new double[] { 0, w, 0, h, z0, z1 };
+		}
+		return cartesian ? new double[] { -sizeX, sizeX, -sizeY, sizeY, -sizeZ, sizeZ }
+				: new double[] { 0, sizeX, 0, sizeY, 0, sizeZ };
 	}
 
 	/* The extent of a displayed stack (x0, x1, y0, y1, z0, z1) or null! */
@@ -1813,7 +2181,31 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	}
 
 	/* Draws the quad and the height map in (positive) cartesian view! */
+	/*
+	 * The grids, the box and the axes (with the numbers) or the plot view (the
+	 * grids behind the data and the axes at the front edges of the box)!
+	 */
+	private void drawGridAndAxes(GL2 gl, boolean cartesian) {
+		boolean numbers = axisLabelsRenderer != null && axisLabelsRenderer.isEnabled();
+		if (plotView) {
+			scene.drawPlotView(gl, this, numbers);
+			return;
+		}
+		if (cartesian) {
+			scene.drawGrid(gl, this);
+			this.renderer.drawQuad();
+		} else {
+			scene.drawGrid2(gl, this);
+		}
+		scene.showAxes(gl, this);
+		if (axisLabelsRenderer != null) {
+			axisLabelsRenderer.renderAxisLabels(gl, this);
+		}
+	}
+
 	private void drawSpace(GL2 gl, GLAutoDrawable drawable) {
+		/* The rotation of the scene for the axis orientation overlay */
+		axisGizmo.capture(gl);
 		if (textures.isRenderImage() == false) {
 
 			if (hMap.cartesian == true) {
@@ -1840,12 +2232,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 
 				gl.glDisable(GL_LIGHTING);
 
-				scene.drawGrid(gl, getSpatialStructureInstance());
-				this.renderer.drawQuad();
-				scene.showAxes(gl, getSpatialStructureInstance());
-				if (axisLabelsRenderer != null) {
-				    axisLabelsRenderer.renderAxisLabels(gl, this);
-				}
+				drawGridAndAxes(gl, true);
 				gl.glEnable(GL_LIGHTING);
 
 			} else {
@@ -1869,11 +2256,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 				}
 
 				gl.glDisable(GL_LIGHTING);
-				scene.drawGrid2(gl, getSpatialStructureInstance());
-				scene.showAxes(gl, getSpatialStructureInstance());
-				if (axisLabelsRenderer != null) {
-				    axisLabelsRenderer.renderAxisLabels(gl, this);
-				}
+				drawGridAndAxes(gl, false);
 				gl.glEnable(GL_LIGHTING);
 
 			}
@@ -1902,12 +2285,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 
 				gl.glDisable(GL_LIGHTING);
 
-				scene.drawGrid(gl, getSpatialStructureInstance());
-				this.renderer.drawQuad();
-				scene.showAxes(gl, getSpatialStructureInstance());
-				if (axisLabelsRenderer != null) {
-				    axisLabelsRenderer.renderAxisLabels(gl, this);
-				}
+				drawGridAndAxes(gl, true);
 				gl.glEnable(GL_LIGHTING);
 
 			} else {
@@ -1933,15 +2311,15 @@ public class SpatialStructure implements KeyListener, MouseListener {
 				}
 
 				gl.glDisable(GL_LIGHTING);
-				scene.drawGrid2(gl, getSpatialStructureInstance());
-				scene.showAxes(gl, getSpatialStructureInstance());
-				if (axisLabelsRenderer != null && axisLabelsRenderer.isEnabled()) {
-			        axisLabelsRenderer.renderAxisLabels(gl, this);
-			    }
+				drawGridAndAxes(gl, false);
 				gl.glEnable(GL_LIGHTING);
 
 			}
 		}
+		/* The grids at the far sides of the box or the cage of a plot view! */
+		gl.glDisable(GL_LIGHTING);
+		scene.drawGridCage(gl, this);
+		gl.glEnable(GL_LIGHTING);
 	}
 
 	public Preferences3d getPref3d() {

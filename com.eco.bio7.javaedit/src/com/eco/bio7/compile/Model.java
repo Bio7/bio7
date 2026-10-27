@@ -2,6 +2,7 @@ package com.eco.bio7.compile;
 
 import java.awt.Graphics2D;
 import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.glu.GLU;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
@@ -60,6 +61,51 @@ public abstract class Model {
 	 * @param glut
 	 */
 	public void setup(GL2 gl, GLU glu, GLUT glut) {
+
+	}
+
+	/**
+	 * The OpenGL profile of the 3D view for this model, e.g., GLProfile.GL4 or
+	 * GLProfile.GL3 (the names of com.jogamp.opengl.GLProfile).
+	 * <p>
+	 * null (the default) renders the model in the Bio7 scene: the newest
+	 * compatibility profile with the fixed function pipeline and, e.g., OpenGL 4
+	 * on Windows and Linux (OpenGL 2.1 on macOS). The model can use the methods
+	 * with the GL2 context and the methods with the GLAutoDrawable (e.g.,
+	 * drawable.getGL().getGL4bc() if available).
+	 * <p>
+	 * Another profile (e.g., GLProfile.GL4: OpenGL 4.1 core on macOS) creates a
+	 * new context for the model without the Bio7 scene: only setup(GLAutoDrawable)
+	 * and run(GLAutoDrawable) are called and the model clears and draws the view
+	 * with an own camera.
+	 * 
+	 * @return the name of the profile or null
+	 */
+	public String getGLProfile() {
+		return null;
+	}
+
+	/**
+	 * The setup OpenGL method with the drawable of the 3D view (see
+	 * getGLProfile), e.g., to create shaders and buffers. Called after
+	 * setup(GL2, GLU, GLUT) in the Bio7 scene!
+	 * 
+	 * @param drawable the drawable (drawable.getGL() is the context)
+	 */
+	public void setup(GLAutoDrawable drawable) {
+
+	}
+
+	/**
+	 * The main OpenGL method with the drawable of the 3D view (see getGLProfile).
+	 * Called after run(GL2, GLU, GLUT) in the Bio7 scene with the camera of the
+	 * scene (the modelview and projection matrix, in GLSL, e.g.,
+	 * gl_ModelViewProjectionMatrix with "#version 400 compatibility"). After the
+	 * method the shader program, the vertex array and the buffers are unbound!
+	 * 
+	 * @param drawable the drawable (drawable.getGL() is the context)
+	 */
+	public void run(GLAutoDrawable drawable) {
 
 	}
 

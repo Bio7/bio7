@@ -243,7 +243,10 @@ public class HeightMaps {
 			lastNormalsHeights = heights;
 		}
 
-		text.enable(gl);
+		/* Without the texture for the wireframe (see drawWireframe) */
+		if (!wireframePass) {
+			text.enable(gl);
+		}
 		text.bind(gl);
 
 		int cx = -OriginX;
@@ -380,6 +383,53 @@ public class HeightMaps {
 		endHeightMapLighting(gl);
 		endOrientation(gl, mirrored);
 		text.disable(gl);
+		drawWireframe(gl, () -> RenderHeightMap(text, gl, drawable));
+	}
+
+	/* The triangles of the height map as lines over the surface (see setWireframe) */
+	private static boolean wireframe;
+	private boolean wireframePass;
+
+	/**
+	 * Returns true if the triangles of the height map are drawn as lines over the
+	 * surface.
+	 * 
+	 * @return true if the wireframe is shown
+	 */
+	public static boolean isWireframe() {
+		return wireframe;
+	}
+
+	/**
+	 * Shows the triangles of the height map as lines over the surface (e.g., to see
+	 * the level of detail).
+	 * 
+	 * @param show true to show the wireframe
+	 */
+	public static void setWireframe(boolean show) {
+		wireframe = show;
+	}
+
+	/* Renders the height map again as dark lines in front of the surface! */
+	private void drawWireframe(GL2 gl, Runnable render) {
+		if (!wireframe || wireframePass) {
+			return;
+		}
+		wireframePass = true;
+		gl.glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT | GL_CURRENT_BIT | GL_LINE_BIT | GL_LIGHTING_BIT);
+		try {
+			gl.glDisable(GL_LIGHTING);
+			gl.glDisable(GL_TEXTURE_2D);
+			gl.glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			gl.glEnable(GL_POLYGON_OFFSET_LINE);
+			gl.glPolygonOffset(-1, -2);
+			gl.glLineWidth(1);
+			gl.glColor4f(0.1f, 0.1f, 0.1f, 0.8f);
+			render.run();
+		} finally {
+			gl.glPopAttrib();
+			wireframePass = false;
+		}
 	}
 
 	public void renderDynamicHeightMap(GL2 gl, GLAutoDrawable drawable) {
@@ -424,7 +474,10 @@ public class HeightMaps {
 		float u = 0;
 		int heightCount = 0;
 		text.bind(gl);
-		text.enable(gl);
+		/* Without the texture for the wireframe (see drawWireframe) */
+		if (!wireframePass) {
+			text.enable(gl);
+		}
 		float triangleLength = (mX * mY) / s;
 
 		int triangleCounter = 0;
@@ -570,7 +623,7 @@ public class HeightMaps {
 		endOrientation(gl, mirrored);
 
 		text.disable(gl);
-
+		drawWireframe(gl, () -> renderDynamicHeightMap(gl, drawable));
 	}
 
 	public void renderTexture(Texture text, GL2 gl, GLAutoDrawable drawable) {
@@ -850,6 +903,157 @@ public class HeightMaps {
 
 	public float getScale() {
 		return scale;
+	}
+
+	/** The maximum number of vertices of an exported height map (see export). */
+	public static final int MAX_EXPORT_VERTICES = 4_000_000;
+
+	/**
+	 * Exports the height map of an ImageJ image as a triangle mesh with the colors
+	 * of the image (with the LUT) as vertex colors, e.g., for Blender (*.glb or
+	 * *.ply keep the colors). The format is selected by the file extension (obj,
+	 * stl, ply, glb or vtk). x and y are the pixel coordinates (centered, the first
+	 * row at the top like in the 3D view), z is the height multiplied by the
+	 * height factor (negative with Geo).
+	 * 
+	 * @param imp  the image
+	 * @param file the file
+	 * @param step    the step in pixels (1 = every pixel, increased for very large
+	 *                images, see MAX_EXPORT_VERTICES)
+	 * @param texture true to export the image (with the LUT) as a texture: OBJ
+	 *                (a *.png file next to the *.obj file) and glTF binary (*.glb,
+	 *                embedded)
+	 * @return a description of the exported mesh
+	 * @throws IOException if the file can't be written
+	 */
+	public String export(ImagePlus imp, java.io.File file, int step, boolean texture) throws java.io.IOException {
+		ImageProcessor ip = imp.getProcessor();
+		int w = ip.getWidth(), h = ip.getHeight();
+		step = Math.max(1, step);
+		while (((long) (w - 1) / step + 1) * ((h - 1) / step + 1) > MAX_EXPORT_VERTICES) {
+			step++;
+		}
+		/* The columns and rows (the last pixel included) */
+		int[] cols = samples(w, step), rows = samples(h, step);
+		int nx = cols.length, ny = rows.length;
+		if (nx < 2 || ny < 2) {
+			throw new java.io.IOException("The image is too small for a height map!");
+		}
+		int type = imp.getType();
+		Calibration cal = imp.getCalibration();
+		java.awt.image.BufferedImage colors = Textures.createImageWithLut(imp);
+		boolean flip = flipVertically;
+		float[] positions = new float[nx * ny * 3];
+		float[] vertexColors = new float[nx * ny * 3];
+		/* The texture coordinates: the centers of the pixels (v from the top) */
+		float[] texCoords = new float[nx * ny * 2];
+		for (int j = 0; j < ny; j++) {
+			for (int i = 0; i < nx; i++) {
+				int v = (j * nx + i) * 3;
+				float z = heightValue(ip, type, cal, cols[i], rows[j]) * scale;
+				positions[v] = cols[i] - (w - 1) / 2f;
+				/* The first row at the top (y up) like in the 3D view (or flipped) */
+				positions[v + 1] = flip ? rows[j] - (h - 1) / 2f : (h - 1) / 2f - rows[j];
+				positions[v + 2] = inverse ? -z : z;
+				int rgb = colors != null ? colors.getRGB(cols[i], rows[j]) : 0xffcccccc;
+				vertexColors[v] = ((rgb >> 16) & 0xff) / 255f;
+				vertexColors[v + 1] = ((rgb >> 8) & 0xff) / 255f;
+				vertexColors[v + 2] = (rgb & 0xff) / 255f;
+				int uv = (j * nx + i) * 2;
+				texCoords[uv] = (cols[i] + 0.5f) / w;
+				texCoords[uv + 1] = (rows[j] + 0.5f) / h;
+			}
+		}
+		int[] indices = new int[(nx - 1) * (ny - 1) * 6];
+		int t = 0;
+		for (int j = 0; j < ny - 1; j++) {
+			for (int i = 0; i < nx - 1; i++) {
+				int a = j * nx + i, b = a + 1, d = a + nx, e = d + 1;
+				/* Counterclockwise seen from above (the normals point up) */
+				if (flip) {
+					indices[t++] = a;
+					indices[t++] = b;
+					indices[t++] = d;
+					indices[t++] = b;
+					indices[t++] = e;
+					indices[t++] = d;
+				} else {
+					indices[t++] = a;
+					indices[t++] = d;
+					indices[t++] = b;
+					indices[t++] = b;
+					indices[t++] = d;
+					indices[t++] = e;
+				}
+			}
+		}
+		boolean textured = texture && colors != null;
+		IsoSurface.exportMesh(file, positions, indices, vertexColors, textured ? texCoords : null,
+				textured ? colors : null, "height map", imp.getTitle(), "pixel");
+		String name = file.getName().toLowerCase();
+		boolean withTexture = textured && (name.endsWith(".obj") || name.endsWith(".glb"));
+		return nx * ny + " vertices, " + indices.length / 3 + " triangles (step " + step + " pixel"
+				+ (withTexture ? ", with the texture" : "") + ")";
+	}
+
+	/* The positions 0, step, 2 * step, ... and the last position! */
+	private static int[] samples(int size, int step) {
+		int n = (size - 1) / step + 1;
+		boolean last = (size - 1) % step != 0;
+		int[] values = new int[n + (last ? 1 : 0)];
+		for (int i = 0; i < n; i++) {
+			values[i] = i * step;
+		}
+		if (last) {
+			values[n] = size - 1;
+		}
+		return values;
+	}
+
+	/* The cached height range of the active image (see getHeightRange) */
+	private float[] heightRange;
+	private Object heightRangePixels;
+	private long heightRangeTime;
+
+	/**
+	 * Returns the range of the heights (min, max: scaled, negated if inverse) of
+	 * the active ImageJ image or null if no height map is displayed. The range is
+	 * computed again if the image changed (at most every 0.5 s).
+	 * 
+	 * @return the min and max height or null
+	 */
+	public float[] getHeightRange() {
+		if (grid == null || !grid.heightMap || WindowManager.getImageCount() == 0
+				|| WindowManager.getCurrentWindow() == null) {
+			return null;
+		}
+		ImagePlus imp = WindowManager.getCurrentWindow().getImagePlus();
+		if (imp == null || imp.getProcessor() == null) {
+			return null;
+		}
+		ImageProcessor ip = imp.getProcessor();
+		long now = System.currentTimeMillis();
+		if (heightRange == null || heightRangePixels != ip.getPixels() || now - heightRangeTime > 500) {
+			int type = imp.getType();
+			Calibration cal = imp.getCalibration();
+			float min = Float.MAX_VALUE, max = -Float.MAX_VALUE;
+			for (int y = 0; y < ip.getHeight(); y++) {
+				for (int x = 0; x < ip.getWidth(); x++) {
+					float v = heightValue(ip, type, cal, x, y);
+					min = Math.min(min, v);
+					max = Math.max(max, v);
+				}
+			}
+			heightRange = new float[] { min, max };
+			heightRangePixels = ip.getPixels();
+			heightRangeTime = now;
+		}
+		float a = heightRange[0] * scale, b = heightRange[1] * scale;
+		if (inverse) {
+			a = -a;
+			b = -b;
+		}
+		return new float[] { Math.min(a, b), Math.max(a, b) };
 	}
 
 	public void setScale(float scale) {

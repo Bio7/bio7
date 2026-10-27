@@ -34,6 +34,7 @@ import gov.nasa.worldwind.render.DrawContext;
 import gov.nasa.worldwind.render.Renderable;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.glu.GLU;
 import com.eco.bio7.compile.Model;
 import com.jogamp.opengl.util.gl2.GLUT;
@@ -115,6 +116,9 @@ public class DynamicLayer implements Renderable {
 		if (eco != null) {
 			try {
 				eco.run(gl, glu, glut);
+				if (dc.getGLDrawable() instanceof GLAutoDrawable drawable) {
+					eco.run(drawable);
+				}
 			} catch (RuntimeException e) {
 				eco = null;
 				e.printStackTrace();
@@ -126,6 +130,9 @@ public class DynamicLayer implements Renderable {
 			if (eco != null) {
 				try {
 					eco.setup(gl, glu, glut);
+					if (dc.getGLDrawable() instanceof GLAutoDrawable drawable) {
+						eco.setup(drawable);
+					}
 				} catch (RuntimeException e) {
 					eco = null;
 					e.printStackTrace();

@@ -312,6 +312,42 @@ public class SpatialView extends ViewPart {
 		clear.setToolTipText("Clears the measurements in the 3D view (object colors, numbers and picked points)");
 		clear.setImageDescriptor(Bio7Plugin.getImageDescriptor("/icons/views/deleteaction.svg"));
 		toolBar.add(clear);
+
+		Action reset = new Action("Reset View") {
+			public void run() {
+				resetView();
+			}
+		};
+		reset.setToolTipText(
+				"Resets the 3D view to the default settings like at the first start (camera, grids, axes,\nlights, colors, step rate, height map). The loaded data is kept.");
+		reset.setImageDescriptor(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/counter_reset.svg"));
+		toolBar.add(reset);
+	}
+
+	/* Resets the 3D view and the stored display settings and creates the options view again! */
+	private void resetView() {
+		SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+		if (grid == null) {
+			return;
+		}
+		grid.resetToDefaults();
+		org.eclipse.jface.preference.IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		for (String key : new String[] { "plotView", "showAxisGizmo", "textureFlipVertically", "axisImageCoordinates",
+				"spatialX", "spatialY", "spatialZ" }) {
+			store.setToDefault(key);
+		}
+		AxisLabelsRenderer.setImageCoordinates(store.getBoolean("axisImageCoordinates"));
+		/* The controls of the options view show the defaults */
+		org.eclipse.ui.IWorkbenchPage page = getSite().getPage();
+		org.eclipse.ui.IViewPart options = page.findView(Options3d.ID);
+		if (options != null) {
+			page.hideView(options);
+			try {
+				page.showView(Options3d.ID, null, org.eclipse.ui.IWorkbenchPage.VIEW_VISIBLE);
+			} catch (org.eclipse.ui.PartInitException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public void dispose() {

@@ -53,13 +53,15 @@ public class SpeedSlider extends Canvas {
 	private final int last;
 	private double value;
 	private boolean dragging;
+	/* Without an own background the slider is transparent (e.g., in a group) */
+	private boolean backgroundSet;
 
 	/**
 	 * @param min the lowest frame rate (rounded up to a step)
 	 * @param max the highest frame rate (rounded down to a step)
 	 */
 	public SpeedSlider(Composite parent, int style, double min, double max) {
-		super(parent, style | SWT.DOUBLE_BUFFERED);
+		super(parent, style | SWT.DOUBLE_BUFFERED | SWT.TRANSPARENT);
 		first = (int) Math.ceil(STEPS_PER_DECADE * Math.log10(min) - 1e-6);
 		last = (int) Math.floor(STEPS_PER_DECADE * Math.log10(max) + 1e-6);
 		value = valueOf(first);
@@ -102,6 +104,12 @@ public class SpeedSlider extends Canvas {
 				e.result = format(value) + " fps";
 			}
 		});
+	}
+
+	@Override
+	public void setBackground(Color color) {
+		super.setBackground(color);
+		backgroundSet = color != null;
 	}
 
 	/** The frame rate of a step (step 0 is 1 fps, step 30 is 10 fps). */
@@ -177,7 +185,9 @@ public class SpeedSlider extends Canvas {
 		if (v >= 100) {
 			return String.format(Locale.ROOT, "%.0f", v);
 		}
-		String s = String.format(Locale.ROOT, v >= 10 ? "%.1f" : "%.2f", v);
+		/* Small values with two significant digits, e.g., 0.0032 or 0.000001 */
+		int decimals = v >= 10 ? 1 : v >= 0.1 || v <= 0 ? 2 : (int) Math.ceil(-Math.log10(v)) + 1;
+		String s = String.format(Locale.ROOT, "%." + decimals + "f", v);
 		/* No trailing zeros: 2.50 -> 2.5, 10.0 -> 10! */
 		return s.contains(".") ? s.replaceAll("0+$", "").replaceAll("\\.$", "") : s;
 	}
@@ -242,8 +252,10 @@ public class SpeedSlider extends Canvas {
 		Color knob = blend(getDisplay().getSystemColor(SWT.COLOR_WHITE), bg, 0.8);
 		try {
 			gc.setAdvanced(true);
-			gc.setBackground(bg);
-			gc.fillRectangle(r);
+			if (backgroundSet) {
+				gc.setBackground(bg);
+				gc.fillRectangle(r);
+			}
 			int[] t = track(gc);
 			int m = t[0];
 			int w = t[1];
