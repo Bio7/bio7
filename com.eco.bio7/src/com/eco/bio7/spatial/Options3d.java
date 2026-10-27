@@ -1469,7 +1469,7 @@ public class Options3d extends ViewPart {
 
 		final CTabItem newItemExpandItem_8 = new CTabItem(expandBar, SWT.NONE);
 		// newItemExpandItem_8.setHeight(130);
-		newItemExpandItem_8.setText("Image");
+		newItemExpandItem_8.setText("Render");
 		ScrolledComposite scroll_8 = new ScrolledComposite(expandBar, SWT.V_SCROLL);
 		final Composite composite_8 = new Composite(scroll_8, SWT.NONE);
 		newItemExpandItem_8.setControl(scroll_8);
