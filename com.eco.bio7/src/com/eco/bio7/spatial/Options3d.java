@@ -96,6 +96,8 @@ public class Options3d extends ViewPart {
 	private Button showQuadButton;
 	/* The axis numbers (enabled with the plot view) */
 	private Button btnDrawnumbers;
+	/* The grid planes XY, XZ, YZ of the plot view (see updatePlotGrids) */
+	private static final Button[] plotGridButtons = new Button[3];
 	private Point3d p;
 	private Point3d p2;
 	private Point3d p3;
@@ -402,7 +404,9 @@ public class Options3d extends ViewPart {
 			final Button button = check(gridGroup, planes[k] + " (Plot)",
 					"The " + planes[k] + " grid of the plot view (behind the data, see 'Plot View' in the Heightmap tab)");
 			/* The floor (XY) is hidden by the height map by default */
-			button.setSelection(k != 0);
+			SpatialStructure current = SpatialStructure.getSpatialStructureInstance();
+			button.setSelection(current != null ? new boolean[] { current.plotGridXY, current.plotGridXZ, current.plotGridYZ }[k] : k != 0);
+			plotGridButtons[k] = button;
 			button.addSelectionListener(new SelectionAdapter() {
 				public void widgetSelected(final SelectionEvent e) {
 					SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
@@ -535,16 +539,16 @@ public class Options3d extends ViewPart {
 		playPauseButton.setLayoutData(gd_playPauseButton);
 		playPauseButton.setToolTipText(
 				"Play/Pause: Invokes the compiled run method with the default Jogl timer.\n The timer fps determines the speed of invocation");
+		/* Selected if the run method is invoked (the current state, e.g., started by a script) */
+		SpatialStructure running = SpatialStructure.getSpatialStructureInstance();
+		playPauseButton.setSelection(running != null && running.isFromOpenGl());
 		playPauseButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-
 				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
 				if (grid != null) {
-					if (grid.isFromOpenGl()) {
-						grid.setFromOpenGl(false);
-					} else {
-						grid.setFromOpenGl(true);
-					}
+					grid.setFromOpenGl(playPauseButton.getSelection());
+				} else {
+					playPauseButton.setSelection(false);
 				}
 			}
 		});
@@ -1656,6 +1660,24 @@ public class Options3d extends ViewPart {
 		return playPauseButton;
 	}
 
+	/**
+	 * Selects the play/pause button if the run method of the compiled model is
+	 * invoked (see SpatialStructure.setFromOpenGl). Can be called from any thread.
+	 */
+	public static void updatePlayPause() {
+		Display display = Display.getDefault();
+		if (display.isDisposed()) {
+			return;
+		}
+		display.asyncExec(() -> {
+			SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+			Button button = playPauseButton;
+			if (button != null && !button.isDisposed()) {
+				button.setSelection(grid != null && grid.isFromOpenGl());
+			}
+		});
+	}
+
 	public static int getSetFixedFPS() {
 		return setFixedFPS.getSelection();
 	}
@@ -2219,6 +2241,28 @@ public class Options3d extends ViewPart {
 			}
 		});
 		return text;
+	}
+
+	/**
+	 * Updates the check boxes of the grid planes of the plot view (e.g., after a
+	 * script changed them, see SpatialUtil.setPlotGrids). Can be called from any
+	 * thread.
+	 */
+	public static void updatePlotGrids() {
+		Display display = Display.getDefault();
+		display.asyncExec(() -> {
+			SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+			if (grid == null) {
+				return;
+			}
+			boolean[] selected = { grid.plotGridXY, grid.plotGridXZ, grid.plotGridYZ };
+			for (int k = 0; k < 3; k++) {
+				Button button = plotGridButtons[k];
+				if (button != null && !button.isDisposed()) {
+					button.setSelection(selected[k]);
+				}
+			}
+		});
 	}
 
 	/* A group over the whole width with the columns! */

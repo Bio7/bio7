@@ -419,18 +419,19 @@ public class SpatialScene {
 			back[k] = minIsBack ? b[2 * k] : b[2 * k + 1];
 			front[k] = minIsBack ? b[2 * k + 1] : b[2 * k];
 		}
+		/* The positions of the ticks: the grid lines are at the numbers of the axes */
+		double[][] ticks = { tickPositions(grid, 0, b), tickPositions(grid, 1, b), tickPositions(grid, 2, b) };
 		if (grid.showGrid) {
-			float step = grid.getGridSize();
 			gl.glColor3f(colorCubeLines[0], colorCubeLines[1], colorCubeLines[2]);
 			gl.glBegin(GL.GL_LINES);
 			if (grid.plotGridYZ) {
-				drawFaceGrid(gl, 0, back[0], b, step);
+				drawFaceLines(gl, 0, back[0], b, ticks);
 			}
 			if (grid.plotGridXZ) {
-				drawFaceGrid(gl, 1, back[1], b, step);
+				drawFaceLines(gl, 1, back[1], b, ticks);
 			}
 			if (grid.plotGridXY) {
-				drawFaceGrid(gl, 2, back[2], b, step);
+				drawFaceLines(gl, 2, back[2], b, ticks);
 			}
 			gl.glEnd();
 		}
@@ -465,19 +466,19 @@ public class SpatialScene {
 			if (numbers) {
 				double valueA = plotValue(grid, k, min, b), valueB = plotValue(grid, k, max, b);
 				double step = niceStep(Math.abs(valueB - valueA) / 6);
-				double from = Math.min(valueA, valueB), to = Math.max(valueA, valueB);
 				gl.glBegin(GL.GL_LINES);
-				for (double v = Math.ceil(from / step) * step; v <= to + step * 1e-6; v += step) {
+				for (double position : ticks[k]) {
 					double[] p = start[k].clone();
-					p[k] = min + (v - valueA) / (valueB - valueA) * (max - min);
+					p[k] = position;
 					gl.glVertex3d(p[0], p[1], p[2]);
 					gl.glVertex3d(p[0] + out[k][0] * tick, p[1] + out[k][1] * tick, p[2] + out[k][2] * tick);
 				}
 				gl.glEnd();
-				for (double v = Math.ceil(from / step) * step; v <= to + step * 1e-6; v += step) {
+				for (double position : ticks[k]) {
 					double[] p = start[k].clone();
-					p[k] = min + (v - valueA) / (valueB - valueA) * (max - min);
-					drawPlotText(gl, formatPlotValue(v, step), p[0] + out[k][0] * tick * 4,
+					p[k] = position;
+					double v = plotValue(grid, k, position, b);
+					drawPlotText(gl, formatPlotValue(Math.round(v / step) * step, step), p[0] + out[k][0] * tick * 4,
 							p[1] + out[k][1] * tick * 4, p[2] + out[k][2] * tick * 4, 0.5f * sizeFactor);
 				}
 			}
@@ -487,6 +488,45 @@ public class SpatialScene {
 				double d = tick * (numbers ? 9 : 3);
 				drawPlotText(gl, names[k], p[0] + out[k][0] * d, p[1] + out[k][1] * d, p[2] + out[k][2] * d,
 						0.7f * sizeFactor);
+			}
+		}
+	}
+
+	/* The positions of the ticks (the round numbers) of an axis of the plot view! */
+	private static double[] tickPositions(SpatialStructure grid, int axis, double[] b) {
+		double min = b[2 * axis], max = b[2 * axis + 1];
+		if (max <= min) {
+			return new double[0];
+		}
+		double valueA = plotValue(grid, axis, min, b), valueB = plotValue(grid, axis, max, b);
+		if (valueA == valueB) {
+			return new double[0];
+		}
+		double step = niceStep(Math.abs(valueB - valueA) / 6);
+		double from = Math.min(valueA, valueB), to = Math.max(valueA, valueB);
+		java.util.List<Double> positions = new java.util.ArrayList<>();
+		for (double v = Math.ceil(from / step) * step; v <= to + step * 1e-6 && positions.size() < 1000; v += step) {
+			positions.add(min + (v - valueA) / (valueB - valueA) * (max - min));
+		}
+		return positions.stream().mapToDouble(Double::doubleValue).toArray();
+	}
+
+	/* The grid lines of a side of the box at the ticks of the two other axes and the borders! */
+	private static void drawFaceLines(GL2 gl, int axis, double value, double[] b, double[][] ticks) {
+		int u = (axis + 1) % 3, v = (axis + 2) % 3;
+		double[] p = new double[3];
+		p[axis] = value;
+		for (int k = 0; k < 2; k++) {
+			int along = k == 0 ? u : v, across = k == 0 ? v : u;
+			double[] lines = java.util.stream.DoubleStream
+					.concat(java.util.stream.DoubleStream.of(b[2 * along], b[2 * along + 1]), java.util.Arrays.stream(ticks[along]))
+					.toArray();
+			for (double s : lines) {
+				p[along] = s;
+				p[across] = b[2 * across];
+				gl.glVertex3d(p[0], p[1], p[2]);
+				p[across] = b[2 * across + 1];
+				gl.glVertex3d(p[0], p[1], p[2]);
 			}
 		}
 	}
@@ -539,15 +579,17 @@ public class SpatialScene {
 		gl.glTranslated(x, y, z);
 		float[] mv = new float[16];
 		gl.glGetFloatv(GL2.GL_MODELVIEW_MATRIX, mv, 0);
-		mv[0] = 1;
+		/* Facing the camera with the scale of the view (e.g., the scale of the data) */
+		float scaleView = (float) Math.sqrt(mv[0] * mv[0] + mv[1] * mv[1] + mv[2] * mv[2]);
+		mv[0] = scaleView;
 		mv[1] = 0;
 		mv[2] = 0;
 		mv[4] = 0;
-		mv[5] = 1;
+		mv[5] = scaleView;
 		mv[6] = 0;
 		mv[8] = 0;
 		mv[9] = 0;
-		mv[10] = 1;
+		mv[10] = scaleView;
 		gl.glLoadMatrixf(mv, 0);
 		renderer.begin3DRendering();
 		renderer.setColor(colorCubeLines[0], colorCubeLines[1], colorCubeLines[2], colorCubeLines[3]);

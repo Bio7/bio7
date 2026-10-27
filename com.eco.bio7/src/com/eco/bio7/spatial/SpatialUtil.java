@@ -154,6 +154,72 @@ public class SpatialUtil {
 	}
 
 	/**
+	 * Sets the bounds of the data of a model (e.g., spheres of a script) for the
+	 * box, the grids, the plot view with the axis numbers and the camera (if no
+	 * texture, volume or iso surface is displayed). The data is moved into the
+	 * center of the view.
+	 * 
+	 * @param x0 the minimum x
+	 * @param x1 the maximum x
+	 * @param y0 the minimum y
+	 * @param y1 the maximum y
+	 * @param z0 the minimum z
+	 * @param z1 the maximum z
+	 */
+	public static void setDataBounds(double x0, double x1, double y0, double y1, double z0, double z1) {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		if (struc != null) {
+			struc.setDataBounds(new double[] { x0, x1, y0, y1, z0, z1 });
+		}
+	}
+
+	/**
+	 * Removes the bounds of the data of a model (the box and the grids have the
+	 * size of the space again).
+	 */
+	public static void clearDataBounds() {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		if (struc != null) {
+			struc.setDataBounds(null);
+		}
+	}
+
+	/**
+	 * Selects the grid planes of the plot view (behind the data): the floor (XY,
+	 * off by default because a height map covers it) and the walls (XZ, YZ).
+	 * 
+	 * @param xy the XY grid (floor)
+	 * @param xz the XZ grid
+	 * @param yz the YZ grid
+	 */
+	public static void setPlotGrids(boolean xy, boolean xz, boolean yz) {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		if (struc != null) {
+			struc.plotGridXY = xy;
+			struc.plotGridXZ = xz;
+			struc.plotGridYZ = yz;
+			Options3d.updatePlotGrids();
+		}
+	}
+
+	/**
+	 * Enables or disables the plot view (the grids behind the data and the axes
+	 * with the numbers at the edges of the box, like a 3D plot). The axis numbers
+	 * are enabled with the plot view.
+	 * 
+	 * @param plotView true for the plot view
+	 */
+	public static void setPlotView(boolean plotView) {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		if (struc != null) {
+			struc.plotView = plotView;
+			if (plotView && struc.getAxisLabelsRenderer() != null) {
+				struc.getAxisLabelsRenderer().setEnabled(true);
+			}
+		}
+	}
+
+	/**
 	 * Resets the rotation of the rotation matrix.
 	 */
 	public static void resetRotation() {

@@ -317,7 +317,11 @@ public class AxisLabelsRenderer {
 	 */
 	public static float getSizeFactor(SpatialStructure spatial) {
 		float[] extent = spatial.getTextureExtent();
-		return extent == null ? 1.0f : textureInterval(extent) / 100.0f;
+		if (extent == null) {
+			/* The data of a model is scaled in the view (the same size on the screen) */
+			return spatial.getDataBounds() != null ? (float) (1 / spatial.getDataScale()) : 1.0f;
+		}
+		return textureInterval(extent) / 100.0f;
 	}
 
 	/**
@@ -471,16 +475,17 @@ public class AxisLabelsRenderer {
 		float[] mv = new float[16];
 		gl.glGetFloatv(GL2.GL_MODELVIEW_MATRIX, mv, 0);
 
-		// Reset rotation to identity (keep translation)
-		mv[0] = 1;
+		// Reset rotation to identity (keep translation and the scale of the view, e.g., of the data)
+		float scaleView = (float) Math.sqrt(mv[0] * mv[0] + mv[1] * mv[1] + mv[2] * mv[2]);
+		mv[0] = scaleView;
 		mv[4] = 0;
 		mv[8] = 0;
 		mv[1] = 0;
-		mv[5] = 1;
+		mv[5] = scaleView;
 		mv[9] = 0;
 		mv[2] = 0;
 		mv[6] = 0;
-		mv[10] = 1;
+		mv[10] = scaleView;
 
 		gl.glLoadMatrixf(mv, 0);
 

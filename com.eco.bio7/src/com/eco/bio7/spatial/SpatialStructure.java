@@ -863,7 +863,13 @@ public class SpatialStructure implements KeyListener, MouseListener {
 			 * In octant mode rotate around the center of the grid axes (with a texture
 			 * around the center of the image)!
 			 */
-			if (!walkthrough && !HeightMaps.isCartesian()) {
+			double[] data = getTextureExtent() == null ? dataBounds : null;
+			if (!walkthrough && data != null) {
+				/* The data of a model (e.g., a script) in the center of the view, scaled to the default size */
+				double scale = getDataScale();
+				gl.glScaled(scale, scale, scale);
+				gl.glTranslated(-(data[0] + data[1]) / 2, -(data[2] + data[3]) / 2, -(data[4] + data[5]) / 2);
+			} else if (!walkthrough && !HeightMaps.isCartesian()) {
 				float centerZ;
 				float[] stack = getStackExtent();
 				if (stack != null) {
@@ -1350,8 +1356,9 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	 * (like at the first start): the rotation, the zoom and the translation, the
 	 * camera modes (walkthrough, split view, stereo), the size of the space, the grids, axes, box, plot
 	 * view and the axis orientation overlay, the lights, the colors, the step
-	 * rate and the settings of the height map. The loaded data (texture, volume,
-	 * iso surface, model) is kept.
+	 * rate, the settings of the height map and the fitting to the data of a model
+	 * (see setDataBounds). The loaded data (texture, volume, iso surface, model)
+	 * is kept.
 	 */
 	public void resetToDefaults() {
 		synchronized (matrixLock) {
@@ -1394,7 +1401,8 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		setLightPos2(1000, 1000, -2000);
 		setLightPos3(0, 1000, 1000);
 		setLightPos4(1000, 1000, -2000);
-		/* The size of the space (Size X, Y, Z: -1000 to +1000) */
+		/* The size of the space (Size X, Y, Z: -1000 to +1000), without the bounds of the data of a model */
+		dataBounds = null;
 		sizeX = 1000;
 		sizeY = 1000;
 		sizeZ = 1000;
@@ -1801,8 +1809,58 @@ public class SpatialStructure implements KeyListener, MouseListener {
 			return cartesian ? new double[] { -w / 2, w / 2, -h / 2, h / 2, z0, z1 }
 					: new double[] { 0, w, 0, h, z0, z1 };
 		}
+		double[] data = dataBounds;
+		if (data != null) {
+			return data.clone();
+		}
 		return cartesian ? new double[] { -sizeX, sizeX, -sizeY, sizeY, -sizeZ, sizeZ }
 				: new double[] { 0, sizeX, 0, sizeY, 0, sizeZ };
+	}
+
+	/* The bounds of the data of a model (see setDataBounds) or null */
+	private volatile double[] dataBounds;
+
+	/**
+	 * Sets the bounds of the data of a model (e.g., the spheres of a script) for
+	 * the box, the grids, the plot view with the axis numbers and the camera (if
+	 * no texture, volume or iso surface is displayed). The data is moved into the
+	 * center of the view.
+	 * 
+	 * @param bounds x0, x1, y0, y1, z0, z1 or null (the size of the space)
+	 */
+	public void setDataBounds(double[] bounds) {
+		if (bounds != null && bounds.length != 6) {
+			throw new IllegalArgumentException("The bounds need six values: x0, x1, y0, y1, z0, z1");
+		}
+		dataBounds = bounds != null ? bounds.clone() : null;
+		/* The camera distance fitted to the data */
+		doz = getDefaultViewDistance();
+	}
+
+	/**
+	 * Returns the scale of the data of a model in the view: the largest side of
+	 * the bounds (see setDataBounds) is displayed with the size 1000 (like the
+	 * default space), so that small and large data fit the camera.
+	 * 
+	 * @return the scale (1 without bounds)
+	 */
+	public double getDataScale() {
+		double[] b = dataBounds;
+		if (b == null) {
+			return 1;
+		}
+		double size = Math.max(b[1] - b[0], Math.max(b[3] - b[2], b[5] - b[4]));
+		return size > 0 ? 1000 / size : 1;
+	}
+
+	/**
+	 * Returns the bounds of the data of a model (see setDataBounds) or null.
+	 * 
+	 * @return x0, x1, y0, y1, z0, z1 or null
+	 */
+	public double[] getDataBounds() {
+		double[] b = dataBounds;
+		return b != null ? b.clone() : null;
 	}
 
 	/* The extent of a displayed stack (x0, x1, y0, y1, z0, z1) or null! */
@@ -2030,7 +2088,12 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	}
 
 	public void setFromOpenGl(boolean fromOpenGl) {
+		boolean changed = this.fromOpenGl != fromOpenGl;
 		this.fromOpenGl = fromOpenGl;
+		if (changed) {
+			/* The play/pause button shows the state (e.g., started by a script) */
+			Options3d.updatePlayPause();
+		}
 	}
 
 	public boolean canStep() {
@@ -2368,6 +2431,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	public int getDefaultViewDistance() {
 		float[] extent = getTextureExtent();
 		if (extent == null) {
+			/* The data of a model is scaled to the default size (see getDataScale) */
 			return DEFAULT_VIEW_DISTANCE;
 		}
 		float size = Math.max(extent[0], extent[1]);
