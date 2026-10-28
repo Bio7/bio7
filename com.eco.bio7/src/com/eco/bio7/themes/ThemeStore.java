@@ -68,7 +68,9 @@ public final class ThemeStore {
 	 * The version of the example themes: an example of an older version is
 	 * installed again if it has not been changed by the user!
 	 */
-	private static final int EXAMPLES_VERSION = 7;
+	private static final int EXAMPLES_VERSION = 10;
+	/* The name of the own image of the view tab rows in the theme folder (without the extension) */
+	private static final String TAB_IMAGE = "tab-artwork";
 
 	private static final Set<String> REGISTERED = new HashSet<String>();
 	private static boolean listening;
@@ -84,6 +86,8 @@ public final class ThemeStore {
 	 * opened, the Bio7 default themes are not changed).
 	 */
 	public static void startup() {
+		/* The views which paint with own colors (e.g., the Snippets view) */
+		ViewColors.install();
 		installExamples();
 		registerAll();
 		String active = activeFolder();
@@ -271,7 +275,10 @@ public final class ThemeStore {
 		setEngineTheme(engine, theme.getThemeId());
 		ToolbarArtwork.setTheme(theme, dir(theme));
 		/* After the preferences of the theme (stylesheets)! */
-		org.eclipse.swt.widgets.Display.getDefault().asyncExec(() -> setEditorBackground(theme));
+		org.eclipse.swt.widgets.Display.getDefault().asyncExec(() -> {
+			setEditorBackground(theme);
+			ViewColors.apply();
+		});
 		flush();
 	}
 
@@ -298,14 +305,19 @@ public final class ThemeStore {
 	private static final String EDITORS = "org.eclipse.ui.editors";
 	private static final String EDITOR_BACKGROUND = "AbstractTextEditor.Color.Background";
 	private static final String EDITOR_BACKGROUND_DEFAULT = "AbstractTextEditor.Color.Background.SystemDefault";
+	private static final String EDITOR_FOREGROUND = "AbstractTextEditor.Color.Foreground";
+	private static final String EDITOR_FOREGROUND_DEFAULT = "AbstractTextEditor.Color.Foreground.SystemDefault";
 	private static final String EDITOR_SET = "THEME_EDITOR_BACKGROUND_SET";
 
-	/* The text editors have the view background of the custom theme! */
+	/* The text editors have the editor background and text color of the custom theme! */
 	private static void setEditorBackground(CustomTheme theme) {
-		RGB view = theme.getColor("viewBackground");
+		RGB background = theme.getColor("editorBackground");
+		RGB text = theme.getColor("editorText");
 		org.eclipse.core.runtime.preferences.IEclipsePreferences node = org.eclipse.core.runtime.preferences.InstanceScope.INSTANCE.getNode(EDITORS);
 		node.putBoolean(EDITOR_BACKGROUND_DEFAULT, false);
-		node.put(EDITOR_BACKGROUND, view.red + "," + view.green + "," + view.blue);
+		node.put(EDITOR_BACKGROUND, background.red + "," + background.green + "," + background.blue);
+		node.putBoolean(EDITOR_FOREGROUND_DEFAULT, false);
+		node.put(EDITOR_FOREGROUND, text.red + "," + text.green + "," + text.blue);
 		Bio7Plugin.getDefault().getPreferenceStore().setValue(EDITOR_SET, true);
 		try {
 			node.flush();
@@ -324,6 +336,8 @@ public final class ThemeStore {
 		org.eclipse.core.runtime.preferences.IEclipsePreferences node = org.eclipse.core.runtime.preferences.InstanceScope.INSTANCE.getNode(EDITORS);
 		node.remove(EDITOR_BACKGROUND);
 		node.remove(EDITOR_BACKGROUND_DEFAULT);
+		node.remove(EDITOR_FOREGROUND);
+		node.remove(EDITOR_FOREGROUND_DEFAULT);
 		store.setToDefault(EDITOR_SET);
 		try {
 			node.flush();
@@ -351,6 +365,7 @@ public final class ThemeStore {
 		restoreIconColors();
 		removeEditorBackground();
 		ToolbarArtwork.setTheme(null, null);
+		ViewColors.apply();
 		IThemeEngine engine = engine();
 		if (engine != null) {
 			engine.setTheme(dark ? CustomTheme.DARK_ID : CustomTheme.LIGHT_ID, true);
@@ -377,13 +392,17 @@ public final class ThemeStore {
 				if (theme != null && (current == null || !current.getFolderName().equals(theme.getFolderName()))) {
 					Bio7Plugin.getDefault().getPreferenceStore().setValue(ACTIVE, theme.getFolderName());
 					ToolbarArtwork.setTheme(theme, dir(theme));
-					org.eclipse.swt.widgets.Display.getDefault().asyncExec(() -> setEditorBackground(theme));
+					org.eclipse.swt.widgets.Display.getDefault().asyncExec(() -> {
+						setEditorBackground(theme);
+						ViewColors.apply();
+					});
 					flush();
 				}
 			} else if (ToolbarArtwork.getTheme() != null) {
 				Bio7Plugin.getDefault().getPreferenceStore().setValue(ACTIVE, "");
 				ToolbarArtwork.setTheme(null, null);
 				removeEditorBackground();
+				ViewColors.apply();
 				flush();
 			}
 		});
@@ -509,6 +528,27 @@ public final class ThemeStore {
 
 	/** Copies an image into the theme folder (the artwork of the theme). */
 	public static String copyArtwork(CustomTheme theme, File image) throws IOException {
+		return copyImage(theme, image, "artwork");
+	}
+
+	/** Copies an image into the theme folder (the own image of the view tab rows). */
+	public static String copyTabImage(CustomTheme theme, File image) throws IOException {
+		return copyImage(theme, image, TAB_IMAGE);
+	}
+
+	/** Removes the own image of the view tab rows (the tab rows show the toolbar image again). */
+	public static void removeTabImage(CustomTheme theme) {
+		File[] old = dir(theme).listFiles((d, n) -> n.startsWith(TAB_IMAGE + "."));
+		if (old != null) {
+			for (File f : old) {
+				f.delete();
+			}
+		}
+		theme.setTabImage("");
+	}
+
+	/* The image is stored as <prefix>.<extension>, an older image with the prefix is replaced */
+	private static String copyImage(CustomTheme theme, File image, String prefix) throws IOException {
 		String extension = image.getName().substring(image.getName().lastIndexOf('.') + 1).toLowerCase(Locale.ROOT);
 		boolean convert = CONVERTED.contains(extension);
 		if ((!allowed(image.getName()) && !convert) || image.getName().endsWith(".properties")) {
@@ -526,8 +566,8 @@ public final class ThemeStore {
 		}
 		File dir = dir(theme);
 		dir.mkdirs();
-		String name = "artwork." + (convert ? "png" : extension);
-		File[] old = dir.listFiles((d, n) -> n.startsWith("artwork."));
+		String name = prefix + "." + (convert ? "png" : extension);
+		File[] old = dir.listFiles((d, n) -> n.startsWith(prefix + "."));
 		if (old != null) {
 			for (File f : old) {
 				f.delete();
@@ -611,7 +651,7 @@ public final class ThemeStore {
 			return true;
 		}
 		try {
-			return CustomTheme.load(dir).signature().equals(signature);
+			return CustomTheme.load(dir).matchesSignature(signature);
 		} catch (IOException e) {
 			return false;
 		}

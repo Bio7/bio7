@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.eclipse.nebula.widgets.grid.internal;
 
+import org.eclipse.nebula.widgets.grid.GridHeaderColors;
 import org.eclipse.nebula.widgets.grid.AbstractRenderer;
 import org.eclipse.nebula.widgets.grid.GridColumn;
 import org.eclipse.nebula.widgets.grid.GridItem;
@@ -74,7 +75,7 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
         }
         //gc.setBackground(background);
         /*Changed for Bio7!*/
-    	gc.setBackground(Util.getShell().getBackground());
+    	gc.setBackground(GridHeaderColors.background(Util.getShell().getBackground()));
 
         if (isSelected() && item.getParent().getCellSelectionEnabled())
         {
@@ -87,11 +88,11 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
         {
             if (isSelected())
             {
-                gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                gc.setForeground(GridHeaderColors.shadow(getDisplay(), SWT.COLOR_WIDGET_NORMAL_SHADOW));
             }
             else
             {
-                gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_HIGHLIGHT_SHADOW));
+                gc.setForeground(GridHeaderColors.shadow(getDisplay(), SWT.COLOR_WIDGET_HIGHLIGHT_SHADOW));
             }
 
 
@@ -103,7 +104,7 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
 
             if (!isSelected())
             {
-                gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW));
+                gc.setForeground(GridHeaderColors.shadow(getDisplay(), SWT.COLOR_WIDGET_LIGHT_SHADOW));
                 gc.drawLine(getBounds().x + 1, getBounds().y + 1,
                             getBounds().x + getBounds().width - 2, getBounds().y + 1);
                 gc.drawLine(getBounds().x + 1, getBounds().y + 1, getBounds().x + 1,
@@ -112,11 +113,11 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
 
             if (isSelected())
             {
-                gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                gc.setForeground(GridHeaderColors.shadow(getDisplay(), SWT.COLOR_WIDGET_NORMAL_SHADOW));
             }
             else
             {
-                gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
+                gc.setForeground(GridHeaderColors.shadow(getDisplay(), SWT.COLOR_WIDGET_DARK_SHADOW));
             }
             gc.drawLine(getBounds().x + getBounds().width - 1, getBounds().y, getBounds().x
                                                                               + getBounds().width - 1,
@@ -127,7 +128,7 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
 
             if (!isSelected())
             {
-                gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                gc.setForeground(GridHeaderColors.shadow(getDisplay(), SWT.COLOR_WIDGET_NORMAL_SHADOW));
                 gc.drawLine(getBounds().x + getBounds().width - 2, getBounds().y + 1,
                             getBounds().x + getBounds().width - 2, getBounds().y + getBounds().height
                                                                    - 2);
@@ -138,7 +139,7 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
         }
         else
         {
-            gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
+            gc.setForeground(GridHeaderColors.shadow(getDisplay(), SWT.COLOR_WIDGET_DARK_SHADOW));
 
             gc.drawLine(getBounds().x + getBounds().width - 1, getBounds().y, getBounds().x
                                                                               + getBounds().width - 1,
@@ -173,7 +174,7 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer
 
         //gc.setForeground(foreground);
         /*Changed for Bio7!*/
-    	gc.setForeground(Util.getShell().getForeground());
+    	gc.setForeground(GridHeaderColors.foreground(Util.getShell().getForeground()));
 
         int y = getBounds().y;
         int selectionOffset = 0;

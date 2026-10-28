@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.eclipse.nebula.widgets.grid.internal;
 
+import org.eclipse.nebula.widgets.grid.GridHeaderColors;
 import org.eclipse.nebula.widgets.grid.GridColumn;
 import org.eclipse.nebula.widgets.grid.GridHeaderRenderer;
 import org.eclipse.swt.SWT;
@@ -121,7 +122,7 @@ public class DefaultColumnHeaderRenderer extends GridHeaderRenderer
 
         gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
         /*Changed for Bio7!*/
-    	gc.setBackground(Util.getShell().getBackground());
+    	gc.setBackground(GridHeaderColors.background(Util.getShell().getBackground()));
 
         if (flat && isSelected())
         {
@@ -164,7 +165,7 @@ public class DefaultColumnHeaderRenderer extends GridHeaderRenderer
 
         //gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND));
         /*Changed for Bio7!*/
-    	gc.setForeground(Util.getShell().getForeground());
+    	gc.setForeground(GridHeaderColors.foreground(Util.getShell().getForeground()));
 
         int y = bottomMargin;
 
@@ -266,11 +267,11 @@ public class DefaultColumnHeaderRenderer extends GridHeaderRenderer
 
             if (drawSelected)
             {
-                gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                gc.setForeground(GridHeaderColors.shadow(getDisplay(), SWT.COLOR_WIDGET_NORMAL_SHADOW));
             }
             else
             {
-                gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_HIGHLIGHT_SHADOW));
+                gc.setForeground(GridHeaderColors.shadow(getDisplay(), SWT.COLOR_WIDGET_HIGHLIGHT_SHADOW));
             }
 
             gc.drawLine(getBounds().x, getBounds().y, getBounds().x + getBounds().width - 1,
@@ -280,7 +281,7 @@ public class DefaultColumnHeaderRenderer extends GridHeaderRenderer
 
             if (!drawSelected)
             {
-                gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW));
+                gc.setForeground(GridHeaderColors.shadow(getDisplay(), SWT.COLOR_WIDGET_LIGHT_SHADOW));
                 gc.drawLine(getBounds().x + 1, getBounds().y + 1,
                             getBounds().x + getBounds().width - 2, getBounds().y + 1);
                 gc.drawLine(getBounds().x + 1, getBounds().y + 1, getBounds().x + 1,
@@ -289,11 +290,11 @@ public class DefaultColumnHeaderRenderer extends GridHeaderRenderer
 
             if (drawSelected)
             {
-                gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                gc.setForeground(GridHeaderColors.shadow(getDisplay(), SWT.COLOR_WIDGET_NORMAL_SHADOW));
             }
             else
             {
-                gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
+                gc.setForeground(GridHeaderColors.shadow(getDisplay(), SWT.COLOR_WIDGET_DARK_SHADOW));
             }
             gc.drawLine(getBounds().x + getBounds().width - 1, getBounds().y, getBounds().x
                                                                               + getBounds().width - 1,
@@ -304,7 +305,7 @@ public class DefaultColumnHeaderRenderer extends GridHeaderRenderer
 
             if (!drawSelected)
             {
-                gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+                gc.setForeground(GridHeaderColors.shadow(getDisplay(), SWT.COLOR_WIDGET_NORMAL_SHADOW));
                 gc.drawLine(getBounds().x + getBounds().width - 2, getBounds().y + 1,
                             getBounds().x + getBounds().width - 2, getBounds().y + getBounds().height
                                                                    - 2);
@@ -316,7 +317,7 @@ public class DefaultColumnHeaderRenderer extends GridHeaderRenderer
         }
         else
         {
-            gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
+            gc.setForeground(GridHeaderColors.shadow(getDisplay(), SWT.COLOR_WIDGET_DARK_SHADOW));
 
             gc.drawLine(getBounds().x + getBounds().width - 1, getBounds().y, getBounds().x
                                                                               + getBounds().width - 1,

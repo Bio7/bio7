@@ -40,12 +40,21 @@ public class CustomTheme {
 	public static final String PROPERTIES = "theme.properties";
 	public static final String CSS = "theme.css";
 
+	/* macOS: the groups are painted by GroupColors */
+	private static final boolean COCOA = "cocoa".equals(org.eclipse.swt.SWT.getPlatform());
+
 	/** The color slots (key, label). */
 	public static final String[][] SLOTS = { { "background", "Window background" }, { "viewBackground", "View background" },
 			{ "panelBackground", "View panels" }, { "text", "Text" }, { "tabRow", "Tab row" }, { "tabSelected", "Selected tab" },
-			{ "tabText", "Tab text" }, { "tabSelectedText", "Selected tab text" }, { "tabBorder", "Tab border" }, { "toolbarTop", "Toolbar (top)" },
+			{ "tabText", "Tab text" }, { "tabSelectedText", "Selected tab text" }, { "viewToolbarText", "View toolbar text" }, { "tabBorder", "Tab border" }, { "toolbarTop", "Toolbar (top)" },
 			{ "toolbarBottom", "Toolbar (bottom)" }, { "toolbarText", "Toolbar text" }, { "statusBar", "Status bar" },
-			{ "iconColor", "Icon color" }, { "iconDetail", "Icon detail color" } };
+			{ "iconColor", "Icon color" }, { "iconDetail", "Icon detail color" }, { "editorBackground", "Editor background" },
+			{ "editorText", "Editor text" }, { "consoleBackground", "Console background" }, { "consoleText", "Console text" },
+			{ "widgetBackground", "Buttons" }, { "widgetText", "Buttons text" }, { "fieldBackground", "Text fields" },
+			{ "fieldText", "Text fields text" }, { "tabRowEnd", "Tab row (gradient end)" },
+			{ "tabSelectedEnd", "Selected tab (gradient end)" }, { "tableHeader", "Table headers" },
+			{ "tableHeaderText", "Table headers text" }, { "tableHeaderLine", "Table header lines" }, { "assistBackground", "Code completion" },
+			{ "assistText", "Code completion text" }, { "groupBackground", "Groups" }, { "groupBorder", "Group border" } };
 
 	/** The artwork modes and the fade directions. */
 	public static final String[] MODES = { "tile", "stretch" };
@@ -70,6 +79,20 @@ public class CustomTheme {
 	private String fade = "left";
 	private int fadeWidth = 70;
 	private String style = "raised";
+	/* The font of the views and the text font of the editors and the console ("" = the default, see FontData) */
+	private String font = "";
+	private String textFont = "";
+	/* The view tab rows: a gradient (to the gradient end colors) and the artwork of the toolbar */
+	/* The style of the tab rows (see STYLES): flat, gradient or raised */
+	private String tabStyle = "flat";
+	private boolean tabArtwork;
+	/* The fade of the artwork in the tab rows (an own setting, see FADES) */
+	private String tabFade = "center";
+	private int tabFadeWidth = 70;
+	/* The opacity of the artwork in the tab rows (an own setting) */
+	private int tabOpacity = 60;
+	/* An own image of the tab rows (a file in the theme folder) or "" for the image of the toolbar */
+	private String tabImage = "";
 
 	public CustomTheme(String folderName, boolean dark) {
 		this.folderName = folderName;
@@ -96,6 +119,24 @@ public class CustomTheme {
 			put("statusBar", "1e1e1e");
 			put("iconColor", "86b55a");
 			put("iconDetail", "ffffff");
+			put("editorBackground", "1e1e1e");
+			put("editorText", "cccccc");
+			put("consoleBackground", "1e1e1e");
+			put("consoleText", "cccccc");
+			put("widgetBackground", "3c3c3c");
+			put("widgetText", "dddddd");
+			put("fieldBackground", "2b2b2b");
+			put("fieldText", "dddddd");
+			put("tabRowEnd", "252526");
+			put("viewToolbarText", "cccccc");
+			put("tableHeader", "2d2d30");
+			put("tableHeaderText", "cccccc");
+			put("tableHeaderLine", "4b4c4f");
+			put("assistBackground", "2d2d30");
+			put("assistText", "cccccc");
+			put("groupBackground", "252526");
+			put("groupBorder", "3c3c3c");
+			put("tabSelectedEnd", "1e1e1e");
 		} else {
 			put("background", "ffffff");
 			put("viewBackground", "ffffff");
@@ -113,6 +154,24 @@ public class CustomTheme {
 			put("statusBar", "ececec");
 			put("iconColor", "638d43");
 			put("iconDetail", "ffffff");
+			put("editorBackground", "ffffff");
+			put("editorText", "000000");
+			put("consoleBackground", "ffffff");
+			put("consoleText", "000000");
+			put("widgetBackground", "ffffff");
+			put("widgetText", "000000");
+			put("fieldBackground", "ffffff");
+			put("fieldText", "000000");
+			put("tabRowEnd", "eeeeee");
+			put("viewToolbarText", "000000");
+			put("tableHeader", "eeeeee");
+			put("tableHeaderText", "000000");
+			put("tableHeaderLine", "b6bccc");
+			put("assistBackground", "f7f7f7");
+			put("assistText", "000000");
+			put("groupBackground", "ebebeb");
+			put("groupBorder", "d0d0d0");
+			put("tabSelectedEnd", "f4f4f4");
 		}
 	}
 
@@ -261,6 +320,98 @@ public class CustomTheme {
 		this.style = java.util.List.of(STYLES).contains(style) ? style : "raised";
 	}
 
+	/**
+	 * Returns the font of the views (all widgets and tabs) as a FontData string
+	 * (see FontData.toString) or "" for the default font.
+	 */
+	public String getFont() {
+		return font;
+	}
+
+	public void setFont(String font) {
+		this.font = font == null ? "" : font;
+	}
+
+	/**
+	 * Returns the text font of the editors and the console as a FontData string
+	 * or "" for the default text font.
+	 */
+	public String getTextFont() {
+		return textFont;
+	}
+
+	public void setTextFont(String textFont) {
+		this.textFont = textFont == null ? "" : textFont;
+	}
+
+	/** True if the tab rows and the selected tabs have a gradient (to the gradient end colors). */
+	public boolean isTabGradient() {
+		return !"flat".equals(tabStyle);
+	}
+
+	public void setTabGradient(boolean tabGradient) {
+		setTabStyle(tabGradient ? "gradient" : "flat");
+	}
+
+	/** The style of the tab rows: flat, gradient or raised (see STYLES). */
+	public String getTabStyle() {
+		return tabStyle;
+	}
+
+	public void setTabStyle(String tabStyle) {
+		this.tabStyle = java.util.List.of(STYLES).contains(tabStyle) ? tabStyle : "flat";
+	}
+
+	/** True if the tab rows show the artwork of the toolbar (image, mode, opacity, fade). */
+	public boolean isTabArtwork() {
+		return tabArtwork;
+	}
+
+	public void setTabArtwork(boolean tabArtwork) {
+		this.tabArtwork = tabArtwork;
+	}
+
+	/** The fade of the artwork in the tab rows (see FADES). */
+	public String getTabFade() {
+		return tabFade;
+	}
+
+	public void setTabFade(String tabFade) {
+		this.tabFade = java.util.List.of(FADES).contains(tabFade) ? tabFade : "center";
+	}
+
+	/** The width of the fade of the artwork in the tab rows (5 - 100 %). */
+	public int getTabFadeWidth() {
+		return tabFadeWidth;
+	}
+
+	/** The opacity of the artwork in the tab rows (0 - 100 %). */
+	public int getTabOpacity() {
+		return tabOpacity;
+	}
+
+	public void setTabOpacity(int tabOpacity) {
+		this.tabOpacity = Math.max(0, Math.min(100, tabOpacity));
+	}
+
+	public void setTabFadeWidth(int tabFadeWidth) {
+		this.tabFadeWidth = Math.max(5, Math.min(100, tabFadeWidth));
+	}
+
+	/** An own image of the tab rows (a file in the theme folder) or "" for the image of the toolbar artwork. */
+	public String getTabImage() {
+		return tabImage;
+	}
+
+	public void setTabImage(String tabImage) {
+		this.tabImage = tabImage == null ? "" : tabImage;
+	}
+
+	/** The image of the artwork in the tab rows: the own image or the image of the toolbar. */
+	public String getTabArtworkImage() {
+		return tabImage.isEmpty() ? artwork : tabImage;
+	}
+
 	/** A copy with another folder name (e.g., for a duplicate). */
 	public CustomTheme copy(String newFolder) {
 		CustomTheme copy = new CustomTheme(newFolder, dark);
@@ -270,12 +421,20 @@ public class CustomTheme {
 		copy.colors.putAll(colors);
 		copy.originalColors.putAll(originalColors);
 		copy.artwork = artwork;
+		copy.tabImage = tabImage;
 		copy.mode = mode;
 		copy.tileSize = tileSize;
 		copy.opacity = opacity;
 		copy.fade = fade;
 		copy.fadeWidth = fadeWidth;
 		copy.style = style;
+		copy.font = font;
+		copy.textFont = textFont;
+		copy.tabStyle = tabStyle;
+		copy.tabArtwork = tabArtwork;
+		copy.tabFade = tabFade;
+		copy.tabFadeWidth = tabFadeWidth;
+		copy.tabOpacity = tabOpacity;
 		return copy;
 	}
 
@@ -295,6 +454,34 @@ public class CustomTheme {
 		return new java.util.TreeMap<Object, Object>(toProperties()).toString();
 	}
 
+	/**
+	 * True if the theme has the values of the signature (see signature): the
+	 * properties of a newer version (e.g., new colors with a fallback, fonts) which
+	 * are not in the signature of an older version are not compared!
+	 */
+	public boolean matchesSignature(String signature) {
+		if (signature.equals(signature())) {
+			return true;
+		}
+		if (!signature.startsWith("{") || !signature.endsWith("}")) {
+			return false;
+		}
+		for (Map.Entry<Object, Object> e : new java.util.TreeMap<Object, Object>(toProperties()).entrySet()) {
+			String key = e.getKey().toString();
+			boolean inSignature = signature.startsWith("{" + key + "=") || signature.contains(", " + key + "=");
+			if (!inSignature) {
+				continue;
+			}
+			String entry = key + "=" + e.getValue();
+			boolean same = (signature.startsWith("{" + entry) || signature.contains(", " + entry))
+					&& (signature.contains(entry + ", ") || signature.endsWith(entry + "}"));
+			if (!same) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	private Properties toProperties() {
 		Properties p = new Properties();
 		p.setProperty("name", name);
@@ -310,6 +497,14 @@ public class CustomTheme {
 		p.setProperty("artwork.fade", fade);
 		p.setProperty("artwork.fadeWidth", Integer.toString(fadeWidth));
 		p.setProperty("toolbar.style", style);
+		p.setProperty("font", font);
+		p.setProperty("font.text", textFont);
+		p.setProperty("tabs.style", tabStyle);
+		p.setProperty("tabs.artwork", String.valueOf(tabArtwork));
+		p.setProperty("tabs.image", tabImage);
+		p.setProperty("tabs.fade", tabFade);
+		p.setProperty("tabs.fadeWidth", String.valueOf(tabFadeWidth));
+		p.setProperty("tabs.opacity", String.valueOf(tabOpacity));
 		for (Map.Entry<String, RGB> e : originalColors.entrySet()) {
 			p.setProperty("original.color." + e.getKey(), hex(e.getValue()));
 		}
@@ -340,6 +535,16 @@ public class CustomTheme {
 			/* A theme of an older version (the view panels were the view background)! */
 			t.colors.put("panelBackground", t.defaultPanelBackground());
 		}
+		/* A theme of an older version: the editors and the console like the views */
+		for (String[] fallback : new String[][] { { "editorBackground", "viewBackground" }, { "editorText", "text" },
+				{ "consoleBackground", "viewBackground" }, { "consoleText", "text" }, { "viewToolbarText", "text" },
+				{ "tableHeader", "tabRow" }, { "tableHeaderText", "text" }, { "tableHeaderLine", "tabBorder" },
+				{ "assistBackground", "editorBackground" }, { "assistText", "editorText" }, { "groupBackground", "panelBackground" },
+				{ "groupBorder", "tabBorder" } }) {
+			if (p.getProperty("color." + fallback[0]) == null) {
+				t.colors.put(fallback[0], t.colors.get(fallback[1]));
+			}
+		}
 		for (String[] slot : SLOTS) {
 			String v = p.getProperty("original.color." + slot[0]);
 			if (v != null && v.matches("#?[0-9a-fA-F]{6}")) {
@@ -361,6 +566,29 @@ public class CustomTheme {
 		t.fade = p.getProperty("artwork.fade", "left");
 		t.fadeWidth = parseInt(p.getProperty("artwork.fadeWidth"), 70);
 		t.setStyle(p.getProperty("toolbar.style", "raised"));
+		t.setFont(p.getProperty("font", ""));
+		t.setTextFont(p.getProperty("font.text", ""));
+		/* The style of the tab rows (an older theme: the gradient switch) */
+		t.setTabStyle(p.getProperty("tabs.style", Boolean.parseBoolean(p.getProperty("tabs.gradient", "false")) ? "gradient" : "flat"));
+		t.setTabArtwork(Boolean.parseBoolean(p.getProperty("tabs.artwork", "false")));
+		String tabArt = p.getProperty("tabs.image", "");
+		/* Only a file in the theme folder (no paths)! */
+		t.tabImage = tabArt.contains("/") || tabArt.contains("\\") || tabArt.contains("..") ? "" : tabArt;
+		/* A theme without an own fade of the tab rows: the fade of the toolbar */
+		t.setTabFade(p.getProperty("tabs.fade", t.fade));
+		t.setTabFadeWidth(parseInt(p.getProperty("tabs.fadeWidth"), t.fadeWidth));
+		/* A theme without an own opacity of the tab rows: the opacity of the toolbar */
+		t.setTabOpacity(parseInt(p.getProperty("tabs.opacity"), t.opacity));
+		/* A theme without the gradient end colors: no gradient (the colors of the tabs) */
+		if (p.getProperty("color.tabRowEnd") == null) {
+			t.colors.put("tabRowEnd", t.colors.get("tabRow"));
+			t.colors.put("tabSelectedEnd", t.colors.get("tabSelected"));
+		}
+		/* A theme without the colors of the text fields: the colors of the buttons */
+		if (p.getProperty("color.fieldBackground") == null && p.getProperty("color.widgetBackground") != null) {
+			t.colors.put("fieldBackground", t.colors.get("widgetBackground"));
+			t.colors.put("fieldText", t.colors.get("widgetText"));
+		}
 		t.setTileSize(t.tileSize);
 		t.setOpacity(t.opacity);
 		t.setFadeWidth(t.fadeWidth);
@@ -424,6 +652,20 @@ public class CustomTheme {
 			css.append("@import url(\"").append(sheet).append("\");\n");
 		}
 		css.append("\n");
+		/*
+		 * The popups of the code completion (the editors without own colors, e.g., R,
+		 * Python, ImageJ macro, the JDT editors have own preferences), the additional
+		 * information and the hovers: the colors of the JFace color registry are set
+		 * with the preferences of the workbench (like the base dark theme)!
+		 */
+		css.append("IEclipsePreferences#org-eclipse-ui-workbench:bio7-custom-theme {\n\tpreferences:\n");
+		for (String[] pref : new String[][] { { "CONTENT_ASSIST_BACKGROUND_COLOR", "assistBackground" }, { "CONTENT_ASSIST_FOREGROUND_COLOR", "assistText" },
+				{ "org.eclipse.ui.workbench.INFORMATION_BACKGROUND", "assistBackground" }, { "org.eclipse.ui.workbench.INFORMATION_FOREGROUND", "assistText" },
+				{ "org.eclipse.ui.workbench.HOVER_BACKGROUND", "assistBackground" }, { "org.eclipse.ui.workbench.HOVER_FOREGROUND", "assistText" } }) {
+			RGB rgb = colors.get(pref[1]);
+			css.append("\t\t'").append(pref[0]).append('=').append(rgb.red).append(',').append(rgb.green).append(',').append(rgb.blue).append("'\n");
+		}
+		css.append("}\n\n");
 		colorDefinition(css, c("viewBackground"), "DARK_BACKGROUND");
 		colorDefinition(css, c("text"), "DARK_FOREGROUND");
 		colorDefinition(css, c("tabRow"), "ACTIVE_UNSELECTED_TABS_COLOR_START", "ACTIVE_UNSELECTED_TABS_COLOR_END",
@@ -441,6 +683,14 @@ public class CustomTheme {
 		rule(css, ".MPartStack,\n.MPartStack.active,\n.MPartStack.active.noFocus",
 				"swt-unselected-tabs-color: " + c("tabRow") + ";\n\tswt-selected-tab-fill: " + c("tabSelected") + " " + c("tabSelected")
 						+ " 100% 100%;\n\tswt-outer-keyline-color: " + c("tabBorder") + ";\n\tswt-tab-outline: " + c("tabBorder") + ";");
+		/*
+		 * The tab rows with the tab row color, a gradient or the artwork (painted by
+		 * ThemeTabRendering, also flat: the default renderer fills the empty part of
+		 * the tab row with the color of the selected tab), the selected tabs with a gradient
+		 */
+		rule(css, ".MPartStack,\n.MPartStack.active,\n.MPartStack.active.noFocus",
+				"swt-tab-renderer: url('bundleclass://com.eco.bio7/com.eco.bio7.themes.ThemeTabRendering');"
+						+ (isTabGradient() ? "\n\tswt-selected-tab-fill: " + c("tabSelected") + " " + c("tabSelectedEnd") + " 100% 100%;" : ""));
 		/* The selected editor tab has the color of the editors (the view background)! */
 		rule(css, "#org-eclipse-ui-editorss CTabFolder,\n#org-eclipse-ui-editorss CTabFolder.active",
 				"swt-selected-tab-fill: " + c("viewBackground") + ";\n\tswt-selected-tab-highlight: " + c("viewBackground")
@@ -453,21 +703,31 @@ public class CustomTheme {
 		 * base themes: ".View"). After "CTabItem:selected" (the same specificity)!
 		 */
 		rule(css, "CTabItem.MPart", "background-color: " + c("tabRow") + ";");
+		/*
+		 * The background of a tab item is the background of its folder (the empty part
+		 * of the tab row and the wrapped tool bars): the base dark theme sets the color
+		 * of the selected tab (ACTIVE_TAB_BG_END) with more specific selectors!
+		 */
+		rule(css, ".MPartStack > CTabItem,\n.MPartStack > CTabItem CLabel,\n.MPartStack.active > CTabItem,\n"
+				+ ".MPartStack.active > CTabItem CLabel,\nCTabFolder.MArea CTabItem,\nCTabFolder.MArea CTabItem CLabel,\n"
+				+ "CTabFolder > Composite#ToolbarComposite", "background-color: " + c("tabRow") + ";");
 		/* The tab folders in the views (e.g., the options of the views)! */
 		rule(css, ".MPart CTabFolder", "background-color: " + c("tabRow") + ";\n\tcolor: " + c("tabText") + ";");
 		/* The view tool bars in the tab rows! */
-		rule(css, "CTabFolder ToolBar,\nCTabFolder .MToolBar,\n.MPartStack .MToolBar", "background-color: " + c("tabRow") + ";");
+		rule(css, "CTabFolder ToolBar,\nCTabFolder .MToolBar,\n.MPartStack .MToolBar,\nCTabFolder ToolItem",
+				"background-color: " + c("tabRow") + ";\n\tcolor: " + c("viewToolbarText") + ";");
 		/* The tool bars of views with an own color in the base themes (more specific selectors)! */
 		rule(css, "#org-eclipse-ui-console-ConsoleView.MToolBar,\n#com-eco-bio7-browser-Browser.MToolBar,\n"
 				+ "#com-eco-bio7-browser-Browser.MToolBar Label,\n#com-eco-bio7-imagej.MToolBar,\n#com-eco-bio7-thumbnails.MToolBar,\n"
 				+ "#com-eco-bio7-thumbnails.MToolBar Label,\n#com-eco-bio7-rbridge-RTable.MToolBar,\nComposite #com-eco-bio7-rbridge-RTable.MToolBar,\n"
 				+ "#com-eco-bio7-rbridge-RTable.MToolBar Label,\n#org-eclipse-ui-views-ContentOutline.MToolBar,\n"
-				+ "#com-eco-bio7-ijmacro-editor-toolbar-debug.MToolBar", "background-color: " + c("tabRow") + ";");
+				+ "#com-eco-bio7-ijmacro-editor-toolbar-debug.MToolBar", "background-color: " + c("tabRow") + ";\n\tcolor: " + c("viewToolbarText") + ";");
 		/*
 		 * Not ".MPart": the tab items have the classes of their parts and the
 		 * background of a tab item is the background of the tab row (white tab rows)!
 		 */
-		rule(css, "Composite.MPart,\n.MPart Composite,\n.MPart Label,\n.MPart CLabel,\n.MPart Group,\n.MPart Link,\n"
+		/* macOS: not the groups (their content would cover the box painted by GroupColors) */
+		rule(css, "Composite.MPart,\n.MPart Composite,\n.MPart Label,\n.MPart CLabel,\n" + (COCOA ? "" : ".MPart Group,\n") + ".MPart Link,\n"
 				+ ".MPart Sash,\n.MPart SashForm,\n.MPart ScrolledComposite,\n.MPart Canvas,\n.MPart Form,\n.MPart ScrolledForm,\n"
 				+ ".MPart Section,\n.MPart ViewForm", "background-color: " + c("panelBackground") + ";\n\tcolor: " + c("text") + ";");
 		/*
@@ -475,9 +735,46 @@ public class CustomTheme {
 		 * (macOS: transparent). Not the push buttons (they keep the native look)!
 		 */
 		rule(css, ".MPart Button[style~='SWT.CHECK'],\n.MPart Button[style~='SWT.RADIO'],\n.MPart Scale,\n.MPart Slider",
-				"background-color: " + c("panelBackground") + ";\n\tcolor: " + c("text") + ";");
+				"background-color: " + c("panelBackground") + ";\n\tcolor: " + c("widgetText") + ";");
+		/* The buttons in the views */
+		rule(css, ".MPart Button", "background-color: " + c("widgetBackground") + ";\n\tcolor: " + c("widgetText") + ";");
+		/* The text fields and the text areas of the views (e.g., the output of the R shell, not the editors) */
+		rule(css, ".MPart Text,\n.MPart Spinner,\n.MPart Combo,\n.MPart CCombo,\n.MPart DateTime,\n.View StyledText",
+				"background-color: " + c("fieldBackground") + ";\n\tcolor: " + c("fieldText") + ";");
+		/* The console (the text area and its page)! */
+		rule(css, "#org-eclipse-ui-console-ConsoleView .MPart > Composite,\n#org-eclipse-ui-console-ConsoleView .MPart StyledText,\n"
+				+ "#org-eclipse-ui-console-ConsoleView .MPart PageBook Label,\n"
+				+ ".MPartStack.active #org-eclipse-ui-console-ConsoleView .MPart > Composite,\n"
+				+ ".MPartStack.active #org-eclipse-ui-console-ConsoleView .MPart StyledText,\n"
+				+ ".MPartStack.active #org-eclipse-ui-console-ConsoleView .MPart PageBook Label",
+				"background-color: " + c("consoleBackground") + ";\n\tcolor: " + c("consoleText") + ";");
 		/* The content of the views (lists, trees, tables)! */
 		rule(css, ".MPart Tree,\n.MPart Table,\n.MPart List,\n.MPart Grid", "background-color: " + c("viewBackground") + ";\n\tcolor: " + c("text") + ";");
+		/*
+		 * The widgets in the groups have the color of the groups (macOS: the groups are
+		 * custom boxes with the color, see GroupColors), not the group itself: it has
+		 * the color of its parent (around the rounded box)!
+		 */
+		rule(css, ".MPart Group Composite,\n.MPart Group Label,\n.MPart Group CLabel,\n.MPart Group Link,\n.MPart Group Canvas,\n"
+				+ ".MPart Group ScrolledComposite,\n.MPart Group Button[style~='SWT.CHECK'],\n.MPart Group Button[style~='SWT.RADIO'],\n"
+				+ ".MPart Group Scale,\n.MPart Group Slider" + (COCOA ? "" : ",\n.MPart Group"),
+				"background-color: " + c("groupBackground") + ";");
+		/* The links of the forms (e.g., "Create a project..." in the empty Project Explorer have a white background) */
+		rule(css, ".MPart Hyperlink,\n.MPart ImageHyperlink,\n.MPart FormText", "background-color: " + c("panelBackground") + ";");
+		/*
+		 * The dialogs (e.g., the preferences, the wizards): the modal shells and their
+		 * widgets like the widgets of the views!
+		 */
+		rule(css, dialog("", "Composite", "Label", "CLabel", COCOA ? "Link" : "Group", "Link", "Sash", "SashForm", "ScrolledComposite", "Canvas",
+				"PageBook", "ViewForm", "Form", "ScrolledForm", "Section", "Hyperlink", "ImageHyperlink", "FormText", "TabFolder", "CTabFolder",
+				"Button[style~='SWT.CHECK']", "Button[style~='SWT.RADIO']", "Scale", "Slider", "ProgressBar"),
+				"background-color: " + c("panelBackground") + ";\n\tcolor: " + c("text") + ";");
+		rule(css, dialog(COCOA ? "Group Composite" : "Group", "Group Composite", "Group Label", "Group CLabel", "Group Link", "Group Canvas", "Group Button[style~='SWT.CHECK']",
+				"Group Button[style~='SWT.RADIO']", "Group Scale", "Group Slider"), "background-color: " + c("groupBackground") + ";");
+		rule(css, dialog("Button"), "background-color: " + c("widgetBackground") + ";\n\tcolor: " + c("widgetText") + ";");
+		rule(css, dialog("Text", "Spinner", "Combo", "CCombo", "DateTime", "StyledText"),
+				"background-color: " + c("fieldBackground") + ";\n\tcolor: " + c("fieldText") + ";");
+		rule(css, dialog("Tree", "Table", "List", "Grid"), "background-color: " + c("viewBackground") + ";\n\tcolor: " + c("text") + ";");
 		/*
 		 * The main toolbar (the gradient and the artwork are painted over it)! All
 		 * selectors of the base stylesheets with a gradient get a plain color: a CSS
@@ -494,7 +791,78 @@ public class CustomTheme {
 		/* The heap status paints with its own colors (set with setBackground and setForeground)! */
 		rule(css, "#org-eclipse-ui-trim-status,\n#org-eclipse-ui-trim-status Composite,\n#org-eclipse-ui-trim-status Label,\nHeapStatus",
 				"background-color: " + c("statusBar") + ";\n\tcolor: " + c("text") + ";");
+		/* The font of the views (all widgets and the tabs) */
+		String fontCss = fontCss(font);
+		if (fontCss != null) {
+			rule(css, ".MPart,\n.MPart Composite,\n.MPart Label,\n.MPart CLabel,\n.MPart Button,\n.MPart Text,\n.MPart Combo,\n"
+					+ ".MPart CCombo,\n.MPart Spinner,\n.MPart List,\n.MPart Tree,\n.MPart Table,\n.MPart Grid,\n.MPart Group,\n"
+					+ ".MPart Link,\n.MPart ToolBar,\n.MPart CTabFolder,\nCTabItem,\n.MPartStack,\n.MPartStack CTabItem", fontCss);
+			/* The tool bars with text (the views, e.g., the console, the main toolbar, the perspectives, the status bar); the menus are native */
+			rule(css, "CTabFolder ToolBar,\nCTabFolder .MToolBar,\n.MPartStack .MToolBar,\n.MToolBar,\n#org-eclipse-ui-main-toolbar ToolBar,\n"
+					+ "#PerspectiveSwitcher ToolBar,\n#org-eclipse-ui-trim-status Label,\n#org-eclipse-ui-trim-status Composite,\n"
+					/* The tool bars with an own font size in the base themes (more specific selectors) */
+					+ "#org-eclipse-ui-console-ConsoleView.MToolBar,\n#com-eco-bio7-browser-Browser.MToolBar,\n#com-eco-bio7-imagej.MToolBar,\n"
+					+ "#com-eco-bio7-thumbnails.MToolBar,\n#com-eco-bio7-rbridge-RTable.MToolBar,\n#org-eclipse-ui-views-ContentOutline.MToolBar,\n"
+					+ "#com-eco-bio7-ijmacro-editor-toolbar-debug.MToolBar,\n#PerspectiveSwitcher ToolBar", fontCss);
+		}
+		/* The text font of the editors and the console (and the text areas of the views) */
+		String textFontCss = fontCss(textFont);
+		if (textFontCss != null) {
+			rule(css, "FontDefinition#org-eclipse-jface-textfont,\nFontDefinition#org-eclipse-debug-ui-consoleFont", textFontCss);
+			rule(css, ".View StyledText,\n#org-eclipse-ui-console-ConsoleView .MPart StyledText", textFontCss);
+		}
 		return css.toString();
+	}
+
+	/* The CSS of a font (FontData string) or null for the default font */
+	private static String fontCss(String fontData) {
+		if (fontData == null || fontData.isEmpty()) {
+			return null;
+		}
+		try {
+			org.eclipse.swt.graphics.FontData fd = new org.eclipse.swt.graphics.FontData(fontData);
+			return "font-family: '" + availableFont(fd.getName()).replace("'", "") + "';\n\tfont-size: " + fd.getHeight() + "px;\n\tfont-weight: "
+					+ ((fd.getStyle() & org.eclipse.swt.SWT.BOLD) != 0 ? "bold" : "normal") + ";\n\tfont-style: "
+					+ ((fd.getStyle() & org.eclipse.swt.SWT.ITALIC) != 0 ? "italic" : "normal") + ";";
+		} catch (RuntimeException e) {
+			return null;
+		}
+	}
+
+	/*
+	 * A font name can be a list of alternatives (e.g., "Inter, Segoe UI, Helvetica
+	 * Neue"): the first installed font (the stylesheet is written on the computer of
+	 * the user) or else the first name!
+	 */
+	static String availableFont(String names) {
+		String[] list = names.split(",");
+		if (list.length == 1) {
+			return names.trim();
+		}
+		org.eclipse.swt.widgets.Display display = org.eclipse.swt.widgets.Display.getCurrent();
+		if (display != null) {
+			for (String name : list) {
+				String n = name.trim();
+				if (!n.isEmpty() && (display.getFontList(n, true).length > 0 || display.getFontList(n, false).length > 0)) {
+					return n;
+				}
+			}
+		}
+		return list[0].trim();
+	}
+
+	/** A short description of a font (FontData string), e.g., "Verdana 12 bold", or "Default". */
+	public static String describeFont(String fontData) {
+		if (fontData == null || fontData.isEmpty()) {
+			return "Default";
+		}
+		try {
+			org.eclipse.swt.graphics.FontData fd = new org.eclipse.swt.graphics.FontData(fontData);
+			return availableFont(fd.getName()) + " " + fd.getHeight() + ((fd.getStyle() & org.eclipse.swt.SWT.BOLD) != 0 ? " bold" : "")
+					+ ((fd.getStyle() & org.eclipse.swt.SWT.ITALIC) != 0 ? " italic" : "");
+		} catch (RuntimeException e) {
+			return "Default";
+		}
 	}
 
 	private String c(String key) {
@@ -505,6 +873,23 @@ public class CustomTheme {
 		for (String n : names) {
 			css.append("ColorDefinition#org-eclipse-ui-workbench-").append(n).append(" {\n\tcolor: ").append(color).append(";\n}\n\n");
 		}
+	}
+
+	/* The selectors of the widgets in the dialogs (the modal shells), "" for the shells */
+	private static String dialog(String... widgets) {
+		StringBuilder selector = new StringBuilder();
+		for (String shell : new String[] { "Shell[style~='SWT.APPLICATION_MODAL']", "Shell[style~='SWT.PRIMARY_MODAL']" }) {
+			for (String widget : widgets) {
+				if (selector.length() > 0) {
+					selector.append(",\n");
+				}
+				selector.append(shell);
+				if (!widget.isEmpty()) {
+					selector.append(' ').append(widget);
+				}
+			}
+		}
+		return selector.toString();
 	}
 
 	private static void rule(StringBuilder css, String selector, String body) {

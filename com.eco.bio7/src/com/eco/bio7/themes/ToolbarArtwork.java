@@ -100,6 +100,16 @@ public final class ToolbarArtwork {
 		return theme;
 	}
 
+	/** The folder of the active custom theme (with the artwork) or null. */
+	public static File getThemeDir() {
+		return themeDir;
+	}
+
+	/** A number which changes when the theme or its pictures change (e.g., to render the tab rows again). */
+	public static int getVersion() {
+		return version;
+	}
+
 	private static Composite mainToolbar(IWorkbenchWindow window) {
 		if (window.getShell() == null) {
 			return null;
@@ -232,7 +242,7 @@ public final class ToolbarArtwork {
 	}
 
 	/* The part of the picture (in pixels of the zoom)! */
-	private static ImageData crop(ImageData source, Rectangle bounds, int zoom) {
+	static ImageData crop(ImageData source, Rectangle bounds, int zoom) {
 		int x = bounds.x * zoom / 100, y = bounds.y * zoom / 100;
 		int w = Math.max(1, bounds.width * zoom / 100), h = Math.max(1, bounds.height * zoom / 100);
 		ImageData out = new ImageData(w, h, 24, new PaletteData(0xFF0000, 0xFF00, 0xFF));

@@ -13,6 +13,7 @@
  *******************************************************************************/ 
 package org.eclipse.nebula.widgets.grid.internal;
 
+import org.eclipse.nebula.widgets.grid.GridHeaderColors;
 import org.eclipse.nebula.widgets.grid.AbstractRenderer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
@@ -44,7 +45,7 @@ public class DefaultEmptyColumnHeaderRenderer extends AbstractRenderer
     {
         //gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
         /*Changed for Bio7!*/
-    	gc.setBackground(Util.getShell().getBackground());
+    	gc.setBackground(GridHeaderColors.background(Util.getShell().getBackground()));
 
         gc.fillRectangle(getBounds().x, getBounds().y, getBounds().width + 1,
                          getBounds().height + 1);

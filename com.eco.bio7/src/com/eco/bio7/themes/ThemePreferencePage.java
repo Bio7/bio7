@@ -88,6 +88,15 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 	private Combo style;
 	private final Map<String, ColorSelector> selectors = new HashMap<String, ColorSelector>();
 	private Label artworkLabel;
+	/* The font of the views and the text font (editors, console) */
+	private Label viewFontLabel, textFontLabel;
+	/* The gradient and the artwork in the tab rows of the views */
+	private Button tabArtwork;
+	private Label tabImageLabel;
+	private Combo tabStyle;
+	private Combo tabFade;
+	private Scale tabFadeWidth;
+	private Scale tabOpacity;
 	private Combo mode;
 	private Spinner tileSize;
 	private Scale opacity;
@@ -180,6 +189,76 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		reset.setToolTipText("Resets the colors to the original colors of the theme");
 		reset.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 4, 1));
 		reset.addListener(SWT.Selection, e -> resetColors());
+
+		Group tabs = new Group(editor, SWT.NONE);
+		tabs.setText("View Tabs");
+		tabs.setLayout(new GridLayout(2, false));
+		tabs.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 4, 1));
+		/* Flat, gradient (to the gradient end colors) or raised like the toolbar */
+		new Label(tabs, SWT.NONE).setText("Style:");
+		tabStyle = new Combo(tabs, SWT.READ_ONLY);
+		tabStyle.setItems(CustomTheme.STYLE_LABELS);
+		tabStyle.setToolTipText("Flat: the tab row color. Gradient: to the colors 'Tab row (gradient end)' and 'Selected tab (gradient end)'.\nRaised: the gradient with a light top and a dark bottom edge.");
+		tabStyle.addListener(SWT.Selection, e -> changed());
+		tabArtwork = new Button(tabs, SWT.CHECK);
+		tabArtwork.setText("Artwork (the image below with the mode of the toolbar artwork, an own fade and opacity)");
+		tabArtwork.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		tabArtwork.addListener(SWT.Selection, e -> changed());
+		/* An own image of the tab rows or the image of the toolbar artwork */
+		Composite tabImageRow = new Composite(tabs, SWT.NONE);
+		GridLayout tabImageLayout = new GridLayout(4, false);
+		tabImageLayout.marginWidth = 0;
+		tabImageRow.setLayout(tabImageLayout);
+		tabImageRow.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		new Label(tabImageRow, SWT.NONE).setText("Image:");
+		tabImageLabel = new Label(tabImageRow, SWT.NONE);
+		tabImageLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		button(tabImageRow, "Choose...", e -> chooseTabImage());
+		button(tabImageRow, "Same as Toolbar", e -> {
+			if (current != null) {
+				ThemeStore.removeTabImage(current);
+				changed();
+			}
+		});
+		/* The tab rows have an own fade of the artwork */
+		Composite tabFadeRow = new Composite(tabs, SWT.NONE);
+		GridLayout tabFadeLayout = new GridLayout(6, false);
+		tabFadeLayout.marginWidth = 0;
+		tabFadeRow.setLayout(tabFadeLayout);
+		tabFadeRow.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		new Label(tabFadeRow, SWT.NONE).setText("Fade:");
+		tabFade = new Combo(tabFadeRow, SWT.READ_ONLY);
+		tabFade.setItems(CustomTheme.FADE_LABELS);
+		tabFade.addListener(SWT.Selection, e -> changed());
+		new Label(tabFadeRow, SWT.NONE).setText("Fade width:");
+		tabFadeWidth = new Scale(tabFadeRow, SWT.HORIZONTAL);
+		scale(tabFadeWidth, 5, 100);
+		tabFadeWidth.addListener(SWT.Selection, e -> changed());
+		new Label(tabFadeRow, SWT.NONE).setText("Opacity:");
+		tabOpacity = new Scale(tabFadeRow, SWT.HORIZONTAL);
+		scale(tabOpacity, 0, 100);
+		tabOpacity.addListener(SWT.Selection, e -> changed());
+
+		Group fonts = new Group(editor, SWT.NONE);
+		fonts.setText("Fonts");
+		fonts.setLayout(new GridLayout(4, false));
+		fonts.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 4, 1));
+		new Label(fonts, SWT.NONE).setText("Font (views, widgets):");
+		viewFontLabel = new Label(fonts, SWT.NONE);
+		viewFontLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		button(fonts, "Choose...", e -> chooseFont(false));
+		button(fonts, "Default", e -> {
+			current.setFont("");
+			changed();
+		});
+		new Label(fonts, SWT.NONE).setText("Text font (editors, console):");
+		textFontLabel = new Label(fonts, SWT.NONE);
+		textFontLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		button(fonts, "Choose...", e -> chooseFont(true));
+		button(fonts, "Default", e -> {
+			current.setTextFont("");
+			changed();
+		});
 
 		Group art = new Group(editor, SWT.NONE);
 		art.setText("Toolbar Artwork (SVG, PNG, JPG, GIF, TIFF, BMP)");
@@ -283,6 +362,14 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 			selectors.get(slot[0]).setColorValue(shown.getColor(slot[0]));
 		}
 		artworkLabel.setText(shown.getArtwork().isEmpty() ? "(none)" : shown.getArtwork());
+		viewFontLabel.setText(CustomTheme.describeFont(shown.getFont()));
+		textFontLabel.setText(CustomTheme.describeFont(shown.getTextFont()));
+		tabStyle.select(Math.max(0, List.of(CustomTheme.STYLES).indexOf(shown.getTabStyle())));
+		tabArtwork.setSelection(shown.isTabArtwork());
+		tabImageLabel.setText(tabImageText(shown));
+		tabFade.select(Math.max(0, List.of(CustomTheme.FADES).indexOf(shown.getTabFade())));
+		tabFadeWidth.setSelection(shown.getTabFadeWidth());
+		tabOpacity.setSelection(shown.getTabOpacity());
 		mode.select("stretch".equals(shown.getMode()) ? 1 : 0);
 		tileSize.setSelection(shown.getTileSize());
 		opacity.setSelection(shown.getOpacity());
@@ -320,7 +407,17 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		current.setOpacity(opacity.getSelection());
 		current.setFade(CustomTheme.FADES[Math.max(0, fade.getSelectionIndex())]);
 		current.setFadeWidth(fadeWidth.getSelection());
+		current.setTabStyle(CustomTheme.STYLES[Math.max(0, tabStyle.getSelectionIndex())]);
+		current.setTabArtwork(tabArtwork.getSelection());
+		current.setTabFade(CustomTheme.FADES[Math.max(0, tabFade.getSelectionIndex())]);
+		current.setTabFadeWidth(tabFadeWidth.getSelection());
+		current.setTabOpacity(tabOpacity.getSelection());
 		artworkLabel.setText(current.getArtwork().isEmpty() ? "(none)" : current.getArtwork());
+		tabImageLabel.setText(tabImageText(current));
+		tabImageLabel.getParent().layout();
+		viewFontLabel.setText(CustomTheme.describeFont(current.getFont()));
+		textFontLabel.setText(CustomTheme.describeFont(current.getTextFont()));
+		viewFontLabel.getParent().layout();
 		dirty = true;
 		disposePreview();
 		preview.redraw();
@@ -360,6 +457,38 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		changed();
 	}
 
+	/* Selects the font of the views or the text font (editors, console) */
+	private void chooseFont(boolean text) {
+		if (current == null) {
+			return;
+		}
+		org.eclipse.swt.widgets.FontDialog dialog = new org.eclipse.swt.widgets.FontDialog(getShell());
+		dialog.setText(text ? "Text Font (Editors, Console)" : "Font (Views, Widgets)");
+		String value = text ? current.getTextFont() : current.getFont();
+		org.eclipse.swt.graphics.FontData initial = null;
+		if (!value.isEmpty()) {
+			try {
+				initial = new org.eclipse.swt.graphics.FontData(value);
+			} catch (RuntimeException e) {
+				initial = null;
+			}
+		}
+		if (initial == null) {
+			initial = (text ? org.eclipse.jface.resource.JFaceResources.getTextFont() : getShell().getDisplay().getSystemFont()).getFontData()[0];
+		}
+		dialog.setFontList(new org.eclipse.swt.graphics.FontData[] { initial });
+		org.eclipse.swt.graphics.FontData selected = dialog.open();
+		if (selected == null) {
+			return;
+		}
+		if (text) {
+			current.setTextFont(selected.toString());
+		} else {
+			current.setFont(selected.toString());
+		}
+		changed();
+	}
+
 	private void chooseArtwork() {
 		FileDialog dialog = new FileDialog(getShell(), SWT.OPEN);
 		dialog.setFilterExtensions(new String[] { "*.svg;*.png;*.jpg;*.jpeg;*.gif;*.tif;*.tiff;*.bmp", "*.*" });
@@ -371,6 +500,36 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		try {
 			ThemeStore.save(current);
 			current.setArtwork(ThemeStore.copyArtwork(current, new File(file)));
+			changed();
+		} catch (IOException e) {
+			MessageDialog.openError(getShell(), "Theme", e.getMessage());
+		}
+	}
+
+	/* The own image of the tab rows or the image of the toolbar */
+	private static String tabImageText(CustomTheme theme) {
+		if (!theme.getTabImage().isEmpty()) {
+			return theme.getTabImage();
+		}
+		return theme.getArtwork().isEmpty() ? "Same as toolbar (none)" : "Same as toolbar (" + theme.getArtwork() + ")";
+	}
+
+	private void chooseTabImage() {
+		FileDialog dialog = new FileDialog(getShell(), SWT.OPEN);
+		dialog.setFilterExtensions(new String[] { "*.svg;*.png;*.jpg;*.jpeg;*.gif;*.tif;*.tiff;*.bmp", "*.*" });
+		dialog.setFilterNames(new String[] { "Images (SVG, PNG, JPG, GIF, TIFF, BMP)", "All Files" });
+		String file = dialog.open();
+		if (file == null || current == null) {
+			return;
+		}
+		try {
+			ThemeStore.save(current);
+			current.setTabImage(ThemeStore.copyTabImage(current, new File(file)));
+			/* The image is shown in the tab rows */
+			if (!current.isTabArtwork()) {
+				current.setTabArtwork(true);
+				tabArtwork.setSelection(true);
+			}
 			changed();
 		} catch (IOException e) {
 			MessageDialog.openError(getShell(), "Theme", e.getMessage());
@@ -416,6 +575,17 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 			} catch (IOException e) {
 				theme.setArtwork("");
+			}
+		}
+		/* The own image of the tab rows */
+		if (current != null && !current.getTabImage().isEmpty()) {
+			try {
+				ThemeStore.save(theme);
+				File art = new File(ThemeStore.dir(current), current.getTabImage());
+				Files.copy(art.toPath(), new File(ThemeStore.dir(theme), current.getTabImage()).toPath(),
+						java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+			} catch (IOException e) {
+				theme.setTabImage("");
 			}
 		}
 		store(theme);

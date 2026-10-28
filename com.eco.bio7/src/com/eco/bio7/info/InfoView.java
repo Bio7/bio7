@@ -58,7 +58,6 @@ public class InfoView extends ViewPart {
 		/* A logarithmic frame rate slider: each tick distance is the same speed factor! */
 		timeSwtScale = new SpeedSlider(composite, SWT.NONE, Time.MIN_FPS, Time.MAX_FPS);
 		timeSwtScale.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
-		timeSwtScale.setBackground(parent.getBackground());
 		timeSwtScale.setValue(Time.getFps());
 		timeSwtScale.setToolTipText("Frames (calculation steps) per second: left slower, right faster.\n"
 				+ "Keys: Left/Right one step (8%), Shift+Left/Right or PageDown/PageUp 10 steps, Home/End minimum/maximum.");

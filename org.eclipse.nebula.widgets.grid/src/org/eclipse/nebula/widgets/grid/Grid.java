@@ -561,6 +561,8 @@ public class Grid extends Canvas {
 	 * Grid line color.
 	 */
 	private Color lineColor;
+	/*Changed for Bio7: no own line color was set (the theme can set it)!*/
+	private boolean defaultLineColor;
 
 	/**
 	 * Vertical scrollbar proxy.
@@ -838,6 +840,8 @@ public class Grid extends Canvas {
 
 		setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
 		setLineColor(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+		/*Changed for Bio7!*/
+		defaultLineColor = true;
 
 		if ((style & SWT.MULTI) != 0) {
 			selectionType = GridSelectionType.MULTI;
@@ -2109,6 +2113,10 @@ public class Grid extends Canvas {
 	 */
 	public Color getLineColor() {
 		checkWidget();
+		/*Changed for Bio7: the default lines have the line color of the theme (see GridHeaderColors)!*/
+		if (defaultLineColor) {
+			return GridHeaderColors.cellLine(lineColor);
+		}
 		return lineColor;
 	}
 
@@ -3787,6 +3795,7 @@ public class Grid extends Canvas {
 	public void setLineColor(final Color lineColor) {
 		checkWidget();
 		this.lineColor = lineColor;
+		defaultLineColor = false;
 	}
 
 	/**

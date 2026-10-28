@@ -594,7 +594,6 @@ public class Options3d extends ViewPart {
 		/* A logarithmic speed slider like in the control view of Bio7 (steps per second)! */
 		final SpeedSlider stepRateSlider = new SpeedSlider(composite_2, SWT.NONE, 0.1, 1000);
 		stepRateSlider.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-		stepRateSlider.setBackground(composite_2.getBackground());
 		stepRateSlider.setValue(1e9 / Math.max(1, SpatialStructure.getPeriod()));
 		stepRateSlider.setToolTipText("The speed of the canStep() function in steps (frames) per second (at most the frame rate of the view):\n"
 				+ "left slower, right faster. Keys: Left/Right one step (8%), Shift+Left/Right or PageDown/PageUp 10 steps,\nHome/End minimum/maximum.");

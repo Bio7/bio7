@@ -37,12 +37,33 @@ public final class ArtworkRenderer {
 	 * @param themeDir the folder of the theme (with the artwork file)
 	 */
 	public static ImageData render(CustomTheme theme, File themeDir, int width, int height, int zoom) {
-		int w = Math.max(1, width * zoom / 100);
-		int h = Math.max(1, height * zoom / 100);
-		ImageData out = new ImageData(w, h, 24, new PaletteData(0xFF0000, 0xFF00, 0xFF));
 		RGB bottom = theme.getColor("toolbarBottom");
 		/* A flat toolbar has one color! */
 		RGB top = "flat".equals(theme.getStyle()) ? bottom : theme.getColor("toolbarTop");
+		return render(theme, themeDir, width, height, zoom, top, bottom, true, theme.getArtwork(), "raised".equals(theme.getStyle()), theme.getFade(),
+				theme.getFadeWidth(), theme.getOpacity());
+	}
+
+	/**
+	 * The image data of a view tab row (in pixels of the zoom): the tab row color
+	 * or the gradient to the gradient end color and the artwork of the theme (if
+	 * enabled for the tab rows).
+	 */
+	public static ImageData renderTabs(CustomTheme theme, File themeDir, int width, int height, int zoom) {
+		RGB top = theme.getColor("tabRow");
+		RGB bottom = theme.isTabGradient() ? theme.getColor("tabRowEnd") : top;
+		/* The tab rows have an own fade (e.g., the artwork between the tabs and the tool bars) */
+		/* The own image of the tab rows or the image of the toolbar */
+		return render(theme, themeDir, width, height, zoom, top, bottom, theme.isTabArtwork(), theme.getTabArtworkImage(), "raised".equals(theme.getTabStyle()),
+				theme.getTabFade(),
+				theme.getTabFadeWidth(), theme.getTabOpacity());
+	}
+
+	private static ImageData render(CustomTheme theme, File themeDir, int width, int height, int zoom, RGB top, RGB bottom,
+			boolean withArtwork, String artworkImage, boolean raised, String fadeMode, int fadeWidth, int artworkOpacity) {
+		int w = Math.max(1, width * zoom / 100);
+		int h = Math.max(1, height * zoom / 100);
+		ImageData out = new ImageData(w, h, 24, new PaletteData(0xFF0000, 0xFF00, 0xFF));
 		int[] row = new int[w];
 		int[][] base = new int[h][];
 		for (int y = 0; y < h; y++) {
@@ -52,11 +73,11 @@ public final class ArtworkRenderer {
 			int b = (int) Math.round(top.blue + (bottom.blue - top.blue) * t);
 			base[y] = new int[] { r, g, b };
 		}
-		ImageData art = loadArtwork(theme, themeDir, w, h);
-		double opacity = theme.getOpacity() / 100.0;
+		ImageData art = withArtwork ? loadArtwork(theme, artworkImage, themeDir, w, h) : null;
+		double opacity = artworkOpacity / 100.0;
 		double[] fade = new double[w];
 		for (int x = 0; x < w; x++) {
-			fade[x] = fade(theme.getFade(), w == 1 ? 0 : (double) x / (w - 1), theme.getFadeWidth() / 100.0);
+			fade[x] = fade(fadeMode, w == 1 ? 0 : (double) x / (w - 1), fadeWidth / 100.0);
 		}
 		for (int y = 0; y < h; y++) {
 			int[] bc = base[y];
@@ -75,7 +96,7 @@ public final class ArtworkRenderer {
 			}
 			out.setPixels(0, y, w, row, 0);
 		}
-		if ("raised".equals(theme.getStyle())) {
+		if (raised) {
 			raise(out, zoom);
 		}
 		return out;
@@ -121,8 +142,7 @@ public final class ArtworkRenderer {
 	}
 
 	/* The artwork scaled to the toolbar (a tile with the height of the tile size or the full size)! */
-	private static ImageData loadArtwork(CustomTheme theme, File themeDir, int w, int h) {
-		String name = theme.getArtwork();
+	private static ImageData loadArtwork(CustomTheme theme, String name, File themeDir, int w, int h) {
 		if (name == null || name.isEmpty() || themeDir == null) {
 			return null;
 		}

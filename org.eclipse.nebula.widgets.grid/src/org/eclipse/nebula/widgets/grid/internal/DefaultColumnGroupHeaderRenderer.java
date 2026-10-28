@@ -16,6 +16,7 @@
  *******************************************************************************/
 package org.eclipse.nebula.widgets.grid.internal;
 
+import org.eclipse.nebula.widgets.grid.GridHeaderColors;
 import org.eclipse.nebula.widgets.grid.GridColumnGroup;
 import org.eclipse.nebula.widgets.grid.GridHeaderRenderer;
 import org.eclipse.nebula.widgets.grid.IInternalWidget;
@@ -67,7 +68,7 @@ public class DefaultColumnGroupHeaderRenderer extends GridHeaderRenderer
         }
         else
         {
-            gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+            gc.setBackground(GridHeaderColors.background(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND)));
         }
 
         gc.fillRectangle(getBounds().x, getBounds().y, getBounds().width + 1,
@@ -87,7 +88,7 @@ public class DefaultColumnGroupHeaderRenderer extends GridHeaderRenderer
             width -= toggleRenderer.getSize().x;
         }
 
-        gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND));
+        gc.setForeground(GridHeaderColors.foreground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND)));
 
         String text = group.getText();
 		if (!isWordWrap())
@@ -138,7 +139,7 @@ public class DefaultColumnGroupHeaderRenderer extends GridHeaderRenderer
             toggleRenderer.paint(gc, null);
         }
 
-        gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
+        gc.setForeground(GridHeaderColors.shadow(getDisplay(), SWT.COLOR_WIDGET_DARK_SHADOW));
 
         gc.drawLine(getBounds().x + getBounds().width - 1, getBounds().y, getBounds().x
                                                                           + getBounds().width - 1,

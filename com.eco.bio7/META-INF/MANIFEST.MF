@@ -820,6 +820,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.nebula.widgets.grid;bundle-version="1.2.1"
 Eclipse-LazyStart: true
 Import-Package: org.eclipse.e4.ui.css.swt.theme,
+ org.eclipse.e4.ui.workbench.renderers.swt,
  org.osgi.service.event
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Bundle-ClassPath: .,

@@ -50,8 +50,10 @@ public class LinearSlider extends Canvas {
 	private int pageIncrement = 0;
 	private double labelFactor = 1;
 	private boolean dragging;
-	/* Without an own background the slider is transparent (e.g., in a group) */
+	/* Without an own background the slider has the background of its parent */
 	private boolean backgroundSet;
+	/* Without an own font the slider uses the font of the parent */
+	private boolean fontSet;
 
 	public LinearSlider(Composite parent, int style) {
 		super(parent, style | SWT.DOUBLE_BUFFERED | SWT.TRANSPARENT);
@@ -100,6 +102,23 @@ public class LinearSlider extends Canvas {
 	public void setBackground(Color color) {
 		super.setBackground(color);
 		backgroundSet = color != null;
+	}
+
+	@Override
+	public void setFont(org.eclipse.swt.graphics.Font font) {
+		super.setFont(font);
+		fontSet = font != null;
+	}
+
+	/* Without an own font the font of the parent (e.g., the font of a theme, the canvas is not styled) */
+	private org.eclipse.swt.graphics.Font paintFont() {
+		return fontSet || getParent() == null ? getFont() : getParent().getFont();
+	}
+
+	private GC newGC() {
+		GC gc = new GC(this);
+		gc.setFont(paintFont());
+		return gc;
 	}
 
 	public int getSelection() {
@@ -240,7 +259,7 @@ public class LinearSlider extends Canvas {
 	}
 
 	private int valueAt(int x) {
-		GC gc = new GC(this);
+		GC gc = newGC();
 		int[] t = track(gc);
 		gc.dispose();
 		double fraction = Math.max(0, Math.min(1, (x - t[0]) / (double) Math.max(1, t[1])));
@@ -251,7 +270,7 @@ public class LinearSlider extends Canvas {
 
 	@Override
 	public Point computeSize(int wHint, int hHint, boolean changed) {
-		GC gc = new GC(this);
+		GC gc = newGC();
 		int fh = gc.getFontMetrics().getHeight();
 		int h = 2 + thumbHeight(gc) + 2 + 7 + 2 + fh + 2;
 		gc.dispose();
@@ -264,10 +283,25 @@ public class LinearSlider extends Canvas {
 				(int) (x.blue * f + y.blue * (1 - f)));
 	}
 
+	/*
+	 * The painted fill of a group of a custom theme on macOS (see GroupColors, also
+	 * if the theme set a background to the slider) or null!
+	 */
+	private Color groupFill() {
+		Object fill = getParent() == null ? null : getParent().getData("bio7.themes.groupFill");
+		return fill instanceof Color color && !color.isDisposed() ? color : null;
+	}
+
 	private void paint(GC gc) {
+		gc.setFont(paintFont());
 		Rectangle r = getClientArea();
 		Color fg = getForeground();
-		Color bg = getBackground();
+		/*
+		 * Without an own background the background of the parent (e.g., set by the
+		 * theme): the double buffer is filled with the default background of the
+		 * slider (not transparent)!
+		 */
+		Color bg = groupFill() != null ? groupFill() : backgroundSet || getParent() == null ? getBackground() : getParent().getBackground();
 		Color trackColor = blend(fg, bg, 0.3);
 		Color minorColor = blend(fg, bg, 0.4);
 		Color majorColor = blend(fg, bg, 0.7);
@@ -276,10 +310,8 @@ public class LinearSlider extends Canvas {
 		Color knob = blend(getDisplay().getSystemColor(SWT.COLOR_WHITE), bg, 0.8);
 		try {
 			gc.setAdvanced(true);
-			if (backgroundSet) {
-				gc.setBackground(bg);
-				gc.fillRectangle(r);
-			}
+			gc.setBackground(bg);
+			gc.fillRectangle(r);
 			int[] t = track(gc);
 			int m = t[0];
 			int w = t[1];

@@ -53,8 +53,10 @@ public class SpeedSlider extends Canvas {
 	private final int last;
 	private double value;
 	private boolean dragging;
-	/* Without an own background the slider is transparent (e.g., in a group) */
+	/* Without an own background the slider has the background of its parent */
 	private boolean backgroundSet;
+	/* Without an own font the slider uses the font of the parent */
+	private boolean fontSet;
 
 	/**
 	 * @param min the lowest frame rate (rounded up to a step)
@@ -110,6 +112,23 @@ public class SpeedSlider extends Canvas {
 	public void setBackground(Color color) {
 		super.setBackground(color);
 		backgroundSet = color != null;
+	}
+
+	@Override
+	public void setFont(org.eclipse.swt.graphics.Font font) {
+		super.setFont(font);
+		fontSet = font != null;
+	}
+
+	/* Without an own font the font of the parent (e.g., the font of a theme, the canvas is not styled) */
+	private org.eclipse.swt.graphics.Font paintFont() {
+		return fontSet || getParent() == null ? getFont() : getParent().getFont();
+	}
+
+	private GC newGC() {
+		GC gc = new GC(this);
+		gc.setFont(paintFont());
+		return gc;
 	}
 
 	/** The frame rate of a step (step 0 is 1 fps, step 30 is 10 fps). */
@@ -219,7 +238,7 @@ public class SpeedSlider extends Canvas {
 	}
 
 	private int stepAt(int x) {
-		GC gc = new GC(this);
+		GC gc = newGC();
 		int[] t = track(gc);
 		gc.dispose();
 		return first + (int) Math.round(Math.max(0, Math.min(1, (x - t[0]) / (double) Math.max(1, t[1]))) * (last - first));
@@ -227,7 +246,7 @@ public class SpeedSlider extends Canvas {
 
 	@Override
 	public Point computeSize(int wHint, int hHint, boolean changed) {
-		GC gc = new GC(this);
+		GC gc = newGC();
 		int fh = gc.getFontMetrics().getHeight();
 		int h = 2 + thumbHeight(gc) + 2 + 7 + 2 + fh + 2;
 		gc.dispose();
@@ -240,10 +259,25 @@ public class SpeedSlider extends Canvas {
 				(int) (x.blue * f + y.blue * (1 - f)));
 	}
 
+	/*
+	 * The painted fill of a group of a custom theme on macOS (see GroupColors, also
+	 * if the theme set a background to the slider) or null!
+	 */
+	private Color groupFill() {
+		Object fill = getParent() == null ? null : getParent().getData("bio7.themes.groupFill");
+		return fill instanceof Color color && !color.isDisposed() ? color : null;
+	}
+
 	private void paint(GC gc) {
+		gc.setFont(paintFont());
 		Rectangle r = getClientArea();
 		Color fg = getForeground();
-		Color bg = getBackground();
+		/*
+		 * Without an own background the background of the parent (e.g., set by the
+		 * theme): the double buffer is filled with the default background of the
+		 * slider (not transparent)!
+		 */
+		Color bg = groupFill() != null ? groupFill() : backgroundSet || getParent() == null ? getBackground() : getParent().getBackground();
 		Color trackColor = blend(fg, bg, 0.3);
 		Color minorColor = blend(fg, bg, 0.4);
 		Color majorColor = blend(fg, bg, 0.7);
@@ -252,10 +286,8 @@ public class SpeedSlider extends Canvas {
 		Color knob = blend(getDisplay().getSystemColor(SWT.COLOR_WHITE), bg, 0.8);
 		try {
 			gc.setAdvanced(true);
-			if (backgroundSet) {
-				gc.setBackground(bg);
-				gc.fillRectangle(r);
-			}
+			gc.setBackground(bg);
+			gc.fillRectangle(r);
 			int[] t = track(gc);
 			int m = t[0];
 			int w = t[1];
