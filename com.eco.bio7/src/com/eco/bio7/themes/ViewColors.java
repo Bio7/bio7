@@ -107,7 +107,9 @@ final class ViewColors {
 		if (theme == null) {
 			GridHeaderColors.setColors(null, null, null, null);
 			GroupColors.apply(null, null);
+			ThemeToolTips.apply(null, null, null);
 		} else {
+			ThemeToolTips.apply(theme.getColor("assistBackground"), theme.getColor("assistText"), theme.getColor("groupBorder"));
 			GroupColors.apply(theme.getColor("groupBackground"), theme.getColor("groupBorder"));
 			GridHeaderColors.setColors(theme.getColor("tableHeader"), theme.getColor("tableHeaderText"), theme.getColor("tableHeaderLine"),
 					theme.getColor("viewBackground"));
