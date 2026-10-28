@@ -15,7 +15,6 @@ import java.lang.reflect.Method;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
@@ -46,6 +45,9 @@ final class GroupColors {
 	 */
 	static final String FILL = "bio7.themes.groupFill";
 	private static final int CORNER_RADIUS = 10;
+	/* The original inner margin of a painted group (see padding) and the additional space */
+	private static final String MARGIN = "bio7.themes.groupMargin";
+	private static final int PADDING = 4;
 
 	private static Color fill;
 	private static Color border;
@@ -115,8 +117,34 @@ final class GroupColors {
 		} catch (ReflectiveOperationException | RuntimeException e) {
 			/* Another SWT version: the native box */
 		}
+		padding(group);
 		/* Also the children (e.g., the sliders which paint the fill of the group) */
 		redrawAll(group);
+	}
+
+	/*
+	 * The content of a painted box has more space at the top and the bottom (the
+	 * inner margin of SWT, used for the layout and the client area): else the first
+	 * row (e.g., check boxes, sliders) touches the edge of the box!
+	 */
+	private static void padding(Group group) {
+		try {
+			java.lang.reflect.Field margin = Group.class.getDeclaredField("vMargin");
+			margin.setAccessible(true);
+			Object original = group.getData(MARGIN);
+			if (fill != null && original == null) {
+				int value = margin.getInt(group);
+				group.setData(MARGIN, value);
+				margin.setInt(group, value + PADDING);
+				group.requestLayout();
+			} else if (fill == null && original instanceof Integer value) {
+				margin.setInt(group, value);
+				group.setData(MARGIN, null);
+				group.requestLayout();
+			}
+		} catch (ReflectiveOperationException | RuntimeException e) {
+			/* Another SWT version: the native margin */
+		}
 	}
 
 	private static void redrawAll(Control control) {
@@ -128,7 +156,7 @@ final class GroupColors {
 		}
 	}
 
-	/* The box below the title (the area of the native box) and the title */
+	/* The box (the area of the content of the native box) and the title above */
 	private static void paint(Event event) {
 		if (fill == null) {
 			return;
@@ -138,8 +166,12 @@ final class GroupColors {
 		Rectangle r = group.getBounds();
 		String text = group.getText();
 		gc.setFont(group.getFont());
-		Point title = text.isEmpty() ? new Point(0, 0) : gc.textExtent(text);
-		int top = text.isEmpty() ? 0 : title.y + 1;
+		org.eclipse.swt.graphics.FontMetrics metrics = gc.getFontMetrics();
+		/* The top of the content (the native layout with the space of the title) */
+		int top = contentTop(group);
+		if (top < 0) {
+			top = text.isEmpty() ? 0 : metrics.getHeight() + 1;
+		}
 		gc.setAdvanced(true);
 		gc.setAntialias(SWT.ON);
 		gc.setBackground(fill);
@@ -147,8 +179,28 @@ final class GroupColors {
 		gc.setForeground(border);
 		gc.drawRoundRectangle(0, top, r.width - 1, r.height - top - 1, CORNER_RADIUS, CORNER_RADIUS);
 		if (!text.isEmpty()) {
+			/* The baseline of the title just above the box */
 			gc.setForeground(group.getForeground());
-			gc.drawText(text, 6, 0, true);
+			gc.drawText(text, 6, top - 2 - metrics.getLeading() - metrics.getAscent(), true);
+		}
+	}
+
+	/* The distance of the content view from the top of the native box (not flipped) or -1 */
+	private static int contentTop(Group group) {
+		try {
+			java.lang.reflect.Field field = Group.class.getDeclaredField("contentView");
+			field.setAccessible(true);
+			Object content = field.get(group);
+			Object view = Control.class.getField("view").get(group);
+			Object contentFrame = content.getClass().getMethod("frame").invoke(content);
+			Object frame = view.getClass().getMethod("frame").invoke(view);
+			Class<?> rect = contentFrame.getClass();
+			double height = rect.getField("height").getDouble(frame);
+			double y = rect.getField("y").getDouble(contentFrame);
+			double contentHeight = rect.getField("height").getDouble(contentFrame);
+			return (int) Math.round(height - (y + contentHeight));
+		} catch (ReflectiveOperationException | RuntimeException e) {
+			return -1;
 		}
 	}
 }

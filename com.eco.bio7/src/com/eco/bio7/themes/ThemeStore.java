@@ -68,7 +68,7 @@ public final class ThemeStore {
 	 * The version of the example themes: an example of an older version is
 	 * installed again if it has not been changed by the user!
 	 */
-	private static final int EXAMPLES_VERSION = 10;
+	private static final int EXAMPLES_VERSION = 11;
 	/* The name of the own image of the view tab rows in the theme folder (without the extension) */
 	private static final String TAB_IMAGE = "tab-artwork";
 
