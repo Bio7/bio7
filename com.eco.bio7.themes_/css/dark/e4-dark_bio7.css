@@ -313,3 +313,23 @@ CTabFolder Composite.ToolbarComposite,
 	background-color: '#org-eclipse-ui-workbench-ACTIVE_UNSELECTED_TABS_COLOR_START';
 	color: #dddddd;
 }
+
+/*
+ * The view tab rows with the Bio7 renderer: the controls in the tab row (e.g., the
+ * tool bar of the Table view) are painted with the color of the tab row (else
+ * the tool bars and their composite have another dark color)!
+ */
+.MPartStack,
+.MPartStack.active,
+.MPartStack.active.noFocus {
+	swt-tab-renderer: url('bundleclass://com.eco.bio7/com.eco.bio7.themes.ThemeTabRendering');
+}
+
+/*
+ * The tab folders in the views (e.g., the tabs of the 3D options) show the full
+ * texts and a chevron for the hidden tabs (like the light theme): the renderer of
+ * the view tabs shortens the texts to one character!
+ */
+.MPart CTabFolder {
+	swt-tab-renderer: url('bundleclass://com.eco.bio7/com.eco.bio7.themes.InnerTabRendering');
+}

@@ -106,7 +106,8 @@ final class ViewColors {
 		CustomTheme theme = ThemeStore.find(ThemeStore.activeFolder());
 		if (theme == null) {
 			GridHeaderColors.setColors(null, null, null, null);
-			GroupColors.apply(null, null, null);
+			/* The default themes: the boxes with the color of the parent (no native tint) */
+			GroupColors.applyDefault();
 			ThemeToolTips.apply(null, null, null);
 			applyHeapStatus(null);
 			SelectionColors.apply(null);

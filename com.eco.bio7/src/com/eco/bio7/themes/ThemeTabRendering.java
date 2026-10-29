@@ -71,7 +71,12 @@ public class ThemeTabRendering extends CTabRendering {
 	private void paintPicture(GC gc, Rectangle bounds) {
 		CustomTheme theme = ToolbarArtwork.getTheme();
 		File dir = ToolbarArtwork.getThemeDir();
-		if (theme == null || folder.isDisposed()) {
+		if (folder.isDisposed()) {
+			return;
+		}
+		/* A default theme (e.g., the dark theme): the color of the tab row of this renderer (from the CSS) */
+		org.eclipse.swt.graphics.RGB rowColor = theme == null ? tabRowColor() : null;
+		if (theme == null && rowColor == null) {
 			return;
 		}
 		Point size = folder.getSize();
@@ -85,12 +90,13 @@ public class ThemeTabRendering extends CTabRendering {
 		if (area.isEmpty()) {
 			return;
 		}
-		Object key = size.x + "x" + height + "/" + ToolbarArtwork.getVersion() + "/" + System.identityHashCode(theme);
+		Object key = size.x + "x" + height + "/" + ToolbarArtwork.getVersion() + "/" + (theme != null ? System.identityHashCode(theme) : rowColor);
 		if (picture == null || picture.isDisposed() || !key.equals(pictureKey)) {
 			Image old = picture;
 			final int width = size.x;
 			final int h = height;
-			picture = new Image(folder.getDisplay(), (ImageDataProvider) zoom -> ArtworkRenderer.renderTabs(theme, dir, width, h, zoom));
+			picture = new Image(folder.getDisplay(), (ImageDataProvider) zoom -> theme != null ? ArtworkRenderer.renderTabs(theme, dir, width, h, zoom)
+					: solid(rowColor, width * zoom / 100, h * zoom / 100));
 			pictureKey = key;
 			if (old != null && !old.isDisposed()) {
 				old.dispose();
@@ -109,6 +115,30 @@ public class ThemeTabRendering extends CTabRendering {
 				paintBehind(child);
 			}
 		}
+	}
+
+	/* The color of the unselected tabs of the renderer (set by the CSS of the default theme) or null */
+	private org.eclipse.swt.graphics.RGB tabRowColor() {
+		try {
+			java.lang.reflect.Field field = CTabRendering.class.getDeclaredField("unselectedTabsColors");
+			field.setAccessible(true);
+			Color[] colors = (Color[]) field.get(this);
+			return colors != null && colors.length > 0 && colors[0] != null && !colors[0].isDisposed() ? colors[0].getRGB() : null;
+		} catch (ReflectiveOperationException | RuntimeException e) {
+			return null;
+		}
+	}
+
+	private static org.eclipse.swt.graphics.ImageData solid(org.eclipse.swt.graphics.RGB rgb, int width, int height) {
+		org.eclipse.swt.graphics.ImageData data = new org.eclipse.swt.graphics.ImageData(Math.max(1, width), Math.max(1, height), 24,
+				new org.eclipse.swt.graphics.PaletteData(0xFF0000, 0xFF00, 0xFF));
+		int pixel = data.palette.getPixel(rgb);
+		for (int y = 0; y < data.height; y++) {
+			for (int x = 0; x < data.width; x++) {
+				data.setPixel(x, y, pixel);
+			}
+		}
+		return data;
 	}
 
 	private static boolean inTabRow(Control child, Rectangle header) {

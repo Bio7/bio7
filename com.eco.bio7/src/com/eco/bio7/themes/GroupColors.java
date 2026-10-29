@@ -54,6 +54,8 @@ final class GroupColors {
 	private static Color fill;
 	private static Color border;
 	private static Color text;
+	/* The groups are painted: with the colors of a custom theme or (fill null) with the color of the parent (default themes) */
+	private static boolean active;
 	private static boolean installed;
 
 	private GroupColors() {
@@ -66,7 +68,7 @@ final class GroupColors {
 		}
 		installed = true;
 		Display.getDefault().addFilter(SWT.Skin, event -> {
-			if (fill != null && event.widget instanceof Group group) {
+			if (active && event.widget instanceof Group group) {
 				style(group);
 			}
 		});
@@ -74,10 +76,24 @@ final class GroupColors {
 
 	/** Sets the colors of all groups (null for the native boxes). */
 	static void apply(RGB fillColor, RGB borderColor, RGB textColor) {
+		apply(fillColor, borderColor, textColor, fillColor != null);
+	}
+
+	/*
+	 * The groups of the default themes: the boxes with the color of the parent
+	 * (else the native box has an own tint and the widgets of the group the color of
+	 * the view, e.g., in the dark theme)!
+	 */
+	static void applyDefault() {
+		apply(null, null, null, true);
+	}
+
+	private static void apply(RGB fillColor, RGB borderColor, RGB textColor, boolean paint) {
 		if (!COCOA) {
 			return;
 		}
 		install();
+		active = paint;
 		Display display = Display.getDefault();
 		fill = fillColor == null ? null : new Color(display, fillColor);
 		border = fillColor == null ? null : new Color(display, borderColor != null ? borderColor : fillColor);
@@ -105,30 +121,30 @@ final class GroupColors {
 		if (group.isDisposed()) {
 			return;
 		}
-		group.setData(FILL, fill);
-		group.setData(TEXT, text);
+		Composite parent = group.getParent();
+		group.setData(FILL, !active ? null : fill != null ? fill : parent != null ? parent.getBackground() : null);
+		group.setData(TEXT, !active ? null : text != null ? text : parent != null ? parent.getForeground() : null);
 		/*
 		 * Painted by the parent: the paint of the group is only the area of its content
 		 * (below the title of the native box), the transparent group shows the parent!
 		 */
-		Composite parent = group.getParent();
-		if (fill != null && parent != null && parent.getData(PAINTED) == null) {
+		if (active && parent != null && parent.getData(PAINTED) == null) {
 			parent.setData(PAINTED, Boolean.TRUE);
 			parent.addListener(SWT.Paint, GroupColors::paintGroups);
 		}
-		if (fill != null && group.getData(PAINTED) == null) {
+		if (active && group.getData(PAINTED) == null) {
 			group.setData(PAINTED, Boolean.TRUE);
 			/* The parent paints the box again at the new bounds */
 			group.addListener(SWT.Resize, _ -> redrawParent(group));
 			group.addListener(SWT.Move, _ -> redrawParent(group));
 			/* A background set later (e.g., by CSS after a theme change) would cover the box of the parent */
 			group.addListener(SWT.Paint, _ -> {
-				if (fill != null && hasOwnBackground(group)) {
+				if (active && hasOwnBackground(group)) {
 					group.getDisplay().asyncExec(() -> clearBackground(group));
 				}
 			});
 		}
-		if (fill != null) {
+		if (active) {
 			clearBackground(group);
 			/* After the CSS of a new group (the CSS engine styles it after this filter) */
 			group.getDisplay().asyncExec(() -> clearBackground(group));
@@ -140,7 +156,7 @@ final class GroupColors {
 			Class<?> os = Class.forName("org.eclipse.swt.internal.cocoa.OS", true, Control.class.getClassLoader());
 			Method sel = os.getMethod("sel_registerName", String.class);
 			Method send = os.getMethod("objc_msgSend", long.class, long.class, long.class);
-			send.invoke(null, id, sel.invoke(null, "setTransparent:"), fill != null ? 1L : 0L);
+			send.invoke(null, id, sel.invoke(null, "setTransparent:"), active ? 1L : 0L);
 		} catch (ReflectiveOperationException | RuntimeException e) {
 			/* Another SWT version: the native box */
 		}
@@ -160,12 +176,12 @@ final class GroupColors {
 			java.lang.reflect.Field margin = Group.class.getDeclaredField("vMargin");
 			margin.setAccessible(true);
 			Object original = group.getData(MARGIN);
-			if (fill != null && original == null) {
+			if (active && original == null) {
 				int value = margin.getInt(group);
 				group.setData(MARGIN, value);
 				margin.setInt(group, value + PADDING);
 				group.requestLayout();
-			} else if (fill == null && original instanceof Integer value) {
+			} else if (!active && original instanceof Integer value) {
 				margin.setInt(group, value);
 				group.setData(MARGIN, null);
 				group.requestLayout();
@@ -186,7 +202,7 @@ final class GroupColors {
 
 	/* The group shows the box painted by its parent (macOS: the background of the group fills its content) */
 	private static void clearBackground(Group group) {
-		if (!group.isDisposed() && fill != null && hasOwnBackground(group)) {
+		if (!group.isDisposed() && active && hasOwnBackground(group)) {
 			group.setBackground(null);
 			redrawParent(group);
 		}
@@ -217,11 +233,18 @@ final class GroupColors {
 	 * title strip), the title in the text color of the theme above the box.
 	 */
 	private static void paintGroups(Event event) {
-		if (fill == null) {
+		if (!active) {
 			return;
 		}
 		Composite parent = (Composite) event.widget;
 		GC gc = event.gc;
+		/* The default themes: the color of the parent and a border between the background and the text */
+		Color background = fill != null ? fill : parent.getBackground();
+		Color line = border;
+		if (line == null) {
+			RGB b = parent.getBackground().getRGB(), f = parent.getForeground().getRGB();
+			line = new Color(parent.getDisplay(), (b.red * 4 + f.red) / 5, (b.green * 4 + f.green) / 5, (b.blue * 4 + f.blue) / 5);
+		}
 		for (Control child : parent.getChildren()) {
 			if (!(child instanceof Group group) || !group.isVisible() || group.getData(FILL) == null) {
 				continue;
@@ -238,16 +261,16 @@ final class GroupColors {
 			int top = r.y + strip;
 			gc.setAdvanced(true);
 			gc.setAntialias(SWT.ON);
-			gc.setBackground(fill);
+			gc.setBackground(background);
 			gc.fillRoundRectangle(r.x, top, r.width - 1, r.y + r.height - top - 1, CORNER_RADIUS, CORNER_RADIUS);
-			gc.setForeground(border);
+			gc.setForeground(line);
 			gc.drawRoundRectangle(r.x, top, r.width - 1, r.y + r.height - top - 1, CORNER_RADIUS, CORNER_RADIUS);
 			String title = group.getText();
 			if (!title.isEmpty()) {
 				gc.setFont(group.getFont());
 				org.eclipse.swt.graphics.FontMetrics metrics = gc.getFontMetrics();
 				/* The baseline of the title just above the box */
-				gc.setForeground(text != null ? text : group.getForeground());
+				gc.setForeground(text != null ? text : parent.getForeground());
 				gc.drawText(title, r.x + 6, top - 2 - metrics.getLeading() - metrics.getAscent(), true);
 			}
 		}

@@ -60,8 +60,10 @@ public final class IconColors {
 
 	/** The green of the Bio7 icons. */
 	public static final RGB BIO7_GREEN = new RGB(0x63, 0x8d, 0x43);
-	/** The default icon color of the dark theme (a lighter green). */
-	public static final RGB DARK_GREEN = new RGB(0x86, 0xb5, 0x5a);
+	/** The default icon color of the dark theme (the light grey of the button texts of the dark theme). */
+	public static final RGB DARK_ICON = new RGB(0xdd, 0xdd, 0xdd);
+	/** The default detail color of the dark theme (dark details on the light icons). */
+	public static final RGB DARK_DETAIL = new RGB(0x2b, 0x2b, 0x2b);
 	/** The color of the details of the Bio7 icons. */
 	public static final RGB WHITE = new RGB(0xff, 0xff, 0xff);
 
@@ -89,9 +91,9 @@ public final class IconColors {
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 		store.setDefault(ENABLED, true);
 		PreferenceConverter.setDefault(store, COLOR_LIGHT, BIO7_GREEN);
-		PreferenceConverter.setDefault(store, COLOR_DARK, DARK_GREEN);
+		PreferenceConverter.setDefault(store, COLOR_DARK, DARK_ICON);
 		PreferenceConverter.setDefault(store, DETAIL_LIGHT, WHITE);
-		PreferenceConverter.setDefault(store, DETAIL_DARK, WHITE);
+		PreferenceConverter.setDefault(store, DETAIL_DARK, DARK_DETAIL);
 		return store;
 	}
 

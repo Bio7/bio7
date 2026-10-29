@@ -100,8 +100,11 @@ public final class ThemeStore {
 			CustomTheme theme = find(active);
 			if (theme != null) {
 				activate(theme);
+				return;
 			}
 		}
+		/* A default theme: the colors of the views (e.g., the groups) when the workbench is running */
+		org.eclipse.swt.widgets.Display.getDefault().asyncExec(ViewColors::apply);
 	}
 
 	/** The folder with the custom themes. */

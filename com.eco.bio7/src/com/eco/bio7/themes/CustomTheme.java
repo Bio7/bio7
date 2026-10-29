@@ -118,8 +118,8 @@ public class CustomTheme {
 			put("toolbarBottom", "1e1e1e");
 			put("toolbarText", "ebe8e4");
 			put("statusBar", "1e1e1e");
-			put("iconColor", "86b55a");
-			put("iconDetail", "ffffff");
+			put("iconColor", "dddddd");
+			put("iconDetail", "2b2b2b");
 			put("editorBackground", "1e1e1e");
 			put("editorText", "cccccc");
 			put("consoleBackground", "1e1e1e");
