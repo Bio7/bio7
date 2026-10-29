@@ -56,7 +56,7 @@ public class LinearSlider extends Canvas {
 	private boolean fontSet;
 
 	public LinearSlider(Composite parent, int style) {
-		super(parent, style | SWT.DOUBLE_BUFFERED | SWT.TRANSPARENT);
+		super(parent, style | SWT.DOUBLE_BUFFERED | SpeedSlider.transparent());
 		addListener(SWT.Paint, e -> paint(e.gc));
 		addListener(SWT.Resize, _ -> redraw());
 		addListener(SWT.FocusIn, _ -> redraw());

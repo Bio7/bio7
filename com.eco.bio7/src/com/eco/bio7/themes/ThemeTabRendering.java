@@ -23,6 +23,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
@@ -38,6 +39,11 @@ public class ThemeTabRendering extends CTabRendering {
 
 	private static final Color TRANSPARENT = new Color(0, 0, 0, 0);
 	private static final boolean WINDOWS = "win32".equals(SWT.getPlatform());
+	private static final boolean GTK = "gtk".equals(SWT.getPlatform());
+	/* The part of the picture under a tool bar (Windows, see setPart) and its bounds */
+	private static final String PART = "bio7.themes.tabPart";
+	private static final String PART_KEY = "bio7.themes.tabPartKey";
+	private static final String PENDING = "bio7.themes.tabPending";
 
 	private final CTabFolder folder;
 	private Image picture;
@@ -106,7 +112,16 @@ public class ThemeTabRendering extends CTabRendering {
 	}
 
 	private static boolean inTabRow(Control child, Rectangle header) {
-		return child.getBounds().y < header.height && child.getBounds().height <= header.height + 4;
+		Rectangle bounds = child.getBounds();
+		if (bounds.y >= header.height) {
+			return false;
+		}
+		/*
+		 * GTK: also a tool bar higher than the tab row (e.g., minimize and maximize of
+		 * the empty editor area with a low tab row). It is transparent, so the folder
+		 * is visible below the picture (not the color of the CSS)!
+		 */
+		return bounds.height <= header.height + 4 || (GTK && child instanceof ToolBar);
 	}
 
 	/*
@@ -115,11 +130,26 @@ public class ThemeTabRendering extends CTabRendering {
 	 * of the picture under them as their background: the colors set by the CSS
 	 * engine (also again after a view was moved) are painted over and a background
 	 * image of the folder would be drawn shifted by macOS (as a pattern). Windows
-	 * fills the tool items with their background color, so the tool bars keep
-	 * their color there!
+	 * erases a tool bar with its background (the paint comes too late) and fills
+	 * the tool items with their color, so a tool bar gets the part of the picture
+	 * as its own background image there (see setPart)!
 	 */
 	private void paintBehind(Control control) {
-		if (WINDOWS && control instanceof ToolBar) {
+		if (WINDOWS && control instanceof ToolBar toolBar) {
+			if (control.getData(PAINTED) != this) {
+				control.setData(PAINTED, this);
+				/* The part is set again when the tool bar is moved or styled again (e.g., by the CSS engine) */
+				Listener update = _ -> later(toolBar);
+				control.addListener(SWT.Paint, update);
+				control.addListener(SWT.Move, update);
+				control.addListener(SWT.Resize, update);
+				control.addListener(SWT.Dispose, _ -> disposePart(toolBar));
+			}
+			/*
+			 * Now (in the paint of the folder): the tool bar is painted after the folder, so
+			 * it is not painted with the old part (e.g., when the folder is resized)!
+			 */
+			setPart(toolBar);
 			return;
 		}
 		/* Only one listener of the current renderer (e.g., after another theme was activated) */
@@ -132,8 +162,17 @@ public class ThemeTabRendering extends CTabRendering {
 				Point p = folder.toControl(control.toDisplay(0, 0));
 				event.gc.drawImage(picture, header.x - p.x, header.y - p.y);
 				if (control instanceof ToolBar toolBar) {
-					/* The tool items (e.g., with a text) are filled with their color by the CSS engine */
-					control.getDisplay().asyncExec(() -> transparentItems(toolBar));
+					/*
+					 * The tool items (e.g., with a text) are filled with their color by the CSS
+					 * engine. GTK paints the background color of the tool bar over the picture
+					 * (the paint comes first), so the tool bar is transparent there!
+					 */
+					control.getDisplay().asyncExec(() -> {
+						if (GTK) {
+							transparent(toolBar);
+						}
+						transparentItems(toolBar);
+					});
 				}
 			});
 			control.redraw();
@@ -142,6 +181,87 @@ public class ThemeTabRendering extends CTabRendering {
 			for (Control child : composite.getChildren()) {
 				paintBehind(child);
 			}
+		}
+	}
+
+	private static void transparent(ToolBar toolBar) {
+		if (toolBar.isDisposed()) {
+			return;
+		}
+		Color color = toolBar.getBackground();
+		if (color == null || color.getAlpha() != 0) {
+			toolBar.setBackground(TRANSPARENT);
+		}
+	}
+
+	/* Sets the part later (once for the events of a paint, nothing is changed if the part is right) */
+	private void later(ToolBar toolBar) {
+		/* Not for the listeners of an old renderer (e.g., after another theme was activated) */
+		if (toolBar.isDisposed() || toolBar.getData(PAINTED) != this || toolBar.getData(PENDING) == this) {
+			return;
+		}
+		toolBar.setData(PENDING, this);
+		toolBar.getDisplay().asyncExec(() -> {
+			if (!toolBar.isDisposed()) {
+				if (toolBar.getData(PENDING) == this) {
+					toolBar.setData(PENDING, null);
+				}
+				setPart(toolBar);
+			}
+		});
+	}
+
+	/*
+	 * Windows: the tool bar gets the part of the picture under it as its
+	 * background image (created again if the tool bar was moved or the picture
+	 * changed) and the tool items get no color (they are drawn on the image)!
+	 */
+	private void setPart(ToolBar toolBar) {
+		if (toolBar.isDisposed() || toolBar.getData(PAINTED) != this || picture == null || picture.isDisposed() || header == null || folder.isDisposed()) {
+			return;
+		}
+		Point size = toolBar.getSize();
+		if (size.x <= 0 || size.y <= 0) {
+			return;
+		}
+		Point p = folder.toControl(toolBar.toDisplay(0, 0));
+		Rectangle bounds = new Rectangle(p.x - header.x, p.y - header.y, size.x, size.y);
+		if (!isInFolder(toolBar) || bounds.y < 0 || bounds.y + bounds.height > header.height + 4) {
+			/* Not (anymore) in the tab row (e.g., the tool bar of a narrow view in a row below the tabs) */
+			disposePart(toolBar);
+			return;
+		}
+		Object key = bounds + "/" + pictureKey;
+		Image part = (Image) toolBar.getData(PART);
+		if (part == null || part.isDisposed() || !key.equals(toolBar.getData(PART_KEY))) {
+			Image old = part;
+			Image source = picture;
+			part = new Image(toolBar.getDisplay(), (ImageDataProvider) zoom -> ToolbarArtwork.crop(source.isDisposed() ? null : source.getImageData(zoom), bounds, zoom));
+			toolBar.setData(PART, part);
+			toolBar.setData(PART_KEY, key);
+			toolBar.setBackgroundImage(part);
+			if (old != null && !old.isDisposed()) {
+				old.dispose();
+			}
+		} else if (toolBar.getBackgroundImage() != part) {
+			/* The CSS engine has set another background */
+			toolBar.setBackgroundImage(part);
+		}
+		/* No change (and no paint) if an item has no color */
+		for (ToolItem item : toolBar.getItems()) {
+			item.setBackground(null);
+		}
+	}
+
+	private static void disposePart(Control control) {
+		Object part = control.getData(PART);
+		control.setData(PART, null);
+		control.setData(PART_KEY, null);
+		if (part instanceof Image image && !image.isDisposed()) {
+			if (!control.isDisposed() && control.getBackgroundImage() == image) {
+				control.setBackgroundImage(null);
+			}
+			image.dispose();
 		}
 	}
 
@@ -171,7 +291,22 @@ public class ThemeTabRendering extends CTabRendering {
 	@Override
 	protected void dispose() {
 		disposePicture();
+		if (WINDOWS && !folder.isDisposed()) {
+			disposeParts(folder);
+		}
 		super.dispose();
+	}
+
+	/* The tool bars get the background of the CSS again */
+	private void disposeParts(Composite parent) {
+		for (Control child : parent.getChildren()) {
+			if (child.getData(PAINTED) == this) {
+				disposePart(child);
+			}
+			if (child instanceof Composite composite) {
+				disposeParts(composite);
+			}
+		}
 	}
 
 	private void disposePicture() {

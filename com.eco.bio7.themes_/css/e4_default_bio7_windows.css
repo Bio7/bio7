@@ -145,6 +145,11 @@ ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_TEXT_COLOR {
 	font-family: '#org-eclipse-ui-workbench-TAB_TEXT_FONT';
 }
 
+/* The text of the unselected tabs (set again after a theme with another tab text color, e.g., a custom theme) */
+CTabItem {
+	color: '#org-eclipse-ui-workbench-INACTIVE_TAB_TEXT_COLOR';
+}
+
 CTabItem:selected {
 	color: '#org-eclipse-ui-workbench-ACTIVE_TAB_TEXT_COLOR';
 }

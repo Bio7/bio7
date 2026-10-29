@@ -63,7 +63,7 @@ public class SpeedSlider extends Canvas {
 	 * @param max the highest frame rate (rounded down to a step)
 	 */
 	public SpeedSlider(Composite parent, int style, double min, double max) {
-		super(parent, style | SWT.DOUBLE_BUFFERED | SWT.TRANSPARENT);
+		super(parent, style | SWT.DOUBLE_BUFFERED | transparent());
 		first = (int) Math.ceil(STEPS_PER_DECADE * Math.log10(min) - 1e-6);
 		last = (int) Math.floor(STEPS_PER_DECADE * Math.log10(max) + 1e-6);
 		value = valueOf(first);
@@ -106,6 +106,15 @@ public class SpeedSlider extends Canvas {
 				e.result = format(value) + " fps";
 			}
 		});
+	}
+
+	/*
+	 * SWT.TRANSPARENT (not on Windows): Windows composites the parent (e.g., a
+	 * group) with all its children for a transparent canvas (WS_EX_COMPOSITED),
+	 * which flickers. The slider fills its background, so it is not needed there!
+	 */
+	static int transparent() {
+		return "win32".equals(SWT.getPlatform()) ? SWT.NONE : SWT.TRANSPARENT;
 	}
 
 	@Override

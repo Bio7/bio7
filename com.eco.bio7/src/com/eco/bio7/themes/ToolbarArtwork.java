@@ -24,6 +24,7 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageDataProvider;
 import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -249,12 +250,21 @@ public final class ToolbarArtwork {
 		if (source == null) {
 			return out;
 		}
+		/* The pixels of an image of SWT (e.g., Image.getImageData on Windows) have another order of the colors! */
+		PaletteData palette = source.palette;
+		boolean same = palette.isDirect && source.depth == 24 && palette.redMask == 0xFF0000 && palette.greenMask == 0xFF00 && palette.blueMask == 0xFF;
 		int[] row = new int[w];
 		for (int j = 0; j < h; j++) {
 			int sy = Math.max(0, Math.min(source.height - 1, y + j));
 			for (int i = 0; i < w; i++) {
 				int sx = Math.max(0, Math.min(source.width - 1, x + i));
-				row[i] = source.getPixel(sx, sy);
+				int pixel = source.getPixel(sx, sy);
+				if (same) {
+					row[i] = pixel;
+				} else {
+					RGB rgb = palette.getRGB(pixel);
+					row[i] = (rgb.red << 16) | (rgb.green << 8) | rgb.blue;
+				}
 			}
 			out.setPixels(0, j, w, row, 0);
 		}
