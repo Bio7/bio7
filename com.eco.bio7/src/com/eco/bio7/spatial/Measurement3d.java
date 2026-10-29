@@ -15,6 +15,9 @@ package com.eco.bio7.spatial;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.e4.ui.model.application.ui.MElementContainer;
 import org.eclipse.e4.ui.model.application.ui.MUIElement;
 import org.eclipse.e4.ui.model.application.ui.advanced.MPlaceholder;
@@ -96,6 +99,9 @@ public class Measurement3d {
 	private final List<int[]> labelBounds = new ArrayList<>();
 	/* The lines between the nearest surface points (relative x, y, z of both points) */
 	private List<double[]> distanceLines;
+	/* The folder for the CSV files of all distance matrices (null: no files) and the last files */
+	private java.io.File matrixFolder;
+	private List<java.io.File> matrixFiles = new ArrayList<>();
 	private int[] distanceMesh;
 	private DigitAtlas atlas;
 	private GLContext atlasContext;
@@ -602,9 +608,9 @@ public class Measurement3d {
 	public static final String[] DISTANCE_COLUMNS = { "Nearest (Centroid)", "Centroid Distance", "Nearest (Surface)",
 			"Surface Distance", "Mean Centroid Distance" };
 
-	/* The matrices are displayed for up to this number of objects */
-	private static final int MAX_CENTROID_MATRIX = 500;
-	private static final int MAX_SURFACE_MATRIX = 150;
+	/** The matrices are displayed for up to this number of objects (see measureDistances). */
+	public static final int MAX_CENTROID_MATRIX = 500;
+	public static final int MAX_SURFACE_MATRIX = 150;
 
 	/**
 	 * Measures the distances between the objects of the iso surface (the objects
@@ -621,7 +627,36 @@ public class Measurement3d {
 	 *         objects)} or null if no surface is available
 	 */
 	public double[][][] measureDistances(boolean showTable) {
+		return measureDistances(showTable, null);
+	}
+
+	/**
+	 * Measures the distances (see measureDistances(boolean)) with the progress of
+	 * the steps (the objects, the centroid and the surface distances, the tables).
+	 *
+	 * @param monitor the progress or null
+	 * @return the distances or null if no surface is available or the measurement
+	 *         was canceled
+	 */
+	public double[][][] measureDistances(boolean showTable, IProgressMonitor monitor) {
+		/* The files of the matrices: the same time as the measurement and the tables */
+		SubMonitor progress = SubMonitor.convert(monitor, "Measuring the distances", matrixFolder != null ? 200 : 100);
+		try {
+			return measureDistances(showTable, progress);
+		} catch (OperationCanceledException e) {
+			return null;
+		} finally {
+			if (monitor != null) {
+				monitor.done();
+			}
+		}
+	}
+
+	private double[][][] measureDistances(boolean showTable, SubMonitor progress) {
+		progress.subTask("Measuring the objects");
 		double[][] objects = measureIsoSurface(false);
+		checkCanceled(progress);
+		progress.worked(10);
 		IsoSurface.MeasureData m;
 		int[] objectOfVertex;
 		int[] displayMesh;
@@ -681,7 +716,10 @@ public class Measurement3d {
 		for (int i = 0; i < t.length; i++) {
 			incident[fill[t[i]]++] = i / 3;
 		}
+		progress.worked(5);
 		/* The centroid distances: the nearest neighbor and the mean (the matrix for up to 500 objects) */
+		progress.subTask("Centroid distances of " + n + " objects");
+		SubMonitor centroidProgress = progress.split(10).setWorkRemaining(n);
 		double[][] centroid = n <= MAX_CENTROID_MATRIX ? new double[n][n] : null;
 		int[] nearestCentroid = new int[n];
 		double[] nearestCentroidDistance = new double[n];
@@ -689,6 +727,8 @@ public class Measurement3d {
 		java.util.Arrays.fill(nearestCentroid, -1);
 		java.util.Arrays.fill(nearestCentroidDistance, Double.MAX_VALUE);
 		for (int a = 0; a < n; a++) {
+			checkCanceled(centroidProgress);
+			centroidProgress.worked(1);
 			for (int b = a + 1; b < n; b++) {
 				double dx = objects[a][3] - objects[b][3], dy = objects[a][4] - objects[b][4],
 						dz = objects[a][5] - objects[b][5];
@@ -710,6 +750,8 @@ public class Measurement3d {
 		}
 		/* The surface distances: all pairs for the matrix, else only the nearest neighbors */
 		boolean allPairs = n <= MAX_SURFACE_MATRIX;
+		progress.subTask("Surface distances of " + n + " objects (edge to edge)");
+		SubMonitor surfaceProgress = progress.split(65).setWorkRemaining(n);
 		double[][] surface = allPairs ? new double[n][n] : null;
 		double[][][] closest = new double[n][][];
 		/* The nearest points of the pairs (all pairs) */
@@ -723,6 +765,8 @@ public class Measurement3d {
 				java.util.Arrays.fill(row, Double.NaN);
 			}
 			for (int a = 0; a < n; a++) {
+				checkCanceled(surfaceProgress);
+				surfaceProgress.worked(1);
 				surface[a][a] = 0;
 				for (int b = a + 1; b < n; b++) {
 					double[][] points = new double[2][];
@@ -751,6 +795,8 @@ public class Measurement3d {
 			 * then only the objects with a nearer bounding box
 			 */
 			for (int a = 0; a < n; a++) {
+				checkCanceled(surfaceProgress);
+				surfaceProgress.worked(1);
 				int seed = nearestCentroid[a];
 				if (seed < 0) {
 					continue;
@@ -807,10 +853,147 @@ public class Measurement3d {
 			distanceLines = lines;
 			distanceMesh = displayMesh;
 		}
+		List<java.io.File> files = new ArrayList<>();
+		java.io.File folder = matrixFolder;
+		if (folder != null) {
+			String name = (m.image != null ? m.image.getTitle() : "Model").replaceAll("[\\\\/:*?\"<>|]", "_");
+			try {
+				files.add(writeCentroidMatrix(new java.io.File(folder, name + " Centroid Distances.csv"), objects,
+						progress.split(5)));
+				files.add(writeSurfaceMatrix(new java.io.File(folder, name + " Surface Distances.csv"), p, t, start,
+						incident, members, trees, box, progress.split(95)));
+			} catch (java.io.IOException e) {
+				IJ.log("The distance matrices could not be saved: " + e.getMessage());
+			} catch (OperationCanceledException e) {
+				/* No incomplete files */
+				new java.io.File(folder, name + " Centroid Distances.csv").delete();
+				new java.io.File(folder, name + " Surface Distances.csv").delete();
+				throw e;
+			}
+		}
+		synchronized (this) {
+			matrixFiles = files;
+		}
 		if (showTable) {
+			checkCanceled(progress);
+			progress.subTask("Displaying the tables");
 			showDistanceTables(m, nearest, centroid, surface, clarkEvans);
 		}
+		progress.setWorkRemaining(0);
 		return new double[][][] { nearest, centroid, surface };
+	}
+
+	/**
+	 * Saves all centroid and surface distance matrices of the next measurements of
+	 * the distances as CSV files in the folder (for any number of objects, the
+	 * tables show the matrices for up to MAX_CENTROID_MATRIX and MAX_SURFACE_MATRIX
+	 * objects).
+	 *
+	 * @param folder the folder or null for no files
+	 */
+	public void setMatrixFolder(java.io.File folder) {
+		matrixFolder = folder;
+	}
+
+	/** The CSV files of the matrices of the last measurement of the distances (see setMatrixFolder). */
+	public synchronized List<java.io.File> getMatrixFiles() {
+		return new ArrayList<>(matrixFiles);
+	}
+
+	/* The centroid distances of all objects (row by row, not stored) */
+	private static java.io.File writeCentroidMatrix(java.io.File file, double[][] objects, SubMonitor progress)
+			throws java.io.IOException {
+		int n = objects.length;
+		progress.subTask("Saving the centroid distance matrix (" + n + " x " + n + ")");
+		progress.setWorkRemaining(n);
+		try (java.io.Writer out = new java.io.BufferedWriter(new java.io.FileWriter(file, java.nio.charset.StandardCharsets.UTF_8), 1 << 20)) {
+			out.write(csvHeader(n));
+			StringBuilder row = new StringBuilder();
+			for (int a = 0; a < n; a++) {
+				checkCanceled(progress);
+				row.setLength(0);
+				row.append(a + 1);
+				for (int b = 0; b < n; b++) {
+					double dx = objects[a][3] - objects[b][3], dy = objects[a][4] - objects[b][4], dz = objects[a][5] - objects[b][5];
+					row.append(',');
+					appendNumber(row, Math.sqrt(dx * dx + dy * dy + dz * dz));
+				}
+				row.append('\n');
+				out.write(row.toString());
+				progress.worked(1);
+			}
+		}
+		return file;
+	}
+
+	/*
+	 * The surface distances (edge to edge) of all objects: blocks of rows are
+	 * computed in parallel and written in their order (the matrix is not stored).
+	 */
+	private static java.io.File writeSurfaceMatrix(java.io.File file, double[] p, int[] t, int[] start, int[] incident,
+			int[][] members, KdTree[] trees, double[][] box, SubMonitor progress) throws java.io.IOException {
+		int n = members.length;
+		progress.subTask("Saving the surface distance matrix (" + n + " x " + n + ", edge to edge)");
+		progress.setWorkRemaining(n);
+		int block = Math.max(1, Runtime.getRuntime().availableProcessors() * 4);
+		try (java.io.Writer out = new java.io.BufferedWriter(new java.io.FileWriter(file, java.nio.charset.StandardCharsets.UTF_8), 1 << 20)) {
+			out.write(csvHeader(n));
+			for (int a0 = 0; a0 < n; a0 += block) {
+				checkCanceled(progress);
+				int a1 = Math.min(n, a0 + block);
+				String[] rows = java.util.stream.IntStream.range(a0, a1).parallel().mapToObj(a -> {
+					StringBuilder row = new StringBuilder();
+					row.append(a + 1);
+					double[][] points = new double[2][];
+					for (int b = 0; b < n; b++) {
+						row.append(',');
+						if (b == a) {
+							row.append('0');
+							continue;
+						}
+						appendNumber(row, surfaceDistance(p, t, start, incident, members[a], trees[b], box[b], Double.MAX_VALUE, points));
+					}
+					return row.append('\n').toString();
+				}).toArray(String[]::new);
+				for (String row : rows) {
+					out.write(row);
+				}
+				progress.worked(a1 - a0);
+			}
+		}
+		return file;
+	}
+
+	private static String csvHeader(int n) {
+		StringBuilder header = new StringBuilder("Object");
+		for (int i = 1; i <= n; i++) {
+			header.append(',').append(i);
+		}
+		return header.append('\n').toString();
+	}
+
+	/* A distance with 4 decimals (fast for many values, NaN if no distance) */
+	private static void appendNumber(StringBuilder sb, double v) {
+		if (Double.isNaN(v) || Double.isInfinite(v)) {
+			sb.append("NaN");
+			return;
+		}
+		long scaled = Math.round(v * 10000);
+		if (scaled < 0) {
+			sb.append('-');
+			scaled = -scaled;
+		}
+		sb.append(scaled / 10000).append('.');
+		long fraction = scaled % 10000;
+		for (long d = 1000; d > 0; d /= 10) {
+			sb.append((char) ('0' + (fraction / d) % 10));
+		}
+	}
+
+	private static void checkCanceled(IProgressMonitor monitor) {
+		if (monitor.isCanceled()) {
+			throw new OperationCanceledException();
+		}
 	}
 
 	private void showDistanceTables(IsoSurface.MeasureData m, double[][] nearest, double[][] centroid,
@@ -855,6 +1038,22 @@ public class Measurement3d {
 		table.add(mean);
 		table.add(sd);
 		table.add(ce);
+		/* The matrices are not created for many objects (the size of the table) */
+		List<String> notes = new ArrayList<>();
+		if (centroid == null) {
+			notes.add("Centroid distance matrix: only for up to " + MAX_CENTROID_MATRIX + " objects (" + n + " objects)");
+		}
+		if (surface == null) {
+			notes.add("Surface distance matrix: only for up to " + MAX_SURFACE_MATRIX + " objects (" + n + " objects)");
+		}
+		for (String note : notes) {
+			String[] row = new String[header.length];
+			java.util.Arrays.fill(row, "");
+			row[0] = "Note";
+			row[1] = note;
+			table.add(row);
+		}
+		colors = java.util.Arrays.copyOf(colors, table.size());
 		for (int i = n; i < colors.length; i++) {
 			colors[i] = -1;
 		}

@@ -106,14 +106,98 @@ final class ViewColors {
 		CustomTheme theme = ThemeStore.find(ThemeStore.activeFolder());
 		if (theme == null) {
 			GridHeaderColors.setColors(null, null, null, null);
-			GroupColors.apply(null, null);
+			GroupColors.apply(null, null, null);
 			ThemeToolTips.apply(null, null, null);
+			applyHeapStatus(null);
+			SelectionColors.apply(null);
 		} else {
 			ThemeToolTips.apply(theme.getColor("assistBackground"), theme.getColor("assistText"), theme.getColor("groupBorder"));
-			GroupColors.apply(theme.getColor("groupBackground"), theme.getColor("groupBorder"));
+			applyHeapStatus(theme);
+			SelectionColors.apply(theme.getColor("inactiveSelection"));
+			GroupColors.apply(theme.getColor("groupBackground"), theme.getColor("groupBorder"), theme.getColor("text"));
 			GridHeaderColors.setColors(theme.getColor("tableHeader"), theme.getColor("tableHeaderText"), theme.getColor("tableHeaderLine"),
 					theme.getColor("viewBackground"));
 		}
+	}
+
+	/*
+	 * The memory display of the status line (HeapStatus) has fixed colors for the
+	 * bar and the border (set in its constructor, only the background and the text
+	 * are set by CSS): set by reflection, the original colors again without a
+	 * custom theme (the text color is set by the CSS of every theme).
+	 */
+	private static final String[] HEAP_COLORS = { "usedMemCol", "armCol", "freeMemCol", "topLeftCol", "bottomRightCol", "sepCol" };
+	private static final String HEAP_ORIGINAL = "bio7.themes.heapColors";
+
+	private static void applyHeapStatus(CustomTheme theme) {
+		for (org.eclipse.swt.widgets.Shell shell : Display.getDefault().getShells()) {
+			heapStatus(shell, theme);
+		}
+	}
+
+	private static void heapStatus(Control control, CustomTheme theme) {
+		if (control.isDisposed()) {
+			return;
+		}
+		if ("org.eclipse.ui.internal.HeapStatus".equals(control.getClass().getName())) {
+			colorHeapStatus(control, theme);
+			return;
+		}
+		if (control instanceof Composite composite) {
+			for (Control child : composite.getChildren()) {
+				heapStatus(child, theme);
+			}
+		}
+	}
+
+	private static void colorHeapStatus(Control heap, CustomTheme theme) {
+		try {
+			Color[] original = (Color[]) heap.getData(HEAP_ORIGINAL);
+			if (original == null) {
+				original = new Color[HEAP_COLORS.length];
+				for (int i = 0; i < HEAP_COLORS.length; i++) {
+					original[i] = (Color) field(heap, HEAP_COLORS[i]).get(heap);
+				}
+				heap.setData(HEAP_ORIGINAL, original);
+			}
+			Color[] colors = original;
+			if (theme != null) {
+				Display display = heap.getDisplay();
+				RGB bar = theme.getColor("statusBar"), text = theme.getColor("text");
+				/* The used memory: the icon color of the theme (softened), the free memory: a little lighter or darker than the bar */
+				Color used = new Color(display, mix(theme.getColor("iconColor"), bar, 0.45));
+				Color free = new Color(display, mix(bar, text, 0.08));
+				Color line = new Color(display, theme.getColor("tabBorder"));
+				colors = new Color[] { used, used, free, line, line, line };
+				heap.setBackground(new Color(display, bar));
+			}
+			for (int i = 0; i < HEAP_COLORS.length; i++) {
+				field(heap, HEAP_COLORS[i]).set(heap, colors[i]);
+			}
+			if (theme == null) {
+				/*
+				 * The default light theme has no text color for the memory display (the light
+				 * text of a dark theme stays): the text fits the background!
+				 */
+				Color bg = heap.getBackground();
+				boolean dark = (bg.getRed() * 299 + bg.getGreen() * 587 + bg.getBlue() * 114) / 1000 < 128;
+				heap.setForeground(dark ? new Color(heap.getDisplay(), 238, 238, 238) : new Color(heap.getDisplay(), 30, 30, 30));
+			}
+			heap.redraw();
+		} catch (ReflectiveOperationException | RuntimeException e) {
+			/* Another version of the workbench: the colors of the memory display */
+		}
+	}
+
+	private static java.lang.reflect.Field field(Object object, String name) throws NoSuchFieldException {
+		java.lang.reflect.Field field = object.getClass().getDeclaredField(name);
+		field.setAccessible(true);
+		return field;
+	}
+
+	private static RGB mix(RGB a, RGB b, double f) {
+		return new RGB((int) Math.round(a.red * (1 - f) + b.red * f), (int) Math.round(a.green * (1 - f) + b.green * f),
+				(int) Math.round(a.blue * (1 - f) + b.blue * f));
 	}
 
 	private static boolean isFigureView(String id) {

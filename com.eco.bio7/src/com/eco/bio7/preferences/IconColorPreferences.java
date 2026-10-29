@@ -40,7 +40,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.eclipse.ui.PlatformUI;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.util.IconColors;
@@ -208,7 +207,8 @@ public class IconColorPreferences extends FieldEditorPreferencePage implements I
 		if (!IconColors.getPreferenceColor(darkTheme).equals(IconColors.getColor())
 				|| !IconColors.getPreferenceDetail(darkTheme).equals(IconColors.getDetailColor())) {
 			if (MessageDialog.openQuestion(getShell(), "Icon Colors", "The icon colors are applied after a restart. Restart Bio7 now?")) {
-				getShell().getDisplay().asyncExec(() -> PlatformUI.getWorkbench().restart());
+				/* After the preferences dialog was closed (a restart with an open dialog can fail) */
+				com.eco.bio7.themes.ThemeStore.restartWhenDialogsClosed();
 			}
 		}
 		return ok;

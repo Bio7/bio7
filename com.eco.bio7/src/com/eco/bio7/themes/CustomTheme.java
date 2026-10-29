@@ -54,7 +54,8 @@ public class CustomTheme {
 			{ "fieldText", "Text fields text" }, { "tabRowEnd", "Tab row (gradient end)" },
 			{ "tabSelectedEnd", "Selected tab (gradient end)" }, { "tableHeader", "Table headers" },
 			{ "tableHeaderText", "Table headers text" }, { "tableHeaderLine", "Table header lines" }, { "assistBackground", "Code completion" },
-			{ "assistText", "Code completion text" }, { "groupBackground", "Groups" }, { "groupBorder", "Group border" } };
+			{ "assistText", "Code completion text" }, { "groupBackground", "Groups" }, { "groupBorder", "Group border" },
+			{ "inactiveSelection", "Selection (unfocused)" } };
 
 	/** The artwork modes and the fade directions. */
 	public static final String[] MODES = { "tile", "stretch" };
@@ -136,6 +137,7 @@ public class CustomTheme {
 			put("assistText", "cccccc");
 			put("groupBackground", "252526");
 			put("groupBorder", "3c3c3c");
+			put("inactiveSelection", "3a3d41");
 			put("tabSelectedEnd", "1e1e1e");
 		} else {
 			put("background", "ffffff");
@@ -171,6 +173,7 @@ public class CustomTheme {
 			put("assistText", "000000");
 			put("groupBackground", "ebebeb");
 			put("groupBorder", "d0d0d0");
+			put("inactiveSelection", "d8e0ea");
 			put("tabSelectedEnd", "f4f4f4");
 		}
 	}
@@ -545,6 +548,13 @@ public class CustomTheme {
 				t.colors.put(fallback[0], t.colors.get(fallback[1]));
 			}
 		}
+		/* A theme of an older version: the unfocused selection a light tint of the icon color over the view background */
+		if (p.getProperty("color.inactiveSelection") == null) {
+			RGB view = t.colors.get("viewBackground"), icon = t.colors.get("iconColor");
+			double f = t.dark ? 0.22 : 0.16;
+			t.colors.put("inactiveSelection", new RGB((int) Math.round(view.red * (1 - f) + icon.red * f),
+					(int) Math.round(view.green * (1 - f) + icon.green * f), (int) Math.round(view.blue * (1 - f) + icon.blue * f)));
+		}
 		for (String[] slot : SLOTS) {
 			String v = p.getProperty("original.color." + slot[0]);
 			if (v != null && v.matches("#?[0-9a-fA-F]{6}")) {
@@ -734,8 +744,9 @@ public class CustomTheme {
 		 * Windows: check boxes, radio buttons and sliders paint the system background
 		 * (macOS: transparent). Not the push buttons (they keep the native look)!
 		 */
+		/* The labels of the check boxes and radio buttons have the text color (like the labels, not the push buttons) */
 		rule(css, ".MPart Button[style~='SWT.CHECK'],\n.MPart Button[style~='SWT.RADIO'],\n.MPart Scale,\n.MPart Slider",
-				"background-color: " + c("panelBackground") + ";\n\tcolor: " + c("widgetText") + ";");
+				"background-color: " + c("panelBackground") + ";\n\tcolor: " + c("text") + ";");
 		/* The buttons in the views */
 		rule(css, ".MPart Button", "background-color: " + c("widgetBackground") + ";\n\tcolor: " + c("widgetText") + ";");
 		/* The text fields and the text areas of the views (e.g., the output of the R shell, not the editors) */
@@ -788,7 +799,14 @@ public class CustomTheme {
 		/* The items have no own background (the toolbar background is painted by ToolbarArtwork)! */
 		rule(css, "#org-eclipse-ui-main-toolbar ToolItem,\n#PerspectiveSwitcher ToolItem", "color: " + c("toolbarText") + ";");
 		rule(css, "#PerspectiveSwitcher ToolBar", "color: " + c("toolbarText") + ";");
-		/* The heap status paints with its own colors (set with setBackground and setForeground)! */
+		/*
+		 * The status line and the progress area (the base dark theme: the dark background,
+		 * the view background of the theme)!
+		 */
+		rule(css, "StatusLine,\n#org-eclipse-ui-StatusLine,\n#org-eclipse-ui-StatusLine CLabel,\n#org-eclipse-ui-ProgressBar,\n"
+				+ "#org-eclipse-ui-ProgressBar Composite,\n#org-eclipse-ui-ProgressBar Canvas",
+				"background-color: " + c("statusBar") + ";\n\tcolor: " + c("text") + ";");
+		/* The heap status paints with its own colors (set with setBackground and setForeground, the rest see ViewColors)! */
 		rule(css, "#org-eclipse-ui-trim-status,\n#org-eclipse-ui-trim-status Composite,\n#org-eclipse-ui-trim-status Label,\nHeapStatus",
 				"background-color: " + c("statusBar") + ";\n\tcolor: " + c("text") + ";");
 		/* The font of the views (all widgets and the tabs) */

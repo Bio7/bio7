@@ -57,6 +57,8 @@ public class SpeedSlider extends Canvas {
 	private boolean backgroundSet;
 	/* Without an own font the slider uses the font of the parent */
 	private boolean fontSet;
+	/* Without an own text color the slider has the text color of its parent */
+	private boolean foregroundSet;
 
 	/**
 	 * @param min the lowest frame rate (rounded up to a step)
@@ -115,6 +117,24 @@ public class SpeedSlider extends Canvas {
 	 */
 	static int transparent() {
 		return "win32".equals(SWT.getPlatform()) ? SWT.NONE : SWT.TRANSPARENT;
+	}
+
+	@Override
+	public void setForeground(Color color) {
+		super.setForeground(color);
+		foregroundSet = color != null;
+	}
+
+	/*
+	 * Without an own color the text color of the parent (a group of a custom theme
+	 * on macOS: the text color of the theme, see GroupColors)!
+	 */
+	private Color paintForeground() {
+		if (foregroundSet || getParent() == null) {
+			return getForeground();
+		}
+		Object text = getParent().getData("bio7.themes.groupText");
+		return text instanceof Color color && !color.isDisposed() ? color : getParent().getForeground();
 	}
 
 	@Override
@@ -280,7 +300,7 @@ public class SpeedSlider extends Canvas {
 	private void paint(GC gc) {
 		gc.setFont(paintFont());
 		Rectangle r = getClientArea();
-		Color fg = getForeground();
+		Color fg = paintForeground();
 		/*
 		 * Without an own background the background of the parent (e.g., set by the
 		 * theme): the double buffer is filled with the default background of the

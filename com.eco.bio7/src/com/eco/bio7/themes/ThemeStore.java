@@ -346,6 +346,46 @@ public final class ThemeStore {
 		}
 	}
 
+	/**
+	 * Restarts Bio7 when no dialog is open anymore (e.g., the preferences dialog
+	 * which asked for the restart): a restart with an open modal dialog can fail
+	 * silently (Windows, Linux). If the workbench doesn't restart, the user is told
+	 * to restart Bio7 manually.
+	 */
+	public static void restartWhenDialogsClosed() {
+		org.eclipse.swt.widgets.Display display = PlatformUI.getWorkbench().getDisplay();
+		display.asyncExec(new Runnable() {
+			private int waited;
+
+			@Override
+			public void run() {
+				if (display.isDisposed() || PlatformUI.getWorkbench().isClosing()) {
+					return;
+				}
+				/* The dialog is closed after the button which asked for the restart (wait at most a minute) */
+				if (modalShellOpen(display) && waited++ < 300) {
+					display.timerExec(200, this);
+					return;
+				}
+				flush();
+				if (!PlatformUI.getWorkbench().restart()) {
+					org.eclipse.jface.dialogs.MessageDialog.openInformation(display.getActiveShell(), "Restart",
+							"Bio7 could not be restarted automatically. Please restart Bio7 to apply the changes.");
+				}
+			}
+		});
+	}
+
+	private static boolean modalShellOpen(org.eclipse.swt.widgets.Display display) {
+		int modal = org.eclipse.swt.SWT.APPLICATION_MODAL | org.eclipse.swt.SWT.PRIMARY_MODAL | org.eclipse.swt.SWT.SYSTEM_MODAL;
+		for (org.eclipse.swt.widgets.Shell shell : display.getShells()) {
+			if (!shell.isDisposed() && shell.isVisible() && (shell.getStyle() & modal) != 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/* The preferences are written immediately (e.g., before a restart)! */
 	private static void flush() {
 		for (IPreferenceStore store : new IPreferenceStore[] { Bio7Plugin.getDefault().getPreferenceStore(), IconColors.getPreferenceStore() }) {
@@ -365,11 +405,12 @@ public final class ThemeStore {
 		restoreIconColors();
 		removeEditorBackground();
 		ToolbarArtwork.setTheme(null, null);
-		ViewColors.apply();
 		IThemeEngine engine = engine();
 		if (engine != null) {
 			engine.setTheme(dark ? CustomTheme.DARK_ID : CustomTheme.LIGHT_ID, true);
 		}
+		/* After the stylesheets of the default theme (e.g., the colors of the memory display follow its background) */
+		org.eclipse.swt.widgets.Display.getDefault().asyncExec(ViewColors::apply);
 		flush();
 	}
 

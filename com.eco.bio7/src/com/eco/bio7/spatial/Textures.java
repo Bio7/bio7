@@ -28,7 +28,6 @@ import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLException;
 import com.jogamp.opengl.GLProfile;
-import com.jogamp.opengl.GLRunnable;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import com.eco.bio7.Bio7Plugin;
@@ -47,6 +46,8 @@ public class Textures {
 	private ImagePlus imp;
 	private BufferedImage buff;
 	public int texture = 1;
+	/* The context of the texture of an image (see newTexture) */
+	private com.jogamp.opengl.GLContext texContext;
 	private ImageProcessor ip;
 	private HeightMaps heightMap;
 	public boolean createNewTexture = true;
@@ -96,25 +97,41 @@ public class Textures {
 					sourceName = imp.getTitle();
 
 					buff = createImageWithLut(imp);
-
-					drawable.invoke(false, new GLRunnable() {
-						@Override
-						public boolean run(GLAutoDrawable drawable) {
-							tex = AWTTextureIO.newTexture(drawable.getGLProfile(), buff, false);
-							notifyListener();
-							return true;
-						}
-					});
-
-					tex.setTexParameteri(gl, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-					tex.setTexParameteri(gl, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-					gl.glBindTexture(GL_TEXTURE_2D, texture);
-					//
+					newTexture(gl, buff);
 				}
 			}
 		} else {
 
 			initTextures(gl, drawable);
+		}
+	}
+
+	/*
+	 * The texture of the image in the current context (called in the display or
+	 * the init of the 3D view: the context is current). Not later with
+	 * GLAutoDrawable.invoke(false, ...): the texture was not created when its
+	 * parameters were set (on Windows no texture or the texture of another
+	 * context). The former texture is released.
+	 */
+	private boolean newTexture(GL2 gl, BufferedImage image) {
+		try {
+			Texture created = AWTTextureIO.newTexture(gl.getGLProfile(), image, false);
+			created.setTexParameteri(gl, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			created.setTexParameteri(gl, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			Texture old = tex;
+			com.jogamp.opengl.GLContext oldContext = texContext;
+			tex = created;
+			texContext = gl.getContext();
+			/* Only a texture of this context (after a new context the name can be another texture) */
+			if (old != null && oldContext == texContext && (animRenderer == null || old != animRenderer.getTexture())) {
+				old.destroy(gl);
+			}
+			notifyListener();
+			return true;
+		} catch (RuntimeException e) {
+			System.err.println("The texture can't be created (" + image.getWidth() + " x " + image.getHeight() + "): " + e);
+			e.printStackTrace();
+			return false;
 		}
 	}
 
@@ -176,19 +193,9 @@ public class Textures {
 				return tex;
 			}
 			sourceName = new File(filename).getName();
-			drawable.invoke(false, new GLRunnable() {
-				@Override
-				public boolean run(GLAutoDrawable drawable) {
-					tex = AWTTextureIO.newTexture(drawable.getGLProfile(), image, false);
-					notifyListener();
-					return true;
-				}
-			});
-			if (tex != null) {
+			if (newTexture(gl, image)) {
 				heightMap.imageHeight = image.getHeight();
 				heightMap.imageWidth = image.getWidth();
-				tex.setTexParameteri(gl, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				tex.setTexParameteri(gl, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			}
 		} catch (IOException e) {
 			System.err.println(e);

@@ -53,7 +53,6 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.Bundle;
 
 import com.eco.bio7.util.IconColors;
@@ -665,7 +664,12 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		fillTable(folder);
 		if (ThemeStore.iconColorsChanged(dark)) {
 			if (MessageDialog.openQuestion(getShell(), "Theme", "The icon colors of the theme are applied after a restart. Restart Bio7 now?")) {
-				getShell().getDisplay().asyncExec(() -> PlatformUI.getWorkbench().restart());
+				ThemeStore.restartWhenDialogsClosed();
+				/* The preferences dialog is closed like with "Apply and Close" (all pages are saved), then Bio7 restarts */
+				org.eclipse.swt.widgets.Button ok = getShell().getDefaultButton();
+				if (ok != null && !ok.isDisposed()) {
+					ok.notifyListeners(org.eclipse.swt.SWT.Selection, new org.eclipse.swt.widgets.Event());
+				}
 			}
 		}
 	}
@@ -685,7 +689,8 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 			activeChanged = false;
 			if (MessageDialog.openQuestion(getShell(), "Theme",
 					"The changes of the active theme have been applied. Some colors (e.g., of the icons and of open editors) are applied completely after a restart.\n\nRestart Bio7 now?")) {
-				getShell().getDisplay().asyncExec(() -> PlatformUI.getWorkbench().restart());
+				/* After the preferences dialog was closed */
+				ThemeStore.restartWhenDialogsClosed();
 			}
 		}
 		return true;

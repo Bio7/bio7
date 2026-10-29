@@ -3560,6 +3560,15 @@ public class Options3d extends ViewPart {
 			}
 		});
 
+		/* All matrices (any number of objects) as files: the tables show them for up to 500 and 150 objects */
+		final Button matrixFilesButton = new Button(compositeMeasure, SWT.CHECK);
+		matrixFilesButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		matrixFilesButton.setText("Save All Distance Matrices as CSV (Any Number of Objects)");
+		matrixFilesButton.setToolTipText("Saves the centroid and the surface distance matrices of all objects as CSV files in a folder\n"
+				+ "(the tables show the matrices for up to " + Measurement3d.MAX_CENTROID_MATRIX + " and "
+				+ Measurement3d.MAX_SURFACE_MATRIX + " objects). Many objects need time and space:\n"
+				+ "10000 objects are two matrices with 100 million distances (about 1 GB each).");
+
 		final Button distanceButton = new Button(compositeMeasure, SWT.PUSH);
 		GridData gd_distanceButton = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
 		gd_distanceButton.heightHint = 35;
@@ -3573,22 +3582,50 @@ public class Options3d extends ViewPart {
 				if (measurement == null) {
 					return;
 				}
+				/* The folder of the matrix files (asked before the measurement) */
+				java.io.File folder = null;
+				if (matrixFilesButton.getSelection()) {
+					org.eclipse.swt.widgets.DirectoryDialog dialog = new org.eclipse.swt.widgets.DirectoryDialog(distanceButton.getShell());
+					dialog.setText("Distance Matrices");
+					dialog.setMessage("The folder for the CSV files of the distance matrices");
+					String path = dialog.open();
+					if (path == null) {
+						return;
+					}
+					folder = new java.io.File(path);
+				}
+				measurement.setMatrixFolder(folder);
 				measurement.setMinObjectSize(minSpinner.getSelection());
 				measurement.setMaxObjectSize(maxSpinner.getSelection());
-				infoLabel.setText("Measuring the distances...");
+				infoLabel.setText("Measuring the distances... (progress in the status bar)");
 				Display display = distanceButton.getDisplay();
-				/* Many objects: in the background */
-				Thread thread = new Thread(() -> {
-					double[][][] result = measurement.measureDistances(true);
-					display.asyncExec(() -> {
-						if (!infoLabel.isDisposed()) {
-							infoLabel.setText(result == null ? "No iso surface available!"
-									: "Distances of " + result[0].length + " objects" + reductionNote());
-						}
-					});
-				}, "Bio7 Measure Distances");
-				thread.setDaemon(true);
-				thread.start();
+				/* One measurement at a time (the sheets of two measurements would be mixed) */
+				distanceButton.setEnabled(false);
+				/* Many objects: in the background with a progress (can be canceled) */
+				org.eclipse.core.runtime.jobs.Job job = new org.eclipse.core.runtime.jobs.Job("Measure Distances (Nearest Neighbors)") {
+					@Override
+					protected org.eclipse.core.runtime.IStatus run(org.eclipse.core.runtime.IProgressMonitor monitor) {
+						double[][][] result = measurement.measureDistances(true, monitor);
+						boolean canceled = monitor.isCanceled();
+						display.asyncExec(() -> {
+							if (!distanceButton.isDisposed()) {
+								distanceButton.setEnabled(true);
+							}
+							if (!infoLabel.isDisposed()) {
+								java.util.List<java.io.File> files = measurement.getMatrixFiles();
+								infoLabel.setText(canceled ? "The measurement of the distances was canceled!"
+										: result == null ? "No iso surface available!"
+												: "Distances of " + result[0].length + " objects"
+														+ (files.isEmpty() ? matrixNote(result) : " (matrices saved in " + files.get(0).getParent() + ")")
+														+ reductionNote());
+								infoLabel.getParent().layout();
+							}
+						});
+						return canceled ? org.eclipse.core.runtime.Status.CANCEL_STATUS : org.eclipse.core.runtime.Status.OK_STATUS;
+					}
+				};
+				job.setUser(true);
+				job.schedule();
 			}
 		});
 
@@ -3705,6 +3742,15 @@ public class Options3d extends ViewPart {
 	}
 
 	/* A note if the display is reduced (the measurements use the full resolution) */
+	/* The matrices which were not created (too many objects for a table) */
+	private static String matrixNote(double[][][] result) {
+		if (result[1] != null && result[2] != null) {
+			return "";
+		}
+		return result[1] == null ? " (no matrices: more than " + Measurement3d.MAX_CENTROID_MATRIX + " objects)"
+				: " (no surface matrix: more than " + Measurement3d.MAX_SURFACE_MATRIX + " objects)";
+	}
+
 	private static String reductionNote() {
 		IsoSurface iso = isoSurface();
 		String reduction = iso != null ? iso.getReduction() : null;
