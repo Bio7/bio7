@@ -1,8 +1,6 @@
 package com.eco.bio7.actions.theme;
 
-import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
-import org.eclipse.e4.ui.model.application.MApplication;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
@@ -15,7 +13,6 @@ import com.eco.bio7.ijmacro.editor.IJMacroEditorPlugin;
 import com.eco.bio7.markdownedit.Activator;
 import com.eco.bio7.pythonedit.PythonEditorPlugin;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
-import com.eco.bio7.util.Bio7Dialog;
 import com.eco.bio7.util.MessagesThemeIDsSettings;
 
 public class ThemeSwitchHandler extends Action {
@@ -148,14 +145,11 @@ public class ThemeSwitchHandler extends Action {
 		PreferenceConverter.setValue(storePython, "colourkey12", new RGB(0, 0, 0));
 	}
 
+	/* Opens the preferences of the themes (the default themes and the custom themes can be selected and activated)! */
 	public void run() {
 		IWorkbench workbench = PlatformUI.getWorkbench();
-		MApplication application = workbench.getService(MApplication.class);
-		IEclipseContext context = application.getContext();
-		IThemeEngine engine = context.get(IThemeEngine.class);
-		switchTheme(engine);
-		Bio7Dialog.message("A restart is required for the theme change to take full effect.");
-
+		org.eclipse.swt.widgets.Shell shell = workbench.getActiveWorkbenchWindow() != null ? workbench.getActiveWorkbenchWindow().getShell() : null;
+		org.eclipse.ui.dialogs.PreferencesUtil.createPreferenceDialogOn(shell, "com.eco.bio7.themes.ThemePreferencePage", null, null).open();
 	}
 
 }

@@ -112,6 +112,7 @@ final class ViewColors {
 			GroupColors.applyDefault();
 			/* The local HTML pages (e.g., the R help): the CSS of the default themes */
 			com.eco.bio7.util.HtmlTheme.setThemeCss(null);
+			applyAssistColors(null);
 			ThemeToolTips.apply(null, null, null);
 			applyHeapStatus(null);
 			SelectionColors.apply(null);
@@ -120,6 +121,7 @@ final class ViewColors {
 			applyHeapStatus(theme);
 			/* The local HTML pages (e.g., the R help) with the colors of the theme */
 			com.eco.bio7.util.HtmlTheme.setThemeCss(theme.htmlCss());
+			applyAssistColors(theme);
 			SelectionColors.apply(theme.getColor("inactiveSelection"));
 			GroupColors.apply(theme.getColor("groupBackground"), theme.getColor("groupBorder"), theme.getColor("text"));
 			GridHeaderColors.setColors(theme.getColor("tableHeader"), theme.getColor("tableHeaderText"), theme.getColor("tableHeaderLine"),
@@ -205,6 +207,66 @@ final class ViewColors {
 	private static RGB mix(RGB a, RGB b, double f) {
 		return new RGB((int) Math.round(a.red * (1 - f) + b.red * f), (int) Math.round(a.green * (1 - f) + b.green * f),
 				(int) Math.round(a.blue * (1 - f) + b.blue * f));
+	}
+
+	/*
+	 * The popups of the code completion (and the information and the hovers) read
+	 * their colors from the JFace color registry. The preferences of the stylesheets
+	 * (the base theme and the custom theme set the same keys) can be applied in
+	 * another order (e.g., at the start): the colors of a custom theme are set
+	 * directly, the original colors again for the default themes.
+	 */
+	private static final String[][] ASSIST_KEYS = { { "CONTENT_ASSIST_BACKGROUND_COLOR", "assistBackground" },
+			{ "CONTENT_ASSIST_FOREGROUND_COLOR", "assistText" }, { "org.eclipse.ui.workbench.INFORMATION_BACKGROUND", "assistBackground" },
+			{ "org.eclipse.ui.workbench.INFORMATION_FOREGROUND", "assistText" }, { "org.eclipse.ui.workbench.HOVER_BACKGROUND", "assistBackground" },
+			{ "org.eclipse.ui.workbench.HOVER_FOREGROUND", "assistText" } };
+	private static java.util.Map<String, RGB> originalAssistColors;
+	/* The custom theme of the colors of the code completion (null: the default themes) */
+	private static CustomTheme assistTheme;
+	private static boolean assistListener;
+
+	private static void applyAssistColors(CustomTheme theme) {
+		org.eclipse.jface.resource.ColorRegistry registry = org.eclipse.jface.resource.JFaceResources.getColorRegistry();
+		assistTheme = theme;
+		if (!assistListener) {
+			assistListener = true;
+			/* A color set later by the preferences of a stylesheet: the color of the custom theme again */
+			registry.addListener(event -> {
+				CustomTheme active = assistTheme;
+				if (active == null) {
+					return;
+				}
+				for (String[] key : ASSIST_KEYS) {
+					RGB rgb = active.getColor(key[1]);
+					if (key[0].equals(event.getProperty()) && rgb != null && !rgb.equals(registry.getRGB(key[0]))) {
+						Display.getDefault().asyncExec(() -> {
+							if (assistTheme == active) {
+								registry.put(key[0], rgb);
+							}
+						});
+					}
+				}
+			});
+		}
+		if (theme != null) {
+			if (originalAssistColors == null) {
+				originalAssistColors = new java.util.HashMap<>();
+				for (String[] key : ASSIST_KEYS) {
+					RGB rgb = registry.getRGB(key[0]);
+					if (rgb != null) {
+						originalAssistColors.put(key[0], rgb);
+					}
+				}
+			}
+			for (String[] key : ASSIST_KEYS) {
+				registry.put(key[0], theme.getColor(key[1]));
+			}
+		} else if (originalAssistColors != null) {
+			for (java.util.Map.Entry<String, RGB> e : originalAssistColors.entrySet()) {
+				registry.put(e.getKey(), e.getValue());
+			}
+			originalAssistColors = null;
+		}
 	}
 
 	private static boolean isFigureView(String id) {

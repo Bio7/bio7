@@ -438,7 +438,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		refreshAction = ActionFactory.REFRESH.create(window);
 		register(refreshAction);
 
-		switchTheme = new ThemeSwitchHandler("Switch Theme");
+		switchTheme = new ThemeSwitchHandler("Switch Theme...");
 		register(switchTheme);
 
 		MTrimBar topTrim = ((WorkbenchWindow) window).getTopTrim();
