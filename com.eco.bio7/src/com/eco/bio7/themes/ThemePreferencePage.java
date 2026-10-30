@@ -91,6 +91,12 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 	private Label viewFontLabel, textFontLabel;
 	/* The gradient and the artwork in the tab rows of the views */
 	private Button tabArtwork;
+	private Button continuous;
+	private Combo tabsLower;
+	private Scale tabSelectedOpacity;
+	private Spinner toolbarGap;
+	private Spinner viewsGap;
+	private Button themeGaps;
 	private Label tabImageLabel;
 	private Combo tabStyle;
 	private Combo tabFade;
@@ -151,6 +157,29 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 			disposePreview();
 			preview.redraw();
 		});
+
+		/* The gaps of the window (all themes, also the default themes): applied directly */
+		Group layoutGroup = new Group(area, SWT.NONE);
+		layoutGroup.setText("Layout (all themes)");
+		layoutGroup.setLayout(new GridLayout(4, false));
+		layoutGroup.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 2, 1));
+		new Label(layoutGroup, SWT.NONE).setText("Gap below the main toolbar:");
+		toolbarGap = new Spinner(layoutGroup, SWT.BORDER);
+		toolbarGap.setValues(WindowGaps.getToolbarGap(), 0, 10, 0, 1, 2);
+		toolbarGap.setToolTipText("The space between the main toolbar and the views (points, the workbench default is "
+				+ WindowGaps.DEFAULT_GAP + ").\n0: the views are directly below the toolbar (e.g., for the continuous artwork).");
+		new Label(layoutGroup, SWT.NONE).setText("Gap between the views:");
+		viewsGap = new Spinner(layoutGroup, SWT.BORDER);
+		viewsGap.setValues(WindowGaps.getViewsGap(), WindowGaps.MIN_GAP_VIEWS, 10, 0, 1, 2);
+		viewsGap.setToolTipText("The space between the views (points, the workbench default is " + WindowGaps.DEFAULT_GAP
+				+ ").\nThe gap is also the area to drag the border between two views (at least " + WindowGaps.MIN_GAP_VIEWS + " point).");
+		themeGaps = new Button(layoutGroup, SWT.CHECK);
+		themeGaps.setText("Save the gaps with the selected theme (exported with the theme)");
+		themeGaps.setToolTipText("The theme has its own gaps (e.g., no gaps for a continuous artwork), the other themes have the gaps above.");
+		themeGaps.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1));
+		toolbarGap.addListener(SWT.Modify, e -> gapsChanged());
+		viewsGap.addListener(SWT.Modify, e -> gapsChanged());
+		themeGaps.addListener(SWT.Selection, e -> gapsChanged());
 
 		editor = new Composite(area, SWT.NONE);
 		editor.setLayout(new GridLayout(4, false));
@@ -237,6 +266,24 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		tabOpacity = new Scale(tabFadeRow, SWT.HORIZONTAL);
 		scale(tabOpacity, 0, 100);
 		tabOpacity.addListener(SWT.Selection, e -> changed());
+		/* The tab rows below the first row (the continuous artwork of the toolbar) */
+		Composite lowerRow = new Composite(tabs, SWT.NONE);
+		GridLayout lowerLayout = new GridLayout(4, false);
+		lowerLayout.marginWidth = 0;
+		lowerRow.setLayout(lowerLayout);
+		lowerRow.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		new Label(lowerRow, SWT.NONE).setText("Tab rows below the first row:");
+		tabsLower = new Combo(lowerRow, SWT.READ_ONLY);
+		tabsLower.setItems(CustomTheme.LOWER_LABELS);
+		tabsLower.setToolTipText("With the continuous toolbar artwork (see Toolbar Artwork): the tab rows which are not directly below the toolbar\n"
+				+ "show the picture of the first tab rows, no artwork or the artwork of the view tabs (e.g., an own image).");
+		tabsLower.addListener(SWT.Selection, e -> changed());
+		/* The selected tab: opaque or the picture of the tab row shines through */
+		new Label(lowerRow, SWT.NONE).setText("Selected tab opacity:");
+		tabSelectedOpacity = new Scale(lowerRow, SWT.HORIZONTAL);
+		scale(tabSelectedOpacity, 0, 100);
+		tabSelectedOpacity.setToolTipText("100: the selected tab has its color (opaque), less: the picture of the tab row shines through");
+		tabSelectedOpacity.addListener(SWT.Selection, e -> changed());
 
 		Group fonts = new Group(editor, SWT.NONE);
 		fonts.setText("Fonts");
@@ -292,6 +339,13 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		fadeWidth = new Scale(art, SWT.HORIZONTAL);
 		scale(fadeWidth, 5, 100);
 		fadeWidth.addListener(SWT.Selection, e -> changed());
+		/* One picture from the toolbar to the first view tab rows */
+		continuous = new Button(art, SWT.CHECK);
+		continuous.setText("Continue in the view tab rows (one picture from the toolbar to the tabs below it)");
+		continuous.setToolTipText("The toolbar and the tab rows of the views show the parts of one picture (the image, mode, fade and opacity above).\n"
+				+ "The tab rows directly below the toolbar continue the picture, the other tab rows repeat it.");
+		continuous.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 6, 1));
+		continuous.addListener(SWT.Selection, e -> changed());
 
 		area.addDisposeListener(e -> {
 			disposePreview();
@@ -353,6 +407,11 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		activate.setEnabled(index >= 0);
 		CustomTheme shown = custom ? current : new CustomTheme("default", index == 1);
 		updating = true;
+		/* The gaps of the theme (if it has own gaps) or of the preferences */
+		themeGaps.setEnabled(custom);
+		themeGaps.setSelection(custom && current.hasGaps());
+		toolbarGap.setSelection(custom && current.hasGaps() ? current.getGapToolbar() : WindowGaps.getPreferenceToolbarGap());
+		viewsGap.setSelection(custom && current.hasGaps() ? current.getGapViews() : WindowGaps.getPreferenceViewsGap());
 		name.setText(custom ? current.getName() : index == 1 ? DARK_LABEL : LIGHT_LABEL);
 		author.setText(shown.getAuthor());
 		base.select(shown.isDark() ? 1 : 0);
@@ -374,6 +433,9 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		opacity.setSelection(shown.getOpacity());
 		fade.select(Math.max(0, List.of(CustomTheme.FADES).indexOf(shown.getFade())));
 		fadeWidth.setSelection(shown.getFadeWidth());
+		continuous.setSelection(shown.isArtworkContinuous());
+		tabsLower.select(Math.max(0, List.of(CustomTheme.LOWER).indexOf(shown.getTabsLower())));
+		tabSelectedOpacity.setSelection(shown.getTabSelectedOpacity());
 		updating = false;
 		dirty = false;
 		disposePreview();
@@ -386,6 +448,42 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 			for (Control child : ((Composite) control).getChildren()) {
 				setEnabled(child, enabled);
 			}
+		}
+	}
+
+	/*
+	 * The gaps: of the selected custom theme (saved and exported with the theme) or
+	 * of the preferences (all themes without own gaps), applied directly!
+	 */
+	private void gapsChanged() {
+		if (updating) {
+			return;
+		}
+		int toolbar = toolbarGap.getSelection(), views = viewsGap.getSelection();
+		if (current != null && themeGaps.getSelection()) {
+			current.setGaps(toolbar, views);
+		} else if (current != null && current.hasGaps()) {
+			/* Without own gaps: the gaps of the preferences again (not the gaps of the theme) */
+			current.setGaps(-1, -1);
+			updating = true;
+			toolbarGap.setSelection(WindowGaps.getPreferenceToolbarGap());
+			viewsGap.setSelection(WindowGaps.getPreferenceViewsGap());
+			updating = false;
+			toolbar = toolbarGap.getSelection();
+			views = viewsGap.getSelection();
+		}
+		if (current != null) {
+			/* The active theme (in memory) gets the gaps for the preview */
+			CustomTheme active = ToolbarArtwork.getTheme();
+			if (active != null && active.getFolderName().equals(current.getFolderName())) {
+				active.setGaps(current.getGapToolbar(), current.getGapViews());
+			}
+			dirty = true;
+		}
+		if (current == null || !themeGaps.getSelection()) {
+			WindowGaps.setGaps(toolbar, views);
+		} else {
+			WindowGaps.apply();
 		}
 	}
 
@@ -406,6 +504,9 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		current.setOpacity(opacity.getSelection());
 		current.setFade(CustomTheme.FADES[Math.max(0, fade.getSelectionIndex())]);
 		current.setFadeWidth(fadeWidth.getSelection());
+		current.setArtworkContinuous(continuous.getSelection());
+		current.setTabsLower(CustomTheme.LOWER[Math.max(0, tabsLower.getSelectionIndex())]);
+		current.setTabSelectedOpacity(tabSelectedOpacity.getSelection());
 		current.setTabStyle(CustomTheme.STYLES[Math.max(0, tabStyle.getSelectionIndex())]);
 		current.setTabArtwork(tabArtwork.getSelection());
 		current.setTabFade(CustomTheme.FADES[Math.max(0, tabFade.getSelectionIndex())]);

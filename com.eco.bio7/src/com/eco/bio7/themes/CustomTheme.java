@@ -62,6 +62,10 @@ public class CustomTheme {
 	/** The styles of the whole toolbar (flat color, gradient, raised with highlight and shadow). */
 	public static final String[] STYLES = { "flat", "gradient", "raised" };
 	public static final String[] STYLE_LABELS = { "Flat", "Gradient", "Raised" };
+	/** The tab rows below the first tab rows with the continuous artwork. */
+	public static final String[] LOWER = { "band", "none", "tabs" };
+	public static final String[] LOWER_LABELS = { "The picture (like the first tab rows)", "No artwork (the tab row color)",
+			"The artwork of the view tabs (image, fade, opacity)" };
 	public static final String[] FADES = { "none", "left", "right", "center", "edges" };
 	public static final String[] FADE_LABELS = { "No fade", "Visible left, fades to the right", "Visible right, fades to the left",
 			"Visible in the center", "Visible at both edges" };
@@ -94,6 +98,15 @@ public class CustomTheme {
 	private int tabOpacity = 60;
 	/* An own image of the tab rows (a file in the theme folder) or "" for the image of the toolbar */
 	private String tabImage = "";
+	/* The toolbar artwork continues in the view tab rows (one picture, see ArtworkRenderer.Band) */
+	private boolean artworkContinuous;
+	/* The tab rows below the first tab rows with the continuous artwork (see LOWER) */
+	private String tabsLower = "band";
+	/* The opacity of the fill of the selected view tab (100: opaque, less: the tab row picture shines through) */
+	private int tabSelectedOpacity = 100;
+	/* The gaps of the window of the theme (see WindowGaps) or -1 for the gaps of the preferences */
+	private int gapToolbar = -1;
+	private int gapViews = -1;
 
 	public CustomTheme(String folderName, boolean dark) {
 		this.folderName = folderName;
@@ -401,6 +414,62 @@ public class CustomTheme {
 		this.tabFadeWidth = Math.max(5, Math.min(100, tabFadeWidth));
 	}
 
+	/**
+	 * True if the toolbar artwork continues in the view tab rows: the toolbar and
+	 * the tab rows show the parts of one picture (with the image, mode, fade and
+	 * opacity of the toolbar artwork).
+	 */
+	public boolean isArtworkContinuous() {
+		return artworkContinuous && artwork != null && !artwork.isEmpty();
+	}
+
+	public void setArtworkContinuous(boolean artworkContinuous) {
+		this.artworkContinuous = artworkContinuous;
+	}
+
+	/**
+	 * The tab rows below the first tab rows with the continuous artwork (see LOWER):
+	 * the part of the picture of the first tab rows, no artwork or the artwork of
+	 * the view tabs (image, fade, opacity).
+	 */
+	public String getTabsLower() {
+		return tabsLower;
+	}
+
+	/** The opacity of the fill of the selected view tab (0 - 100 %, less: the picture of the tab row shines through). */
+	public int getTabSelectedOpacity() {
+		return tabSelectedOpacity;
+	}
+
+	public void setTabSelectedOpacity(int tabSelectedOpacity) {
+		this.tabSelectedOpacity = Math.max(0, Math.min(100, tabSelectedOpacity));
+	}
+
+	/** True if the theme has own gaps of the window (exported with the theme, see WindowGaps). */
+	public boolean hasGaps() {
+		return gapToolbar >= 0 && gapViews >= 0;
+	}
+
+	/** The gap below the main toolbar of the theme or -1 (the gap of the preferences). */
+	public int getGapToolbar() {
+		return gapToolbar;
+	}
+
+	/** The gap between the views of the theme or -1 (the gap of the preferences). */
+	public int getGapViews() {
+		return gapViews;
+	}
+
+	/** Sets the gaps of the window of the theme (-1: the gaps of the preferences). */
+	public void setGaps(int toolbar, int views) {
+		gapToolbar = toolbar < 0 ? -1 : toolbar;
+		gapViews = views < 0 ? -1 : views;
+	}
+
+	public void setTabsLower(String tabsLower) {
+		this.tabsLower = java.util.List.of(LOWER).contains(tabsLower) ? tabsLower : "band";
+	}
+
 	/** An own image of the tab rows (a file in the theme folder) or "" for the image of the toolbar artwork. */
 	public String getTabImage() {
 		return tabImage;
@@ -425,6 +494,11 @@ public class CustomTheme {
 		copy.originalColors.putAll(originalColors);
 		copy.artwork = artwork;
 		copy.tabImage = tabImage;
+		copy.artworkContinuous = artworkContinuous;
+		copy.tabsLower = tabsLower;
+		copy.tabSelectedOpacity = tabSelectedOpacity;
+		copy.gapToolbar = gapToolbar;
+		copy.gapViews = gapViews;
 		copy.mode = mode;
 		copy.tileSize = tileSize;
 		copy.opacity = opacity;
@@ -505,6 +579,13 @@ public class CustomTheme {
 		p.setProperty("tabs.style", tabStyle);
 		p.setProperty("tabs.artwork", String.valueOf(tabArtwork));
 		p.setProperty("tabs.image", tabImage);
+		p.setProperty("artwork.continuous", String.valueOf(artworkContinuous));
+		p.setProperty("tabs.lower", tabsLower);
+		p.setProperty("tabs.selectedOpacity", String.valueOf(tabSelectedOpacity));
+		if (hasGaps()) {
+			p.setProperty("layout.gapToolbar", String.valueOf(gapToolbar));
+			p.setProperty("layout.gapViews", String.valueOf(gapViews));
+		}
 		p.setProperty("tabs.fade", tabFade);
 		p.setProperty("tabs.fadeWidth", String.valueOf(tabFadeWidth));
 		p.setProperty("tabs.opacity", String.valueOf(tabOpacity));
@@ -581,6 +662,10 @@ public class CustomTheme {
 		/* The style of the tab rows (an older theme: the gradient switch) */
 		t.setTabStyle(p.getProperty("tabs.style", Boolean.parseBoolean(p.getProperty("tabs.gradient", "false")) ? "gradient" : "flat"));
 		t.setTabArtwork(Boolean.parseBoolean(p.getProperty("tabs.artwork", "false")));
+		t.artworkContinuous = Boolean.parseBoolean(p.getProperty("artwork.continuous", "false"));
+		t.setTabsLower(p.getProperty("tabs.lower", "band"));
+		t.setTabSelectedOpacity(parseInt(p.getProperty("tabs.selectedOpacity"), 100));
+		t.setGaps(parseInt(p.getProperty("layout.gapToolbar"), -1), parseInt(p.getProperty("layout.gapViews"), -1));
 		String tabArt = p.getProperty("tabs.image", "");
 		/* Only a file in the theme folder (no paths)! */
 		t.tabImage = tabArt.contains("/") || tabArt.contains("\\") || tabArt.contains("..") ? "" : tabArt;

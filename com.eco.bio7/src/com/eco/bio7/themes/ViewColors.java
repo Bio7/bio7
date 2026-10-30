@@ -84,6 +84,8 @@ final class ViewColors {
 	/* Colors the open views (e.g., after a custom theme was activated) */
 	static void apply() {
 		applyGridHeaders();
+		/* The gaps of the theme (or of the preferences) */
+		WindowGaps.apply();
 		if (!PlatformUI.isWorkbenchRunning()) {
 			return;
 		}

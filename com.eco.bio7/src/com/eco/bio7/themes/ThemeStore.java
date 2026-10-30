@@ -88,6 +88,10 @@ public final class ThemeStore {
 	public static void startup() {
 		/* The views which paint with own colors (e.g., the Snippets view) */
 		ViewColors.install();
+		/* GTK: the tab row of the empty editor area has the height of its tool bar */
+		EmptyFolderHeight.install();
+		/* The gaps of the window (below the main toolbar, between the views) */
+		org.eclipse.swt.widgets.Display.getDefault().asyncExec(WindowGaps::apply);
 		installExamples();
 		registerAll();
 		String active = activeFolder();

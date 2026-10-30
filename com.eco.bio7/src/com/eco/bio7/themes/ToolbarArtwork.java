@@ -62,6 +62,18 @@ public final class ToolbarArtwork {
 	private static boolean pending;
 	/* The picture of the toolbar (size in points and the rendered pixels for each zoom)! */
 	private static Point pictureSize;
+	/* The continuous artwork: the main toolbar and the size of the band (toolbar and the first tab rows, see bandOf) */
+	private static Composite bandBar;
+	private static Point bandSize;
+	/* The top of the first tab rows (in the coordinates of the toolbar) */
+	private static int bandRowTop;
+	/* A view container which paints the band in the gaps between the views (see hookSashes) */
+	private static final String SASHES = "bio7.themes.bandSashes";
+	/* The picture of the whole band for the gaps (with the colors of the tab rows) and its version */
+	private static Image sashPicture;
+	private static int sashVersion = -1;
+	/* The number of the paints of the gaps (for the tests) */
+	static int sashPaints;
 	private static int version;
 	private static final Map<Integer, ImageData> PIXELS = new HashMap<Integer, ImageData>();
 
@@ -154,9 +166,18 @@ public final class ToolbarArtwork {
 		if (size.x <= 0 || size.y <= 0) {
 			return;
 		}
-		if (!size.equals(pictureSize)) {
+		/* The band of the continuous artwork: from the top of the toolbar to the bottom of the tab rows below it */
+		Point band = theme.isArtworkContinuous() ? measureBand(bar, size) : null;
+		boolean bandChanged = band == null ? bandSize != null : !band.equals(bandSize);
+		if (!size.equals(pictureSize) || bandChanged) {
 			resetPicture();
 			pictureSize = size;
+			bandSize = band;
+			bandBar = band != null ? bar : null;
+			if (bandChanged) {
+				/* The tab rows paint their parts of the band again */
+				redrawTabFolders(bar.getShell());
+			}
 		}
 		setPart(bar, bar, new Rectangle(0, 0, size.x, size.y));
 		applyChildren(bar, bar);
@@ -239,7 +260,139 @@ public final class ToolbarArtwork {
 		if (forVersion != version || theme == null || pictureSize == null) {
 			return null;
 		}
-		return PIXELS.computeIfAbsent(zoom, z -> ArtworkRenderer.render(theme, themeDir, pictureSize.x, pictureSize.y, z));
+		Point band = bandSize;
+		return PIXELS.computeIfAbsent(zoom, z -> ArtworkRenderer.render(theme, themeDir, pictureSize.x, pictureSize.y, z,
+				band != null ? new ArtworkRenderer.Band(0, 0, band.x, band.y) : null));
+	}
+
+	/*
+	 * The height of the band: the toolbar and the tab rows of the view stacks
+	 * directly below the toolbar (the first row of the views), the width of the
+	 * toolbar.
+	 */
+	private static Point measureBand(Composite bar, Point size) {
+		int[] bottom = { size.y, Integer.MAX_VALUE };
+		measureFolders(bar, bar.getShell(), size.y, bottom);
+		bandRowTop = bottom[1] == Integer.MAX_VALUE ? size.y : bottom[1];
+		return new Point(size.x, bottom[0]);
+	}
+
+	private static void measureFolders(Composite bar, Control control, int barHeight, int[] bottom) {
+		if (control.isDisposed() || !control.isVisible()) {
+			return;
+		}
+		if (control instanceof org.eclipse.swt.custom.CTabFolder folder && folder.getTabPosition() == SWT.TOP) {
+			Point p = control.getDisplay().map(folder, bar, 0, 0);
+			/* Directly below the toolbar (e.g., a few points of the trim and the sash) */
+			if (p.y >= barHeight - 2 && p.y <= barHeight + 24) {
+				bottom[0] = Math.max(bottom[0], p.y + folder.getTabHeight() + 2);
+				bottom[1] = Math.min(bottom[1], p.y);
+				/* The view container paints the band in the gaps between the tab rows (the sashes) */
+				if (folder.getParent() != null) {
+					hookSashes(folder.getParent());
+				}
+			}
+			return;
+		}
+		if (control instanceof Composite composite && control != bar) {
+			for (Control child : composite.getChildren()) {
+				measureFolders(bar, child, barHeight, bottom);
+			}
+		}
+	}
+
+	private static void redrawTabFolders(Control control) {
+		if (control.isDisposed()) {
+			return;
+		}
+		if (control instanceof org.eclipse.swt.custom.CTabFolder folder) {
+			folder.redraw();
+		}
+		if (control instanceof Composite composite) {
+			for (Control child : composite.getChildren()) {
+				redrawTabFolders(child);
+			}
+		}
+	}
+
+	/**
+	 * The part of the band of the continuous artwork at the point (x, y) of the
+	 * control (e.g., the tab row of a view stack) or null if the artwork is not
+	 * continuous (or the control is in another window).
+	 */
+	/* The gaps between the views (the sashes of the container) show the band (the parts of the views paint over it) */
+	private static void hookSashes(Composite container) {
+		if (container.getData(SASHES) != null) {
+			return;
+		}
+		container.setData(SASHES, Boolean.TRUE);
+		container.addListener(SWT.Paint, e -> paintSashes(container, e.gc));
+		Point size = container.getSize();
+		container.redraw(0, 0, size.x, size.y, false);
+	}
+
+	private static void paintSashes(Composite container, org.eclipse.swt.graphics.GC gc) {
+		Composite bar = bandBar;
+		Point band = bandSize;
+		if (theme == null || !theme.isArtworkContinuous() || bar == null || bar.isDisposed() || band == null
+				|| container.getShell() != bar.getShell()) {
+			return;
+		}
+		if (sashPicture == null || sashPicture.isDisposed() || sashVersion != version) {
+			if (sashPicture != null && !sashPicture.isDisposed()) {
+				sashPicture.dispose();
+			}
+			CustomTheme t = theme;
+			File dir = themeDir;
+			sashPicture = new Image(container.getDisplay(), (ImageDataProvider) zoom -> ArtworkRenderer.renderTabs(t, dir, band.x, band.y, zoom,
+					new ArtworkRenderer.Band(0, 0, band.x, band.y)));
+			sashVersion = version;
+		}
+		Point o = container.getDisplay().map(container, bar, 0, 0);
+		/* The rows of the band below the toolbar (in the coordinates of the container) */
+		int top = bar.getSize().y - o.y;
+		Rectangle rows = new Rectangle(0, Math.max(0, top), container.getSize().x, band.y - o.y - Math.max(0, top));
+		Rectangle clipping = gc.getClipping();
+		Rectangle area = clipping.intersection(rows);
+		if (area.isEmpty()) {
+			return;
+		}
+		sashPaints++;
+		gc.setClipping(area);
+		gc.drawImage(sashPicture, -o.x, -o.y);
+		gc.setClipping(clipping);
+	}
+
+	/** True if the control (e.g., a tab folder) is directly below the main toolbar (no gap). */
+	static boolean isBelowToolbar(Control control) {
+		Composite bar = bandBar;
+		if (bar == null || bar.isDisposed() || control.getShell() != bar.getShell()) {
+			return false;
+		}
+		return control.getDisplay().map(control, bar, 0, 0).y <= bar.getSize().y;
+	}
+
+	/** True if the control (e.g., a tab folder) is below the band of the continuous artwork. */
+	static boolean isBelowBand(Control control) {
+		Composite bar = bandBar;
+		Point band = bandSize;
+		if (bar == null || bar.isDisposed() || band == null || control.getShell() != bar.getShell()) {
+			return false;
+		}
+		return control.getDisplay().map(control, bar, 0, 0).y >= band.y;
+	}
+
+	static ArtworkRenderer.Band bandOf(Control control, int x, int y) {
+		Composite bar = bandBar;
+		Point band = bandSize;
+		if (theme == null || !theme.isArtworkContinuous() || bar == null || bar.isDisposed() || band == null
+				|| control.getShell() != bar.getShell()) {
+			return null;
+		}
+		Point p = control.getDisplay().map(control, bar, x, y);
+		/* A tab row below the band (e.g., the second row of the views): the part of the first tab rows (not wrapped) */
+		int partY = p.y >= band.y ? bandRowTop : p.y;
+		return new ArtworkRenderer.Band(p.x, partY, band.x, band.y);
 	}
 
 	/* The part of the picture (in pixels of the zoom)! */

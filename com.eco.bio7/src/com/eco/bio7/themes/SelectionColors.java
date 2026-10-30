@@ -102,13 +102,23 @@ final class SelectionColors {
 		event.gc.setBackground(color);
 		event.gc.fillRectangle(x, event.y, width, event.height);
 		event.gc.setBackground(old);
-		/* The text and the image are drawn in PaintItem (the native text of a selection is white) */
-		event.detail &= ~(SWT.SELECTED | SWT.FOREGROUND);
+		/*
+		 * The text and the image are drawn in PaintItem (the native text of a selection is
+		 * white). A tree or table which paints its items itself (e.g., the styled labels of
+		 * the Project Explorer) paints the text (else the text is painted twice)!
+		 */
+		event.detail &= ownerDrawn(control) ? ~SWT.SELECTED : ~(SWT.SELECTED | SWT.FOREGROUND);
+	}
+
+	/* The items are painted by another listener (e.g., the JFace owner draw label providers) */
+	private static boolean ownerDrawn(Control control) {
+		return control.getListeners(SWT.PaintItem).length > 1;
 	}
 
 	/* The image and the text of a selected item without the focus in the text color of the item */
 	private static void paint(Event event) {
-		if (color == null || !(event.item instanceof org.eclipse.swt.widgets.Item item) || !unfocusedSelection(event)) {
+		if (color == null || !(event.item instanceof org.eclipse.swt.widgets.Item item) || !unfocusedSelection(event)
+				|| ownerDrawn((Control) event.widget)) {
 			return;
 		}
 		org.eclipse.swt.graphics.Image image;
