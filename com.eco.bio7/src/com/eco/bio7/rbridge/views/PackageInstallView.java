@@ -1331,7 +1331,7 @@ public class PackageInstallView extends ViewPart {
 	 */
 	private void showPackageDescription(String url) {
 		Work.openView("com.eco.bio7.browser.Browser");
-		if (!Util.isThemeBlack()) {
+		if (com.eco.bio7.util.HtmlTheme.getCss() == null) {
 			BrowserUtil.setLocation(url);
 			return;
 		}
@@ -1364,15 +1364,9 @@ public class PackageInstallView extends ViewPart {
 		job.schedule();
 	}
 
-	/* The dark CSS of the R help (see the R-Shell view)! */
+	/* The CSS of the R help of the theme (a custom theme or the dark theme, see the R-Shell view)! */
 	private static String darkBrowserCss() {
-		try {
-			java.net.URL css = Platform.getBundle("com.eco.bio7.themes").getEntry("javafx/Bio7BrowserDarkHTML.css");
-			try (java.io.InputStream in = css.openStream()) {
-				return new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
-			}
-		} catch (IOException | RuntimeException e) {
-			return "body { background: #1E1E1E; color: #CCCCCC; } a { color: grey; }";
-		}
+		String css = com.eco.bio7.util.HtmlTheme.getCss();
+		return css != null ? css : "";
 	}
 }

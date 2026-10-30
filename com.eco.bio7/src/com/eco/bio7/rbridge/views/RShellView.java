@@ -19,8 +19,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
 import java.util.Stack;
@@ -816,25 +814,10 @@ public class RShellView extends ViewPart {
 										// TODO Auto-generated catch block
 										e2.printStackTrace();
 									}
-									/* Do we have a black theme? */
-									if (Util.isThemeBlack()) {
-										// System.out.println(brow.getEngine().getLocation());
-
-										/* Load a CSS applied to the R HTML helpfile! */
-										Bundle bundle = Platform.getBundle("com.eco.bio7.themes");
-										URL fileURL = bundle.getEntry("javafx/Bio7BrowserDarkHTML.css");
-										File file = null;
-										try {
-											URL url = FileLocator.resolve(fileURL);
-											URI uri = new URI(url.getProtocol(), url.getUserInfo(), url.getHost(),
-													url.getPort(), url.getPath(), url.getQuery(), url.getRef());
-											file = new File(uri.toASCIIString());
-										} catch (URISyntaxException e1) {
-											e1.printStackTrace();
-										} catch (IOException e1) {
-											e1.printStackTrace();
-										}
-										cssPath = file.getPath().replace("\\", "/");
+									/* The CSS of the theme (a custom theme or the dark theme) for the R HTML help file! */
+									String themeCss = com.eco.bio7.util.HtmlTheme.getCssPath();
+									if (themeCss != null) {
+										cssPath = themeCss;
 										// String css = Util.fileToString(path);
 										try {
 											c.assign(".pathcss", cssPath);

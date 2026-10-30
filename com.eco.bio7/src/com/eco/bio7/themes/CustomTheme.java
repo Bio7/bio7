@@ -917,6 +917,31 @@ public class CustomTheme {
 		return css.toString();
 	}
 
+	/**
+	 * The CSS of the local HTML pages in the Bio7 browser (e.g., the R help) with
+	 * the colors of the theme: the view background, the text, the links in the
+	 * color of the view toolbar text, the code in the colors of the text fields
+	 * and the tables with the lines of the table headers.
+	 */
+	public String htmlCss() {
+		String bg = c("viewBackground"), text = c("text"), link = c("viewToolbarText");
+		String code = c("fieldBackground"), codeText = c("fieldText"), line = c("tableHeaderLine"), head = c("tableHeader");
+		return "body {\n\tbackground: " + bg + ";\n\tcolor: " + text + ";\n}\n\n"
+				+ "h1, h2, h3, h4, h5, h6 {\n\tbackground: transparent;\n\tcolor: " + text + ";\n}\n\n"
+				+ "h1 {\n\tfont-size: x-large;\n\ttext-align: center;\n}\n\nh2 {\n\tfont-size: large;\n}\n\n"
+				+ "a, a:visited {\n\tbackground: transparent;\n\tcolor: " + link + ";\n}\n\n"
+				+ "pre, code, kbd, samp, tt {\n\tbackground: " + code + ";\n\tcolor: " + codeText + ";\n}\n\n"
+				+ "pre {\n\tpadding: 0.4em;\n\tborder: 1px solid " + line + ";\n}\n\n"
+				+ "table, td, th {\n\tborder-color: " + line + ";\n\tcolor: " + text + ";\n}\n\n"
+				+ "th {\n\tbackground: " + head + ";\n}\n\n"
+				+ "hr {\n\tborder: none;\n\tborder-top: 1px solid " + line + ";\n}\n\n"
+				+ "em.navigation {\n\tfont-weight: bold;\n\tfont-style: normal;\n\tbackground: transparent;\n\tcolor: " + c("tabText") + ";\n}\n\n"
+				+ "img.toplogo {\n\tvertical-align: middle;\n}\n\n"
+				+ "span.acronym {\n\tfont-size: small;\n}\n\n"
+				+ "span.env, span.file, span.option, span.samp {\n\tfont-family: monospace;\n}\n\n"
+				+ "span.pkg {\n\tfont-weight: bold;\n}\n";
+	}
+
 	/* The CSS of a font (FontData string) or null for the default font */
 	private static String fontCss(String fontData) {
 		if (fontData == null || fontData.isEmpty()) {

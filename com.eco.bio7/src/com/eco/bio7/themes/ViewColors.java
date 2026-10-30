@@ -110,12 +110,16 @@ final class ViewColors {
 			GridHeaderColors.setColors(null, null, null, null);
 			/* The default themes: the boxes with the color of the parent (no native tint) */
 			GroupColors.applyDefault();
+			/* The local HTML pages (e.g., the R help): the CSS of the default themes */
+			com.eco.bio7.util.HtmlTheme.setThemeCss(null);
 			ThemeToolTips.apply(null, null, null);
 			applyHeapStatus(null);
 			SelectionColors.apply(null);
 		} else {
 			ThemeToolTips.apply(theme.getColor("assistBackground"), theme.getColor("assistText"), theme.getColor("groupBorder"));
 			applyHeapStatus(theme);
+			/* The local HTML pages (e.g., the R help) with the colors of the theme */
+			com.eco.bio7.util.HtmlTheme.setThemeCss(theme.htmlCss());
 			SelectionColors.apply(theme.getColor("inactiveSelection"));
 			GroupColors.apply(theme.getColor("groupBackground"), theme.getColor("groupBorder"), theme.getColor("text"));
 			GridHeaderColors.setColors(theme.getColor("tableHeader"), theme.getColor("tableHeaderText"), theme.getColor("tableHeaderLine"),

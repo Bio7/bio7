@@ -1,16 +1,6 @@
 package com.eco.bio7.browser;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Base64;
 
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.URIUtil;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.jface.action.IToolBarManager;
@@ -34,7 +24,6 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
-import org.osgi.framework.Bundle;
 
 import com.eco.bio7.util.Util;
 
@@ -77,43 +66,9 @@ public class BrowserView extends ViewPart {
 
 			public void completed(ProgressEvent event) {
 
-				if (Util.isThemeBlack()) {
-					String url = browser.getUrl();
-					if (url.startsWith("file")) {
-						/* Load a CSS applied to the R HTML helpfile! */
-						Bundle bundle = Platform.getBundle("com.eco.bio7.themes");
-						URL fileURL = bundle.getEntry("javafx/Bio7BrowserDarkHTML.css");
-						// This converts the bundle URL to a file URL (extracting it if necessary)
-						URL resolvedURL = null;
-						try {
-							resolvedURL = FileLocator.toFileURL(fileURL);
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-						// Convert the URL to a URI to handle spaces and special characters, then get
-						// the path
-						File file = null;
-						try {
-							file = new File(URIUtil.toURI(resolvedURL));
-						} catch (URISyntaxException e) {
-							e.printStackTrace();
-						}
-						String path = file.getAbsolutePath();
-						try {
-							// Paths.get handles Windows spaces naturally
-							byte[] encoded = Files.readAllBytes(Paths.get(path));
-							String cssContent = new String(encoded, "UTF-8");
-							// We use Base64 to avoid issues with quotes, newlines, or special characters
-							String base64Css = Base64.getEncoder().encodeToString(cssContent.getBytes("UTF-8"));
-							String script = "var style = document.createElement('style');"
-									+ "style.innerHTML = window.atob('" + base64Css + "');"
-									+ "document.head.appendChild(style);";
-							browser.execute(script);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-
-					}
+				/* The local pages (e.g., the R help) with the CSS of the theme (a custom theme or the dark theme)! */
+				if (browser.getUrl().startsWith("file")) {
+					com.eco.bio7.util.HtmlTheme.apply(browser);
 				}
 
 			}

@@ -1,13 +1,7 @@
 package com.eco.bio7.reditor.actions;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
@@ -15,7 +9,6 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.widgets.Display;
-import org.osgi.framework.Bundle;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
@@ -56,22 +49,10 @@ public class OpenHelpBrowserAction extends Action {
 							htmlHelpText = REditorTextHover.getHtmlHelpText();
 							String out = null;
 							c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".html\", sep=\"\"))").toString();
-							/* Do we have a black theme? */
-							if (isThemeBlack) {
-								// System.out.println(brow.getEngine().getLocation());
-
-								/* Load a CSS applied to the R HTML helpfile! */
-								Bundle bundle = Platform.getBundle("com.eco.bio7.themes");
-								URL fileURL = bundle.getEntry("javafx/Bio7BrowserDarkHTML.css");
-								File file = null;
-								try {
-									file = new File(FileLocator.resolve(fileURL).toURI());
-								} catch (URISyntaxException e1) {
-									e1.printStackTrace();
-								} catch (IOException e1) {
-									e1.printStackTrace();
-								}
-								String path = file.getPath().replace("\\", "/");
+							/* The CSS of the theme (a custom theme or the dark theme) for the R HTML help file! */
+							String themeCss = com.eco.bio7.util.HtmlTheme.getCssPath();
+							if (themeCss != null) {
+								String path = themeCss;
 								// String css = Util.fileToString(path);
 								c.assign("pathcss", path);
 								c.eval("try(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText
