@@ -108,6 +108,7 @@ final class ViewColors {
 		CustomTheme theme = ThemeStore.find(ThemeStore.activeFolder());
 		if (theme == null) {
 			GridHeaderColors.setColors(null, null, null, null);
+			applyGridSelection(null);
 			/* The default themes: the boxes with the color of the parent (no native tint) */
 			GroupColors.applyDefault();
 			/* The local HTML pages (e.g., the R help): the CSS of the default themes */
@@ -126,6 +127,36 @@ final class ViewColors {
 			GroupColors.apply(theme.getColor("groupBackground"), theme.getColor("groupBorder"), theme.getColor("text"));
 			GridHeaderColors.setColors(theme.getColor("tableHeader"), theme.getColor("tableHeaderText"), theme.getColor("tableHeaderLine"),
 					theme.getColor("viewBackground"));
+			applyGridSelection(theme);
+		}
+	}
+
+	/*
+	 * The selected cells and the headers of the selected cells of the tables: the
+	 * light blue of the system has a light text in the dark default theme (not
+	 * readable). A custom theme: the colors of the unfocused selection and the text
+	 * of the theme, the dark default theme: grey colors, the light default theme:
+	 * the system colors.
+	 */
+	private static void applyGridSelection(CustomTheme theme) {
+		if (theme != null) {
+			RGB inactive = theme.getColor("inactiveSelection");
+			RGB text = theme.getColor("text");
+			RGB header = theme.getColor("tableHeader");
+			if (inactive == null || text == null || header == null) {
+				GridHeaderColors.setSelectionColors(null, null, null, null, null, null);
+				return;
+			}
+			/* The selection with the focus: stronger (towards the text color) */
+			GridHeaderColors.setSelectionColors(mix(inactive, text, 0.2), text, inactive, text, mix(header, inactive, 0.7),
+					mix(inactive, text, 0.35));
+		} else if (com.eco.bio7.util.Util.isThemeBlack()) {
+			GridHeaderColors.setSelectionColors(new RGB(0x50, 0x55, 0x5c), new RGB(0xf0, 0xf0, 0xf0), new RGB(0x3c, 0x3f, 0x44),
+					new RGB(0xcc, 0xcc, 0xcc), new RGB(0x46, 0x4a, 0x50), new RGB(0x62, 0x67, 0x6e));
+			/* The lines between the cells: not the light background of the system */
+			GridHeaderColors.setCellLineColor(new RGB(0x45, 0x45, 0x45));
+		} else {
+			GridHeaderColors.setSelectionColors(null, null, null, null, null, null);
 		}
 	}
 

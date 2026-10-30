@@ -917,7 +917,8 @@ public class Grid extends Canvas {
 	 */
 	public Color getCellHeaderSelectionBackground() {
 		checkWidget();
-		return cellHeaderSelectionBackground;
+		/*Changed for Bio7: the header selection of a theme (see GridHeaderColors)!*/
+		return GridHeaderColors.headerSelection(cellHeaderSelectionBackground);
 	}
 
 	/**

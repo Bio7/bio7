@@ -29,6 +29,13 @@ public final class GridHeaderColors {
 	private static Color foreground;
 	private static Color line;
 	private static Color cellLine;
+	/* The selection of the cells (with and without the focus) and the headers of the selected cells */
+	private static Color selection;
+	private static Color selectionText;
+	private static Color inactiveSelection;
+	private static Color inactiveSelectionText;
+	private static Color headerSelection;
+	private static Color selectionLine;
 
 	private GridHeaderColors() {
 	}
@@ -92,6 +99,54 @@ public final class GridHeaderColors {
 	/** The text color of the headers or the default color. */
 	public static Color foreground(Color fallback) {
 		return foreground != null ? foreground : fallback;
+	}
+
+	/**
+	 * Sets the colors of the selected cells (with and without the focus of the
+	 * grid) and of the headers of the selected cells, e.g., of a dark theme (null:
+	 * the system colors) and the lines of the selected cells and redraws the open
+	 * grids.
+	 */
+	public static void setSelectionColors(RGB back, RGB text, RGB inactiveBack, RGB inactiveText, RGB header, RGB lines) {
+		Display display = Display.getDefault();
+		selection = back == null ? null : new Color(display, back);
+		selectionText = text == null ? null : new Color(display, text);
+		inactiveSelection = inactiveBack == null ? null : new Color(display, inactiveBack);
+		inactiveSelectionText = inactiveText == null ? null : new Color(display, inactiveText);
+		headerSelection = header == null ? null : new Color(display, header);
+		selectionLine = lines == null ? null : new Color(display, lines);
+		for (Shell shell : display.getShells()) {
+			redrawGrids(shell);
+		}
+	}
+
+	/** Sets the color of the lines between the cells (without header colors, e.g., the dark default theme; null: the default). */
+	public static void setCellLineColor(RGB lines) {
+		if (background == null) {
+			cellLine = lines == null ? null : new Color(Display.getDefault(), lines);
+		}
+	}
+
+	/** The background of a selected cell or the default (system) color. */
+	public static Color selection(boolean focus, Color fallback) {
+		Color color = focus ? selection : inactiveSelection;
+		return color != null ? color : fallback;
+	}
+
+	/** The text color of a selected cell or the default (system) color. */
+	public static Color selectionText(boolean focus, Color fallback) {
+		Color color = focus ? selectionText : inactiveSelectionText;
+		return color != null ? color : fallback;
+	}
+
+	/** The background of the header of a selected cell or the default color. */
+	public static Color headerSelection(Color fallback) {
+		return headerSelection != null ? headerSelection : fallback;
+	}
+
+	/** The color of the lines of the selected cells or the default color. */
+	public static Color selectionLine(Color fallback) {
+		return selectionLine != null ? selectionLine : fallback;
 	}
 
 	/** The color of the lines between the cells (if no own color was set) or the default color. */
