@@ -536,8 +536,7 @@ public class Options3d extends ViewPart {
 		scroll_2.setAlwaysShowScrollBars(true);
 
 		playPauseButton = new Button(composite_2, SWT.TOGGLE);
-		GridData gd_playPauseButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_playPauseButton.heightHint = 40;
+		GridData gd_playPauseButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		playPauseButton.setLayoutData(gd_playPauseButton);
 		playPauseButton.setToolTipText(
 				"Play/Pause: Invokes the compiled run method with the default Jogl timer.\n The timer fps determines the speed of invocation");
@@ -561,8 +560,7 @@ public class Options3d extends ViewPart {
 		playPauseButton.addDisposeListener(_ -> playPauseImage.dispose());
 
 		final Button setupButton = new Button(composite_2, SWT.NONE);
-		GridData gd_setupButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-		gd_setupButton.heightHint = 40;
+		GridData gd_setupButton = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
 		setupButton.setLayoutData(gd_setupButton);
 		setupButton.setToolTipText("Setup: Invokes the setup method of the compiled java code");
 		setupButton.addSelectionListener(new SelectionAdapter() {
@@ -906,8 +904,7 @@ public class Options3d extends ViewPart {
 				"Exports the image (with the LUT) as a texture of the height map:\n*.glb (embedded) or *.obj (a *.png file next to the *.obj file, see the *.mtl file).\nThe other formats contain the colors of the vertices.");
 		exportTextureButton.setSelection(true);
 		final Button exportHeightMapButton = new Button(exportGroup, SWT.NONE);
-		GridData gd_exportHeightMapButton = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-		gd_exportHeightMapButton.heightHint = 40;
+		GridData gd_exportHeightMapButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 		exportHeightMapButton.setLayoutData(gd_exportHeightMapButton);
 		exportHeightMapButton.setText("Export Height Map...");
 		exportHeightMapButton.setToolTipText(
@@ -1514,8 +1511,7 @@ public class Options3d extends ViewPart {
 		numberLabel.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
 
 		final Button renderFramesButton = new Button(composite_8, SWT.NONE);
-		GridData gd_renderFramesButton = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-		gd_renderFramesButton.heightHint = 40;
+		GridData gd_renderFramesButton = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
 		renderFramesButton.setLayoutData(gd_renderFramesButton);
 		renderFramesButton.setToolTipText(
 				"Starts and stops rendering - \r\ncreates a stack in Imagej and renders the current\r\nframe of the spatial view to the stack until \r\nrendering is stopped or the max. numbers of frames\r\n(specified in the textfield) has been reached.");
@@ -1753,8 +1749,7 @@ public class Options3d extends ViewPart {
 		final Button showButton = new Button(compositeModel, SWT.CHECK);
 
 		final Button loadButton = new Button(compositeModel, SWT.NONE);
-		GridData gd_loadButton = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-		gd_loadButton.heightHint = 40;
+		GridData gd_loadButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 		loadButton.setLayoutData(gd_loadButton);
 		loadButton.setText("Load Model");
 		loadButton.setToolTipText(
@@ -1785,8 +1780,7 @@ public class Options3d extends ViewPart {
 		});
 
 		final Button removeButton = new Button(compositeModel, SWT.NONE);
-		GridData gd_removeButton = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-		gd_removeButton.heightHint = 40;
+		GridData gd_removeButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 		removeButton.setLayoutData(gd_removeButton);
 		removeButton.setText("Remove");
 		removeButton.setToolTipText("Removes the model");
@@ -1888,8 +1882,7 @@ public class Options3d extends ViewPart {
 		};
 
 		final Button fitButton = new Button(compositeModel, SWT.NONE);
-		GridData gd_fitButton = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-		gd_fitButton.heightHint = 40;
+		GridData gd_fitButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 		fitButton.setLayoutData(gd_fitButton);
 		fitButton.setText("Fit to Scene");
 		fitButton.setToolTipText(
@@ -1920,8 +1913,7 @@ public class Options3d extends ViewPart {
 		});
 
 		final Button resetButton = new Button(compositeModel, SWT.NONE);
-		GridData gd_resetButton = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-		gd_resetButton.heightHint = 40;
+		GridData gd_resetButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 		resetButton.setLayoutData(gd_resetButton);
 		resetButton.setText("Reset");
 		resetButton.setToolTipText("Resets the position, rotation and scale");
@@ -1933,8 +1925,7 @@ public class Options3d extends ViewPart {
 		});
 
 		final Button storeButton = new Button(compositeModel, SWT.NONE);
-		GridData gd_storeButton = new GridData(SWT.FILL, SWT.FILL, true, false, 4, 1);
-		gd_storeButton.heightHint = 40;
+		GridData gd_storeButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1);
 		storeButton.setLayoutData(gd_storeButton);
 		storeButton.setText("Store as Default");
 		storeButton.setToolTipText("Stores the position, rotation and scale for the next start");
@@ -1968,8 +1959,7 @@ public class Options3d extends ViewPart {
 		factorText.setToolTipText(
 				"The size of one unit of the file in the unit (e.g., 1000 for a file in mm and the unit micron)");
 		final Button measureButton = new Button(compositeModel, SWT.NONE);
-		GridData gd_measureButton = new GridData(SWT.FILL, SWT.FILL, true, false, 4, 1);
-		gd_measureButton.heightHint = 40;
+		GridData gd_measureButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1);
 		measureButton.setLayoutData(gd_measureButton);
 		measureButton.setText("Use as Iso Surface (Measure)");
 		measureButton.setToolTipText(
@@ -2124,8 +2114,7 @@ public class Options3d extends ViewPart {
 		final Button showButton = new Button(textureGroup, SWT.CHECK);
 
 		final Button loadButton = new Button(textureGroup, SWT.NONE);
-		GridData gd_loadButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_loadButton.heightHint = 40;
+		GridData gd_loadButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		loadButton.setLayoutData(gd_loadButton);
 		loadButton.setText("Load Texture");
 		loadButton.setToolTipText("Creates the texture from the selected source");
@@ -2163,8 +2152,7 @@ public class Options3d extends ViewPart {
 		});
 
 		final Button removeButton = new Button(textureGroup, SWT.NONE);
-		GridData gd_removeButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_removeButton.heightHint = 40;
+		GridData gd_removeButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		removeButton.setLayoutData(gd_removeButton);
 		removeButton.setText("Remove");
 		removeButton.setToolTipText("Removes the texture");
@@ -2393,8 +2381,7 @@ public class Options3d extends ViewPart {
 		infoLabel.setText(current != null ? current.getInfo() : "No stack loaded");
 
 		final Button loadButton = new Button(compositeVolume, SWT.NONE);
-		GridData gd_loadButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_loadButton.heightHint = 40;
+		GridData gd_loadButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		loadButton.setLayoutData(gd_loadButton);
 		loadButton.setText("Load Stack");
 		loadButton.setToolTipText(
@@ -2415,8 +2402,7 @@ public class Options3d extends ViewPart {
 		});
 
 		final Button clearButton = new Button(compositeVolume, SWT.NONE);
-		GridData gd_clearButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_clearButton.heightHint = 40;
+		GridData gd_clearButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		clearButton.setLayoutData(gd_clearButton);
 		clearButton.setText("Remove");
 		clearButton.setToolTipText("Removes the volume");
@@ -2643,8 +2629,7 @@ public class Options3d extends ViewPart {
 		final Scale isoValueScale = new Scale(compositeIso, SWT.NONE);
 
 		final Button loadButton = new Button(compositeIso, SWT.NONE);
-		GridData gd_loadButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_loadButton.heightHint = 40;
+		GridData gd_loadButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		loadButton.setLayoutData(gd_loadButton);
 		loadButton.setText("Load Stack");
 		loadButton.setToolTipText(
@@ -2652,8 +2637,7 @@ public class Options3d extends ViewPart {
 		loadButton.moveAbove(isoValueLabel);
 
 		final Button clearButton = new Button(compositeIso, SWT.NONE);
-		GridData gd_clearButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_clearButton.heightHint = 40;
+		GridData gd_clearButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		clearButton.setLayoutData(gd_clearButton);
 		clearButton.setText("Remove");
 		clearButton.setToolTipText("Removes the iso surface");
@@ -3015,8 +2999,7 @@ public class Options3d extends ViewPart {
 		});
 
 		final Button exportButton = new Button(compositeIso, SWT.NONE);
-		GridData gd_exportButton = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-		gd_exportButton.heightHint = 40;
+		GridData gd_exportButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 		exportButton.setLayoutData(gd_exportButton);
 		exportButton.setText("Export...");
 		exportButton.setToolTipText(
@@ -3465,8 +3448,7 @@ public class Options3d extends ViewPart {
 		});
 
 		final Button resetButton = new Button(compositeClip, SWT.PUSH);
-		GridData gd_resetButton = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
-		gd_resetButton.heightHint = 40;
+		GridData gd_resetButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
 		resetButton.setLayoutData(gd_resetButton);
 		resetButton.setText("Reset");
 		resetButton.setToolTipText("Removes the clipping and the cuts");
@@ -3531,8 +3513,7 @@ public class Options3d extends ViewPart {
 		maxSpinner.setToolTipText("Larger objects of the iso surface are not measured (0 measures all objects)");
 
 		final Button objectsButton = new Button(compositeMeasure, SWT.PUSH);
-		GridData gd_objectsButton = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-		gd_objectsButton.heightHint = 35;
+		GridData gd_objectsButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 		objectsButton.setLayoutData(gd_objectsButton);
 		objectsButton.setText("Measure Iso Surface Objects");
 		objectsButton.setToolTipText(
@@ -3570,8 +3551,7 @@ public class Options3d extends ViewPart {
 				+ "10000 objects are two matrices with 100 million distances (about 1 GB each).");
 
 		final Button distanceButton = new Button(compositeMeasure, SWT.PUSH);
-		GridData gd_distanceButton = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-		gd_distanceButton.heightHint = 35;
+		GridData gd_distanceButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 		distanceButton.setLayoutData(gd_distanceButton);
 		distanceButton.setText("Measure Distances (Nearest Neighbors)");
 		distanceButton.setToolTipText(
@@ -3645,8 +3625,7 @@ public class Options3d extends ViewPart {
 		});
 
 		final Button regionButton = new Button(compositeMeasure, SWT.PUSH);
-		GridData gd_regionButton = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-		gd_regionButton.heightHint = 35;
+		GridData gd_regionButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 		regionButton.setLayoutData(gd_regionButton);
 		regionButton.setText("Measure Region (Clipping)");
 		regionButton.setToolTipText(
@@ -3724,8 +3703,7 @@ public class Options3d extends ViewPart {
 		});
 
 		final Button clearAllButton = new Button(compositeMeasure, SWT.PUSH);
-		GridData gd_clearAllButton = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-		gd_clearAllButton.heightHint = 35;
+		GridData gd_clearAllButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 		clearAllButton.setLayoutData(gd_clearAllButton);
 		clearAllButton.setText("Clear Measurements");
 		clearAllButton.setToolTipText(

@@ -16,15 +16,8 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -34,7 +27,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.dialogs.ListDialog;
+
+import com.eco.bio7.util.FullscreenMonitors;
 
 /**
  * Displays the content of a {@link CustomView} in a fullscreen shell. The
@@ -42,7 +36,7 @@ import org.eclipse.ui.dialogs.ListDialog;
  * when the fullscreen mode is closed. The keys (in a custom view or in the
  * fullscreen mode):
  * <ul>
- * <li>F2: fullscreen on the monitor of the view (or exit)</li>
+ * <li>F2: fullscreen on the primary monitor (or exit)</li>
  * <li>F3: fullscreen on the secondary monitor</li>
  * <li>F4: fullscreen on the tertiary monitor</li>
  * <li>F5: select the monitor</li>
@@ -50,8 +44,9 @@ import org.eclipse.ui.dialogs.ListDialog;
  * </ul>
  * F3, F4 and F5 move the fullscreen mode to another monitor and exit if the
  * view is already displayed on the monitor. The monitors are numbered with the
- * primary monitor first (see {@link #getMonitors(Display)}). All methods must
- * be called in the SWT UI thread!
+ * primary monitor first (see {@link #getMonitors(Display)}). The keys are the
+ * same for all fullscreen modes of Bio7 (see {@link FullscreenMonitors}). All
+ * methods must be called in the SWT UI thread!
  */
 public class CustomViewFullscreen {
 
@@ -91,7 +86,7 @@ public class CustomViewFullscreen {
 				}
 				return;
 			}
-			int key = functionKey(e.keyCode);
+			int key = FullscreenMonitors.functionKey(e.keyCode);
 			CustomView v = inFullscreen ? view : (isActive() ? null : viewOf(control));
 			if (key > 0 && v != null) {
 				e.doit = false;
@@ -101,44 +96,19 @@ public class CustomViewFullscreen {
 		}
 	};
 
-	/* Returns 2 to 5 for the keys F2 to F5, else 0! */
-	private static int functionKey(int keyCode) {
-		switch (keyCode) {
-		case SWT.F2:
-			return 2;
-		case SWT.F3:
-			return 3;
-		case SWT.F4:
-			return 4;
-		case SWT.F5:
-			return 5;
-		default:
-			return 0;
-		}
-	}
-
 	/* The action of the keys F2 to F5 for the view (displayed in fullscreen mode or not)! */
 	private static void handleKey(int key, CustomView v) {
 		if (isActive() && !isFullscreen(v)) {
 			return;
 		}
-		if (key == 2) {
-			toggle(v);
+		/* F2: exit (in fullscreen mode) or the primary monitor */
+		if (key == FullscreenMonitors.KEY_PRIMARY && isFullscreen(v)) {
+			exit();
 			return;
 		}
 		Display display = Display.getDefault();
-		Monitor[] monitors = getMonitors(display);
-		Monitor monitor;
-		if (key == 5) {
-			monitor = selectMonitor(display);
-			if (monitor == null) {
-				return;
-			}
-		} else if (key - 2 < monitors.length) {
-			monitor = monitors[key - 2];
-		} else {
-			/* No secondary or tertiary monitor! */
-			display.beep();
+		Monitor monitor = FullscreenMonitors.monitorForKey(key, display, isActive() ? shell : null, isActive() ? shellMonitor : null);
+		if (monitor == null) {
 			return;
 		}
 		if (isFullscreen(v) && same(monitor, shellMonitor)) {
@@ -262,55 +232,12 @@ public class CustomViewFullscreen {
 	 * in the order of the system.
 	 */
 	public static Monitor[] getMonitors(Display display) {
-		List<Monitor> list = new ArrayList<Monitor>();
-		Monitor primary = display.getPrimaryMonitor();
-		if (primary != null) {
-			list.add(primary);
-		}
-		for (Monitor m : display.getMonitors()) {
-			if (!same(m, primary)) {
-				list.add(m);
-			}
-		}
-		return list.toArray(new Monitor[0]);
+		return FullscreenMonitors.getMonitors(display);
 	}
 
 	/* The handles of the monitors can change (e.g., on macOS), so the bounds are compared! */
 	private static boolean same(Monitor a, Monitor b) {
-		return a != null && b != null && a.getBounds().equals(b.getBounds());
-	}
-
-	/* Lets the user select a monitor (null if canceled)! */
-	private static Monitor selectMonitor(Display display) {
-		Monitor[] monitors = getMonitors(display);
-		Shell parent = isActive() ? shell : display.getActiveShell();
-		ListDialog dialog = new ListDialog(parent);
-		dialog.setTitle("Fullscreen");
-		dialog.setMessage("Select the monitor for the fullscreen mode:");
-		dialog.setContentProvider(ArrayContentProvider.getInstance());
-		dialog.setLabelProvider(new LabelProvider() {
-			public String getText(Object element) {
-				Monitor m = (Monitor) element;
-				int index = java.util.Arrays.asList(monitors).indexOf(m);
-				boolean current = isActive() && same(m, shellMonitor);
-				Rectangle b = m.getBounds();
-				String name = "Monitor " + (index + 1) + (index == 0 ? " (primary)" : "");
-				return name + ": " + b.width + " x " + b.height + " at " + b.x + ", " + b.y + (current ? " - current" : "");
-			}
-		});
-		dialog.setInput(monitors);
-		Monitor selected = monitors[0];
-		for (Monitor m : monitors) {
-			if (isActive() && same(m, shellMonitor)) {
-				selected = m;
-			}
-		}
-		dialog.setInitialSelections(new Object[] { selected });
-		dialog.setHeightInChars(Math.max(3, monitors.length));
-		if (dialog.open() != org.eclipse.jface.window.Window.OK || dialog.getResult() == null || dialog.getResult().length == 0) {
-			return null;
-		}
-		return (Monitor) dialog.getResult()[0];
+		return FullscreenMonitors.same(a, b);
 	}
 
 	/**
@@ -407,12 +334,13 @@ public class CustomViewFullscreen {
 		}
 	}
 
-	/** Toggles the fullscreen mode of the custom view. */
+	/** Toggles the fullscreen mode of the custom view (on the primary monitor like F2). */
 	public static void toggle(CustomView customView) {
 		if (isFullscreen(customView)) {
 			exit();
 		} else if (!isActive()) {
-			enter(customView);
+			Monitor[] monitors = getMonitors(Display.getDefault());
+			enter(customView, monitors.length > 0 ? monitors[0] : null);
 		}
 	}
 

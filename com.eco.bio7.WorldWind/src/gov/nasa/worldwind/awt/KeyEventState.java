@@ -146,34 +146,32 @@ public class KeyEventState implements KeyListener, MouseListener {
     {
         this.onKeyEvent(e, KeyEvent.KEY_PRESSED);
         int keyCode = e.getKeyCode();
-		if (keyCode == KeyEvent.VK_F2) {
-			if (WorldWindView.getInstance().getFull() == null) {
-				WorldWindView.getInstance().createFullscreen(0);
+		/* Changed for Bio7: the fullscreen keys of all Bio7 views (F2 to F5, ESC, see NewtFullscreen)! */
+		int fullscreenKey = keyCode >= KeyEvent.VK_F2 && keyCode <= KeyEvent.VK_F5 ? keyCode - KeyEvent.VK_F1 + 1 : 0;
+		if (fullscreenKey > 0) {
+			if (WorldWindView.getInstance() != null) {
+				WorldWindView.getInstance().fullscreenKey(fullscreenKey);
 			}
-		} 
-		
-		else if (keyCode == KeyEvent.VK_F3) {
-			if (WorldWindView.getInstance().getFull() == null) {
-				WorldWindView.getInstance().createFullscreen(1);
-			}
-		}
-		
-		
-		else if (keyCode == KeyEvent.VK_ESCAPE) {
-			WorldWindView.getInstance().recreateGLCanvas();
-			if (WorldWindView.getInstance().getFull() != null) {
-				WorldWindView.getInstance().getFull().exit();
-			}
-			WorldWindView.getInstance().setFull(null);
 		}
 
-		else if (keyCode == KeyEvent.VK_F4) {
+		else if (keyCode == KeyEvent.VK_ESCAPE) {
+			if (WorldWindView.getInstance() != null && WorldWindView.getWwd().getWindow().isFullscreen()) {
+				WorldWindView.getInstance().recreateGLCanvas();
+			}
+		}
+
+		/* F6: flies to the next location of the list in the options (F4 is the fullscreen key of the tertiary monitor) */
+		else if (keyCode == KeyEvent.VK_F6) {
 
 			Display display = PlatformUI.getWorkbench().getDisplay();
 			display.asyncExec(new Runnable() {
 
 				public void run() {
 					List sc = WorldWindOptionsView.getScrolLList();
+					/* No options or no locations! */
+					if (sc == null || sc.isDisposed() || sc.getItemCount() == 0 || WorldWindOptionsView.optionsInstance == null) {
+						return;
+					}
 					if (sc.getSelectionIndices().length == 0) {
 						sc.setSelection(0);
 					}
@@ -181,6 +179,9 @@ public class KeyEventState implements KeyListener, MouseListener {
 
 					/* Left out the name! */
 					String[] p = pos.split(",");
+					if (p.length < 3) {
+						return;
+					}
 					lookupString = (p[1] + "," + p[2]);
 
 					if (lookupString == null || lookupString.length() < 1)

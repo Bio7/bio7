@@ -25,11 +25,14 @@
     <Layer href="config/Earth/USGSTopoMedResLayer.xml" actuate="onRequest"/>
     <Layer href="config/Earth/USGSTopoHighResLayer.xml" actuate="onRequest"/>-->
     <Layer href="config/Earth/USGSUrbanAreaOrthoLayer.xml" actuate="onRequest"/>
+    <!--Added for Bio7: the free OpenStreetMap WMS of terrestris (disabled at startup)-->
+    <Layer href="config/Earth/OpenStreetMap.xml" actuate="onRequest"/>
     <!--<<Layer className="gov.nasa.worldwind.layers.Earth.OSMMapnikLayer" actuate="onRequest"/>-->
     <!--<Layer className="gov.nasa.worldwind.layers.Earth.OSMCycleMapLayer" actuate="onRequest"/>-->
     <Layer className="gov.nasa.worldwind.layers.Earth.CountryBoundariesLayer" actuate="onRequest"/>
     <Layer className="gov.nasa.worldwind.layers.Earth.NASAWFSPlaceNameLayer"/>
     <Layer className="gov.nasa.worldwind.layers.WorldMapLayer"/>
     <Layer className="gov.nasa.worldwind.layers.ScalebarLayer"/>
-    <Layer className="gov.nasa.worldwind.layers.CompassLayer"/>
+    <!--Changed for Bio7: the compass with the colors of the theme-->
+    <Layer className="com.eco.bio7.worldwind.ThemedCompassLayer"/>
 </LayerList>

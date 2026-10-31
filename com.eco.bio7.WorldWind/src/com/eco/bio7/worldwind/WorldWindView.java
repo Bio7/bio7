@@ -23,21 +23,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPopupMenu;
-import javax.swing.SwingUtilities;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.SWT;
@@ -66,15 +57,12 @@ import com.eco.bio7.worldwind.swt.NewtInputHandlerSWT;
 import com.eco.bio7.worldwind.swt.StatusBar;
 import com.eco.bio7.worldwind.swt.WorldWindowNewtAutoDrawableSWT;
 import com.eco.bio7.worldwind.swt.WorldWindowNewtCanvasSWT;
-import com.jogamp.newt.MonitorDevice;
-import com.jogamp.newt.Screen;
 import com.jogamp.newt.opengl.GLWindow;
 import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.Model;
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.avlist.AVList;
 import gov.nasa.worldwind.awt.WorldWindowGLCanvas;
 import gov.nasa.worldwind.geom.Angle;
 import gov.nasa.worldwind.geom.Sector;
@@ -149,67 +137,18 @@ public class WorldWindView extends ViewPart {
 		setFullscreen(0);
 	}
 
+	/**
+	 * Toggles the fullscreen mode of the globe in monitor i (0: the primary, 1: the
+	 * secondary monitor, etc., like the fullscreen of the 3D view, see
+	 * SpatialUtil.setFullscreen).
+	 */
 	public static void setFullscreen(int i) {
 		GLWindow window = worldCanvas.getWindow();
 		if (window.isFullscreen()) {
-			window.setFullscreen(false);
+			getInstance().recreateGLCanvas();
 		} else {
-
-			Job job = new Job("Fullscreen") {
-
-				@Override
-				protected IStatus run(IProgressMonitor monitor) {
-					monitor.beginTask("Fullscreen mode ...", 20);
-					Screen screen = window.getScreen();
-					List<MonitorDevice> monitorDevices = new ArrayList<>();
-					// MonitorDevice dev = screen.getMonitorDevices().get(i);
-					while (screen.getMonitorDevices() == null && monitor.isCanceled() == false) {
-						monitor.worked(1);
-						try {
-							Thread.sleep(200);
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-
-					MonitorDevice dev = screen.getMonitorDevices().get(i);
-					if (dev != null) {
-						monitorDevices.add(dev);
-						/* Workaround for windows to correctly set fullscreen coordinates! */
-						if (Util.getOS().equals("Windows")) {
-							window.setVisible(false);
-							window.setFullscreen(monitorDevices);
-							window.setFullscreen(false);
-							window.setFullscreen(monitorDevices);
-							window.setVisible(true);
-						}
-
-						else {
-
-							window.setFullscreen(monitorDevices);
-
-						}
-
-					}
-					monitor.done();
-					return Status.OK_STATUS;
-				}
-
-			};
-			job.addJobChangeListener(new JobChangeAdapter() {
-				public void done(IJobChangeEvent event) {
-					if (event.getResult().isOK()) {
-
-					} else {
-
-					}
-				}
-			});
-			job.schedule();
-
+			getInstance().createFullscreen(i);
 		}
-
 	}
 
 	public static WorldWindView getInstance() {
@@ -493,36 +432,28 @@ public class WorldWindView extends ViewPart {
 
 	}
 
+	/**
+	 * The fullscreen mode of the globe in monitor i (0: the primary monitor, 1:
+	 * the secondary monitor, etc.).
+	 */
 	public void createFullscreen(int i) {
+		NewtFullscreen.enter(worldCanvas.getWindow(), i, WorldWindView::clearMeasurement);
+	}
 
-		WorldWindOptionsView.measureTool.getLayer().removeAllRenderables();
-		GLWindow window = worldCanvas.getWindow();
+	/**
+	 * The fullscreen keys of all Bio7 views (see NewtFullscreen): 2 (F2) the
+	 * primary monitor (exits in fullscreen mode), 3 (F3) the secondary, 4 (F4) the
+	 * tertiary monitor and 5 (F5) a selected monitor.
+	 */
+	public void fullscreenKey(int key) {
+		NewtFullscreen.handleKey(worldCanvas.getWindow(), key, this::recreateGLCanvas, WorldWindView::clearMeasurement);
+	}
 
-		Screen screen = window.getScreen();
-		List<MonitorDevice> monitorDevices = new ArrayList<>();
-		List<MonitorDevice> monitorDevicesAvailable = screen.getMonitorDevices();
-		if (i < monitorDevicesAvailable.size()) {
-			MonitorDevice dev = monitorDevicesAvailable.get(i);
-			if (dev != null) {
-				monitorDevices.add(dev);
-				/* Workaround for windows to correctly set fullscreen coordinates! */
-				if (Util.getOS().equals("Windows")) {
-					window.setVisible(false);
-					window.setFullscreen(monitorDevices);
-					window.setFullscreen(false);
-					window.setFullscreen(monitorDevices);
-					window.setVisible(true);
-				}
-
-				else {
-
-					window.setFullscreen(monitorDevices);
-
-				}
-				window.setFullscreen(true);
-			}
+	/* The measurement is removed for the fullscreen mode (the measure tool is created again after the fullscreen) */
+	private static void clearMeasurement() {
+		if (WorldWindOptionsView.measureTool != null) {
+			WorldWindOptionsView.measureTool.getLayer().removeAllRenderables();
 		}
-
 	}
 
 	public void recreateGLCanvas() {
@@ -531,7 +462,10 @@ public class WorldWindView extends ViewPart {
 		// worldFrame.add(worldCanvas);
 		// worldFrame.add(statusBar, BorderLayout.PAGE_END);
 		// worldFrame.validate();
-		WorldWindOptionsView.optionsInstance.createMeasureTool();
+		/* The measure tool again (removed for the fullscreen), if the options are open */
+		if (WorldWindOptionsView.optionsInstance != null) {
+			WorldWindOptionsView.optionsInstance.createMeasureTool();
+		}
 
 	}
 
@@ -657,6 +591,8 @@ public class WorldWindView extends ViewPart {
 		Model m = (Model) WorldWind.createConfigurationComponent(AVKey.MODEL_CLASS_NAME);
 
 		worldCanvas.setModel(m);
+		/* The compass and the scale bar with the scale of a high DPI display */
+		HiDpiLayers.install(worldCanvas);
 	}
 
 	/**

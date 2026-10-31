@@ -14,17 +14,9 @@
 package com.eco.bio7.spatial;
 
 import java.awt.Frame;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.SwingUtilities;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.events.ControlAdapter;
@@ -44,8 +36,7 @@ import org.eclipse.jface.action.IToolBarManager;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.swt.SwtAwt;
 import com.eco.bio7.util.Util;
-import com.jogamp.newt.MonitorDevice;
-import com.jogamp.newt.Screen;
+import com.eco.bio7.worldwind.NewtFullscreen;
 import com.jogamp.newt.Window;
 import com.jogamp.newt.swt.NewtCanvasSWT;
 import com.jogamp.opengl.awt.GLCanvas;
@@ -218,65 +209,21 @@ public class SpatialView extends ViewPart {
 		page.addPartListener(pl);
 	}
 
+	/**
+	 * The fullscreen mode of the 3D view in monitor i (0: the primary monitor, 1:
+	 * the secondary monitor, etc.).
+	 */
 	public void createFullscreen(int i) {
+		NewtFullscreen.enter(spat.glWindow, i, null);
+	}
 
-		Job job = new Job("Fullscreen") {
-
-			@Override
-			protected IStatus run(IProgressMonitor monitor) {
-				monitor.beginTask("Fullscreen mode ...", 20);
-
-				Screen screen = spat.glWindow.getScreen();
-				List<MonitorDevice> monitorDevices = new ArrayList<>();
-				// MonitorDevice dev = screen.getMonitorDevices().get(i);
-				while (screen.getMonitorDevices() == null && monitor.isCanceled() == false) {
-					monitor.worked(1);
-					try {
-						Thread.sleep(200);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-				List<MonitorDevice> monitorDevicesAvailable = screen.getMonitorDevices();
-				if (i < monitorDevicesAvailable.size()) {
-					MonitorDevice dev = monitorDevicesAvailable.get(i);
-					if (dev != null) {
-						monitorDevices.add(dev);
-						/* Workaround for windows to correctly set fullscreen coordinates! */
-						if (Util.getOS().equals("Windows")) {
-							spat.glWindow.setVisible(false);
-							spat.glWindow.setFullscreen(monitorDevices);
-							spat.glWindow.setFullscreen(false);
-							spat.glWindow.setFullscreen(monitorDevices);
-							spat.glWindow.setVisible(true);
-						}
-
-						else {
-
-							spat.glWindow.setFullscreen(monitorDevices);
-
-						}
-
-					}
-				}
-				monitor.done();
-				return Status.OK_STATUS;
-
-			}
-
-		};
-		job.addJobChangeListener(new JobChangeAdapter() {
-			public void done(IJobChangeEvent event) {
-				if (event.getResult().isOK()) {
-
-				} else {
-
-				}
-			}
-		});
-		job.schedule();
-
+	/**
+	 * The fullscreen keys of all Bio7 views (see NewtFullscreen): 2 (F2) the
+	 * primary monitor (exits in fullscreen mode), 3 (F3) the secondary, 4 (F4) the
+	 * tertiary monitor and 5 (F5) a selected monitor.
+	 */
+	public void fullscreenKey(int key) {
+		NewtFullscreen.handleKey(spat.glWindow, key, this::recreateGLCanvas, null);
 	}
 
 	public void recreateGLCanvas() {

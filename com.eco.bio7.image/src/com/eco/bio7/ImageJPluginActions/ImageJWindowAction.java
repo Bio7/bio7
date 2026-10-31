@@ -216,7 +216,9 @@ public class ImageJWindowAction extends Action implements IMenuCreator {
 							plu = WindowManager.getCurrentImage();
 						}
 						if (plu != null) {
-							Fullscreen.enter(plu);
+							/* On the primary monitor like F2! */
+							org.eclipse.swt.widgets.Monitor[] monitors = Fullscreen.getMonitors(e.display);
+							Fullscreen.enter(plu, monitors.length > 0 ? monitors[0] : null);
 						}
 					}
 

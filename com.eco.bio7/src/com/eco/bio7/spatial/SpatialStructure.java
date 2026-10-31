@@ -56,6 +56,7 @@ import com.eco.bio7.spatial.preferences.Preferences3d;
 import com.eco.bio7.util.Util;
 import com.jogamp.nativewindow.swt.SWTAccessor;
 import com.jogamp.nativewindow.util.Point;
+import com.eco.bio7.worldwind.NewtFullscreen;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.MouseEvent;
@@ -1323,23 +1324,18 @@ public class SpatialStructure implements KeyListener, MouseListener {
 				break;
 			case KeyEvent.VK_H:
 				dozv = dozv + 10;
+				break;
 			case KeyEvent.VK_ESCAPE:
-				view.recreateGLCanvas();
-				if (view.getFullscreen() != null) {
-					view.getFullscreen().exit();
+				if (glWindow.isFullscreen()) {
+					view.recreateGLCanvas();
 				}
-				view.setFullscreen(null);
-
 				break;
 			case KeyEvent.VK_F2:
-				if (view.getFullscreen() == null) {
-					view.createFullscreen(0);
-				}
-				break;
 			case KeyEvent.VK_F3:
-				if (view.getFullscreen() == null) {
-					view.createFullscreen(1);
-				}
+			case KeyEvent.VK_F4:
+			case KeyEvent.VK_F5:
+				/* The fullscreen keys of all Bio7 views (see NewtFullscreen)! */
+				view.fullscreenKey(NewtFullscreen.functionKey(evt.getKeyCode()));
 				break;
 
 			default:
@@ -1506,19 +1502,13 @@ public class SpatialStructure implements KeyListener, MouseListener {
 			down = true;
 
 		} else if (keyCode == KeyEvent.VK_ESCAPE) {
-			view.recreateGLCanvas();
-			view.getFullscreen().exit();
-			view.setFullscreen(null);
-
-		} else if (keyCode == KeyEvent.VK_F2) {
-			if (view.getFullscreen() == null) {
-				view.createFullscreen(0);
+			if (glWindow.isFullscreen()) {
+				view.recreateGLCanvas();
 			}
 
-		} else if (keyCode == KeyEvent.VK_F3) {
-			if (view.getFullscreen() == null) {
-				view.createFullscreen(1);
-			}
+		} else if (NewtFullscreen.functionKey((short) keyCode) > 0) {
+			/* The fullscreen keys of all Bio7 views (see NewtFullscreen)! */
+			view.fullscreenKey(NewtFullscreen.functionKey((short) keyCode));
 
 		}
 

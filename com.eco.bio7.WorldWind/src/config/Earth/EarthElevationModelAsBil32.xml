@@ -33,20 +33,22 @@
     <ElevationModel version="1">
         <DisplayName>Earth Elevation Model (USA 10m, WordWide 30m, Ocean 900m)</DisplayName>
         <Service serviceName="OGC:WMS" version="1.3">
-            <GetCapabilitiesURL>https://data.worldwind.arc.nasa.gov/elev</GetCapabilitiesURL>
-            <GetMapURL>https://data.worldwind.arc.nasa.gov/elev</GetMapURL>
-            <LayerNames>mergedAsterElevations</LayerNames>
+            <!--Changed for Bio7: data.worldwind.arc.nasa.gov is not available, the elevations of worldwind26.arc.nasa.gov!-->
+            <GetCapabilitiesURL>https://worldwind26.arc.nasa.gov/elev</GetCapabilitiesURL>
+            <GetMapURL>https://worldwind26.arc.nasa.gov/elev</GetMapURL>
+            <LayerNames>GEBCO,aster_v2,USGS-NED</LayerNames>
         </Service>
         <RetrievePropertiesFromService>true</RetrievePropertiesFromService>
         <!-- day month year hours:minutes:seconds timezone -->
         <LastUpdate>17 12 2009 01:01:01 GMT</LastUpdate>
-        <DataCacheName>Earth/EarthElevationModel.bil32</DataCacheName>
-        <ImageFormat>application/bil32</ImageFormat>
+        <!--Changed for Bio7: the server has no bil32, the 16 bit elevations (and their cache)!-->
+        <DataCacheName>Earth/EarthElevationModel.bil16</DataCacheName>
+        <ImageFormat>application/bil16</ImageFormat>
         <ExtremeElevations min="-11000" max="8850">
             <FileName>config/SRTM30Plus_ExtremeElevations_5.bil</FileName>
         </ExtremeElevations>
         <DataDetailHint>0.30</DataDetailHint>
-        <DataType type="Float32" byteOrder="LittleEndian"/>
+        <DataType type="Int16" byteOrder="LittleEndian"/>
         <FormatSuffix>.bil</FormatSuffix>
         <NumLevels count="12" numEmpty="0"/>
         <TileOrigin>

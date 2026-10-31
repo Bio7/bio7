@@ -10,21 +10,22 @@
 <!--DEPRECATED. Use BMNGWMSLayer2.xml-->
 <Layer version="1" layerType="TiledImageLayer">
     <DisplayName>Blue Marble (WMS) 2004</DisplayName>
+    <!--Changed for Bio7: data.worldwind.arc.nasa.gov is not available, the Blue Marble of NASA GIBS!-->
     <Service serviceName="OGC:WMS" version="1.3">
-        <GetCapabilitiesURL>https://data.worldwind.arc.nasa.gov/wms</GetCapabilitiesURL>
-        <GetMapURL>https://data.worldwind.arc.nasa.gov/wms</GetMapURL>
-        <LayerNames>bmng200405</LayerNames>
+        <GetCapabilitiesURL>https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi</GetCapabilitiesURL>
+        <GetMapURL>https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi</GetMapURL>
+        <LayerNames>BlueMarble_ShadedRelief_Bathymetry</LayerNames>
     </Service>
     <RetrievePropertiesFromService>true</RetrievePropertiesFromService>
     <!-- day month year hours:minutes:seconds timezone -->
     <LastUpdate>26 03 2009 00:00:00 GMT</LastUpdate>
-    <DataCacheName>Earth/BMNGWMS/BMNG(Shaded + Bathymetry) Tiled - Version 1.1 - 5.2004</DataCacheName>
-    <ImageFormat>image/dds</ImageFormat>
+    <DataCacheName>Earth/GIBS/BlueMarble_ShadedRelief_Bathymetry</DataCacheName>
+    <ImageFormat>image/jpeg</ImageFormat>
     <AvailableImageFormats>
+        <ImageFormat>image/jpeg</ImageFormat>
         <ImageFormat>image/png</ImageFormat>
-        <ImageFormat>image/dds</ImageFormat>
     </AvailableImageFormats>
-    <FormatSuffix>.dds</FormatSuffix>
+    <FormatSuffix>.jpg</FormatSuffix>
     <NumLevels count="5" numEmpty="0"/>
     <TileOrigin>
         <LatLon units="degrees" latitude="-90" longitude="-180"/>

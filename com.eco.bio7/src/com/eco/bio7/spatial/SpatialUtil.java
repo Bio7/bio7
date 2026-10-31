@@ -505,7 +505,7 @@ public class SpatialUtil {
 	}
 
 	/**
-	 * Triggers the fullscreen mode in the 3D view.
+	 * Triggers the fullscreen mode in the 3D view (on the primary monitor like F2).
 	 * 
 	 */
 	public static void setFullscreen() {
@@ -520,7 +520,8 @@ public class SpatialUtil {
 	}
 	
 	/**
-	 * Triggers the fullscreen mode and opens the 3D view in monitor i.
+	 * Triggers the fullscreen mode and opens the 3D view in monitor i (0: the
+	 * primary, 1: the secondary monitor, etc., like F2, F3 and F4).
 	 * 
 	 */
 	public static void setFullscreen(int i) {

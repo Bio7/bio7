@@ -303,7 +303,8 @@ public class TransferFunctionEditor extends Composite {
 			}
 		}
 		// The opacity curve and the points
-		gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND));
+		/* The text color of the canvas (set by the theme, e.g., light in the dark theme) */
+		gc.setForeground(opacityCanvas.getForeground());
 		gc.setLineWidth(2);
 		int[] points = new int[tf.getOpacityPoints().size() * 2];
 		int k = 0;
@@ -505,6 +506,11 @@ public class TransferFunctionEditor extends Composite {
 		Shell shell = new Shell(parent, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MODELESS);
 		shell.setText(title);
 		shell.setLayout(new GridLayout(1, false));
+		/*
+		 * The editor (a subclass of Composite) is not styled by the CSS of a theme: the
+		 * background of the shell (e.g., of the dark theme) instead of the native one!
+		 */
+		shell.setBackgroundMode(SWT.INHERIT_DEFAULT);
 		TransferFunctionEditor editor = new TransferFunctionEditor(shell, tf);
 		editor.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		editor.setHistogram(histogram);

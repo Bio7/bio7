@@ -8,22 +8,29 @@
 <!--$Id: LandsatI3WMSLayer.xml 1958 2014-04-24 19:25:37Z tgaskins $-->
 <!--DEPRECATED. Use LandsatI3WMSLayer2.xml-->
 <Layer version="1" layerType="TiledImageLayer">
-    <DisplayName>i-cubed Landsat</DisplayName>
-    <Service serviceName="OGC:WMS" version="1.3">
-        <GetCapabilitiesURL>https://data.worldwind.arc.nasa.gov/wms</GetCapabilitiesURL>
-        <GetMapURL>https://data.worldwind.arc.nasa.gov/wms</GetMapURL>
-        <LayerNames>esat</LayerNames>
+    <!--
+      Changed for Bio7: data.worldwind.arc.nasa.gov is not available, the Sentinel-2 cloudless imagery
+      of EOX: Sentinel-2 cloudless 2016 - https://cloudless.eox.at by EOX IT Services GmbH (Contains modified
+      Copernicus Sentinel data 2016), released under the Creative Commons Attribution 4.0 License.
+    -->
+    <DisplayName>Sentinel-2 cloudless 2016 (EOX)</DisplayName>
+    <!--WMS 1.1.1: the server has no CRS:84 (requested by WMS 1.3), EPSG:4326 instead!-->
+    <Service serviceName="OGC:WMS" version="1.1.1">
+        <GetCapabilitiesURL>https://tiles.maps.eox.at/wms</GetCapabilitiesURL>
+        <GetMapURL>https://tiles.maps.eox.at/wms</GetMapURL>
+        <LayerNames>s2cloudless</LayerNames>
     </Service>
     <RetrievePropertiesFromService>true</RetrievePropertiesFromService>
     <!-- day month year hours:minutes:seconds timezone -->
     <LastUpdate>26 03 2009 00:00:00 GMT</LastUpdate>
-    <DataCacheName>Earth/NASA LandSat I3 WMS</DataCacheName>
-    <ImageFormat>image/dds</ImageFormat>
+    <DataCacheName>Earth/EOX/s2cloudless</DataCacheName>
+    <!--The server sends PNG images (also for a JPEG request)-->
+    <ImageFormat>image/png</ImageFormat>
     <AvailableImageFormats>
         <ImageFormat>image/png</ImageFormat>
-        <ImageFormat>image/dds</ImageFormat>
+        <ImageFormat>image/jpeg</ImageFormat>
     </AvailableImageFormats>
-    <FormatSuffix>.dds</FormatSuffix>
+    <FormatSuffix>.png</FormatSuffix>
     <NumLevels count="10" numEmpty="4"/>
     <TileOrigin>
         <LatLon units="degrees" latitude="-90" longitude="-180"/>
@@ -42,7 +49,7 @@
             <LatLon units="degrees" latitude="90" longitude="180"/>
         </NorthEast>
     </Sector>
-    <UseTransparentTextures>true</UseTransparentTextures>
+    <UseTransparentTextures>false</UseTransparentTextures>
     <!--<ScreenCredit creditType="ScreenImage">-->
     <!--<FileName>images/32x32-icon-nasa.png</FileName>-->
     <!--<Link>https://worldwind.arc.nasa.gov</Link>-->

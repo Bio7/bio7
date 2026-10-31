@@ -109,6 +109,8 @@ final class ViewColors {
 		if (theme == null) {
 			GridHeaderColors.setColors(null, null, null, null);
 			applyGridSelection(null);
+			/* The compass of the globe with the colors of the default theme */
+			com.eco.bio7.worldwind.ThemedCompassLayer.setDefaultColors(com.eco.bio7.util.Util.isThemeBlack());
 			/* The default themes: the boxes with the color of the parent (no native tint) */
 			GroupColors.applyDefault();
 			/* The local HTML pages (e.g., the R help): the CSS of the default themes */
@@ -128,6 +130,9 @@ final class ViewColors {
 			GridHeaderColors.setColors(theme.getColor("tableHeader"), theme.getColor("tableHeaderText"), theme.getColor("tableHeaderLine"),
 					theme.getColor("viewBackground"));
 			applyGridSelection(theme);
+			/* The compass of the globe with the colors of the theme */
+			com.eco.bio7.worldwind.ThemedCompassLayer.setThemeColors(theme.getColor("widgetBackground"), theme.getColor("tableHeaderLine"),
+					theme.getColor("widgetText"), theme.getColor("iconColor"));
 		}
 	}
 
