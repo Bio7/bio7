@@ -70,7 +70,7 @@ public class LayerCompositeVideo extends Composite {
 			}
 		});
 		final Scale scale = new Scale(this, SWT.NONE);
-		scale.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
+		scale.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 		scale.setMinimum(1);
 		scale.setMaximum(200);
 		scale.setSelection(100);
@@ -85,8 +85,7 @@ public class LayerCompositeVideo extends Composite {
 		});
 
 		final Button r = new Button(this, SWT.NONE);
-		GridData gd_r = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_r.heightHint = 50;
+		GridData gd_r = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		r.setLayoutData(gd_r);
 		// r.setText("X");
 		image = Activator.getImageDescriptor("/pics/deleteaction.png").createImage();

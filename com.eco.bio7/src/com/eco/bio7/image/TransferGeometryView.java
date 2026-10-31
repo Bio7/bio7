@@ -294,6 +294,11 @@ public class TransferGeometryView extends ViewPart {
 					boolean doSetCRS = isDoSetCrs();
 					boolean doSetDf = isDoSetDataframe();
 					String crs = getCrsText();
+					/* The projection needs a georeferenced file (see the button "Load File")! */
+					if (doSetCRS && (crs == null || crs.isBlank() || !new java.io.File(crs).isFile())) {
+						Bio7Dialog.message("Please load a georeferenced file (e.g., a GeoTIFF) with \"Load File\" to add its projection.");
+						return;
+					}
 					String selectedDf = getSelDataframe();
 					boolean asCentroid = isTransferCentroid();
 					if (RState.isBusy() == false) {

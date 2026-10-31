@@ -80,41 +80,36 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 				 * information!
 				 */
 
+				if (crsString == null || crsString.isBlank()) {
+					Bio7Dialog.message("No georeferenced file was selected to add its projection.");
+					return Status.OK_STATUS;
+				}
 				File f = new File(crsString);
-				//gdal.AllRegister();
-				Dataset poDataset = null;
+				boolean read = false;
 				try {
-					poDataset = (Dataset) gdal.Open(f.getAbsolutePath(), gdalconst.GA_ReadOnly);
-					if (poDataset == null) {
-						System.out.println("The image could not be read.");
-
-					}
-
-					else {
-						/* The array which contains the transform parameters! */
-						adfGeoTransform = new double[6];
-						/*
-						 * Put the transform parameters in the given array! See:
-						 * http://gdal.org/java/org/gdal/gdal/Dataset.html#
-						 * GetGeoTransform%28double[]%29
-						 */
-						poDataset.GetGeoTransform(adfGeoTransform);
-						/*
-						 * Get the spatial reference, projection and convert
-						 * from Wkt to Proj4!
-						 */
-						SpatialReference layerProjection = new SpatialReference();
-						layerProjection.ImportFromWkt(poDataset.GetProjectionRef());
-						System.out.println(layerProjection.ExportToProj4());
-						proj4String = layerProjection.ExportToProj4();
-
-						startExport(selectedType);
-					}
+					read = readGeoreferenceWithGdal(f);
+				} catch (LinkageError e) {
+					/*
+					 * The native libraries of GDAL are not available (e.g., on macOS): the
+					 * georeference is read with R!
+					 */
+					System.err.println("GDAL is not available (" + e.getMessage() + "), the georeference is read with R.");
 				} catch (Exception e) {
-					System.err.println("Exception caught.");
-					System.err.println(e.getMessage());
-					e.printStackTrace();
-
+					System.err.println("The georeference could not be read with GDAL: " + e.getMessage());
+				}
+				String problem = null;
+				if (!read) {
+					problem = readGeoreferenceWithR(f);
+					read = problem == null;
+				}
+				/* The spatial objects of the transfer are created with the R package sp! */
+				String missingSp = read ? missingSpPackage() : null;
+				if (missingSp != null) {
+					Bio7Dialog.message(missingSp);
+				} else if (read) {
+					startExport(selectedType);
+				} else {
+					Bio7Dialog.message("The georeference of the file could not be read:\n" + f.getAbsolutePath() + "\n\nGDAL is not available. " + problem);
 				}
 
 			}
@@ -125,6 +120,104 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 		}
 
 		return Status.OK_STATUS;
+	}
+
+	/*
+	 * Reads the transform parameters and the projection (Proj4) of the
+	 * georeferenced file with GDAL. Throws a LinkageError if the native libraries
+	 * of GDAL are not available!
+	 */
+	private boolean readGeoreferenceWithGdal(File f) {
+		Dataset poDataset = (Dataset) gdal.Open(f.getAbsolutePath(), gdalconst.GA_ReadOnly);
+		if (poDataset == null) {
+			System.out.println("The image could not be read.");
+			return false;
+		}
+		/* The array which contains the transform parameters! */
+		adfGeoTransform = new double[6];
+		/*
+		 * Put the transform parameters in the given array! See:
+		 * http://gdal.org/java/org/gdal/gdal/Dataset.html# GetGeoTransform%28double[]%29
+		 */
+		poDataset.GetGeoTransform(adfGeoTransform);
+		/*
+		 * Get the spatial reference, projection and convert from Wkt to Proj4!
+		 */
+		SpatialReference layerProjection = new SpatialReference();
+		layerProjection.ImportFromWkt(poDataset.GetProjectionRef());
+		proj4String = layerProjection.ExportToProj4();
+		return true;
+	}
+
+	/*
+	 * Reads the transform parameters (like GDAL: the upper left corner, the pixel
+	 * width and the negative pixel height, no rotation) and the projection (Proj4)
+	 * of the georeferenced file with the R package terra (or raster). Used if the
+	 * native libraries of GDAL are not available! Returns null if the georeference
+	 * was read, else the reason for the dialog (e.g., the missing R packages).
+	 */
+	private String readGeoreferenceWithR(File f) {
+		RConnection con = RServe.getConnection();
+		if (con == null) {
+			return "There is no connection to R (Rserve).";
+		}
+		String path = f.getAbsolutePath().replace("\\", "/").replace("\"", "\\\"");
+		try {
+			String pkg;
+			if (installed(con, "terra")) {
+				pkg = "terra";
+			} else if (installed(con, "raster")) {
+				pkg = "raster";
+			} else {
+				return "The R package 'terra' (or 'raster') is not installed. Please install it, e.g., in the \"Packages\" view of Bio7 (tab \"Install Packages\") or in R with:\n\ninstall.packages(\"terra\")";
+			}
+			con.eval(".bio7GeoFile<-\"" + path + "\"");
+			/* The transform parameters and the projection or the error message of R */
+			String read = pkg.equals("terra")
+					? "local({r<-terra::rast(.bio7GeoFile);e<-as.vector(terra::ext(r));rs<-terra::res(r);list(c(e[1],rs[1],0,e[4],0,-rs[2]),terra::crs(r,proj=TRUE))})"
+					: "local({r<-raster::raster(.bio7GeoFile);rs<-raster::res(r);list(c(raster::xmin(r),rs[1],0,raster::ymax(r),0,-rs[2]),raster::projection(r))})";
+			con.eval(".bio7GeoResult<-tryCatch(" + read + ",error=function(e) conditionMessage(e))");
+			boolean failed = ((REXPLogical) con.eval("is.character(.bio7GeoResult)")).isTRUE()[0];
+			if (failed) {
+				String message = con.eval(".bio7GeoResult").asString();
+				con.eval("rm(.bio7GeoFile,.bio7GeoResult)");
+				return "The R package '" + pkg + "' could not read the file:\n\n" + message;
+			}
+			double[] transform = con.eval(".bio7GeoResult[[1]]").asDoubles();
+			String proj = con.eval("as.character(.bio7GeoResult[[2]])").asString();
+			con.eval("rm(.bio7GeoFile,.bio7GeoResult)");
+			if (transform == null || transform.length != 6) {
+				return "The R package '" + pkg + "' returned no georeference for the file.";
+			}
+			if (proj == null || proj.isBlank()) {
+				return "The file has no projection (coordinate reference system).";
+			}
+			adfGeoTransform = transform;
+			proj4String = proj.trim();
+			return null;
+		} catch (RserveException | org.rosuda.REngine.REXPMismatchException e) {
+			return "The georeference could not be read with R: " + e.getMessage();
+		}
+	}
+
+	/* Returns the message for the dialog if the R package sp is not installed, else null */
+	private String missingSpPackage() {
+		RConnection con = RServe.getConnection();
+		if (con == null) {
+			return "There is no connection to R (Rserve).";
+		}
+		try {
+			if (!installed(con, "sp")) {
+				return "The R package 'sp' is not installed (needed for the spatial objects of the transfer). Please install it, e.g., in the \"Packages\" view of Bio7 (tab \"Install Packages\") or in R with:\n\ninstall.packages(\"sp\")";
+			}
+		} catch (RserveException | org.rosuda.REngine.REXPMismatchException e) {
+			return "The R package 'sp' could not be checked: " + e.getMessage();
+		}
+		return null;
+	}
+
+	private static boolean installed(RConnection con, String pkg) throws RserveException, org.rosuda.REngine.REXPMismatchException {
+		return ((REXPLogical) con.eval("requireNamespace('" + pkg + "', quietly=TRUE)")).isTRUE()[0];
 	}
 
 	public double getTransformedCentroidCoordsX(int row, int col) {

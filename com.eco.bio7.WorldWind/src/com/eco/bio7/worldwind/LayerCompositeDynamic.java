@@ -50,7 +50,7 @@ public class LayerCompositeDynamic extends Composite {
 		this.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		setLayout(new GridLayout(5, true));
 		final Button b = new Button(this, SWT.CHECK);
-		b.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
+		b.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		b.setText("Dynamic");
 		b.setSelection(true);
 		b.addSelectionListener(new SelectionAdapter() {
@@ -69,8 +69,7 @@ public class LayerCompositeDynamic extends Composite {
 			}
 		});
 		final Scale scale = new Scale(this, SWT.NONE);
-		GridData gd_scale = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-		gd_scale.heightHint = 43;
+		GridData gd_scale = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 		scale.setLayoutData(gd_scale);
 		scale.setMinimum(1);
 		scale.setMaximum(1000);
@@ -83,8 +82,7 @@ public class LayerCompositeDynamic extends Composite {
 		});
 
 		final Button r = new Button(this, SWT.NONE);
-		GridData gd_r = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_r.heightHint = 50;
+		GridData gd_r = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		r.setLayoutData(gd_r);
 		// r.setText("X");
 		image = Activator.getImageDescriptor("/pics/deleteaction.png").createImage();
@@ -108,8 +106,7 @@ public class LayerCompositeDynamic extends Composite {
 		});
 
 		final Button setupButton = new Button(this, SWT.NONE);
-		GridData gd_setupButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_setupButton.heightHint = 50;
+		GridData gd_setupButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		setupButton.setLayoutData(gd_setupButton);
 		setupButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {

@@ -56,7 +56,7 @@ public class LayerComposite extends Composite {
 		 */
 		this.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		final Button b = new Button(this, SWT.CHECK);
-		GridData gd_b = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		GridData gd_b = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		gd_b.widthHint = 100;
 		b.setLayoutData(gd_b);
 		b.setText(layerImages.getName());
@@ -79,8 +79,7 @@ public class LayerComposite extends Composite {
 		});
 
 		final Scale scale = new Scale(this, SWT.NONE);
-		GridData gd_scale = new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1);
-		gd_scale.heightHint = 50;
+		GridData gd_scale = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 		gd_scale.widthHint = 93;
 		scale.setLayoutData(gd_scale);
 		scale.setMinimum(1);
@@ -94,8 +93,7 @@ public class LayerComposite extends Composite {
 		});
 
 		final Button r = new Button(this, SWT.NONE);
-		GridData gd_r = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_r.heightHint = 40;
+		GridData gd_r = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		r.setLayoutData(gd_r);
 		// r.setText("X");
 		image = Activator.getImageDescriptor("/pics/deleteaction.png").createImage();
@@ -116,8 +114,7 @@ public class LayerComposite extends Composite {
 			}
 		});
 		final Button goTo = new Button(this, SWT.NONE);
-		GridData gd_goTo = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_goTo.heightHint = 40;
+		GridData gd_goTo = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		goTo.setLayoutData(gd_goTo);
 		imagePerspective = Activator.getImageDescriptor("/pics/worldwindpersp.svg").createImage();
 		goTo.setImage(imagePerspective);
