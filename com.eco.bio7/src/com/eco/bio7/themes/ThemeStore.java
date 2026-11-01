@@ -68,7 +68,10 @@ public final class ThemeStore {
 	 * The version of the example themes: an example of an older version is
 	 * installed again if it has not been changed by the user!
 	 */
-	private static final int EXAMPLES_VERSION = 11;
+	private static final int EXAMPLES_VERSION = 12;
+	/* Examples of earlier versions (removed from Bio7): deleted if installed and unchanged */
+	private static final List<String> REMOVED_EXAMPLES = List.of("autumn-harvest", "autumn-leaves", "data-science", "dolphin",
+			"ecological-modeling", "fiery", "forest-night", "halloween", "science", "spring", "summer", "winter");
 	/* The name of the own image of the view tab rows in the theme folder (without the extension) */
 	private static final String TAB_IMAGE = "tab-artwork";
 
@@ -497,20 +500,39 @@ public final class ThemeStore {
 
 	/* ######################## Export and import ######################## */
 
-	/** Exports the theme folder as one file (zip). */
+	/**
+	 * Exports the theme folder as one file (zip). A theme without own gaps is
+	 * exported with the gaps of the preferences (the gaps of the exported look,
+	 * e.g., no gap below the toolbar for a continuous artwork)!
+	 */
 	public static void export(CustomTheme theme, File file) throws IOException {
 		save(theme);
 		File dir = dir(theme);
+		File tmp = null;
+		File properties = new File(dir, CustomTheme.PROPERTIES);
+		if (!theme.hasGaps()) {
+			tmp = Files.createTempDirectory("bio7theme").toFile();
+			CustomTheme exported = theme.copy(theme.getFolderName());
+			exported.setGaps(WindowGaps.getPreferenceToolbarGap(), WindowGaps.getPreferenceViewsGap());
+			exported.save(tmp);
+			properties = new File(tmp, CustomTheme.PROPERTIES);
+		}
 		try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(file.toPath()))) {
 			File[] files = dir.listFiles(File::isFile);
 			if (files != null) {
 				for (File f : files) {
 					if (allowed(f.getName()) || f.getName().equals(CustomTheme.CSS)) {
+						/* The description with the gaps (see above) */
+						File source = f.getName().equals(CustomTheme.PROPERTIES) ? properties : f;
 						zip.putNextEntry(new ZipEntry(f.getName()));
-						Files.copy(f.toPath(), zip);
+						Files.copy(source.toPath(), zip);
 						zip.closeEntry();
 					}
 				}
+			}
+		} finally {
+			if (tmp != null) {
+				deleteTree(tmp);
 			}
 		}
 	}
@@ -640,6 +662,7 @@ public final class ThemeStore {
 	/** Copies the example themes of this plugin (once, a deleted example is not copied again). */
 	public static void installExamples() {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		removeExamples(store);
 		Bundle bundle = Bio7Plugin.getDefault().getBundle();
 		Enumeration<String> paths = bundle.getEntryPaths(EXAMPLES);
 		if (paths == null) {
@@ -685,6 +708,28 @@ public final class ThemeStore {
 			store.setValue("THEME_EXAMPLE_VERSION." + folder, EXAMPLES_VERSION);
 		}
 		flush();
+	}
+
+	/*
+	 * Deletes the installed examples which were removed from Bio7, if they are
+	 * unchanged (a theme changed by the user is kept) and not active.
+	 */
+	private static void removeExamples(IPreferenceStore store) {
+		String active = activeFolder();
+		for (String folder : REMOVED_EXAMPLES) {
+			if (!store.getBoolean("THEME_EXAMPLE_INSTALLED." + folder)) {
+				continue;
+			}
+			File dir = new File(folder(), folder);
+			if (dir.isDirectory() && !folder.equals(active) && unchangedExample(dir, store.getString("THEME_EXAMPLE_SIGNATURE." + folder))) {
+				deleteTree(dir);
+			}
+			if (!dir.exists()) {
+				store.setToDefault("THEME_EXAMPLE_INSTALLED." + folder);
+				store.setToDefault("THEME_EXAMPLE_SIGNATURE." + folder);
+				store.setToDefault("THEME_EXAMPLE_VERSION." + folder);
+			}
+		}
 	}
 
 	/*

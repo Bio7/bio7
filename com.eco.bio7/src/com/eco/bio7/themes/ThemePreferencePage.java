@@ -742,6 +742,14 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		if (file == null) {
 			return;
 		}
+		/* One extension (the save dialog of macOS can add the extension of the filter to the given name) */
+		String extension = "." + ThemeStore.EXTENSION;
+		while (file.endsWith(extension + extension)) {
+			file = file.substring(0, file.length() - extension.length());
+		}
+		if (!file.endsWith(extension)) {
+			file += extension;
+		}
 		try {
 			ThemeStore.export(current, new File(file));
 		} catch (IOException e) {
