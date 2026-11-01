@@ -1959,7 +1959,6 @@ public class WorldWindOptionsView extends ViewPart {
 						|| layer.getName().equals("i-cubed Landsat") || layer.getName().equals("Blue Marble (WMS) 2004")
 						|| layer.getName().equals("NASA Blue Marble Image")
 						|| layer.getName().equals("Sentinel-2 cloudless 2016 (EOX)")
-						|| layer.getName().equals("OpenStreetMap (terrestris)")
 						|| layer.getName().equals("USGS Urban Area Ortho")) {
 
 					final Scale scale = new Scale(composite, SWT.NONE);

@@ -240,7 +240,8 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer
 
         Retriever retriever;
 
-        if ("http".equalsIgnoreCase(url.getProtocol()))
+        /* Changed for Bio7: also https (e.g., the OpenStreetMap tiles of terrestris)! */
+        if ("http".equalsIgnoreCase(url.getProtocol()) || "https".equalsIgnoreCase(url.getProtocol()))
         {
             retriever = new HTTPRetriever(url, new DownloadPostProcessor(tile, this));
             retriever.setValue(URLRetriever.EXTRACT_ZIP_ENTRY, "true"); // supports legacy layers

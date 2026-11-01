@@ -331,6 +331,11 @@ public abstract class URLRetriever extends WWObjectImpl implements Retriever
 
         this.connection.setConnectTimeout(this.connectTimeout);
         this.connection.setReadTimeout(this.readTimeout);
+        /*
+         * Changed for Bio7: the application is identified (e.g., required by the tile
+         * usage policy of OpenStreetMap, the default user agent of Java is not accepted).
+         */
+        this.connection.setRequestProperty("User-Agent", "Bio7/4.0 (WorldWind; +https://github.com/Bio7/bio7)");
 
         return connection;
     }
