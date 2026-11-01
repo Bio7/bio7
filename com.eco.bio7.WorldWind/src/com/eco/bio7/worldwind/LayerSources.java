@@ -67,8 +67,8 @@ public final class LayerSources {
 					"NASA WorldWind elevation service: ASTER GDEM v2 (METI and NASA), USGS National Elevation Dataset (NED), NASA SRTM30 and the GEBCO grid (GEBCO Compilation Group)",
 					"Free to use (please cite the sources)", "https://worldwind.arc.nasa.gov"),
 			new Source(new String[] { "Place Names", "Political Boundaries" }, "Place Names, Political Boundaries",
-					"NASA WorldWind", "Free to use (NASA Open Source Agreement / Apache License 2.0)",
-					"https://worldwind.arc.nasa.gov") };
+					"Made with Natural Earth (free vector and raster map data, naturalearthdata.com), bundled with Bio7",
+					"Public domain", "https://www.naturalearthdata.com") };
 
 	private LayerSources() {
 	}

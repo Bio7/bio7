@@ -32,6 +32,8 @@ import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.geom.coords.MGRSCoord;
 import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.layers.CompassLayer;
+import gov.nasa.worldwind.layers.ScalebarLayer;
+import gov.nasa.worldwind.layers.WorldMapLayer;
 import gov.nasa.worldwind.layers.LatLonGraticuleLayer;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.LayerList;
@@ -2585,24 +2587,40 @@ public class WorldWindOptionsView extends ViewPart {
 
 	public static void insertBeforePlacenames(WorldWindow wwd, Layer layer) {
 		// Insert the layer into the layer list just before the placenames.
-		int compassPosition = 0;
 		LayerList layers = wwd.getModel().getLayers();
-		for (Layer l : layers) {
-			if (l instanceof PlaceNameLayer)
-				compassPosition = layers.indexOf(l);
-		}
-		layers.add(compassPosition, layer);
+		layers.add(placenamesPosition(layers), layer);
 	}
 
 	public static void insertAfterPlacenames(WorldWindow wwd, Layer layer) {
 		// Insert the layer into the layer list just after the placenames.
-		int compassPosition = 0;
 		LayerList layers = wwd.getModel().getLayers();
-		for (Layer l : layers) {
-			if (l instanceof PlaceNameLayer)
-				compassPosition = layers.indexOf(l);
+		int position = placenamesPosition(layers);
+		boolean found = position < layers.size() && isPlacenames(layers.get(position));
+		layers.add(found ? position + 1 : position, layer);
+	}
+
+	/*
+	 * The position of the place names (the NASA layer or the Natural Earth layer of
+	 * Bio7), else the position before the screen layers (world map, scale bar,
+	 * compass), so that a new layer is drawn above the imagery!
+	 */
+	private static int placenamesPosition(LayerList layers) {
+		for (int i = layers.size() - 1; i >= 0; i--) {
+			if (isPlacenames(layers.get(i))) {
+				return i;
+			}
 		}
-		layers.add(compassPosition + 1, layer);
+		for (int i = 0; i < layers.size(); i++) {
+			Layer l = layers.get(i);
+			if (l instanceof WorldMapLayer || l instanceof ScalebarLayer || l instanceof CompassLayer) {
+				return i;
+			}
+		}
+		return layers.size();
+	}
+
+	private static boolean isPlacenames(Layer l) {
+		return l instanceof PlaceNameLayer || l instanceof NaturalEarthPlaceNamesLayer;
 	}
 
 	public static void insertBeforeLayerName(WorldWindow wwd, Layer layer, String targetName) {

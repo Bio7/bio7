@@ -29,8 +29,10 @@
     <Layer href="config/Earth/OpenStreetMap.xml" actuate="onRequest"/>
     <!--<<Layer className="gov.nasa.worldwind.layers.Earth.OSMMapnikLayer" actuate="onRequest"/>-->
     <!--<Layer className="gov.nasa.worldwind.layers.Earth.OSMCycleMapLayer" actuate="onRequest"/>-->
-    <Layer className="gov.nasa.worldwind.layers.Earth.CountryBoundariesLayer" actuate="onRequest"/>
-    <Layer className="gov.nasa.worldwind.layers.Earth.NASAWFSPlaceNameLayer"/>
+    <!--Changed for Bio7: the political boundaries of NASA (WMS of worldwind22.arc.nasa.gov) are not available, Natural Earth-->
+    <Layer className="com.eco.bio7.worldwind.NaturalEarthBoundariesLayer" actuate="onRequest"/>
+    <!--Changed for Bio7: the place names of NASA (WFS of worldwind22.arc.nasa.gov) are not available, Natural Earth-->
+    <Layer className="com.eco.bio7.worldwind.NaturalEarthPlaceNamesLayer" actuate="onRequest"/>
     <Layer className="gov.nasa.worldwind.layers.WorldMapLayer"/>
     <Layer className="gov.nasa.worldwind.layers.ScalebarLayer"/>
     <!--Changed for Bio7: the compass with the colors of the theme-->
