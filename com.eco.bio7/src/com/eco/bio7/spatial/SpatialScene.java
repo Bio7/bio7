@@ -533,19 +533,28 @@ public class SpatialScene {
 
 	/*
 	 * The displayed value of a position of an axis: the pixel coordinates of a
-	 * texture or stack (y from the top like in ImageJ) and the heights of a height
-	 * map, else the position!
+	 * texture or stack (y from the top like in ImageJ) or the coordinates of the
+	 * calibrated ImageJ image of the texture (origin, pixel size, inverted y, see
+	 * AxisLabelsRenderer.textureCalibration) and the heights of a height map, else
+	 * the position!
 	 */
 	private static double plotValue(SpatialStructure grid, int axis, double position, double[] b) {
-		boolean image = grid.getTextureExtent() != null;
+		float[] extent = grid.getTextureExtent();
+		boolean image = extent != null;
 		if (axis == 0) {
-			return image ? position - b[0] : position;
+			if (!image) {
+				return position;
+			}
+			ij.measure.Calibration cal = AxisLabelsRenderer.textureCalibration(grid);
+			return cal != null ? cal.getX(position - b[0]) : position - b[0];
 		}
 		if (axis == 1) {
 			if (!image) {
 				return position;
 			}
-			return HeightMaps.isFlipVertically() ? position - b[2] : b[3] - position;
+			double row = HeightMaps.isFlipVertically() ? position - b[2] : b[3] - position;
+			ij.measure.Calibration cal = AxisLabelsRenderer.textureCalibration(grid);
+			return cal != null ? cal.getY(row, Math.round(extent[1])) : row;
 		}
 		boolean heightMap = grid.heightMap && grid.textures != null && grid.textures.showTexture
 				&& grid.textures.tex != null;

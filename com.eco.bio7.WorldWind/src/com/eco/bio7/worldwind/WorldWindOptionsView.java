@@ -256,6 +256,8 @@ public class WorldWindOptionsView extends ViewPart {
 	@Override
 	public void createPartControl(Composite parent) {
 		wC = WorldWindView.getWwd();
+		/* Scrolling a tab doesn't change the sliders under the mouse */
+		com.eco.bio7.util.WheelScrollGuard.install(parent);
 
 		checkBoxes.clear();
 		createMeasureTool();

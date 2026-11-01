@@ -84,6 +84,14 @@ public class LinearSlider extends Canvas {
 		});
 		addListener(SWT.MouseUp, _ -> dragging = false);
 		addListener(SWT.MouseVerticalWheel, e -> {
+			/*
+			 * Only a slider with the focus (clicked or selected with the keyboard) which is
+			 * not on a scrollable page: else the wheel scrolls the page (the value doesn't
+			 * change when the page is scrolled over the slider, also after a click)!
+			 */
+			if (!isFocusControl() || onScrollablePage()) {
+				return;
+			}
 			setValueByUser(selection + (e.count > 0 ? increment : -increment));
 			e.doit = false;
 		});
@@ -414,5 +422,16 @@ public class LinearSlider extends Canvas {
 			majorColor.dispose();
 			knob.dispose();
 		}
+	}
+
+	/* True if the slider is on a page which can be scrolled (a scrolled composite with a larger content) */
+	private boolean onScrollablePage() {
+		for (org.eclipse.swt.widgets.Composite c = getParent(); c != null; c = c.getParent()) {
+			if (c instanceof org.eclipse.swt.custom.ScrolledComposite scroll && scroll.getContent() != null
+					&& scroll.getContent().getSize().y > scroll.getClientArea().height) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

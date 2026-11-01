@@ -57,6 +57,8 @@ public class Textures {
 	private boolean staticImageImageJ = false;
 	/* The title of the ImageJ image or the name of the file of a static texture! */
 	private String sourceName = "";
+	/* The calibration of the ImageJ image of the texture (e.g., for the axis labels) or null */
+	private ij.measure.Calibration calibration;
 	private Runnable updateListener;
 
 	public Textures(HeightMaps heightMap) {
@@ -95,15 +97,24 @@ public class Textures {
 					heightMap.imageHeight = imp.getHeight();
 					ip = imp.getProcessor();
 					sourceName = imp.getTitle();
+					calibration = imp.getCalibration().copy();
 
 					buff = createImageWithLut(imp);
 					newTexture(gl, buff);
 				}
 			}
 		} else {
-
+			calibration = null;
 			initTextures(gl, drawable);
 		}
+	}
+
+	/**
+	 * The calibration of the ImageJ image of the texture (the origin, the pixel
+	 * size and the unit) or null (e.g., a texture of a file).
+	 */
+	public ij.measure.Calibration getCalibration() {
+		return calibration;
 	}
 
 	/*
@@ -136,6 +147,8 @@ public class Textures {
 	}
 
 	public void renderPaint() {
+		/* A dynamic texture: no calibration of a static image */
+		calibration = null;
 
 		if (DynamicTexture.isImagejEnabled()) {
 			if (WindowManager.getImageCount() > 0) {

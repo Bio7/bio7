@@ -138,6 +138,8 @@ public class Options3d extends ViewPart {
 		viewParent = parent;
 		partComposite = parent.getParent();
 		createContents(parent);
+		/* Scrolling a tab doesn't change the sliders under the mouse */
+		com.eco.bio7.util.WheelScrollGuard.install(parent);
 		/*
 		 * The content can be moved into another composite (e.g., into a custom view
 		 * of a model), then it is created again for this view!

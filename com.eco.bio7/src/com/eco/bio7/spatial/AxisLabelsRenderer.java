@@ -81,6 +81,8 @@ public class AxisLabelsRenderer {
 		public float valueSign = 1;
 		// The label interval adapted to a displayed texture (0 = labelInterval)
 		public float autoInterval = 0;
+		// The decimal places of a calibrated image (-1 = decimalPlaces)
+		public int autoDecimals = -1;
 
 		public AxisConfig(String name, float min, float max, float labelInterval, int minorTicks, int decimals) {
 			this.axisName = name;
@@ -101,6 +103,7 @@ public class AxisLabelsRenderer {
 		}
 
 		public String formatValue(float value) {
+			int decimalPlaces = autoDecimals >= 0 ? autoDecimals : this.decimalPlaces;
 			if (decimalPlaces == 0) {
 				return String.format("%.0f", value);
 			} else {
@@ -245,11 +248,32 @@ public class AxisLabelsRenderer {
 	}
 
 	/**
+	 * The calibration of the ImageJ image of the displayed texture if its
+	 * coordinates differ from the pixel coordinates (a scale, an origin or inverted
+	 * y coordinates of the image or of all images, see Analyze > Set Measurements),
+	 * else null. The coordinates are Calibration.getX(x) and getY(y, height).
+	 */
+	public static ij.measure.Calibration textureCalibration(SpatialStructure spatial) {
+		ij.measure.Calibration cal = spatial.textures != null && spatial.getTextureExtent() != null ? spatial.textures.getCalibration() : null;
+		if (cal == null) {
+			return null;
+		}
+		boolean invertY = cal.getInvertY() || (ij.plugin.filter.Analyzer.getMeasurements() & ij.measure.Measurements.INVERT_Y) != 0;
+		return cal.scaled() || cal.xOrigin != 0 || cal.yOrigin != 0 || invertY ? cal : null;
+	}
+
+	/* The size of a pixel in the displayed values of a calibrated image (0: pixel coordinates) */
+	private double calibratedScale = 0;
+
+	/**
 	 * Maps the axis positions to the displayed values. With image coordinates
 	 * enabled and a displayed texture the x and y axes show the pixel coordinates
-	 * of the image (y like in ImageJ from the top of the image).
+	 * of the image (y like in ImageJ from the top of the image). A texture of a
+	 * calibrated ImageJ image shows the coordinates of ImageJ: the origin, the
+	 * pixel size and the inverted y axis of the calibration are regarded.
 	 */
 	private void updateValueMapping(SpatialStructure spatial, boolean isOctantMode) {
+		calibratedScale = 0;
 		float[] textureExtent = spatial.getTextureExtent();
 		/* Cartesian: the texture is centered and would hide the labels at the axes! */
 		boolean centeredTexture = textureExtent != null && !isOctantMode;
@@ -279,6 +303,25 @@ public class AxisLabelsRenderer {
 			yAxisConfig.valueOffset = height / 2;
 		}
 		yAxisConfig.valueSign = flipped ? 1 : -1;
+
+		/*
+		 * The calibration of the image: the displayed value is a linear function of the
+		 * pixel coordinate (see Calibration.getX and getY), applied to the pixel
+		 * coordinate of the axis position (valueOffset + valueSign * position).
+		 */
+		ij.measure.Calibration cal = textureCalibration(spatial);
+		if (cal != null) {
+			int imageHeight = Math.round(height);
+			double ax = cal.getX(0), bx = cal.getX(1) - ax;
+			double ay = cal.getY(0, imageHeight), by = cal.getY(1, imageHeight) - ay;
+			if (bx != 0 && by != 0) {
+				xAxisConfig.valueOffset = (float) (ax + bx * xAxisConfig.valueOffset);
+				xAxisConfig.valueSign = (float) (bx * xAxisConfig.valueSign);
+				yAxisConfig.valueOffset = (float) (ay + by * yAxisConfig.valueOffset);
+				yAxisConfig.valueSign = (float) (by * yAxisConfig.valueSign);
+				calibratedScale = Math.max(Math.abs(bx), Math.abs(by));
+			}
+		}
 	}
 
 	/**
@@ -292,6 +335,8 @@ public class AxisLabelsRenderer {
 			xAxisConfig.autoInterval = 0;
 			yAxisConfig.autoInterval = 0;
 			zAxisConfig.autoInterval = 0;
+			xAxisConfig.autoDecimals = -1;
+			yAxisConfig.autoDecimals = -1;
 			sizeFactor = 1.0f;
 			return;
 		}
@@ -299,7 +344,29 @@ public class AxisLabelsRenderer {
 		xAxisConfig.autoInterval = interval;
 		yAxisConfig.autoInterval = interval;
 		zAxisConfig.autoInterval = interval;
+		xAxisConfig.autoDecimals = -1;
+		yAxisConfig.autoDecimals = -1;
+		if (calibratedScale > 0) {
+			/* The x and y labels in the calibrated units (also intervals below 1, e.g., degrees) */
+			double calibrated = niceIntervalAny(Math.max(extent[0], extent[1]) * calibratedScale / 10.0);
+			int decimals = (int) Math.max(0, Math.ceil(-Math.log10(calibrated) - 1e-9));
+			xAxisConfig.autoInterval = (float) calibrated;
+			yAxisConfig.autoInterval = (float) calibrated;
+			xAxisConfig.autoDecimals = decimals;
+			yAxisConfig.autoDecimals = decimals;
+		}
 		sizeFactor = interval / 100.0f;
+	}
+
+	/* A rounded interval (1, 2 or 5 times a power of 10, also below 1) near the given value */
+	private static double niceIntervalAny(double value) {
+		if (value <= 0) {
+			return 1;
+		}
+		double exponent = Math.pow(10, Math.floor(Math.log10(value)));
+		double fraction = value / exponent;
+		double nice = fraction < 1.5 ? 1 : fraction < 3.5 ? 2 : fraction < 7.5 ? 5 : 10;
+		return nice * exponent;
 	}
 
 	/* About 10 labels along the longer side of the texture! */
@@ -352,25 +419,30 @@ public class AxisLabelsRenderer {
 	 */
 	private void renderAxis(GL2 gl, AxisConfig config, boolean isXAxis, boolean isYAxis, boolean isZAxis,
 			boolean isOctantMode) {
-		float minorInterval = config.getMinorTickInterval();
+		double minorInterval = config.getMinorTickInterval();
 
 		// The range of the displayed values (see updateValueMapping)
-		float valueA = config.valueOffset + config.valueSign * config.minValue;
-		float valueB = config.valueOffset + config.valueSign * config.maxValue;
-		float minValue = Math.min(valueA, valueB);
-		float maxValue = Math.max(valueA, valueB);
-		float startValue = (float) Math.ceil(minValue / minorInterval) * minorInterval;
+		double valueA = config.valueOffset + (double) config.valueSign * config.minValue;
+		double valueB = config.valueOffset + (double) config.valueSign * config.maxValue;
+		double minValue = Math.min(valueA, valueB);
+		double maxValue = Math.max(valueA, valueB);
+		double tolerance = minorInterval * 1e-4;
 
-		for (float value = startValue; value <= maxValue + 0.001f; value += minorInterval) {
-			if (value < minValue - 0.001f || value > maxValue + 0.001f) {
-				continue;
-			}
+		/*
+		 * The ticks by their index (exact also for large or small calibrated values,
+		 * e.g., coordinates of a projection or degrees): every minorTicksPerMajor-th
+		 * tick is a major tick at the label interval.
+		 */
+		long first = (long) Math.ceil((minValue - tolerance) / minorInterval);
+		long last = (long) Math.floor((maxValue + tolerance) / minorInterval);
+		for (long index = first; index <= last; index++) {
+			float value = (float) (index * minorInterval);
 
 			// The position of the displayed value on the axis
-			float position = (value - config.valueOffset) / config.valueSign;
+			float position = (float) ((index * minorInterval - config.valueOffset) / config.valueSign);
 
 			// Determine if this is a major tick (at label interval)
-			boolean isMajorTick = Math.abs(value % config.getInterval()) < minorInterval * 0.1f;
+			boolean isMajorTick = Math.floorMod(index, (long) config.minorTicksPerMajor) == 0;
 
 			// In Cartesian mode, always show 0 as a major tick
 			if (!isOctantMode && Math.abs(value) < minorInterval * 0.1f) {
