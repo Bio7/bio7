@@ -1739,6 +1739,20 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		return null;
 	}
 
+	/**
+	 * The calibration of the ImageJ stack of the displayed volume or iso surface
+	 * (if no texture is displayed), else null.
+	 * 
+	 * @return the calibration or null
+	 */
+	public ij.measure.Calibration getStackCalibration() {
+		if (getStackExtent() == null) {
+			return null;
+		}
+		ImagePlus image = volume.isDisplayed() ? volume.getImage() : isoSurface.getImage();
+		return image != null ? image.getCalibration() : null;
+	}
+
 	/*
 	 * The size (width, height, depth) of a displayed volume or iso surface of an
 	 * ImageJ stack if no texture is displayed, else null!

@@ -534,9 +534,9 @@ public class SpatialScene {
 	/*
 	 * The displayed value of a position of an axis: the pixel coordinates of a
 	 * texture or stack (y from the top like in ImageJ) or the coordinates of the
-	 * calibrated ImageJ image of the texture (origin, pixel size, inverted y, see
-	 * AxisLabelsRenderer.textureCalibration) and the heights of a height map, else
-	 * the position!
+	 * calibrated ImageJ image of the texture or stack (origin, pixel size, inverted
+	 * y, the z of the slices, see AxisLabelsRenderer.textureCalibration) and the
+	 * heights of a height map, else the position!
 	 */
 	private static double plotValue(SpatialStructure grid, int axis, double position, double[] b) {
 		float[] extent = grid.getTextureExtent();
@@ -561,7 +561,15 @@ public class SpatialScene {
 		if (heightMap && SpatialStructure.hMap != null && SpatialStructure.hMap.getScale() != 0) {
 			return position / SpatialStructure.hMap.getScale() * (HeightMaps.isInverse() ? -1 : 1);
 		}
-		return image ? position - b[4] : position;
+		if (image) {
+			/* A stack (volume, iso surface): the calibrated z of the slices (z in units of the pixel width) */
+			ij.measure.Calibration cal = grid.getStackCalibration() != null ? AxisLabelsRenderer.textureCalibration(grid) : null;
+			if (cal != null && cal.pixelWidth > 0 && cal.pixelDepth > 0) {
+				return cal.getZ((position - b[4]) * cal.pixelWidth / cal.pixelDepth);
+			}
+			return position - b[4];
+		}
+		return position;
 	}
 
 	/* A step of 1, 2 or 5 times a power of ten! */

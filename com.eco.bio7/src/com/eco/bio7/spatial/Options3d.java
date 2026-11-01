@@ -406,7 +406,7 @@ public class Options3d extends ViewPart {
 		for (int k = 0; k < 3; k++) {
 			final int plane = k;
 			final Button button = check(gridGroup, planes[k] + " (Plot)",
-					"The " + planes[k] + " grid of the plot view (behind the data, see 'Plot View' in the Heightmap tab)");
+					"The " + planes[k] + " grid of the plot view (behind the data, see 'Plot View' in the Heightmap, Volume and Iso Surface tabs)");
 			/* The floor (XY) is hidden by the height map by default */
 			SpatialStructure current = SpatialStructure.getSpatialStructureInstance();
 			button.setSelection(current != null ? new boolean[] { current.plotGridXY, current.plotGridXZ, current.plotGridYZ }[k] : k != 0);
@@ -753,26 +753,7 @@ public class Options3d extends ViewPart {
 		});
 
 		/* A plot view: the grids behind the data and the axes at the box (stored in the preferences)! */
-		final Button plotViewButton = check(composite_3, "Plot View",
-				"A 3D plot of the height map (or volume, iso surface): the grids at the sides of the box\nbehind the data and the axes (with the numbers, see 'Draw Axis Numbers') at the front edges.\nThe grid planes can be selected in the Space tab. The setting is stored.");
-		store.setDefault("plotView", false);
-		plotViewButton.setSelection(store.getBoolean("plotView"));
-		plotViewButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(final SelectionEvent e) {
-				store.setValue("plotView", plotViewButton.getSelection());
-				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
-				if (grid != null) {
-					grid.plotView = plotViewButton.getSelection();
-					/* A plot view with the axis numbers */
-					if (grid.plotView && grid.getAxisLabelsRenderer() != null) {
-						grid.getAxisLabelsRenderer().setEnabled(true);
-						if (btnDrawnumbers != null && !btnDrawnumbers.isDisposed()) {
-							btnDrawnumbers.setSelection(true);
-						}
-					}
-				}
-			}
-		});
+		plotViewCheck(composite_3, "A 3D plot of the height map (or volume, iso surface): the grids at the sides of the box\nbehind the data and the axes (with the numbers, see 'Draw Axis Numbers') at the front edges.\nThe grid planes can be selected in the Space tab. The setting is stored.", false);
 
 		final Button heightMapTrianglesButton = check(composite_3, "Show Triangles",
 				"Draws the triangles of the height map as lines over the surface (see 'Level of Detail')");
@@ -2346,6 +2327,50 @@ public class Options3d extends ViewPart {
 	}
 
 	/* A check box in one column! */
+	/* The check boxes "Plot View" of the tabs (one setting, see plotViewCheck) */
+	private final java.util.List<Button> plotViewButtons = new java.util.ArrayList<>();
+
+	/*
+	 * A check box for the plot view (the same setting in the tabs of the height
+	 * map, the volume and the iso surface). The plot view shows the axis numbers;
+	 * for a stack (volume, iso surface) also the XY grid (the back of the box).
+	 */
+	private Button plotViewCheck(Composite parent, String toolTip, boolean stack) {
+		Button button = check(parent, "Plot View", toolTip);
+		store.setDefault("plotView", false);
+		button.setSelection(store.getBoolean("plotView"));
+		plotViewButtons.add(button);
+		button.addListener(SWT.Dispose, _ -> plotViewButtons.remove(button));
+		button.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				boolean selected = button.getSelection();
+				store.setValue("plotView", selected);
+				for (Button other : plotViewButtons) {
+					if (!other.isDisposed()) {
+						other.setSelection(selected);
+					}
+				}
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					grid.plotView = selected;
+					/* A plot view with the axis numbers */
+					if (selected && grid.getAxisLabelsRenderer() != null) {
+						grid.getAxisLabelsRenderer().setEnabled(true);
+						if (btnDrawnumbers != null && !btnDrawnumbers.isDisposed()) {
+							btnDrawnumbers.setSelection(true);
+						}
+					}
+					/* A stack: the XY grid behind the data, too (the floor of a height map is hidden) */
+					if (selected && stack) {
+						grid.plotGridXY = true;
+						updatePlotGrids();
+					}
+				}
+			}
+		});
+		return button;
+	}
+
 	private static Button check(Composite parent, String text, String toolTip) {
 		Button button = new Button(parent, SWT.CHECK);
 		button.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -2592,6 +2617,11 @@ public class Options3d extends ViewPart {
 				}
 			}
 		});
+
+		/* The plot view of the volume (the same setting as in the height map tab) */
+		Button plotView = plotViewCheck(compositeVolume, "A 3D plot of the volume: the grids at the sides of the box behind the data (with the XY grid)\nand the axes with the numbers (in the calibrated units of the stack) at the front edges.\nThe grid planes can be selected in the Space tab. The setting is stored.", true);
+		plotView.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		scrollVolume.setMinSize(200, Math.max(420, compositeVolume.computeSize(SWT.DEFAULT, SWT.DEFAULT).y));
 	}
 
 	/*
@@ -3054,6 +3084,11 @@ public class Options3d extends ViewPart {
 				export.start();
 			}
 		});
+
+		/* The plot view of the iso surface (the same setting as in the height map tab) */
+		Button plotView = plotViewCheck(compositeIso, "A 3D plot of the iso surface: the grids at the sides of the box behind the data (with the XY grid)\nand the axes with the numbers (in the calibrated units of the stack) at the front edges.\nThe grid planes can be selected in the Space tab. The setting is stored.", true);
+		plotView.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		scrollIso.setMinSize(200, Math.max(600, compositeIso.computeSize(SWT.DEFAULT, SWT.DEFAULT).y));
 	}
 
 	private static IsoSurface isoSurface() {

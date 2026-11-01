@@ -248,13 +248,20 @@ public class AxisLabelsRenderer {
 	}
 
 	/**
-	 * The calibration of the ImageJ image of the displayed texture if its
+	 * The calibration of the ImageJ image of the displayed texture (or of the stack
+	 * of a displayed volume or iso surface) if its
 	 * coordinates differ from the pixel coordinates (a scale, an origin or inverted
 	 * y coordinates of the image or of all images, see Analyze > Set Measurements),
 	 * else null. The coordinates are Calibration.getX(x) and getY(y, height).
 	 */
 	public static ij.measure.Calibration textureCalibration(SpatialStructure spatial) {
-		ij.measure.Calibration cal = spatial.textures != null && spatial.getTextureExtent() != null ? spatial.textures.getCalibration() : null;
+		if (spatial.getTextureExtent() == null) {
+			return null;
+		}
+		/* The image of the texture or the stack of the volume or iso surface */
+		Textures textures = spatial.textures;
+		boolean texture = textures != null && textures.showTexture && textures.tex != null;
+		ij.measure.Calibration cal = texture ? textures.getCalibration() : spatial.getStackCalibration();
 		if (cal == null) {
 			return null;
 		}
