@@ -40,7 +40,7 @@ import org.eclipse.swt.widgets.ToolItem;
  * ArtworkRenderer.renderTabs) under the tabs. The rest is painted like the
  * default renderer.
  */
-public class ThemeTabRendering extends CTabRendering {
+public class ThemeTabRendering extends Bio7TabRendering {
 
 	private static final Color TRANSPARENT = new Color(0, 0, 0, 0);
 	private static final boolean WINDOWS = "win32".equals(SWT.getPlatform());
@@ -56,6 +56,8 @@ public class ThemeTabRendering extends CTabRendering {
 	private boolean continuousTop;
 	/* The tab row of the last paint */
 	private Rectangle header;
+	/* The part of the tab row painted with the picture (the folder paints the picture only in the background of the tab row) */
+	private Rectangle paintedArea;
 	/* A control of the tab row with a paint listener (see paintBehind) */
 	private static final String PAINTED = "bio7.themes.tabPainted";
 	private Object pictureKey;
@@ -329,6 +331,8 @@ public class ThemeTabRendering extends CTabRendering {
 		gc.setClipping(clipping.intersection(area));
 		gc.drawImage(picture, header.x, header.y);
 		gc.setClipping(clipping);
+		/* The part of the tab row with the picture (the controls of the tab row paint only this part) */
+		this.paintedArea = header.equals(this.header) && paintedArea != null ? paintedArea.union(area) : area;
 		this.header = header;
 		/* A tab row of the band directly below the toolbar (see paintTopEdge) */
 		continuousTop = band != null && !ToolbarArtwork.isBelowBand(folder) && ToolbarArtwork.isBelowToolbar(folder);
@@ -413,7 +417,19 @@ public class ThemeTabRendering extends CTabRendering {
 					return;
 				}
 				Point p = folder.toControl(control.toDisplay(0, 0));
-				event.gc.drawImage(picture, header.x - p.x, header.y - p.y);
+				/*
+				 * Only the part of the picture which the folder shows (the picture is a little
+				 * higher than the background of the tab row): a tool bar of the folder reaches a
+				 * little below it (see Bio7TabRendering) and would show the lower rows of the
+				 * picture (e.g., a light line of the artwork). Below it is transparent!
+				 */
+				Rectangle visible = paintedArea != null ? paintedArea.intersection(header) : header;
+				if (!visible.isEmpty()) {
+					Rectangle clipping = event.gc.getClipping();
+					event.gc.setClipping(clipping.intersection(new Rectangle(visible.x - p.x, visible.y - p.y, visible.width, visible.height)));
+					event.gc.drawImage(picture, header.x - p.x, header.y - p.y);
+					event.gc.setClipping(clipping);
+				}
 				if (control instanceof ToolBar toolBar) {
 					/*
 					 * The tool items (e.g., with a text) are filled with their color by the CSS

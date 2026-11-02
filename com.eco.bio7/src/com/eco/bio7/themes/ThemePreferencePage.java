@@ -775,12 +775,32 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 			if (MessageDialog.openQuestion(getShell(), "Theme", "The icon colors of the theme are applied after a restart. Restart Bio7 now?")) {
 				ThemeStore.restartWhenDialogsClosed();
 				/* The preferences dialog is closed like with "Apply and Close" (all pages are saved), then Bio7 restarts */
-				org.eclipse.swt.widgets.Button ok = getShell().getDefaultButton();
+				org.eclipse.swt.widgets.Button ok = okButton(getShell());
 				if (ok != null && !ok.isDisposed()) {
 					ok.notifyListeners(org.eclipse.swt.SWT.Selection, new org.eclipse.swt.widgets.Event());
 				}
 			}
 		}
+	}
+
+	/*
+	 * The "Apply and Close" button of the dialog (the id of a JFace dialog button is
+	 * its data). Not the default button: Windows makes a clicked push button the
+	 * default button (e.g., "Activate", which would open this question again)!
+	 */
+	private static org.eclipse.swt.widgets.Button okButton(org.eclipse.swt.widgets.Composite parent) {
+		for (org.eclipse.swt.widgets.Control child : parent.getChildren()) {
+			if (child instanceof org.eclipse.swt.widgets.Button button && Integer.valueOf(org.eclipse.jface.dialogs.IDialogConstants.OK_ID).equals(button.getData())) {
+				return button;
+			}
+			if (child instanceof org.eclipse.swt.widgets.Composite composite) {
+				org.eclipse.swt.widgets.Button found = okButton(composite);
+				if (found != null) {
+					return found;
+				}
+			}
+		}
+		return null;
 	}
 
 	@Override

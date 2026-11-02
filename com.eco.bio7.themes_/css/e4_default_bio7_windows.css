@@ -125,6 +125,36 @@ ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_TEXT_COLOR {
 	category: '#org-eclipse-ui-presentation-default';
 }
 
+/*
+ * The tab text colors are set by the custom themes. The definitions keep the
+ * value of the former theme if a theme does not set them (e.g., the white tab
+ * text of a dark custom theme), so they are set here again!
+ */
+ColorDefinition#org-eclipse-ui-workbench-INACTIVE_TAB_TEXT_COLOR {
+	color: '#COLOR_WIDGET_FOREGROUND';
+	category: '#org-eclipse-ui-presentation-default';
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_UNSELECTED_TEXT_COLOR {
+	color: '#COLOR_WIDGET_FOREGROUND';
+	category: '#org-eclipse-ui-presentation-default';
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_TEXT_COLOR {
+	color: #000000;
+	category: '#org-eclipse-ui-presentation-default';
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_SELECTED_TEXT_COLOR {
+	color: #000000;
+	category: '#org-eclipse-ui-presentation-default';
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_SELECTED_TEXT_COLOR {
+	color: #000000;
+	category: '#org-eclipse-ui-presentation-default';
+}
+
 .MTrimmedWindow.topLevel {
 	background-color: #ffffff;
 	margin-top: 4px;
@@ -143,11 +173,6 @@ ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_TEXT_COLOR {
 
 .MPartStack, .MPart {
 	font-family: '#org-eclipse-ui-workbench-TAB_TEXT_FONT';
-}
-
-/* The text of the unselected tabs (set again after a theme with another tab text color, e.g., a custom theme) */
-CTabItem {
-	color: '#org-eclipse-ui-workbench-INACTIVE_TAB_TEXT_COLOR';
 }
 
 CTabItem:selected {

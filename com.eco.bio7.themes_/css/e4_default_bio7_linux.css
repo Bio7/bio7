@@ -125,6 +125,36 @@ ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_TEXT_COLOR {
 	category: '#org-eclipse-ui-presentation-default';
 }
 
+/*
+ * The tab text colors are set by the custom themes. The definitions keep the
+ * value of the former theme if a theme does not set them (e.g., the white tab
+ * text of a dark custom theme), so they are set here again!
+ */
+ColorDefinition#org-eclipse-ui-workbench-INACTIVE_TAB_TEXT_COLOR {
+	color: '#COLOR_WIDGET_FOREGROUND';
+	category: '#org-eclipse-ui-presentation-default';
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_UNSELECTED_TEXT_COLOR {
+	color: '#COLOR_WIDGET_FOREGROUND';
+	category: '#org-eclipse-ui-presentation-default';
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_TEXT_COLOR {
+	color: #000000;
+	category: '#org-eclipse-ui-presentation-default';
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_TAB_SELECTED_TEXT_COLOR {
+	color: #000000;
+	category: '#org-eclipse-ui-presentation-default';
+}
+
+ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_SELECTED_TEXT_COLOR {
+	color: #000000;
+	category: '#org-eclipse-ui-presentation-default';
+}
+
 .MTrimmedWindow.topLevel {
 	background-color: #eeeeee;
 	margin-top: 4px;
@@ -145,17 +175,13 @@ ColorDefinition#org-eclipse-ui-workbench-ACTIVE_NOFOCUS_TAB_TEXT_COLOR {
 	font-family: '#org-eclipse-ui-workbench-TAB_TEXT_FONT';
 }
 
-/* The text of the unselected tabs (set again after a theme with another tab text color, e.g., a custom theme) */
-CTabItem {
-	color: '#org-eclipse-ui-workbench-INACTIVE_TAB_TEXT_COLOR';
-}
-
 CTabItem:selected {
 	color: '#org-eclipse-ui-workbench-ACTIVE_TAB_TEXT_COLOR';
 }
 
 .MPartStack {
-	swt-tab-renderer: url('bundleclass://org.eclipse.e4.ui.workbench.renderers.swt/org.eclipse.e4.ui.workbench.renderers.swt.CTabRendering');
+	/* The default renderer with transparent tool bars in the tab row (they reach a little below the tab row, e.g., over the empty editor area) */
+	swt-tab-renderer: url('bundleclass://com.eco.bio7/com.eco.bio7.themes.Bio7TabRendering');
 	swt-selected-tab-fill: '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_START' '#org-eclipse-ui-workbench-INACTIVE_TAB_BG_END' 100.0% 100.0%;
 	swt-unselected-tabs-color:  #eeeeee;
 	swt-outer-keyline-color: '#org-eclipse-ui-workbench-INACTIVE_TAB_OUTER_KEYLINE_COLOR';
