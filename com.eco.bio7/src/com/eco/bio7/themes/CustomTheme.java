@@ -87,6 +87,16 @@ public class CustomTheme {
 	/* The font of the views and the text font of the editors and the console ("" = the default, see FontData) */
 	private String font = "";
 	private String textFont = "";
+	/*
+	 * The height of the system font of the computer the fonts were chosen on (the
+	 * sizes are scaled to the system font of the computer the theme is applied on,
+	 * e.g., 13 on macOS, 9 on Windows): a theme without (e.g., the examples) is from
+	 * macOS.
+	 */
+	private double fontReference = MAC_SYSTEM_FONT;
+	/** The height of the system font of macOS (the reference of themes without a font reference). */
+	public static final double MAC_SYSTEM_FONT = 13;
+	private static volatile double systemFontHeight;
 	/* The view tab rows: a gradient (to the gradient end colors) and the artwork of the toolbar */
 	/* The style of the tab rows (see STYLES): flat, gradient or raised */
 	private String tabStyle = "flat";
@@ -360,6 +370,62 @@ public class CustomTheme {
 		this.textFont = textFont == null ? "" : textFont;
 	}
 
+	/**
+	 * The font of the views with the size for the system font of this computer
+	 * (e.g., a font of 13 of a theme from macOS is 9 on Windows), "" for the
+	 * default font.
+	 */
+	public String getPlatformFont() {
+		return platformFont(font);
+	}
+
+	/** The text font with the size for the system font of this computer (see getPlatformFont). */
+	public String getPlatformTextFont() {
+		return platformFont(textFont);
+	}
+
+	/**
+	 * Converts the fonts to the sizes of this computer (e.g., before a font is
+	 * chosen on this computer): the fonts and the reference of the system font.
+	 */
+	public void usePlatformFonts() {
+		font = getPlatformFont();
+		textFont = getPlatformTextFont();
+		fontReference = systemFontHeight();
+	}
+
+	private String platformFont(String fontData) {
+		if (fontData == null || fontData.isEmpty()) {
+			return "";
+		}
+		double system = systemFontHeight();
+		if (Math.abs(system - fontReference) < 0.01 || fontReference <= 0) {
+			return fontData;
+		}
+		try {
+			org.eclipse.swt.graphics.FontData fd = new org.eclipse.swt.graphics.FontData(fontData);
+			long height = Math.max(6, Math.round(fd.getHeight() * system / fontReference));
+			/* The portable form of FontData (without the data of the platform, like the themes) */
+			return "1|" + fd.getName() + "|" + height + ".0|" + fd.getStyle() + "|";
+		} catch (RuntimeException e) {
+			return fontData;
+		}
+	}
+
+	/* The height of the system font of this computer (the first value read in the UI thread, else macOS) */
+	static double systemFontHeight() {
+		double height = systemFontHeight;
+		if (height <= 0) {
+			org.eclipse.swt.widgets.Display display = org.eclipse.swt.widgets.Display.getCurrent();
+			if (display == null) {
+				return MAC_SYSTEM_FONT;
+			}
+			height = display.getSystemFont().getFontData()[0].getHeight();
+			systemFontHeight = height;
+		}
+		return height;
+	}
+
 	/** True if the tab rows and the selected tabs have a gradient (to the gradient end colors). */
 	public boolean isTabGradient() {
 		return !"flat".equals(tabStyle);
@@ -507,6 +573,7 @@ public class CustomTheme {
 		copy.style = style;
 		copy.font = font;
 		copy.textFont = textFont;
+		copy.fontReference = fontReference;
 		copy.tabStyle = tabStyle;
 		copy.tabArtwork = tabArtwork;
 		copy.tabFade = tabFade;
@@ -576,6 +643,10 @@ public class CustomTheme {
 		p.setProperty("toolbar.style", style);
 		p.setProperty("font", font);
 		p.setProperty("font.text", textFont);
+		/* Only another reference than macOS (the themes of macOS and the examples are not changed) */
+		if (Math.abs(fontReference - MAC_SYSTEM_FONT) >= 0.01) {
+			p.setProperty("font.reference", Double.toString(fontReference));
+		}
 		p.setProperty("tabs.style", tabStyle);
 		p.setProperty("tabs.artwork", String.valueOf(tabArtwork));
 		p.setProperty("tabs.image", tabImage);
@@ -659,6 +730,11 @@ public class CustomTheme {
 		t.setStyle(p.getProperty("toolbar.style", "raised"));
 		t.setFont(p.getProperty("font", ""));
 		t.setTextFont(p.getProperty("font.text", ""));
+		try {
+			t.fontReference = Double.parseDouble(p.getProperty("font.reference", Double.toString(MAC_SYSTEM_FONT)));
+		} catch (NumberFormatException e) {
+			t.fontReference = MAC_SYSTEM_FONT;
+		}
 		/* The style of the tab rows (an older theme: the gradient switch) */
 		t.setTabStyle(p.getProperty("tabs.style", Boolean.parseBoolean(p.getProperty("tabs.gradient", "false")) ? "gradient" : "flat"));
 		t.setTabArtwork(Boolean.parseBoolean(p.getProperty("tabs.artwork", "false")));
@@ -895,7 +971,7 @@ public class CustomTheme {
 		rule(css, "#org-eclipse-ui-trim-status,\n#org-eclipse-ui-trim-status Composite,\n#org-eclipse-ui-trim-status Label,\nHeapStatus",
 				"background-color: " + c("statusBar") + ";\n\tcolor: " + c("text") + ";");
 		/* The font of the views (all widgets and the tabs) */
-		String fontCss = fontCss(font);
+		String fontCss = fontCss(getPlatformFont());
 		if (fontCss != null) {
 			rule(css, ".MPart,\n.MPart Composite,\n.MPart Label,\n.MPart CLabel,\n.MPart Button,\n.MPart Text,\n.MPart Combo,\n"
 					+ ".MPart CCombo,\n.MPart Spinner,\n.MPart List,\n.MPart Tree,\n.MPart Table,\n.MPart Grid,\n.MPart Group,\n"
@@ -909,7 +985,7 @@ public class CustomTheme {
 					+ "#com-eco-bio7-ijmacro-editor-toolbar-debug.MToolBar,\n#PerspectiveSwitcher ToolBar", fontCss);
 		}
 		/* The text font of the editors and the console (and the text areas of the views) */
-		String textFontCss = fontCss(textFont);
+		String textFontCss = fontCss(getPlatformTextFont());
 		if (textFontCss != null) {
 			rule(css, "FontDefinition#org-eclipse-jface-textfont,\nFontDefinition#org-eclipse-debug-ui-consoleFont", textFontCss);
 			rule(css, ".View StyledText,\n#org-eclipse-ui-console-ConsoleView .MPart StyledText", textFontCss);

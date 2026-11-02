@@ -420,8 +420,8 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 			selectors.get(slot[0]).setColorValue(shown.getColor(slot[0]));
 		}
 		artworkLabel.setText(shown.getArtwork().isEmpty() ? "(none)" : shown.getArtwork());
-		viewFontLabel.setText(CustomTheme.describeFont(shown.getFont()));
-		textFontLabel.setText(CustomTheme.describeFont(shown.getTextFont()));
+		viewFontLabel.setText(CustomTheme.describeFont(shown.getPlatformFont()));
+		textFontLabel.setText(CustomTheme.describeFont(shown.getPlatformTextFont()));
 		tabStyle.select(Math.max(0, List.of(CustomTheme.STYLES).indexOf(shown.getTabStyle())));
 		tabArtwork.setSelection(shown.isTabArtwork());
 		tabImageLabel.setText(tabImageText(shown));
@@ -515,8 +515,8 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		artworkLabel.setText(current.getArtwork().isEmpty() ? "(none)" : current.getArtwork());
 		tabImageLabel.setText(tabImageText(current));
 		tabImageLabel.getParent().layout();
-		viewFontLabel.setText(CustomTheme.describeFont(current.getFont()));
-		textFontLabel.setText(CustomTheme.describeFont(current.getTextFont()));
+		viewFontLabel.setText(CustomTheme.describeFont(current.getPlatformFont()));
+		textFontLabel.setText(CustomTheme.describeFont(current.getPlatformTextFont()));
 		viewFontLabel.getParent().layout();
 		dirty = true;
 		disposePreview();
@@ -564,7 +564,8 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		}
 		org.eclipse.swt.widgets.FontDialog dialog = new org.eclipse.swt.widgets.FontDialog(getShell());
 		dialog.setText(text ? "Text Font (Editors, Console)" : "Font (Views, Widgets)");
-		String value = text ? current.getTextFont() : current.getFont();
+		/* The fonts with the sizes of this computer (also the other font of the theme) */
+		String value = text ? current.getPlatformTextFont() : current.getPlatformFont();
 		org.eclipse.swt.graphics.FontData initial = null;
 		if (!value.isEmpty()) {
 			try {
@@ -581,6 +582,7 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		if (selected == null) {
 			return;
 		}
+		current.usePlatformFonts();
 		if (text) {
 			current.setTextFont(selected.toString());
 		} else {

@@ -16,7 +16,9 @@
         <GetMapURL>https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi</GetMapURL>
         <LayerNames>BlueMarble_ShadedRelief_Bathymetry</LayerNames>
     </Service>
-    <RetrievePropertiesFromService>true</RetrievePropertiesFromService>
+    <!--Changed for Bio7: not the capabilities of GIBS (several MB with thousands of layers, a timeout at times);
+        they only give the update time of the layer, the Blue Marble of 2004 is not updated-->
+    <RetrievePropertiesFromService>false</RetrievePropertiesFromService>
     <!-- day month year hours:minutes:seconds timezone -->
     <LastUpdate>26 03 2009 00:00:00 GMT</LastUpdate>
     <DataCacheName>Earth/GIBS/BlueMarble_ShadedRelief_Bathymetry</DataCacheName>
