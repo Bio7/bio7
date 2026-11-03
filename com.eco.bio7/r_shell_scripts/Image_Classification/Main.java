@@ -14,14 +14,19 @@ import static com.eco.bio7.image.ImageMethods.imageFeatureStackToR;
 import static com.eco.bio7.rbridge.RServeUtil.evalRScript;
 import static com.eco.bio7.rbridge.RServeUtil.listRObjects;
 import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
+import java.util.stream.IntStream;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
@@ -40,16 +45,12 @@ import com.eco.bio7.image.RImageMethodsView;
 import com.eco.bio7.util.Util;
 import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RState;
-import Catalano.Imaging.FastBitmap;
-import Catalano.Imaging.Filters.GaborFilter;
+import _util.Filters;
+import _util.Haralick;
+import _util.Texture;
 import _util.ImageToRTransfer;
 import _util.Kuwahara_Filter;
 import _util.Lipschitz_;
-import boofcv.alg.filter.derivative.DerivativeLaplacian;
-import boofcv.alg.filter.derivative.DerivativeType;
-import boofcv.alg.filter.derivative.GImageDerivativeOps;
-import boofcv.struct.border.BorderType;
-import boofcv.struct.image.GrayF32;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -60,7 +61,6 @@ import ij.gui.Roi;
 import ij.gui.RoiListener;
 import ij.plugin.ChannelSplitter;
 import ij.plugin.Duplicator;
-import ij.plugin.ImageCalculator;
 import ij.plugin.filter.GaussianBlur;
 import ij.plugin.filter.RankFilters;
 import ij.plugin.frame.RoiManager;
@@ -588,216 +588,101 @@ public class Main extends com.eco.bio7.compile.Model {
 		 */
 
 		ImageStack tempStack = stack.duplicate();
+		/* The quantization ranges of the base layers for the Haralick texture features */
+		double[][] ranges = quantizationRanges(image, tempStack);
+		/*
+		 * The filters are independent tasks which are computed in parallel. The
+		 * layers are added in the order of the tasks (the same order and names as
+		 * before)!
+		 */
+		List<FeatureTask> tasks = new ArrayList<FeatureTask>();
+		int stackSize = tempStack.getSize();
 		/*
 		 * See:
 		 * https://imagej.nih.gov/ij/developer/api/ij/plugin/filter/GaussianBlur.html#
 		 * blur-ij.process.ImageProcessor-double-
 		 */
 		if (gui.gaussian) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Gaussian Filter");
-			}
-			GaussianBlur gaussian = new GaussianBlur();
 			/* Split the gaussian option to get all sigmas! */
 			String[] gaussianSigma = gui.gaussianOption.split(",");
-			int stackSize = tempStack.getSize();
 			for (int i = 1; i <= stackSize; i++) {
 				for (int j = 0; j < gaussianSigma.length; j++) {
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					double sigma = Double.parseDouble(gaussianSigma[j]);
-					gaussian.blurGaussian(ip, 0.4 * sigma, 0.4 * sigma, 0.0002);
-					stack.addSlice("Gaussian_" + "Sigma_" + sigma + "Layer_" + i, ip);
+					ImageProcessor base = tempStack.getProcessor(i);
+					double sigma = Double.parseDouble(gaussianSigma[j].trim());
+					tasks.add(task("Gaussian_" + "Sigma_" + sigma + "Layer_" + i, () -> blur(base, 0.4 * sigma)));
 				}
 			}
 		}
 
 		if (gui.diffOfGaussian) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Difference of Gaussian Filters");
-			}
-			GaussianBlur gaussian = new GaussianBlur();
-			int stackSize = tempStack.getSize();
+			/* See if we have several Gaussian Difference filter settings! */
+			String[] gaussianDiffOptionSet = gui.diffGaussianOption.split(";");
 			for (int i = 1; i <= stackSize; i++) {
-
-				/* See if we have several Gaussian Difference filter settings! */
-				String[] gaussianDiffOptionSet = gui.diffGaussianOption.split(";");
 				for (int j = 0; j < gaussianDiffOptionSet.length; j++) {
-
-					String opGaussianDiff = gaussianDiffOptionSet[j];
-					/* Split the gaussian option to get all sigmas! */
-					String[] gaussianSigma = opGaussianDiff.split(",");
-
-					/* Here we have two sigmas to calculate the difference! */
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					double sigma1 = Double.parseDouble(gaussianSigma[0]);
-					gaussian.blurGaussian(ip, sigma1, sigma1, 0.0002);
-
-					ImageProcessor ip2 = tempStack.getProcessor(i).duplicate();
-					double sigma2 = Double.parseDouble(gaussianSigma[1]);
-					gaussian.blurGaussian(ip2, sigma2, sigma2, 0.0002);
-
-					ImageCalculator ic = new ImageCalculator();
-					ImagePlus finalDiffGaussian = ic.run("Subtract create 32-bit", new ImagePlus("sigma1", ip),
-							new ImagePlus("sigma2", ip2));
-					stack.addSlice("DiffOfGaussian_Set_" + j + "_Layer" + i, finalDiffGaussian.getProcessor());
-
+					/* Split the gaussian option to get all sigmas (two sigmas for the difference)! */
+					String[] gaussianSigma = gaussianDiffOptionSet[j].split(",");
+					ImageProcessor base = tempStack.getProcessor(i);
+					double sigma1 = Double.parseDouble(gaussianSigma[0].trim());
+					double sigma2 = Double.parseDouble(gaussianSigma[1].trim());
+					tasks.add(task("DiffOfGaussian_Set_" + j + "_Layer" + i, () -> Filters.subtract(blur(base, sigma1), blur(base, sigma2))));
 				}
-
 			}
-
 		}
 
 		if (gui.median) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Median Filter");
-			}
-			/* Split the median option to get all radii! */
-			String[] medianRadius = gui.medianOption.split(",");
-			int stackSize = tempStack.getSize();
-			for (int i = 1; i <= stackSize; i++) {
-				for (int j = 0; j < medianRadius.length; j++) {
-					double radius = Double.parseDouble(medianRadius[j]);
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					RankFilters ran = new RankFilters();
-					extracted(radius, ran, ip, RankFilters.MEDIAN);
-					stack.addSlice("Median_" + "Radius_" + radius + "Layer_" + i, ip);
-				}
-			}
+			addRankTasks(tasks, tempStack, gui.medianOption, RankFilters.MEDIAN, "Median_" + "Radius_", "Layer_");
 		}
 
 		if (gui.mean) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Mean Filter");
-			}
-			/* Split the mean option to get all radii! */
-			String[] meanRadius = gui.meanOption.split(",");
-			int stackSize = tempStack.getSize();
-			for (int i = 1; i <= stackSize; i++) {
-				for (int j = 0; j < meanRadius.length; j++) {
-					double radius = Double.parseDouble(meanRadius[j]);
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					RankFilters ran = new RankFilters();
-					ran.rank(ip, radius, RankFilters.MEAN);
-					stack.addSlice("Mean_" + "Radius_" + radius + "Layer_" + i, ip);
-				}
-			}
+			addRankTasks(tasks, tempStack, gui.meanOption, RankFilters.MEAN, "Mean_" + "Radius_", "Layer_");
 		}
 
 		if (gui.variance) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Variance Filter");
-			}
-			/* Split the mean option to get all radii! */
-			String[] varianceSigma = gui.varianceOption.split(",");
-			int stackSize = tempStack.getSize();
-			for (int i = 1; i <= stackSize; i++) {
-				for (int j = 0; j < varianceSigma.length; j++) {
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					double radius = Double.parseDouble(varianceSigma[j]);
-					RankFilters ran = new RankFilters();
-					extracted(radius, ran, ip, RankFilters.VARIANCE);
-					stack.addSlice("Variance_" + "Radius_" + radius + "Layer_" + i, ip);
-				}
-			}
+			addRankTasks(tasks, tempStack, gui.varianceOption, RankFilters.VARIANCE, "Variance_" + "Radius_", "Layer_");
 		}
+
 		if (gui.maximum) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Maximum Filter");
-			}
-			/* Split the mean option to get all radii! */
-			String[] maximumSigma = gui.maximumOption.split(",");
-			int stackSize = tempStack.getSize();
-			for (int i = 1; i <= stackSize; i++) {
-				for (int j = 0; j < maximumSigma.length; j++) {
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					double radius = Double.parseDouble(maximumSigma[j]);
-					RankFilters ran = new RankFilters();
-					extracted(radius, ran, ip, RankFilters.MAX);
-					stack.addSlice("Maximum_" + "Radius_" + radius + "Layer_" + i, ip);
-				}
-			}
+			addRankTasks(tasks, tempStack, gui.maximumOption, RankFilters.MAX, "Maximum_" + "Radius_", "Layer_");
 		}
 
 		if (gui.minimum) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Minimum Filter");
-			}
-			/* Split the mean option to get all radii! */
-			String[] minimumSigma = gui.minimumOption.split(",");
-			int stackSize = tempStack.getSize();
-			for (int i = 1; i <= stackSize; i++) {
-				for (int j = 0; j < minimumSigma.length; j++) {
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					double radius = Double.parseDouble(minimumSigma[j]);
-					RankFilters ran = new RankFilters();
-					extracted(radius, ran, ip, RankFilters.MIN);
-					// ran.rank(ip, Double.parseDouble(minimumSigma[j]), RankFilters.MIN);
-					stack.addSlice("Minimum_" + "Radius_" + radius + "Layer_" + i, ip);
-				}
-			}
+			addRankTasks(tasks, tempStack, gui.minimumOption, RankFilters.MIN, "Minimum_" + "Radius_", "Layer_");
 		}
 
 		if (gui.gradientHessian) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Gradient, Hessian Derivative");
-			}
-			/*  */
-			GaussianBlur gaussian = new GaussianBlur();
-			int stackSize = tempStack.getSize();
+			/* The Sobel gradient in x and y direction (optional of Gaussian blurred images)! */
+			String[] gradientHessian = gui.gradientHessianOption.split(",");
 			for (int i = 1; i <= stackSize; i++) {
-
-				String[] gradientHessian = gui.gradientHessianOption.split(",");
-				/* Apply a Gaussian blur if we have double arguments! */
-				if (gradientHessian[0].isEmpty() == false) {
+				ImageProcessor base = tempStack.getProcessor(i);
+				if (gradientHessian[0].trim().isEmpty() == false) {
 					for (int j = 0; j < gradientHessian.length; j++) {
-						double sigma = Double.parseDouble(gradientHessian[j]);
-						ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-						gaussian.blurGaussian(ip, 0.4 * sigma, 0.4 * sigma, 0.0002);
-						gradient(stack, ip);
+						double sigma = Double.parseDouble(gradientHessian[j].trim());
+						tasks.add(new FeatureTask(() -> {
+							FloatProcessor[] g = Filters.sobel(blur(base, 0.4 * sigma));
+							return List.of(new Layer("Gradient_Sobel X", g[0]), new Layer("Gradient_Sobel Y", g[1]));
+						}));
 					}
 				} else {
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					gradient(stack, ip);
+					tasks.add(new FeatureTask(() -> {
+						FloatProcessor[] g = Filters.sobel(base);
+						return List.of(new Layer("Gradient_Sobel X", g[0]), new Layer("Gradient_Sobel Y", g[1]));
+					}));
 				}
 			}
 		}
 
 		if (gui.laplacian) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Laplacian Derivative");
-			}
-			int stackSize = tempStack.getSize();
-			GaussianBlur gaussian = new GaussianBlur();
+			String[] laplacianSigma = gui.laplacianOption.split(",");
 			for (int i = 1; i <= stackSize; i++) {
-				String[] laplacianSigma = gui.laplacianOption.split(",");
+				ImageProcessor base = tempStack.getProcessor(i);
 				/* Apply a Gaussian blur if we have double arguments! */
-				if (laplacianSigma[0].isEmpty() == false) {
+				if (laplacianSigma[0].trim().isEmpty() == false) {
 					for (int j = 0; j < laplacianSigma.length; j++) {
-						double sigma = Double.parseDouble(laplacianSigma[j]);
-						ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-						gaussian.blurGaussian(ip, 0.4 * sigma, 0.4 * sigma, 0.0002);
-						int width = ip.getWidth();
-						int height = ip.getHeight();
-						GrayF32 boofFilterImageInput = new GrayF32(width, height);
-						GrayF32 boofFilterImageOutput = new GrayF32(width, height);
-						/* Transfer ImageProcessor data in place to boofcv image input! */
-						ipToBoofCVGray32(ip, boofFilterImageInput);
-						DerivativeLaplacian.process(boofFilterImageInput, boofFilterImageOutput, null);
-						FloatProcessor flProcessor = new FloatProcessor(width, height, boofFilterImageOutput.getData());
-						stack.addSlice("Laplacian_Derivative_From_Gaussian_" + sigma + "_Layer" + i, flProcessor);
+						double sigma = Double.parseDouble(laplacianSigma[j].trim());
+						tasks.add(task("Laplacian_Derivative_From_Gaussian_" + sigma + "_Layer" + i, () -> Filters.laplacian(blur(base, 0.4 * sigma))));
 					}
 				} else {
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					int width = ip.getWidth();
-					int height = ip.getHeight();
-					GrayF32 boofFilterImageInput = new GrayF32(width, height);
-					GrayF32 boofFilterImageOutput = new GrayF32(width, height);
-					/* Transfer ImageProcessor data in place to boofcv image input! */
-					ipToBoofCVGray32(ip, boofFilterImageInput);
-					DerivativeLaplacian.process(boofFilterImageInput, boofFilterImageOutput, null);
-					FloatProcessor flProcessor = new FloatProcessor(width, height, boofFilterImageOutput.getData());
-					stack.addSlice("Laplacian Derivative_" + "Layer_" + i, flProcessor);
-
+					tasks.add(task("Laplacian Derivative_" + "Layer_" + i, () -> Filters.laplacian(base)));
 				}
 			}
 		}
@@ -805,146 +690,197 @@ public class Main extends com.eco.bio7.compile.Model {
 		if (gui.edges) {
 			// see:
 			// https://imagejdocu.tudor.lu/faq/technical/what_is_the_algorithm_used_in_find_edges
-			if (monitor != null) {
-				monitor.setTaskName("Apply Edges");
-			}
-			int stackSize = tempStack.getSize();
-			GaussianBlur gaussian = new GaussianBlur();
+			String[] edgesSigma = gui.edgesOption.split(",");
 			for (int i = 1; i <= stackSize; i++) {
-				String[] edgesSigma = gui.edgesOption.split(",");
+				ImageProcessor base = tempStack.getProcessor(i);
 				/* Apply a Gaussian blur if we have double arguments! */
-				if (edgesSigma[0].isEmpty() == false) {
+				if (edgesSigma[0].trim().isEmpty() == false) {
 					for (int j = 0; j < edgesSigma.length; j++) {
-						double sigma = Double.parseDouble(edgesSigma[j]);
-						ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-						gaussian.blurGaussian(ip, 0.4 * sigma, 0.4 * sigma, 0.0002);
-						IJ.run(new ImagePlus("Edges_layer" + i + "_temp", ip), "Find Edges", "stack");
-						stack.addSlice("Edges_Layer_From_Gaussian_" + j + "_Layer_" + i, ip);
+						double sigma = Double.parseDouble(edgesSigma[j].trim());
+						tasks.add(task("Edges_Layer_From_Gaussian_" + j + "_Layer_" + i, () -> {
+							ImageProcessor ip = blur(base, 0.4 * sigma);
+							ip.findEdges();
+							return ip;
+						}));
 					}
 				} else {
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					IJ.run(new ImagePlus("Edges_layer" + i + "_temp", ip), "Find Edges", "stack");
-					stack.addSlice("Edges_" + "Layer_" + i, ip);
-
+					tasks.add(task("Edges_" + "Layer_" + i, () -> {
+						ImageProcessor ip = base.duplicate();
+						ip.findEdges();
+						return ip;
+					}));
 				}
 			}
-
 		}
 
 		if (gui.lipschitz) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Lipschitz Filter");
-			}
-			int stackSize = tempStack.getSize();
+			/* See if we have several Lipschitz filter settings! */
+			String[] libschitzOptionsSet = gui.lipschitzOption.split(";");
 			for (int i = 1; i <= stackSize; i++) {
-				/* See if we have several Lipschitz filter settings! */
-				String[] libschitzOptionsSet = gui.lipschitzOption.split(";");
+				ImageProcessor base = tempStack.getProcessor(i);
 				for (int j = 0; j < libschitzOptionsSet.length; j++) {
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate().convertToByte(true);
-					String opLipschitz = libschitzOptionsSet[j];
 					/* Split the Lipschitz set for one filter! */
-					String[] lipschitzOptions = opLipschitz.split(",");
-					Lipschitz_ filter = new Lipschitz_();
-					Lipschitz_.setDownHatFilter(Boolean.parseBoolean(lipschitzOptions[0]));
-					Lipschitz_.setTopHatFilter(Boolean.parseBoolean(lipschitzOptions[1]));
-					Lipschitz_.setSlopeFilter(Double.parseDouble(lipschitzOptions[2]));
-					filter.Lipschitz2D(ip);
-					stack.addSlice("Lipschitz_Set_" + j + "_Layer_" + i, ip.convertToFloat());
+					String[] lipschitzOptions = libschitzOptionsSet[j].split(",");
+					tasks.add(task("Lipschitz_Set_" + j + "_Layer_" + i, () -> {
+						ImageProcessor ip = base.duplicate().convertToByte(true);
+						Lipschitz_ filter = new Lipschitz_();
+						filter.setDownHatFilter(Boolean.parseBoolean(lipschitzOptions[0].trim()));
+						filter.setTopHatFilter(Boolean.parseBoolean(lipschitzOptions[1].trim()));
+						filter.setSlopeFilter(Double.parseDouble(lipschitzOptions[2].trim()));
+						filter.Lipschitz2D(ip);
+						return ip.convertToFloat();
+					}));
 				}
 			}
 		}
 
 		if (gui.gabor) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Gabor Filter");
-			}
-			int stackSize = tempStack.getSize();
+			/* See if we have several Gabor filter settings! */
+			String[] gaborOptionsSet = gui.gaborOption.split(";");
 			for (int i = 1; i <= stackSize; i++) {
-				/* See if we have several Gabor filter settings! */
-				String[] gaborOptionsSet = gui.gaborOption.split(";");
-
+				ImageProcessor base = tempStack.getProcessor(i);
 				for (int j = 0; j < gaborOptionsSet.length; j++) {
-					String opGabor = gaborOptionsSet[j];
-					/* Split the Gabor set for one filter! */
-					String[] gaborOptions = opGabor.split(",");
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					/* Will work with 8-bit only! */
-					BufferedImage buff = new ImagePlus("tempGabor", ip).getBufferedImage();
-					FastBitmap fb = new FastBitmap(buff);
-
-					GaborFilter gabor = new GaborFilter();
-					/* Extract the arguments for one filter for the different layers! */
-					gabor.setSize(Integer.parseInt(gaborOptions[0]));
-					gabor.setWavelength(Double.parseDouble(gaborOptions[1]));
-					gabor.setOrientation(Double.parseDouble(gaborOptions[2]));
-					gabor.setPhaseOffset(Double.parseDouble(gaborOptions[3]));
-					gabor.setGaussianVar(Double.parseDouble(gaborOptions[4]));
-					gabor.setAspectRatio(Double.parseDouble(gaborOptions[5]));
-
-					gabor.applyInPlace(fb);
-					float[] imArray = fb.toArrayGrayAsFloat();
-					int width = ip.getWidth();
-					int height = ip.getHeight();
-					stack.addSlice("Gabor_Set_" + j + "_Layer_" + i, new FloatProcessor(width, height, imArray));
-					// new Gabor_Filter(ip,stack);
-
+					/* Split the Gabor set for one filter: size, wavelength, orientation, phase offset, sigma, aspect ratio! */
+					String[] o = gaborOptionsSet[j].split(",");
+					tasks.add(task("Gabor_Set_" + j + "_Layer_" + i,
+							() -> Filters.gabor(base, Integer.parseInt(o[0].trim()), Double.parseDouble(o[1].trim()), Double.parseDouble(o[2].trim()),
+									Double.parseDouble(o[3].trim()), Double.parseDouble(o[4].trim()), Double.parseDouble(o[5].trim()))));
 				}
 			}
 		}
 
 		if (gui.topHat) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Top Hat Filter");
-			}
-			/* Split the mean option to get all radii! */
-			String[] topHatRadius = gui.topHatOption.split(",");
-			int stackSize = tempStack.getSize();
-			for (int i = 1; i <= stackSize; i++) {
-				for (int j = 0; j < topHatRadius.length; j++) {
-					double radius = Double.parseDouble(topHatRadius[j]);
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					RankFilters ran = new RankFilters();
-					ran.rank(ip, radius, RankFilters.TOP_HAT);
-					stack.addSlice("Top_Hat_" + radius + "_Layer_" + i, ip);
-				}
-			}
+			addRankTasks(tasks, tempStack, gui.topHatOption, RankFilters.TOP_HAT, "Top_Hat_", "_Layer_");
 		}
 
 		if (gui.kuwahara) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Kuwahara Filter");
-			}
-			int stackSize = tempStack.getSize();
+			String[] kuwaharaOptions = gui.kuwaharaOption.split(",");
 			for (int i = 1; i <= stackSize; i++) {
-				/* Split the mean option to get all radii! */
-				String[] kuwaharaOptions = gui.kuwaharaOption.split(",");
+				ImageProcessor base = tempStack.getProcessor(i);
 				for (int j = 0; j < kuwaharaOptions.length; j++) {
-					int radius = Integer.parseInt(kuwaharaOptions[j]);
-					ImageProcessor ip = tempStack.getProcessor(i).duplicate();
-					/* Will work with 8-bit only! */
-					Kuwahara_Filter kuw = new Kuwahara_Filter();
-					Kuwahara_Filter.size = radius;
-					kuw.filter(ip);
-					stack.addSlice("Kuwahara_" + radius + "_Layer_" + i, ip);
+					int radius = Integer.parseInt(kuwaharaOptions[j].trim());
+					tasks.add(task("Kuwahara_" + radius + "_Layer_" + i, () -> {
+						ImageProcessor ip = base.duplicate();
+						Kuwahara_Filter kuw = new Kuwahara_Filter();
+						kuw.size = radius;
+						kuw.filter(ip);
+						return ip;
+					}));
 				}
 			}
 		}
 
 		if (gui.convolve) {
-			if (monitor != null) {
-				monitor.setTaskName("Apply Convolve");
-			}
 			String[] matrices = gui.convolveOption.split(";");
 			for (int i = 0; i < matrices.length; i++) {
-				int stackSize = tempStack.getSize();
+				String matrix = matrices[i];
 				for (int u = 1; u <= stackSize; u++) {
-					ImageProcessor ip = tempStack.getProcessor(u).duplicate();
-					IJ.run(new ImagePlus("Convolved_" + i + "_layer" + u + "_temp", ip), "Convolve...", matrices[i]);
-					stack.addSlice("Convolved_" + i + "_Layer_" + u, ip);
+					ImageProcessor base = tempStack.getProcessor(u);
+					tasks.add(task("Convolved_" + i + "_Layer_" + u, () -> Filters.convolve(base, matrix)));
 				}
 			}
-
 		}
+
+		/* Haralick texture features of a Gray-Level Co-occurrence Matrix (the selected features) */
+		int[] haralickFeatures = IntStream.range(0, gui.haralickSelection.length).filter(f -> gui.haralickSelection[f]).toArray();
+		if (haralickFeatures.length > 0) {
+			int levels = Integer.parseInt(gui.haralickLevelsOption.trim());
+			/* A set of layers for each combination of the windows and distances */
+			for (String windowOption : gui.haralickWindowOption.split(",")) {
+				for (String distanceOption : gui.haralickDistanceOption.split(",")) {
+					int window = Integer.parseInt(windowOption.trim());
+					int distance = Integer.parseInt(distanceOption.trim());
+					for (int i = 1; i <= stackSize; i++) {
+						ImageProcessor base = tempStack.getProcessor(i);
+						double[] range = ranges[i - 1];
+						String suffix = "_W" + window + "_D" + distance + "_L" + levels + "_Layer_" + i;
+						tasks.add(new FeatureTask(() -> {
+							FloatProcessor[] layers = Haralick.compute(base, range[0], range[1], window, distance, levels, haralickFeatures,
+									() -> monitor != null && monitor.isCanceled());
+							List<Layer> result = new ArrayList<Layer>();
+							for (int f = 0; f < haralickFeatures.length; f++) {
+								result.add(new Layer("Haralick_" + Haralick.FEATURES[haralickFeatures[f]] + suffix, layers[f]));
+							}
+							return result;
+						}));
+					}
+				}
+			}
+		}
+
+		/* The texture measures */
+		if (gui.localEntropy) {
+			for (String r : gui.localEntropyOption.split(",")) {
+				int radius = Integer.parseInt(r.trim());
+				for (int i = 1; i <= stackSize; i++) {
+					ImageProcessor base = tempStack.getProcessor(i);
+					double[] range = ranges[i - 1];
+					tasks.add(task("Local_Entropy_R" + radius + "_Layer_" + i, () -> Texture.localEntropy(base, range[0], range[1], radius, 64)));
+				}
+			}
+		}
+
+		if (gui.lbp) {
+			for (String r : gui.lbpOption.split(",")) {
+				double radius = Double.parseDouble(r.trim());
+				for (int i = 1; i <= stackSize; i++) {
+					ImageProcessor base = tempStack.getProcessor(i);
+					tasks.add(task("LBP_R" + r.trim() + "_Layer_" + i, () -> Texture.lbp(base, radius)));
+				}
+			}
+		}
+
+		if (gui.laws) {
+			for (String r : gui.lawsOption.split(",")) {
+				int radius = Integer.parseInt(r.trim());
+				for (int i = 1; i <= stackSize; i++) {
+					ImageProcessor base = tempStack.getProcessor(i);
+					String suffix = "_R" + radius + "_Layer_" + i;
+					tasks.add(new FeatureTask(() -> {
+						FloatProcessor[] maps = Texture.laws(base, radius);
+						List<Layer> result = new ArrayList<Layer>();
+						for (int m = 0; m < maps.length; m++) {
+							result.add(new Layer("Laws_" + Texture.LAWS[m] + suffix, maps[m]));
+						}
+						return result;
+					}));
+				}
+			}
+		}
+
+		if (gui.structureTensor) {
+			for (String set : gui.structureTensorOption.split(";")) {
+				String[] o = set.split(",");
+				double gradientSigma = Double.parseDouble(o[0].trim());
+				double integrationSigma = Double.parseDouble((o.length > 1 ? o[1] : o[0]).trim());
+				for (int i = 1; i <= stackSize; i++) {
+					ImageProcessor base = tempStack.getProcessor(i);
+					String suffix = "_" + gradientSigma + "_" + integrationSigma + "_Layer_" + i;
+					tasks.add(new FeatureTask(() -> {
+						FloatProcessor[] t = Texture.structureTensor(base, gradientSigma, integrationSigma);
+						return List.of(new Layer("StructureTensor_Largest" + suffix, t[0]), new Layer("StructureTensor_Smallest" + suffix, t[1]),
+								new Layer("StructureTensor_Coherence" + suffix, t[2]));
+					}));
+				}
+			}
+		}
+
+		if (gui.hessian) {
+			for (String s : gui.hessianOption.split(",")) {
+				double sigma = Double.parseDouble(s.trim());
+				for (int i = 1; i <= stackSize; i++) {
+					ImageProcessor base = tempStack.getProcessor(i);
+					String suffix = "_" + sigma + "_Layer_" + i;
+					tasks.add(new FeatureTask(() -> {
+						FloatProcessor[] t = Texture.hessian(base, sigma);
+						return List.of(new Layer("Hessian_Largest" + suffix, t[0]), new Layer("Hessian_Smallest" + suffix, t[1]),
+								new Layer("Hessian_Determinant" + suffix, t[2]));
+					}));
+				}
+			}
+		}
+
+		runFeatureTasks(tasks, stack, monitor);
 
 		String name = image.getShortTitle();
 		imPlus = new ImagePlus(name, stack);
@@ -954,67 +890,110 @@ public class Main extends com.eco.bio7.compile.Model {
 		return imPlus;
 	}
 
-	/* Method to calculate the gradient! */
-	private void gradient(ImageStack stack, ImageProcessor ip) {
-		int width = ip.getWidth();
-		int height = ip.getHeight();
-		GrayF32 boofFilterImageInput = new GrayF32(width, height);
-
-		/* Transfer ImageProcessor data in place to boofcv image input! */
-		ipToBoofCVGray32(ip, boofFilterImageInput);
-
-		// First order derivative, also known as the gradient
-		GrayF32 derivX = new GrayF32(boofFilterImageInput.width, boofFilterImageInput.height);
-		GrayF32 derivY = new GrayF32(boofFilterImageInput.width, boofFilterImageInput.height);
-
-		GImageDerivativeOps.gradient(DerivativeType.SOBEL, boofFilterImageInput, derivX, derivY, BorderType.EXTENDED);
-
-		// Second order derivative, also known as the Hessian
-		// GrayF32 derivXX = new GrayF32(boofFilterImageInput.width,
-		// boofFilterImageInput.height);
-		// GrayF32 derivXY = new GrayF32(boofFilterImageInput.width,
-		// boofFilterImageInput.height);
-		// GrayF32 derivYY = new GrayF32(boofFilterImageInput.width,
-		// boofFilterImageInput.height);
-
-		// GImageDerivativeOps.hessian(DerivativeType.SOBEL, derivX, derivY, derivXX,
-		// derivXY, derivYY,
-		// BorderType.EXTENDED);
-
-		FloatProcessor flxProcessor = new FloatProcessor(width, height, derivX.getData());
-		FloatProcessor flyProcessor = new FloatProcessor(width, height, derivY.getData());
-
-		// FloatProcessor flxxProcessor = new FloatProcessor(width, height,
-		// derivXX.getData());
-		// FloatProcessor flxyProcessor = new FloatProcessor(width, height,
-		// derivXY.getData());
-		// FloatProcessor flyyProcessor = new FloatProcessor(width, height,
-		// derivYY.getData());
-
-		stack.addSlice("Gradient_Sobel X", flxProcessor);
-		stack.addSlice("Gradient_Sobel Y", flyProcessor);
-
-		// stack.addSlice("Hessian_Sobel XX", flxxProcessor);
-		// stack.addSlice("Hessian_Sobel XY", flxyProcessor);
-		// stack.addSlice("Hessian_Sobel YY", flyyProcessor);
+	/* A named layer of the feature stack */
+	private record Layer(String name, ImageProcessor ip) {
 	}
 
-	/* Method to apply the RankFilters! */
-	private void extracted(double radius, final RankFilters ran, ImageProcessor ip, int FilterType) {
+	/* A filter which computes one or more layers (a task of the parallel computation) */
+	private static final class FeatureTask {
+		final Supplier<List<Layer>> filter;
 
-		ran.rank(ip, radius, FilterType);
-
+		FeatureTask(Supplier<List<Layer>> filter) {
+			this.filter = filter;
+		}
 	}
 
-	/* Method to convert BoofCV data to ImageJ ImageProcessor! */
-	private void ipToBoofCVGray32(ImageProcessor ip, GrayF32 boofFilterImageInput) {
-		float[][] fl = ip.getFloatArray();
-		for (int y = 0; y < ip.getHeight(); y++) {
-			for (int x = 0; x < ip.getWidth(); x++) {
-				float value = fl[x][y];
-				boofFilterImageInput.set(x, y, value);
+	/* A task with one layer */
+	private static FeatureTask task(String name, Supplier<ImageProcessor> filter) {
+		return new FeatureTask(() -> List.of(new Layer(name, filter.get())));
+	}
+
+	/* A Gaussian blurred copy of the image */
+	private static ImageProcessor blur(ImageProcessor base, double sigma) {
+		ImageProcessor ip = base.duplicate();
+		new GaussianBlur().blurGaussian(ip, sigma, sigma, 0.0002);
+		return ip;
+	}
+
+	/* The tasks of a rank filter (e.g., median) for all radii and layers */
+	private static void addRankTasks(List<FeatureTask> tasks, ImageStack base, String option, int type, String prefix, String layerPrefix) {
+		String[] radii = option.split(",");
+		for (int i = 1; i <= base.getSize(); i++) {
+			ImageProcessor layer = base.getProcessor(i);
+			for (int j = 0; j < radii.length; j++) {
+				double radius = Double.parseDouble(radii[j].trim());
+				tasks.add(task(prefix + radius + layerPrefix + i, () -> {
+					ImageProcessor ip = layer.duplicate();
+					new RankFilters().rank(ip, radius, type);
+					return ip;
+				}));
 			}
 		}
+	}
+
+	/*
+	 * Computes the tasks in parallel and adds the layers to the stack in the
+	 * order of the tasks!
+	 */
+	private static void runFeatureTasks(List<FeatureTask> tasks, ImageStack stack, IProgressMonitor monitor) {
+		if (tasks.isEmpty()) {
+			return;
+		}
+		List<List<Layer>> results = new ArrayList<List<Layer>>(Collections.nCopies(tasks.size(), null));
+		AtomicInteger done = new AtomicInteger();
+		if (monitor != null) {
+			monitor.setTaskName("Apply filters (" + tasks.size() + " tasks in parallel)");
+		}
+		IntStream.range(0, tasks.size()).parallel().forEach(t -> {
+			if (monitor != null && monitor.isCanceled()) {
+				return;
+			}
+			results.set(t, tasks.get(t).filter.get());
+			if (monitor != null) {
+				monitor.subTask("Filter " + done.incrementAndGet() + " of " + tasks.size());
+			}
+		});
+		if (monitor != null && monitor.isCanceled()) {
+			throw new OperationCanceledException();
+		}
+		for (List<Layer> layers : results) {
+			for (Layer layer : layers) {
+				stack.addSlice(layer.name(), layer.ip());
+			}
+		}
+	}
+
+	/*
+	 * The quantization ranges of the base layers for the Haralick features. Fixed
+	 * ranges (independent of the content) that a preview of a selection and the
+	 * complete image have the same gray levels: RGB channels and 8-bit images 0 -
+	 * 255, HSB 0 - 1, LAB (L: 0 - 100, a, b: -128 - 128) and else the display
+	 * range of the image (or the range of the layer)!
+	 */
+	private double[][] quantizationRanges(ImagePlus image, ImageStack base) {
+		int n = base.getSize();
+		double[][] ranges = new double[n][];
+		String opt = gui.channelOption;
+		String[] channels = opt.isEmpty() ? new String[0] : opt.split(",");
+		boolean rgb = image.getProcessor() instanceof ColorProcessor;
+		for (int i = 0; i < n; i++) {
+			/* The channel of the layer (0 based) */
+			int channel = i < channels.length ? Integer.parseInt(channels[i].trim()) - 1 : i;
+			if (rgb && gui.toHsb) {
+				ranges[i] = new double[] { 0, 1 };
+			} else if (rgb && gui.toLab) {
+				ranges[i] = channel == 0 ? new double[] { 0, 100 } : new double[] { -128, 128 };
+			} else if (rgb || image.getBitDepth() == 8) {
+				ranges[i] = new double[] { 0, 255 };
+			} else if (image.getDisplayRangeMax() > image.getDisplayRangeMin()) {
+				ranges[i] = new double[] { image.getDisplayRangeMin(), image.getDisplayRangeMax() };
+			} else {
+				ImageProcessor ip = base.getProcessor(i + 1);
+				ip.resetMinAndMax();
+				ranges[i] = new double[] { ip.getMin(), ip.getMax() };
+			}
+		}
+		return ranges;
 	}
 
 	/* A method to get the Bio7 GUI R data transfer type */

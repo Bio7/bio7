@@ -34,6 +34,30 @@ public class _Settings {
 		}
 		return value;
 	}
+	/* Reads a text field (if the line exists) */
+	private static void readText(BufferedReader reader, org.eclipse.swt.widgets.Text text) throws IOException {
+		String line = reader.readLine();
+		if (line != null) {
+			text.setText(line);
+		}
+	}
+
+	/* Reads a check box and its option (if the lines exist) */
+	private static void readCheck(BufferedReader reader, org.eclipse.swt.widgets.Button check, org.eclipse.swt.widgets.Text option) throws IOException {
+		String line = reader.readLine();
+		if (line != null) {
+			check.setSelection(Boolean.parseBoolean(line));
+			readText(reader, option);
+		}
+	}
+
+	private static void appendCheck(StringBuffer buffer, String sep, org.eclipse.swt.widgets.Button check, org.eclipse.swt.widgets.Text option) {
+		buffer.append(check.getSelection());
+		buffer.append(sep);
+		buffer.append(option.getText());
+		buffer.append(sep);
+	}
+
 	/*
 	 * For each value follow the sequence of the GUI. Load and save actions must
 	 * follow the same sequence (simple text file)!
@@ -135,6 +159,23 @@ public class _Settings {
 				modelGui.checkApplyPostImagejMacro.setSelection(read(reader));
 				
 				modelGui.textPostMacro.setText(reader.readLine());
+
+				/* Added later at the end (older settings files don't have these lines)! */
+				readText(reader, modelGui.optionHaralickWindow);
+				readText(reader, modelGui.optionHaralickDistance);
+				readText(reader, modelGui.optionHaralickLevels);
+				String features = reader.readLine();
+				if (features != null) {
+					java.util.List<String> selected = java.util.Arrays.asList(features.split(","));
+					for (int i = 0; i < modelGui.checkHaralickFeatures.length; i++) {
+						modelGui.checkHaralickFeatures[i].setSelection(selected.contains(_util.Haralick.FEATURES[i]));
+					}
+				}
+				readCheck(reader, modelGui.checkLocalEntropy, modelGui.optionLocalEntropy);
+				readCheck(reader, modelGui.checkLbp, modelGui.optionLbp);
+				readCheck(reader, modelGui.checkLaws, modelGui.optionLaws);
+				readCheck(reader, modelGui.checkStructureTensor, modelGui.optionStructureTensor);
+				readCheck(reader, modelGui.checkHessian, modelGui.optionHessian);
 
 				reader.close();
 
@@ -281,6 +322,28 @@ public class _Settings {
 		buffer.append(sep);
 		
 		buffer.append(modelGui.getPathImageJMacroPostScript());
+		buffer.append(sep);
+
+		/* Added later at the end (older settings files can be read)! */
+		buffer.append(modelGui.optionHaralickWindow.getText());
+		buffer.append(sep);
+		buffer.append(modelGui.optionHaralickDistance.getText());
+		buffer.append(sep);
+		buffer.append(modelGui.optionHaralickLevels.getText());
+		buffer.append(sep);
+		StringBuilder features = new StringBuilder();
+		for (int i = 0; i < modelGui.checkHaralickFeatures.length; i++) {
+			if (modelGui.checkHaralickFeatures[i].getSelection()) {
+				features.append(features.length() > 0 ? "," : "").append(_util.Haralick.FEATURES[i]);
+			}
+		}
+		buffer.append(features);
+		buffer.append(sep);
+		appendCheck(buffer, sep, modelGui.checkLocalEntropy, modelGui.optionLocalEntropy);
+		appendCheck(buffer, sep, modelGui.checkLbp, modelGui.optionLbp);
+		appendCheck(buffer, sep, modelGui.checkLaws, modelGui.optionLaws);
+		appendCheck(buffer, sep, modelGui.checkStructureTensor, modelGui.optionStructureTensor);
+		appendCheck(buffer, sep, modelGui.checkHessian, modelGui.optionHessian);
 		
 		String file = Bio7Dialog.saveFile("*.txt");
 		if (file != null) {

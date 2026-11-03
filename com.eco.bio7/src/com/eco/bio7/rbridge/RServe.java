@@ -19,18 +19,14 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.URL;
 import java.util.Arrays;
 
 import javax.swing.JPanel;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.comparator.NameFileComparator;
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
@@ -42,7 +38,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
-import org.osgi.framework.Bundle;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RConnection;
@@ -831,8 +826,7 @@ public class RServe {
 	 * @param boolean useBrowser if an internal or external browser should be used
 	 * @param boolean openInJavaFXBrowser if the JavaFX browser component should be
 	 *                used
-	 * @param boolean delete if the temporary file should be deleted. Not the copy
-	 *                (for pdf.js)!
+	 * @param boolean delete if the temporary file should be deleted
 	 * @param boolean activateProjectExplorer if the Project Explorer should be
 	 *                activated again (to click multiple files- used in the Project
 	 *                Explorer!)
@@ -847,7 +841,6 @@ public class RServe {
 		/* Embedded in browser! */
 		if (useBrowser) {
 
-			// String pathBundle = getPdfjsPath();
 			Display display = Util.getDisplay();
 			display.asyncExec(new Runnable() {
 
@@ -1025,22 +1018,6 @@ public class RServe {
 	public static RSession getRsession() {
 
 		return rSession;
-	}
-
-	private static String getPdfjsPath() {
-		Bundle bundle = Platform.getBundle("com.eco.bio7.libs");
-		Path path = new Path("pdfjs/web/viewer.html");
-		URL locationURL = FileLocator.find(bundle, path, null);
-
-		URL fileUrl = null;
-		try {
-			fileUrl = FileLocator.toFileURL(locationURL);
-		} catch (IOException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
-		String pathBundle = fileUrl.getFile();
-		return pathBundle;
 	}
 
 }

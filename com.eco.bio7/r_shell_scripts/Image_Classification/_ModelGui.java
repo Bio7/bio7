@@ -149,6 +149,20 @@ public class _ModelGui extends Composite implements RoiListener {
 	protected Text optionsKuwahara;
 	protected boolean kuwahara;
 	protected String kuwaharaOption;
+	/* Haralick texture features (GLCM): the windows and distances (all combinations), the gray levels and the features */
+	protected String haralickWindowOption = "7";
+	protected String haralickDistanceOption = "1";
+	protected String haralickLevelsOption = "32";
+	protected boolean[] haralickSelection = new boolean[_util.Haralick.FEATURES.length];
+	protected Text optionHaralickWindow;
+	protected Text optionHaralickDistance;
+	protected Text optionHaralickLevels;
+	protected Button[] checkHaralickFeatures = new Button[_util.Haralick.FEATURES.length];
+	/* The texture measures */
+	protected boolean localEntropy, lbp, laws, structureTensor, hessian;
+	protected String localEntropyOption = "3", lbpOption = "1,2", lawsOption = "7", structureTensorOption = "1,3", hessianOption = "1,2";
+	protected Button checkLocalEntropy, checkLbp, checkLaws, checkStructureTensor, checkHessian;
+	protected Text optionLocalEntropy, optionLbp, optionLaws, optionStructureTensor, optionHessian;
 	protected String edgesOption;
 	protected Button checkUseDirectory;
 	protected boolean useDirectoryDialog;
@@ -496,6 +510,7 @@ public class _ModelGui extends Composite implements RoiListener {
 		optionsKuwahara = new Text(composite, SWT.BORDER);
 		optionsKuwahara.setText("2");
 		optionsKuwahara.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+
 		new Label(composite, SWT.NONE);
 		new Label(composite, SWT.NONE);
 
@@ -510,6 +525,81 @@ public class _ModelGui extends Composite implements RoiListener {
 		optionConvolve.setLayoutData(gd_optionConvolve);
 		optionConvolve.setText(
 				"text1=[\n-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 24 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n] normalize");
+
+		/* Haralick texture features of a Gray-Level Co-occurrence Matrix (GLCM) */
+		Label lblHaralick = new Label(composite, SWT.NONE);
+		lblHaralick.setBackground(SWTResourceManager.getColor(SWT.COLOR_GRAY));
+		lblHaralick.setAlignment(SWT.CENTER);
+		lblHaralick.setFont(boldFont);
+		lblHaralick.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		lblHaralick.setText("Haralick Texture (GLCM)");
+		lblHaralick.setToolTipText("Texture features of a Gray-Level Co-occurrence Matrix in a window around each pixel\n"
+				+ "(the pixel pairs in all four directions). A layer for each selected feature and each\n"
+				+ "combination of the windows and distances.");
+
+		optionHaralickWindow = textOption("Window (odd, e.g., 5,9)", haralickWindowOption, "The widths of the windows around the pixels (odd), separated with commas");
+		optionHaralickDistance = textOption("Distance (e.g., 1,2)", haralickDistanceOption, "The distances of the pixel pairs, separated with commas");
+		optionHaralickLevels = textOption("Gray Levels (2 - 256)", haralickLevelsOption,
+				"The number of gray levels (8-bit and RGB: 0 - 255, HSB: 0 - 1, LAB: L 0 - 100, a, b -128 - 128, else the display range)");
+		String[] haralickTips = { "Angular Second Moment (Energy): uniformity", "Contrast: local variations", "Correlation: linear dependency of the gray levels",
+				"Variance (Sum of Squares)", "Inverse Difference Moment (Homogeneity)", "Sum Average", "Sum Variance", "Sum Entropy", "Entropy: randomness",
+				"Difference Variance", "Difference Entropy", "Information Measure of Correlation 1", "Information Measure of Correlation 2" };
+		boolean[] haralickDefaults = { true, true, true, false, true, false, false, false, true, false, false, false, false };
+		for (int i = 0; i < checkHaralickFeatures.length; i++) {
+			checkHaralickFeatures[i] = new Button(composite, SWT.CHECK);
+			checkHaralickFeatures[i].setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+			checkHaralickFeatures[i].setText(_util.Haralick.FEATURES[i]);
+			checkHaralickFeatures[i].setToolTipText(haralickTips[i]);
+		}
+		/* No feature is selected by default (Haralick layers are computed if a feature is selected) */
+		lblHaralick.setToolTipText(lblHaralick.getToolTipText() + "\nTypical: ASM, Contrast, Correlation, IDM, Entropy");
+		if (checkHaralickFeatures.length % 2 == 1) {
+			new Label(composite, SWT.NONE);
+		}
+		Button selectTypical = new Button(composite, SWT.NONE);
+		selectTypical.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		selectTypical.setText("Select Typical");
+		selectTypical.setToolTipText("ASM, Contrast, Correlation, IDM, Entropy");
+		selectTypical.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				for (int i = 0; i < checkHaralickFeatures.length; i++) {
+					checkHaralickFeatures[i].setSelection(haralickDefaults[i]);
+				}
+			}
+		});
+		Button selectNone = new Button(composite, SWT.NONE);
+		selectNone.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		selectNone.setText("Select None");
+		selectNone.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				for (Button check : checkHaralickFeatures) {
+					check.setSelection(false);
+				}
+			}
+		});
+
+		/* Other texture measures */
+		Label lblTexture = new Label(composite, SWT.NONE);
+		lblTexture.setBackground(SWTResourceManager.getColor(SWT.COLOR_GRAY));
+		lblTexture.setAlignment(SWT.CENTER);
+		lblTexture.setFont(boldFont);
+		lblTexture.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		lblTexture.setText("Texture");
+
+		checkLocalEntropy = checkOption("Local Entropy", "The entropy of the histogram (64 gray levels) in a square window. Option: the radii, e.g., 3,5");
+		checkLbp = checkOption("Local Binary Pattern", "Rotation invariant uniform LBP (8 neighbors on a circle). Option: the radii, e.g., 1,2");
+		optionLocalEntropy = optionField(localEntropyOption, checkLocalEntropy);
+		optionLbp = optionField(lbpOption, checkLbp);
+		checkLaws = checkOption("Laws' Texture Energy",
+				"The 9 rotation invariant Laws' energy maps (L5E5, L5S5, L5R5, E5E5, E5S5, E5R5, S5S5, S5R5, R5R5). Option: the radius of the energy window, e.g., 7");
+		checkStructureTensor = checkOption("Structure Tensor",
+				"The largest and smallest eigenvalue and the coherence (oriented texture). Option: gradient sigma,integration sigma - sets separated with ';', e.g., 1,3;2,5");
+		optionLaws = optionField(lawsOption, checkLaws);
+		optionStructureTensor = optionField(structureTensorOption, checkStructureTensor);
+		checkHessian = checkOption("Hessian", "The largest and smallest eigenvalue and the determinant (blobs, ridges). Option: the sigmas, e.g., 1,2");
+		new Label(composite, SWT.NONE);
+		optionHessian = optionField(hessianOption, checkHessian);
+		new Label(composite, SWT.NONE);
 
 		tbtmMore = new CTabItem(tabFolder, SWT.NONE);
 		tbtmMore.setText("Settings");
@@ -782,6 +872,37 @@ public class _ModelGui extends Composite implements RoiListener {
 	/*
 	 * A method to access all options wrapped in a syncExec for SWT widgets access!
 	 */
+	/* A label and a text field (one row) of the Haralick section */
+	private Text textOption(String label, String value, String tooltip) {
+		Label l = new Label(composite, SWT.NONE);
+		l.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		l.setText(label);
+		l.setToolTipText(tooltip);
+		Text t = new Text(composite, SWT.BORDER);
+		t.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		t.setText(value);
+		t.setToolTipText(tooltip);
+		return t;
+	}
+
+	/* A check box of a texture measure */
+	private Button checkOption(String text, String tooltip) {
+		Button b = new Button(composite, SWT.CHECK);
+		b.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
+		b.setText(text);
+		b.setToolTipText(tooltip);
+		return b;
+	}
+
+	/* The option field of a texture measure (with the tooltip of the check box) */
+	private Text optionField(String value, Button check) {
+		Text t = new Text(composite, SWT.BORDER);
+		t.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		t.setText(value);
+		t.setToolTipText(check.getToolTipText());
+		return t;
+	}
+
 	public void getFeatureOptions() {
 
 		Display display = Util.getDisplay();
@@ -860,6 +981,24 @@ public class _ModelGui extends Composite implements RoiListener {
 
 			kuwahara = checkKuwahara.getSelection();
 			kuwaharaOption = optionsKuwahara.getText();
+
+			haralickWindowOption = optionHaralickWindow.getText();
+			haralickDistanceOption = optionHaralickDistance.getText();
+			haralickLevelsOption = optionHaralickLevels.getText();
+			for (int i = 0; i < checkHaralickFeatures.length; i++) {
+				haralickSelection[i] = checkHaralickFeatures[i].getSelection();
+			}
+
+			localEntropy = checkLocalEntropy.getSelection();
+			localEntropyOption = optionLocalEntropy.getText();
+			lbp = checkLbp.getSelection();
+			lbpOption = optionLbp.getText();
+			laws = checkLaws.getSelection();
+			lawsOption = optionLaws.getText();
+			structureTensor = checkStructureTensor.getSelection();
+			structureTensorOption = optionStructureTensor.getText();
+			hessian = checkHessian.getSelection();
+			hessianOption = optionHessian.getText();
 
 		});
 

@@ -1079,10 +1079,17 @@ public class CustomTheme {
 		}
 	}
 
-	/* The selectors of the widgets in the dialogs (the modal shells), "" for the shells */
+	/**
+	 * The CSS class of the non-modal Bio7 dialogs (e.g., the CSV Reader) which are
+	 * styled like the modal dialogs:
+	 * {@code shell.setData("org.eclipse.e4.ui.css.CssClassName", CustomTheme.DIALOG_CLASS)}.
+	 */
+	public static final String DIALOG_CLASS = "Bio7Dialog";
+
+	/* The selectors of the widgets in the dialogs (the modal shells and the Bio7 dialogs), "" for the shells */
 	private static String dialog(String... widgets) {
 		StringBuilder selector = new StringBuilder();
-		for (String shell : new String[] { "Shell[style~='SWT.APPLICATION_MODAL']", "Shell[style~='SWT.PRIMARY_MODAL']" }) {
+		for (String shell : new String[] { "Shell[style~='SWT.APPLICATION_MODAL']", "Shell[style~='SWT.PRIMARY_MODAL']", "Shell." + DIALOG_CLASS }) {
 			for (String widget : widgets) {
 				if (selector.length() > 0) {
 					selector.append(",\n");

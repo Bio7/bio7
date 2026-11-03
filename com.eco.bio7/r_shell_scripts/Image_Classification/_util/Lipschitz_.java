@@ -20,13 +20,14 @@ import java.lang.*;
 import ij.gui.*;
 import java.util.*; // for time measuring
 
+/* Bio7: the parameters and the state are instance fields (parallel feature filters) */
 public class Lipschitz_ implements PlugInFilter {
 	static final String Lipschitz_Version = "0.1";
 	static final String Lipschitz_Date = "2006/02/03";
 	// the following are the input parameters, with default values assigned to them
-	static boolean m_Down = true; //
-	static boolean m_TopHat = false; // lower Lipschitz cover
-	static double m_Slope = 10; // slope
+	boolean m_Down = true; //
+	boolean m_TopHat = false; // lower Lipschitz cover
+	double m_Slope = 10; // slope
 
 	
 	protected ImagePlus m_imp;
@@ -34,12 +35,12 @@ public class Lipschitz_ implements PlugInFilter {
 	protected ImageStack m_stack, m_stack_out;
 
 	protected Rectangle m_roi;
-	static int ImageHeight = -1;
-	static int ImageWidth = -1;
-	static int m_channels = 0;
-	static boolean m_short = false;
-	static boolean breaked = false;
-	static ImageProcessor iptmp;
+	int ImageHeight = -1;
+	int ImageWidth = -1;
+	int m_channels = 0;
+	boolean m_short = false;
+	boolean breaked = false;
+	ImageProcessor iptmp;
 	int[] pixel;
 
 	// -----------------------------------------------------------------------------------
@@ -279,28 +280,28 @@ public class Lipschitz_ implements PlugInFilter {
 		IJ.showProgress(1.0);
 
 	} // end of 'runLipschitz' method
-	public static boolean isM_Down() {
+	public boolean isM_Down() {
 		return m_Down;
 	}
 
-	public static void setDownHatFilter(boolean m_Down) {
-		Lipschitz_.m_Down = m_Down;
+	public void setDownHatFilter(boolean m_Down) {
+		this.m_Down = m_Down;
 	}
 
-	public static boolean isM_TopHat() {
+	public boolean isM_TopHat() {
 		return m_TopHat;
 	}
 
-	public static void setTopHatFilter(boolean m_TopHat) {
-		Lipschitz_.m_TopHat = m_TopHat;
+	public void setTopHatFilter(boolean m_TopHat) {
+		this.m_TopHat = m_TopHat;
 	}
 
 	public double getM_Slope() {
 		return m_Slope;
 	}
 
-	public static void setSlopeFilter(double m_Slope) {
-		Lipschitz_.m_Slope = m_Slope;
+	public void setSlopeFilter(double m_Slope) {
+		this.m_Slope = m_Slope;
 	}
 
 

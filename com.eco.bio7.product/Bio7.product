@@ -215,7 +215,6 @@ jdk/bin/javaw.exe
       <feature id="org.eclipse.rcp"/>
       <feature id="org.eclipse.jdt"/>
       <feature id="com.eco.bio7.ijmacroedit.feature" installMode="root"/>
-      <feature id="com.eco.bio7.javacv.feature" installMode="root"/>
       <feature id="org.eclipse.texlipse.main" installMode="root"/>
       <feature id="org.eclipse.nebula.widgets.gallery.feature" installMode="root"/>
       <feature id="org.eclipse.nebula.widgets.opal.starrating.feature" installMode="root"/>
