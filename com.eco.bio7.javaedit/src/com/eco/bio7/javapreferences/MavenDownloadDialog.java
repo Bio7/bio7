@@ -113,6 +113,7 @@ public class MavenDownloadDialog extends Dialog {
 
 			{ "JavaCV Platform", "org.bytedeco", "javacv-platform", "1.5.11" },
 			{ "JavaCV (latest)", "org.bytedeco", "javacv-platform", "1.5.13" },
+			{ "BoofCV (latest)", "org.boofcv", "boofcv-core", "1.6.0" },
 			{ "Pi4J Core", "com.pi4j", "pi4j-core", "2.6.0" }, { "JFreeChart", "org.jfree", "jfreechart", "1.5.4" },
 			{ "SQLite JDBC", "org.xerial", "sqlite-jdbc", "3.45.3.0" },
 			{ "MySQL Connector", "com.mysql", "mysql-connector-j", "8.4.0" },

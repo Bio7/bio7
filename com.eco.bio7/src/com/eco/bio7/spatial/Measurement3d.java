@@ -336,6 +336,8 @@ public class Measurement3d {
 			objectColors = colors;
 			objectCount = result.length;
 			selectedObject = 0;
+			/* The sheet of a former measurement doesn't fit the new objects */
+			objectGrid = null;
 			if (highlightObjects) {
 				iso.setObjectColors(colors, display.triangles);
 			}
@@ -490,6 +492,11 @@ public class Measurement3d {
 					return;
 				}
 				int row = number - 1;
+				/* The sheet may have been changed (rows or columns removed) */
+				if (row >= grid.getItemCount() || grid.getColumnCount() == 0) {
+					grid.deselectAll();
+					return;
+				}
 				org.eclipse.swt.graphics.Point[] cells = new org.eclipse.swt.graphics.Point[grid.getColumnCount()];
 				for (int c = 0; c < cells.length; c++) {
 					cells[c] = new org.eclipse.swt.graphics.Point(c, row);

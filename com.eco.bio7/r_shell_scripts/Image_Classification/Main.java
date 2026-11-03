@@ -49,7 +49,6 @@ import _util.Filters;
 import _util.Haralick;
 import _util.Texture;
 import _util.ImageToRTransfer;
-import _util.Kuwahara_Filter;
 import _util.Lipschitz_;
 import ij.IJ;
 import ij.ImagePlus;
@@ -657,15 +656,17 @@ public class Main extends com.eco.bio7.compile.Model {
 				if (gradientHessian[0].trim().isEmpty() == false) {
 					for (int j = 0; j < gradientHessian.length; j++) {
 						double sigma = Double.parseDouble(gradientHessian[j].trim());
+						String suffix = "_Sigma_" + sigma + "_Layer_" + i;
 						tasks.add(new FeatureTask(() -> {
 							FloatProcessor[] g = Filters.sobel(blur(base, 0.4 * sigma));
-							return List.of(new Layer("Gradient_Sobel X", g[0]), new Layer("Gradient_Sobel Y", g[1]));
+							return List.of(new Layer("Gradient_Sobel_X" + suffix, g[0]), new Layer("Gradient_Sobel_Y" + suffix, g[1]));
 						}));
 					}
 				} else {
+					String suffix = "_Layer_" + i;
 					tasks.add(new FeatureTask(() -> {
 						FloatProcessor[] g = Filters.sobel(base);
-						return List.of(new Layer("Gradient_Sobel X", g[0]), new Layer("Gradient_Sobel Y", g[1]));
+						return List.of(new Layer("Gradient_Sobel_X" + suffix, g[0]), new Layer("Gradient_Sobel_Y" + suffix, g[1]));
 					}));
 				}
 			}
@@ -718,11 +719,13 @@ public class Main extends com.eco.bio7.compile.Model {
 			String[] libschitzOptionsSet = gui.lipschitzOption.split(";");
 			for (int i = 1; i <= stackSize; i++) {
 				ImageProcessor base = tempStack.getProcessor(i);
+				double[] range = ranges[i - 1];
 				for (int j = 0; j < libschitzOptionsSet.length; j++) {
 					/* Split the Lipschitz set for one filter! */
 					String[] lipschitzOptions = libschitzOptionsSet[j].split(",");
 					tasks.add(task("Lipschitz_Set_" + j + "_Layer_" + i, () -> {
-						ImageProcessor ip = base.duplicate().convertToByte(true);
+						/* 8-bit in a fixed range (the same for a preview and the complete image) */
+						ImageProcessor ip = Filters.toByte(base, range[0], range[1]);
 						Lipschitz_ filter = new Lipschitz_();
 						filter.setDownHatFilter(Boolean.parseBoolean(lipschitzOptions[0].trim()));
 						filter.setTopHatFilter(Boolean.parseBoolean(lipschitzOptions[1].trim()));
@@ -759,13 +762,8 @@ public class Main extends com.eco.bio7.compile.Model {
 				ImageProcessor base = tempStack.getProcessor(i);
 				for (int j = 0; j < kuwaharaOptions.length; j++) {
 					int radius = Integer.parseInt(kuwaharaOptions[j].trim());
-					tasks.add(task("Kuwahara_" + radius + "_Layer_" + i, () -> {
-						ImageProcessor ip = base.duplicate();
-						Kuwahara_Filter kuw = new Kuwahara_Filter();
-						kuw.size = radius;
-						kuw.filter(ip);
-						return ip;
-					}));
+					/* The float version (the ImageJ plugin reads the bits of float pixels as integers) */
+					tasks.add(task("Kuwahara_" + radius + "_Layer_" + i, () -> Filters.kuwahara(base, radius)));
 				}
 			}
 		}
@@ -876,6 +874,86 @@ public class Main extends com.eco.bio7.compile.Model {
 						return List.of(new Layer("Hessian_Largest" + suffix, t[0]), new Layer("Hessian_Smallest" + suffix, t[1]),
 								new Layer("Hessian_Determinant" + suffix, t[2]));
 					}));
+				}
+			}
+		}
+
+		/* More filters for the classification and segmentation */
+		if (gui.gradientMagnitude) {
+			for (String s : gui.gradientMagnitudeOption.split(",")) {
+				double sigma = Double.parseDouble(s.trim());
+				for (int i = 1; i <= stackSize; i++) {
+					ImageProcessor base = tempStack.getProcessor(i);
+					tasks.add(task("Gradient_Magnitude_" + sigma + "_Layer_" + i, () -> Filters.gradientMagnitude(base, sigma)));
+				}
+			}
+		}
+
+		if (gui.membrane) {
+			for (String set : gui.membraneOption.split(";")) {
+				String[] o = set.split(",");
+				int patch = Integer.parseInt(o[0].trim());
+				int thickness = o.length > 1 ? Integer.parseInt(o[1].trim()) : 1;
+				for (int i = 1; i <= stackSize; i++) {
+					ImageProcessor base = tempStack.getProcessor(i);
+					String suffix = "_P" + patch + "_T" + thickness + "_Layer_" + i;
+					tasks.add(new FeatureTask(() -> {
+						FloatProcessor[] m = Filters.membraneProjections(base, patch, thickness);
+						List<Layer> result = new ArrayList<Layer>();
+						for (int k = 0; k < m.length; k++) {
+							result.add(new Layer("Membrane_" + Filters.MEMBRANE_PROJECTIONS[k] + suffix, m[k]));
+						}
+						return result;
+					}));
+				}
+			}
+		}
+
+		if (gui.neighbors) {
+			for (String s : gui.neighborsOption.split(",")) {
+				int distance = Integer.parseInt(s.trim());
+				for (int i = 1; i <= stackSize; i++) {
+					ImageProcessor base = tempStack.getProcessor(i);
+					String suffix = "_D" + distance + "_Layer_" + i;
+					tasks.add(new FeatureTask(() -> {
+						FloatProcessor[] n = Filters.neighbors(base, distance);
+						List<Layer> result = new ArrayList<Layer>();
+						for (int k = 0; k < n.length; k++) {
+							result.add(new Layer("Neighbor_" + Filters.NEIGHBORS[k][0] + "_" + Filters.NEIGHBORS[k][1] + suffix, n[k]));
+						}
+						return result;
+					}));
+				}
+			}
+		}
+
+		if (gui.bilateral) {
+			/* Sets: spatial sigma,range sigma (relative to the value range of the layer) */
+			for (String set : gui.bilateralOption.split(";")) {
+				String[] o = set.split(",");
+				double spatial = Double.parseDouble(o[0].trim());
+				double relativeRange = o.length > 1 ? Double.parseDouble(o[1].trim()) : 0.1;
+				for (int i = 1; i <= stackSize; i++) {
+					ImageProcessor base = tempStack.getProcessor(i);
+					double[] range = ranges[i - 1];
+					tasks.add(task("Bilateral_" + spatial + "_" + relativeRange + "_Layer_" + i,
+							() -> Filters.bilateral(base, spatial, relativeRange * (range[1] - range[0]))));
+				}
+			}
+		}
+
+		if (gui.diffusion) {
+			/* Sets: iterations,kappa (relative to the value range of the layer),lambda */
+			for (String set : gui.diffusionOption.split(";")) {
+				String[] o = set.split(",");
+				int iterations = Integer.parseInt(o[0].trim());
+				double relativeKappa = o.length > 1 ? Double.parseDouble(o[1].trim()) : 0.1;
+				double lambda = o.length > 2 ? Double.parseDouble(o[2].trim()) : 0.2;
+				for (int i = 1; i <= stackSize; i++) {
+					ImageProcessor base = tempStack.getProcessor(i);
+					double[] range = ranges[i - 1];
+					tasks.add(task("Anisotropic_Diffusion_" + iterations + "_" + relativeKappa + "_" + lambda + "_Layer_" + i,
+							() -> Filters.anisotropicDiffusion(base, iterations, relativeKappa * (range[1] - range[0]), lambda)));
 				}
 			}
 		}

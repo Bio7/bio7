@@ -163,6 +163,11 @@ public class _ModelGui extends Composite implements RoiListener {
 	protected String localEntropyOption = "3", lbpOption = "1,2", lawsOption = "7", structureTensorOption = "1,3", hessianOption = "1,2";
 	protected Button checkLocalEntropy, checkLbp, checkLaws, checkStructureTensor, checkHessian;
 	protected Text optionLocalEntropy, optionLbp, optionLaws, optionStructureTensor, optionHessian;
+	/* More filters */
+	protected boolean gradientMagnitude, membrane, neighbors, bilateral, diffusion;
+	protected String gradientMagnitudeOption = "1,2", membraneOption = "19,1", neighborsOption = "1,4", bilateralOption = "3,0.1", diffusionOption = "10,0.1,0.2";
+	protected Button checkGradientMagnitude, checkMembrane, checkNeighbors, checkBilateral, checkDiffusion;
+	protected Text optionGradientMagnitude, optionMembrane, optionNeighbors, optionBilateral, optionDiffusion;
 	protected String edgesOption;
 	protected Button checkUseDirectory;
 	protected boolean useDirectoryDialog;
@@ -238,6 +243,8 @@ public class _ModelGui extends Composite implements RoiListener {
 		composite = new Composite(scrolledComposite, SWT.NONE);
 		composite.setSize(300, 1350);
 		scrolledComposite.setContent(composite);
+		/* The height of the page fits the content (all fields are displayed) */
+		fitContent(scrolledComposite, composite);
 		composite.setLayout(new GridLayout(2, true));
 
 		btnClassificationProject = new Button(composite, SWT.NONE);
@@ -520,6 +527,8 @@ public class _ModelGui extends Composite implements RoiListener {
 		new Label(composite, SWT.NONE);
 
 		optionConvolve = new Text(composite, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL | SWT.MULTI);
+		/* The mouse wheel scrolls the page (the text only when it is edited) */
+		scrollPageWithWheel(optionConvolve, scrolledComposite);
 		GridData gd_optionConvolve = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
 		gd_optionConvolve.widthHint = 189;
 		optionConvolve.setLayoutData(gd_optionConvolve);
@@ -601,6 +610,30 @@ public class _ModelGui extends Composite implements RoiListener {
 		optionHessian = optionField(hessianOption, checkHessian);
 		new Label(composite, SWT.NONE);
 
+		/* More filters for the classification and segmentation */
+		Label lblMore = new Label(composite, SWT.NONE);
+		lblMore.setBackground(SWTResourceManager.getColor(SWT.COLOR_GRAY));
+		lblMore.setAlignment(SWT.CENTER);
+		lblMore.setFont(boldFont);
+		lblMore.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		lblMore.setText("Edges, Context & Smoothing");
+
+		checkGradientMagnitude = checkOption("Gradient Magnitude", "The gradient magnitude of the Gaussian blurred image (edges). Option: the sigmas, e.g., 1,2");
+		checkMembrane = checkOption("Membrane Projections",
+				"A line rotated in 30 orientations (membranes, fibres): Mean, Max, Min, Sum, Std and Median of the responses.\nOption: patch size,thickness - sets separated with ';', e.g., 19,1");
+		optionGradientMagnitude = optionField(gradientMagnitudeOption, checkGradientMagnitude);
+		optionMembrane = optionField(membraneOption, checkMembrane);
+		checkNeighbors = checkOption("Neighbors", "The values of the 8 neighbors at a distance (the context of a pixel). Option: the distances, e.g., 1,4");
+		checkBilateral = checkOption("Bilateral",
+				"Edge preserving smoothing. Option: spatial sigma,range sigma (relative to the value range, e.g., 0.1) - sets separated with ';', e.g., 3,0.1");
+		optionNeighbors = optionField(neighborsOption, checkNeighbors);
+		optionBilateral = optionField(bilateralOption, checkBilateral);
+		checkDiffusion = checkOption("Anisotropic Diffusion",
+				"Edge preserving smoothing (Perona-Malik). Option: iterations,kappa (relative to the value range),lambda (0 - 0.25) - sets separated with ';', e.g., 10,0.1,0.2");
+		new Label(composite, SWT.NONE);
+		optionDiffusion = optionField(diffusionOption, checkDiffusion);
+		new Label(composite, SWT.NONE);
+
 		tbtmMore = new CTabItem(tabFolder, SWT.NONE);
 		tbtmMore.setText("Settings");
 		scrolledCompositeSettings = new ScrolledComposite(tabFolder, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
@@ -610,6 +643,7 @@ public class _ModelGui extends Composite implements RoiListener {
 		composite_1 = new Composite(scrolledCompositeSettings, SWT.NONE);
 		composite_1.setSize(300, 600);
 		scrolledCompositeSettings.setContent(composite_1);
+		fitContent(scrolledCompositeSettings, composite_1);
 		composite_1.setLayout(new GridLayout(2, true));
 
 		classificationOpenLabel = new Label(composite_1, SWT.NONE);
@@ -872,6 +906,43 @@ public class _ModelGui extends Composite implements RoiListener {
 	/*
 	 * A method to access all options wrapped in a syncExec for SWT widgets access!
 	 */
+	/*
+	 * The scrolled page gets the height of the content for the current width
+	 * (computed after the GUI is created and when the page is resized)!
+	 */
+	private static void fitContent(ScrolledComposite page, Composite content) {
+		page.setExpandHorizontal(true);
+		page.setExpandVertical(true);
+		Runnable fit = () -> {
+			if (page.isDisposed() || content.isDisposed()) {
+				return;
+			}
+			int width = Math.max(1, page.getClientArea().width);
+			page.setMinSize(0, content.computeSize(width, SWT.DEFAULT).y);
+		};
+		page.addListener(SWT.Resize, _ -> fit.run());
+		/* After all fields of the page are created */
+		page.getDisplay().asyncExec(fit);
+	}
+
+	/*
+	 * The mouse wheel over the multi-line text scrolls the page and not the text
+	 * (else the page can't be scrolled with the wheel over the text). The text is
+	 * scrolled with the wheel when it has the focus (is edited).
+	 */
+	private static void scrollPageWithWheel(Text text, ScrolledComposite page) {
+		text.addListener(SWT.MouseVerticalWheel, e -> {
+			if (text.isFocusControl() || page.isDisposed() || page.getContent() == null) {
+				return;
+			}
+			e.doit = false;
+			org.eclipse.swt.graphics.Point origin = page.getOrigin();
+			int max = Math.max(0, page.getContent().getSize().y - page.getClientArea().height);
+			int step = Math.max(1, page.getVerticalBar() != null ? page.getVerticalBar().getIncrement() : 20) * 3;
+			page.setOrigin(origin.x, Math.max(0, Math.min(max, origin.y - e.count * step)));
+		});
+	}
+
 	/* A label and a text field (one row) of the Haralick section */
 	private Text textOption(String label, String value, String tooltip) {
 		Label l = new Label(composite, SWT.NONE);
@@ -999,6 +1070,17 @@ public class _ModelGui extends Composite implements RoiListener {
 			structureTensorOption = optionStructureTensor.getText();
 			hessian = checkHessian.getSelection();
 			hessianOption = optionHessian.getText();
+
+			gradientMagnitude = checkGradientMagnitude.getSelection();
+			gradientMagnitudeOption = optionGradientMagnitude.getText();
+			membrane = checkMembrane.getSelection();
+			membraneOption = optionMembrane.getText();
+			neighbors = checkNeighbors.getSelection();
+			neighborsOption = optionNeighbors.getText();
+			bilateral = checkBilateral.getSelection();
+			bilateralOption = optionBilateral.getText();
+			diffusion = checkDiffusion.getSelection();
+			diffusionOption = optionDiffusion.getText();
 
 		});
 

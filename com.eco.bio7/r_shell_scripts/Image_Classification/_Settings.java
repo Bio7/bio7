@@ -176,6 +176,11 @@ public class _Settings {
 				readCheck(reader, modelGui.checkLaws, modelGui.optionLaws);
 				readCheck(reader, modelGui.checkStructureTensor, modelGui.optionStructureTensor);
 				readCheck(reader, modelGui.checkHessian, modelGui.optionHessian);
+				readCheck(reader, modelGui.checkGradientMagnitude, modelGui.optionGradientMagnitude);
+				readCheck(reader, modelGui.checkMembrane, modelGui.optionMembrane);
+				readCheck(reader, modelGui.checkNeighbors, modelGui.optionNeighbors);
+				readCheck(reader, modelGui.checkBilateral, modelGui.optionBilateral);
+				readCheck(reader, modelGui.checkDiffusion, modelGui.optionDiffusion);
 
 				reader.close();
 
@@ -344,6 +349,11 @@ public class _Settings {
 		appendCheck(buffer, sep, modelGui.checkLaws, modelGui.optionLaws);
 		appendCheck(buffer, sep, modelGui.checkStructureTensor, modelGui.optionStructureTensor);
 		appendCheck(buffer, sep, modelGui.checkHessian, modelGui.optionHessian);
+		appendCheck(buffer, sep, modelGui.checkGradientMagnitude, modelGui.optionGradientMagnitude);
+		appendCheck(buffer, sep, modelGui.checkMembrane, modelGui.optionMembrane);
+		appendCheck(buffer, sep, modelGui.checkNeighbors, modelGui.optionNeighbors);
+		appendCheck(buffer, sep, modelGui.checkBilateral, modelGui.optionBilateral);
+		appendCheck(buffer, sep, modelGui.checkDiffusion, modelGui.optionDiffusion);
 		
 		String file = Bio7Dialog.saveFile("*.txt");
 		if (file != null) {
