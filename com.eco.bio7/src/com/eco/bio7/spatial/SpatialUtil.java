@@ -220,6 +220,203 @@ public class SpatialUtil {
 	}
 
 	/**
+	 * Sets the title of the plot view (displayed at the top of the 3D view).
+	 * <p>
+	 * The texts of the plot view (the title, the axis titles and the legends)
+	 * can contain a simple math markup: x^2, x^-0.5 or x^{n+1} for superscripts,
+	 * N_0 or N_{max} for subscripts (\\^ and \\_ for the characters). Greek
+	 * letters and symbols can be written as Unicode characters (e.g., \u03B1 for
+	 * alpha, \u00B7 for a dot).
+	 * 
+	 * @param title the title (lines separated with \n) or null (no title)
+	 */
+	public static void setPlotTitle(String title) {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		if (struc != null) {
+			struc.plotTitle = title;
+		}
+	}
+
+	/**
+	 * Sets the titles of the axes of the plot view (e.g., the names and the units
+	 * of the data).
+	 * 
+	 * @param x the title of the x axis (null = X)
+	 * @param y the title of the y axis (null = Y)
+	 * @param z the title of the z axis (null = Z)
+	 */
+	public static void setAxisTitles(String x, String y, String z) {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		if (struc != null) {
+			struc.plotAxisTitles = new String[] { x, y, z };
+		}
+	}
+
+	/**
+	 * Selects logarithmic axes of the plot view. The data of a logarithmic axis
+	 * are drawn as log10 values (e.g., Math.log10(value)) and the numbers of the
+	 * axis are the values (10^v, e.g., 100, 1e5, 1.34e10) with minor ticks and
+	 * grid lines at 2, 3, ..., 9 times the powers of ten.
+	 * 
+	 * @param x true for a logarithmic x axis
+	 * @param y true for a logarithmic y axis
+	 * @param z true for a logarithmic z axis
+	 */
+	public static void setLogAxes(boolean x, boolean y, boolean z) {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		if (struc != null) {
+			struc.plotLogAxes = new boolean[] { x, y, z };
+		}
+	}
+
+	/**
+	 * Sets the formats of the numbers of the axes of the plot view (see
+	 * java.util.Formatter, e.g., "%.2e" for 1.34e+10, "%.1f" or "%,.0f"). By
+	 * default (null) the numbers are formatted automatically: very large or small
+	 * numbers in a scientific notation (e.g., 1.34e10, 2.5e-6). The format "10^"
+	 * displays the numbers as powers of ten with superscripts (e.g., 10^3,
+	 * 1.34x10^10), e.g., for logarithmic axes.
+	 * 
+	 * @param x the format of the x axis (null = automatic)
+	 * @param y the format of the y axis (null = automatic)
+	 * @param z the format of the z axis (null = automatic)
+	 */
+	public static void setAxisNumberFormats(String x, String y, String z) {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		if (struc != null) {
+			struc.plotNumberFormats = new String[] { x, y, z };
+		}
+	}
+
+	/**
+	 * Sets the values of the axis numbers of the plot view at the data bounds
+	 * (see setDataBounds). The three axes of the 3D view have the same scale. For
+	 * data with different units and ranges (e.g., the time in hours and cell
+	 * counts up to 1e10) the data is drawn in the coordinates of the box (e.g.,
+	 * 0 - 10 for all axes) and the axis numbers display the values of the data
+	 * (a linear mapping of the bounds to the values). For a logarithmic axis the
+	 * values are log10 values.
+	 * 
+	 * @param x0 the value at the minimum x of the bounds
+	 * @param x1 the value at the maximum x of the bounds
+	 * @param y0 the value at the minimum y of the bounds
+	 * @param y1 the value at the maximum y of the bounds
+	 * @param z0 the value at the minimum z of the bounds
+	 * @param z1 the value at the maximum z of the bounds
+	 */
+	public static void setAxisRanges(double x0, double x1, double y0, double y1, double z0, double z1) {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		if (struc != null) {
+			struc.plotAxisRanges = new double[] { x0, x1, y0, y1, z0, z1 };
+		}
+	}
+
+	/**
+	 * Displays a legend of categories in the top left corner of the 3D view: a
+	 * box with the color and the label of each category (e.g., the groups of a
+	 * scatter plot).
+	 * 
+	 * @param title  the title of the legend (null = no title)
+	 * @param labels the labels of the categories
+	 * @param colors the colors of the categories (0xRRGGBB, e.g., 0xFF8000 or
+	 *               java.awt.Color.getRGB())
+	 */
+	public static void setLegend(String title, String[] labels, int[] colors) {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		if (struc != null) {
+			struc.plotLegend = labels != null ? PlotLegend.categories(title, labels, colors) : null;
+		}
+	}
+
+	/**
+	 * Displays a color bar at the right side of the 3D view: a color ramp with
+	 * the numbers of the values (e.g., the heights of a surface). The colors are
+	 * evenly distributed from the minimum to the maximum (see
+	 * PlotLegend.rampColor to draw the data with the same colors and the ramps
+	 * PlotLegend.VIRIDIS, RAINBOW, DIVERGING, TERRAIN).
+	 * 
+	 * @param title  the title of the color bar (e.g., the name and the unit)
+	 * @param min    the value of the first color
+	 * @param max    the value of the last color
+	 * @param colors the colors of the ramp (0xRRGGBB)
+	 */
+	public static void setColorBar(String title, double min, double max, int[] colors) {
+		setColorBar(title, min, max, colors, false, null);
+	}
+
+	/**
+	 * Displays a color bar at the right side of the 3D view (see
+	 * setColorBar(String, double, double, int[])) with logarithmic values or a
+	 * format of the numbers.
+	 * 
+	 * @param title  the title of the color bar
+	 * @param min    the value of the first color (a log10 value if log)
+	 * @param max    the value of the last color (a log10 value if log)
+	 * @param colors the colors of the ramp (0xRRGGBB)
+	 * @param log    true if min and max are log10 values (the numbers are 10^v)
+	 * @param format the format of the numbers (java.util.Formatter, e.g., "%.1f",
+	 *               "10^" for powers of ten, null = automatic, e.g., 1.34e10)
+	 */
+	public static void setColorBar(String title, double min, double max, int[] colors, boolean log, String format) {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		if (struc != null) {
+			struc.plotColorBar = colors != null ? PlotLegend.colorBar(title, min, max, colors, log, format) : null;
+		}
+	}
+
+	/**
+	 * Sets the font sizes of the plot view as factors of the default sizes (1 =
+	 * default, 2 = twice as large, 0.5 = half the size).
+	 * 
+	 * @param title      the title (default 16 points)
+	 * @param axisTitles the titles of the axes
+	 * @param numbers    the numbers of the axes
+	 * @param legends    the legend and the color bar (default 12 points)
+	 */
+	public static void setPlotFontSizes(float title, float axisTitles, float numbers, float legends) {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		if (struc != null) {
+			struc.plotFontScales = new float[] { positive(title), positive(axisTitles), positive(numbers), positive(legends) };
+		}
+	}
+
+	/**
+	 * Sets all font sizes of the plot view (the title, the axis titles and
+	 * numbers and the legends) as a factor of the default sizes (1 = default).
+	 * 
+	 * @param scale the factor of all font sizes
+	 */
+	public static void setPlotFontSize(float scale) {
+		setPlotFontSizes(scale, scale, scale, scale);
+	}
+
+	private static float positive(float scale) {
+		return scale > 0 && Float.isFinite(scale) ? scale : 1;
+	}
+
+	/**
+	 * Removes the legend and the color bar of the 3D view.
+	 */
+	public static void clearLegend() {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		if (struc != null) {
+			struc.plotLegend = null;
+			struc.plotColorBar = null;
+		}
+	}
+
+	/**
+	 * Removes the title, the axis titles, the logarithmic axes, the number
+	 * formats, the axis ranges, the legend and the color bar of the plot view.
+	 */
+	public static void resetPlotLabels() {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		if (struc != null) {
+			struc.resetPlotLabels();
+		}
+	}
+
+	/**
 	 * Resets the rotation of the rotation matrix.
 	 */
 	public static void resetRotation() {

@@ -206,6 +206,27 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	public boolean plotGridXY = false;
 	public boolean plotGridXZ = true;
 	public boolean plotGridYZ = true;
+	/* The title of the plot view (lines separated with \n, null = no title) */
+	public volatile String plotTitle;
+	/* The titles of the axes of the plot view (null = X, Y, Z) */
+	public volatile String[] plotAxisTitles = new String[3];
+	/*
+	 * Logarithmic axes of the plot view: the data of the axis are log10 values
+	 * and the numbers are the values 10^v (with minor ticks)
+	 */
+	public volatile boolean[] plotLogAxes = new boolean[3];
+	/* The formats of the axis numbers (java.util.Formatter, e.g., "%.2e", null = automatic) */
+	public volatile String[] plotNumberFormats = new String[3];
+	/*
+	 * The values of the axis numbers at the data bounds (x0, x1, y0, y1, z0, z1,
+	 * null = the coordinates): the data is drawn in the coordinates of the box
+	 */
+	public volatile double[] plotAxisRanges;
+	/* The legend of categories (top left) and the color bar (right) of the view or null */
+	public volatile PlotLegend plotLegend;
+	public volatile PlotLegend plotColorBar;
+	/* The font sizes of the plot view (factors, 1 = default): title, axis titles, axis numbers, legends */
+	public volatile float[] plotFontScales = { 1, 1, 1, 1 };
 	/* The axis orientation overlay in the top right corner */
 	public boolean showAxisGizmo = true;
 	private final AxisGizmo axisGizmo = new AxisGizmo();
@@ -817,6 +838,18 @@ public class SpatialStructure implements KeyListener, MouseListener {
 			if (showAxisGizmo) {
 				axisGizmo.render(gl, width, height, canvasPixelScale);
 			}
+			/* The title of the plot view at the top of the view */
+			String title = plotTitle;
+			if (plotView && title != null && !title.isBlank() && scene != null) {
+				scene.drawPlotTitle(gl, title, width, height, canvasPixelScale, plotFontScales[0]);
+			} else if (scene != null) {
+				scene.noPlotTitle();
+			}
+			/* The legend and the color bar */
+			PlotLegend legend = plotLegend, colorBar = plotColorBar;
+			if ((legend != null || colorBar != null) && scene != null) {
+				scene.drawLegends(gl, legend, colorBar, width, height, canvasPixelScale, plotFontScales[3]);
+			}
 
 		}
 
@@ -1419,6 +1452,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		plotGridXY = false;
 		plotGridXZ = true;
 		plotGridYZ = true;
+		resetPlotLabels();
 		showAxisGizmo = true;
 		if (axisLabelsRenderer != null) {
 			axisLabelsRenderer.setEnabled(false);
@@ -1825,6 +1859,21 @@ public class SpatialStructure implements KeyListener, MouseListener {
 
 	/* The bounds of the data of a model (see setDataBounds) or null */
 	private volatile double[] dataBounds;
+
+	/**
+	 * Removes the title, the axis titles, the logarithmic axes and the number
+	 * formats of the plot view.
+	 */
+	public void resetPlotLabels() {
+		plotTitle = null;
+		plotAxisTitles = new String[3];
+		plotLogAxes = new boolean[3];
+		plotNumberFormats = new String[3];
+		plotAxisRanges = null;
+		plotLegend = null;
+		plotColorBar = null;
+		plotFontScales = new float[] { 1, 1, 1, 1 };
+	}
 
 	/**
 	 * Sets the bounds of the data of a model (e.g., the spheres of a script) for
