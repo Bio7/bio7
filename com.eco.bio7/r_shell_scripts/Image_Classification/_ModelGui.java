@@ -359,6 +359,8 @@ public class _ModelGui extends Composite implements RoiListener {
 		FontDescriptor boldDescriptor = FontDescriptor.createFrom(lblColor.getFont()).setStyle(SWT.BOLD);
 		Font boldFont = boldDescriptor.createFont(lblColor.getDisplay());
 		lblColor.setFont(boldFont);
+		/* The bold font is created and must be disposed with the GUI */
+		addDisposeListener(_ -> boldFont.dispose());
 		lblColor.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 		lblColor.setText("Color & Channels");
 
