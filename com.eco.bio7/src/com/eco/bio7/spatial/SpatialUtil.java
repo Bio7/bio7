@@ -395,6 +395,51 @@ public class SpatialUtil {
 	}
 
 	/**
+	 * Shows or hides the action "Export Plot (WebGL, Blender)" in the toolbar of the 3D view
+	 * (hidden by default). The action exports the plot of the plot API (see
+	 * Plot3D) to an HTML page with WebGL.
+	 * 
+	 * @param visible true to show the action
+	 */
+	public static void setPlotExportAction(boolean visible) {
+		SpatialView.setExportActionVisible(visible);
+	}
+
+	/**
+	 * Sets the colors of the texts of the plot view (0xRRGGBB, -1 = the color of
+	 * the lines of the 3D view): the title, the numbers of the axes, the titles of
+	 * the axes and the legend with the color bar.
+	 * 
+	 * @param title      the color of the title
+	 * @param numbers    the color of the axis numbers
+	 * @param axisTitles the color of the axis titles
+	 * @param legend     the color of the texts of the legend and the color bar
+	 */
+	public static void setPlotTextColors(int title, int numbers, int axisTitles, int legend) {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		if (struc != null) {
+			struc.plotTextColors = new int[] { title, numbers, axisTitles, legend };
+		}
+	}
+
+	/**
+	 * Sets the font families of the texts of the plot view (e.g., "Arial",
+	 * "Georgia", null = Verdana): the title, the numbers of the axes, the titles
+	 * of the axes and the legend with the color bar.
+	 * 
+	 * @param title      the font of the title
+	 * @param numbers    the font of the axis numbers
+	 * @param axisTitles the font of the axis titles
+	 * @param legend     the font of the legend and the color bar
+	 */
+	public static void setPlotFonts(String title, String numbers, String axisTitles, String legend) {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		if (struc != null) {
+			struc.plotFonts = new String[] { title, numbers, axisTitles, legend };
+		}
+	}
+
+	/**
 	 * Removes the legend and the color bar of the 3D view.
 	 */
 	public static void clearLegend() {

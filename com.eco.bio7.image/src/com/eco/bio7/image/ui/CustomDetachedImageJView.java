@@ -258,6 +258,20 @@ public class CustomDetachedImageJView extends ViewPart {
 	 * @return the view or null.
 	 */
 	public static CustomDetachedImageJView detach(ImagePlus imp, Rectangle rec) {
+		return detach(imp, rec, true);
+	}
+
+	/**
+	 * Moves the image from its tab into a new view.
+	 *
+	 * @param imp      the image displayed in a tab of the ImageJ-Canvas view.
+	 * @param rec      location and size of a floating (detached) view or null.
+	 * @param activate true to activate the view (and to give it the focus), false
+	 *                 for a view which is only displayed (e.g., several images
+	 *                 opened together, the last one is activated).
+	 * @return the view or null.
+	 */
+	public static CustomDetachedImageJView detach(ImagePlus imp, Rectangle rec, boolean activate) {
 		CustomDetachedImageJView[] result = new CustomDetachedImageJView[1];
 		Util.getDisplay().syncExec(() -> {
 			CTabItem item = Bio7ImageJ.getTab(imp);
@@ -267,7 +281,8 @@ public class CustomDetachedImageJView extends ViewPart {
 				return;
 			}
 			try {
-				IViewPart activated = page.showView(ID, Integer.toString(imp.getID()), IWorkbenchPage.VIEW_ACTIVATE);
+				IViewPart activated = page.showView(ID, Integer.toString(imp.getID()),
+						activate ? IWorkbenchPage.VIEW_ACTIVATE : IWorkbenchPage.VIEW_VISIBLE);
 				if (!(activated instanceof CustomDetachedImageJView)) {
 					return;
 				}
@@ -275,12 +290,14 @@ public class CustomDetachedImageJView extends ViewPart {
 				if (rec != null) {
 					IWorkbenchPartSite site = activated.getSite();
 					EModelService s = site.getService(EModelService.class);
-					MPartSashContainerElement p = site.getService(MPart.class);
-					if (p.getCurSharedRef() != null)
-						p = p.getCurSharedRef();
-					s.detach(p, rec.x, rec.y, rec.width, rec.height);
+					MPart part = site.getService(MPart.class);
+					/* A floating window of the workbench window (not of the perspective) */
+					if (!detachToWindow(s, site.getWorkbenchWindow(), part, rec)) {
+						MPartSashContainerElement p = part.getCurSharedRef() != null ? part.getCurSharedRef() : part;
+						s.detach(p, rec.x, rec.y, rec.width, rec.height);
+					}
 				}
-				view.setImage(imp, item, holder);
+				view.setImage(imp, item, holder, activate);
 				result[0] = view;
 			} catch (PartInitException e) {
 				e.printStackTrace();
@@ -289,8 +306,172 @@ public class CustomDetachedImageJView extends ViewPart {
 		return result[0];
 	}
 
+	/* The tag of the floating windows of the image views (windows of the workbench window) */
+	static final String IMAGE_WINDOW_TAG = "bio7.imageWindow";
+
+	/*
+	 * Moves the view into a new floating window of the workbench window. The
+	 * window is not part of a perspective, so it stays visible if the perspective
+	 * is switched (it is not moved and painted again). The new placeholder is
+	 * rendered before the old one is removed (the view and the image are moved,
+	 * not disposed). Returns false if the view cannot be moved (e.g., not a
+	 * shared part).
+	 */
+	private static boolean detachToWindow(EModelService modelService, IWorkbenchWindow workbenchWindow, MPart part, Rectangle rec) {
+		MWindow window = workbenchWindow != null ? workbenchWindow.getService(MWindow.class) : null;
+		MPlaceholder old = part != null ? part.getCurSharedRef() : null;
+		if (modelService == null || window == null || old == null || old.getParent() == null) {
+			return false;
+		}
+		MTrimmedWindow floating = modelService.createModelElement(MTrimmedWindow.class);
+		floating.getTags().add(IMAGE_WINDOW_TAG);
+		floating.setX(rec.x);
+		floating.setY(rec.y);
+		floating.setWidth(rec.width);
+		floating.setHeight(rec.height);
+		MPartStack stack = modelService.createModelElement(MPartStack.class);
+		MPlaceholder placeholder = modelService.createModelElement(MPlaceholder.class);
+		placeholder.setElementId(old.getElementId());
+		placeholder.setRef(part);
+		placeholder.setCloseable(old.isCloseable());
+		placeholder.getTags().addAll(old.getTags());
+		stack.getChildren().add(placeholder);
+		stack.setSelectedElement(placeholder);
+		floating.getChildren().add(stack);
+		window.getWindows().add(floating);
+		if (placeholder.getWidget() == null) {
+			/* Not rendered: the floating window is removed, the view stays where it is */
+			window.getWindows().remove(floating);
+			return false;
+		}
+		/* The old placeholder (in the perspective) is removed */
+		old.setToBeRendered(false);
+		old.getParent().getChildren().remove(old);
+		part.setCurSharedRef(placeholder);
+		return true;
+	}
+
+	/**
+	 * Arranges the floating windows of the image views on the monitor of the
+	 * workbench window: cascaded (the sizes are kept, the windows are offset) or
+	 * tiled (a grid of the windows in the client area of the monitor). Must be
+	 * called in the SWT UI thread.
+	 *
+	 * @param tile true to tile, false to cascade the windows.
+	 */
+	public static void arrangeFloatingViews(boolean tile) {
+		arrangeFloatingViews(tile, null);
+	}
+
+	/**
+	 * Arranges the floating windows of the image views on a monitor (see
+	 * arrangeFloatingViews(boolean)).
+	 *
+	 * @param tile    true to tile, false to cascade the windows.
+	 * @param monitor the monitor (null = the monitor of the workbench window).
+	 */
+	public static void arrangeFloatingViews(boolean tile, org.eclipse.swt.widgets.Monitor monitor) {
+		IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+		if (workbenchWindow == null) {
+			return;
+		}
+		MWindow window = workbenchWindow.getService(MWindow.class);
+		EModelService modelService = workbenchWindow.getService(EModelService.class);
+		if (window == null || modelService == null) {
+			return;
+		}
+		/* The floating windows with image views: of the workbench window and of the active perspective */
+		List<MWindow> windows = new ArrayList<>();
+		List<MWindow> candidates = new ArrayList<>(window.getWindows());
+		MPerspective active = modelService.getActivePerspective(window);
+		if (active != null) {
+			candidates.addAll(active.getWindows());
+		}
+		for (MWindow floating : candidates) {
+			if (!floating.isToBeRendered() || !(floating.getWidget() instanceof org.eclipse.swt.widgets.Shell shell) || shell.isDisposed()) {
+				continue;
+			}
+			for (MPlaceholder ph : modelService.findElements(floating, null, MPlaceholder.class)) {
+				if (ph.isToBeRendered() && isImageView(ph)) {
+					windows.add(floating);
+					break;
+				}
+			}
+		}
+		if (windows.isEmpty()) {
+			return;
+		}
+		org.eclipse.swt.widgets.Shell main = workbenchWindow.getShell();
+		Rectangle area = (monitor != null ? monitor : main.getMonitor()).getClientArea();
+		int n = windows.size();
+		if (tile) {
+			/* The columns and rows of the grid (the cells about as wide as high) */
+			int columns = Math.max(1, (int) Math.ceil(Math.sqrt(n * (double) area.width / Math.max(1, area.height))));
+			columns = Math.min(columns, n);
+			int rows = (int) Math.ceil(n / (double) columns);
+			int width = area.width / columns, height = area.height / rows;
+			for (int i = 0; i < n; i++) {
+				int column = i % columns, row = i / columns;
+				setBounds(windows.get(i), area.x + column * width, area.y + row * height, width, height);
+			}
+		} else {
+			int offset = 30, x = area.x + offset, y = area.y + offset;
+			for (int i = 0; i < n; i++) {
+				MWindow w = windows.get(i);
+				int width = Math.min(w.getWidth(), area.width - 2 * offset), height = Math.min(w.getHeight(), area.height - 2 * offset);
+				/* At the right or the bottom of the monitor: again from the top left */
+				if (x + width > area.x + area.width || y + height > area.y + area.height) {
+					x = area.x + offset;
+					y = area.y + offset;
+				}
+				setBounds(w, x, y, width, height);
+				x += offset;
+				y += offset;
+			}
+		}
+		/* The order of the arrangement (the last window in front) */
+		for (MWindow w : windows) {
+			if (w.getWidget() instanceof org.eclipse.swt.widgets.Shell shell && !shell.isDisposed()) {
+				shell.moveAbove(null);
+			}
+		}
+	}
+
+	private static void setBounds(MWindow w, int x, int y, int width, int height) {
+		w.setX(x);
+		w.setY(y);
+		w.setWidth(width);
+		w.setHeight(height);
+		/* The shell at once (the model is applied by the renderer, too) */
+		if (w.getWidget() instanceof org.eclipse.swt.widgets.Shell shell && !shell.isDisposed()) {
+			shell.setBounds(x, y, width, height);
+		}
+	}
+
+	/* Removes the floating image windows without a view (after a view has been closed) */
+	private static void removeEmptyImageWindows(IWorkbenchWindow workbenchWindow) {
+		MWindow window = workbenchWindow != null ? workbenchWindow.getService(MWindow.class) : null;
+		EModelService modelService = workbenchWindow != null ? workbenchWindow.getService(EModelService.class) : null;
+		if (window == null || modelService == null) {
+			return;
+		}
+		for (MWindow floating : new ArrayList<>(window.getWindows())) {
+			if (!floating.getTags().contains(IMAGE_WINDOW_TAG)) {
+				continue;
+			}
+			boolean used = false;
+			for (MPlaceholder ph : modelService.findElements(floating, null, MPlaceholder.class)) {
+				used |= ph.isToBeRendered() && ph.getRef() != null && ph.getRef().isToBeRendered();
+			}
+			if (!used) {
+				floating.setToBeRendered(false);
+				window.getWindows().remove(floating);
+			}
+		}
+	}
+
 	/* Moves the holder (with the ImageJ window) from the tab into this view! */
-	private void setImage(ImagePlus imp, CTabItem item, Composite holder) {
+	private void setImage(ImagePlus imp, CTabItem item, Composite holder, boolean focus) {
 		this.plus = imp;
 		this.win = imp.getWindow();
 		setPartName(imp.getTitle());
@@ -299,10 +480,17 @@ public class CustomDetachedImageJView extends ViewPart {
 		item.dispose();
 		holder.setVisible(true);
 		customViewParent.layout(true, true);
-		setFocus();
+		if (focus) {
+			setFocus();
+		}
 	}
 
 	public void dispose() {
+		/* The empty floating window of the view is removed (after the view has been removed) */
+		IWorkbenchWindow workbenchWindow = getSite() != null ? getSite().getWorkbenchWindow() : null;
+		if (workbenchWindow != null) {
+			Util.getDisplay().asyncExec(() -> removeEmptyImageWindows(workbenchWindow));
+		}
 		/* Disposing the holder closes the image (see Bio7ImageJ)! */
 		if (customViewParent != null && !customViewParent.isDisposed()) {
 			for (Control child : customViewParent.getChildren()) {

@@ -225,6 +225,8 @@ class Spread {
 		// Enable cell selection
 		grid.setRowsResizeable(true);
 		grid.setCellSelectionEnabled(true);
+		/* The border of the selection (like a spreadsheet, the color of the theme) */
+		TableSelectionOverlay.install(grid);
 		tab1TabItem.setData(grid);
 
 		/*

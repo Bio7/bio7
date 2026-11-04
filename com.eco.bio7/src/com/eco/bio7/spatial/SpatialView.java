@@ -269,6 +269,97 @@ public class SpatialView extends ViewPart {
 				"Resets the 3D view to the default settings like at the first start (camera, grids, axes,\nlights, colors, step rate, height map). The loaded data is kept.");
 		reset.setImageDescriptor(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/counter_reset.svg"));
 		toolBar.add(reset);
+
+		/* Exports the plot of the plot API to HTML (visible with Plot3D.setExportAction) */
+		Action export = new Action("Export Plot (WebGL, Blender)") {
+			public void run() {
+				exportPlot();
+			}
+		};
+		export.setToolTipText(
+				"Exports the displayed plot to an HTML page with WebGL (rotate and zoom in a web browser)\nor for Blender (a glTF file and a Python script with the texts, the camera and the lights)");
+		export.setImageDescriptor(Bio7Plugin.getImageDescriptor("/icons/views/savefile.svg"));
+		exportItem = new org.eclipse.jface.action.ActionContributionItem(export);
+		exportItem.setVisible(exportActionVisible);
+		toolBar.add(exportItem);
+	}
+
+	/* The action to export a plot to HTML and if it is visible (for all 3D views) */
+	private org.eclipse.jface.action.ActionContributionItem exportItem;
+	private static volatile boolean exportActionVisible;
+
+	/**
+	 * Shows or hides the action of the toolbar which exports the plot of the plot
+	 * API (see Plot3D) to an HTML page.
+	 * 
+	 * @param visible true to show the action
+	 */
+	public static void setExportActionVisible(boolean visible) {
+		exportActionVisible = visible;
+		org.eclipse.swt.widgets.Display display = org.eclipse.ui.PlatformUI.getWorkbench().getDisplay();
+		display.asyncExec(() -> {
+			SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+			SpatialView view = struc != null ? struc.getView() : null;
+			if (view != null && view.exportItem != null) {
+				view.exportItem.setVisible(exportActionVisible);
+				view.getViewSite().getActionBars().getToolBarManager().update(true);
+				view.getViewSite().getActionBars().updateActionBars();
+			}
+		});
+	}
+
+	/** Returns true if the action to export a plot to HTML is visible. */
+	public static boolean isExportActionVisible() {
+		return exportActionVisible;
+	}
+
+	/* Asks for a file, exports the displayed plot and opens it in the web browser (if confirmed) */
+	private void exportPlot() {
+		org.eclipse.swt.widgets.Shell shell = getSite().getShell();
+		Plot3D plot = Plot3D.getCurrent();
+		if (plot == null) {
+			org.eclipse.jface.dialogs.MessageDialog.openInformation(shell, "Export Plot",
+					"No plot is displayed. A plot can be created with the plot API (com.eco.bio7.spatial.Plot3D).");
+			return;
+		}
+		org.eclipse.swt.widgets.FileDialog dialog = new org.eclipse.swt.widgets.FileDialog(shell, org.eclipse.swt.SWT.SAVE);
+		dialog.setText("Export Plot (WebGL or Blender)");
+		dialog.setFilterExtensions(new String[] { "*.html", "*.glb" });
+		dialog.setFilterNames(new String[] { "HTML page with WebGL (*.html)", "Blender: glTF and Python script (*.glb, *.py)" });
+		dialog.setOverwrite(true);
+		String title = plot.title();
+		String name = title != null ? title.split("\n")[0].replaceAll("[^A-Za-z0-9_\\- ]", "").trim().replace(' ', '_') : "";
+		dialog.setFileName((name.isEmpty() ? "Plot3D" : name) + ".html");
+		String file = dialog.open();
+		if (file == null) {
+			return;
+		}
+		String lower = file.toLowerCase();
+		/* The format of the extension or of the selected filter */
+		boolean blender = lower.endsWith(".glb") || (!lower.endsWith(".html") && !lower.endsWith(".htm") && dialog.getFilterIndex() == 1);
+		if (blender && !lower.endsWith(".glb")) {
+			file += ".glb";
+		} else if (!blender && !lower.endsWith(".html") && !lower.endsWith(".htm")) {
+			file += ".html";
+		}
+		try {
+			if (blender) {
+				String script = plot.exportBlender(file);
+				org.eclipse.jface.dialogs.MessageDialog.openInformation(shell, "Export Plot for Blender",
+						"The plot has been exported for Blender:\n" + file + "\n" + script
+								+ "\n\nIn Blender run the script (Scripting - Open - Run Script) to import the plot with the texts, the camera and the lights.\n"
+								+ "The glTF file can also be imported alone (File - Import - glTF 2.0).");
+				return;
+			}
+			plot.exportHtml(file);
+		} catch (java.io.IOException | RuntimeException e) {
+			org.eclipse.jface.dialogs.MessageDialog.openError(shell, "Export Plot", "The plot could not be exported:\n" + e.getMessage());
+			return;
+		}
+		if (org.eclipse.jface.dialogs.MessageDialog.openQuestion(shell, "Export Plot to HTML",
+				"The plot has been exported to:\n" + file + "\n\nOpen the page in the web browser?")) {
+			org.eclipse.swt.program.Program.launch(file);
+		}
 	}
 
 	/* Resets the 3D view and the stored display settings and creates the options view again! */

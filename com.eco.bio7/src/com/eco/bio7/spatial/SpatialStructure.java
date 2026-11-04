@@ -222,6 +222,12 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	 * null = the coordinates): the data is drawn in the coordinates of the box
 	 */
 	public volatile double[] plotAxisRanges;
+	/* The categories of the axes of the plot view (the names at 0, 1, 2, ..., null = numbers) */
+	public volatile String[][] plotAxisCategories = new String[3][];
+	/* The colors of the texts of the plot view (title, numbers, axis titles, legend; -1 = the color of the lines) */
+	public volatile int[] plotTextColors = { -1, -1, -1, -1 };
+	/* The font families of the texts of the plot view (title, numbers, axis titles, legend; null = Verdana) */
+	public volatile String[] plotFonts = new String[4];
 	/* The legend of categories (top left) and the color bar (right) of the view or null */
 	public volatile PlotLegend plotLegend;
 	public volatile PlotLegend plotColorBar;
@@ -840,7 +846,9 @@ public class SpatialStructure implements KeyListener, MouseListener {
 			}
 			/* The title of the plot view at the top of the view */
 			String title = plotTitle;
-			if (plotView && title != null && !title.isBlank() && scene != null) {
+			if (title != null && !title.isBlank() && scene != null) {
+				scene.setTextColors(plotTextColors);
+				scene.setFonts(plotFonts);
 				scene.drawPlotTitle(gl, title, width, height, canvasPixelScale, plotFontScales[0]);
 			} else if (scene != null) {
 				scene.noPlotTitle();
@@ -848,6 +856,8 @@ public class SpatialStructure implements KeyListener, MouseListener {
 			/* The legend and the color bar */
 			PlotLegend legend = plotLegend, colorBar = plotColorBar;
 			if ((legend != null || colorBar != null) && scene != null) {
+				scene.setTextColors(plotTextColors);
+				scene.setFonts(plotFonts);
 				scene.drawLegends(gl, legend, colorBar, width, height, canvasPixelScale, plotFontScales[3]);
 			}
 
@@ -1000,6 +1010,13 @@ public class SpatialStructure implements KeyListener, MouseListener {
 			}
 
 			ecoMain();
+
+			/* A plot of the plot API (see Plot3D, also without a running model) */
+			try {
+				Plot3D.render(gl, glut, SpatialStructure.this);
+			} catch (RuntimeException e) {
+				e.printStackTrace();
+			}
 
 			/*
 			 * The iso surface and the transparent volume after the opaque objects, with
@@ -1870,6 +1887,9 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		plotLogAxes = new boolean[3];
 		plotNumberFormats = new String[3];
 		plotAxisRanges = null;
+		plotAxisCategories = new String[3][];
+		plotTextColors = new int[] { -1, -1, -1, -1 };
+		plotFonts = new String[4];
 		plotLegend = null;
 		plotColorBar = null;
 		plotFontScales = new float[] { 1, 1, 1, 1 };

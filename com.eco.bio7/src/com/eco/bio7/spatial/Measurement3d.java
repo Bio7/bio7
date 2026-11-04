@@ -2191,7 +2191,7 @@ public class Measurement3d {
 	 * Opens the table below the 3D view (in a new stack) if it is in the stack of
 	 * the 3D view (else the 3D view is hidden and not rendered)!
 	 */
-	private static void keep3dViewVisible(IWorkbenchWindow window, IWorkbenchPage page, IViewPart table) {
+	static void keep3dViewVisible(IWorkbenchWindow window, IWorkbenchPage page, IViewPart table) {
 		try {
 			MUIElement tableElement = sharedRef(table);
 			MUIElement spaceElement = sharedRef(page.findViewReference("com.eco.bio7.spatial"));

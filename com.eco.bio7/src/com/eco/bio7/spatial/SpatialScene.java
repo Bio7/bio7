@@ -514,11 +514,19 @@ public class SpatialScene {
 				for (double position : ticks[k]) {
 					double[] p = start[k].clone();
 					p[k] = position;
-					double v = Math.round(plotValue(grid, k, position, b) / step) * step;
-					String text = log ? formatLogValue(v, step, format) : formatPlotValue(v, step, format);
+					String[] categories = categories(grid, k);
+					String text;
+					if (categories != null) {
+						int c = (int) Math.round(plotValue(grid, k, position, b));
+						text = c >= 0 && c < categories.length ? categories[c] : "";
+					} else {
+						double v = Math.round(plotValue(grid, k, position, b) / step) * step;
+						text = log ? formatLogValue(v, step, format) : formatPlotValue(v, step, format);
+					}
 					longest = Math.max(longest, text.length());
 					drawPlotText(gl, text, p[0] + out[k][0] * tick * 4 * numberScale, p[1] + out[k][1] * tick * 4 * numberScale,
-							p[2] + out[k][2] * tick * 4 * numberScale, 0.5f * sizeFactor * numberScale);
+							p[2] + out[k][2] * tick * 4 * numberScale, 0.5f * sizeFactor * numberScale, textColor(grid.plotTextColors, 1),
+							family(grid.plotFonts, 1));
 				}
 				/* Long numbers (e.g., 1.34e10): the title of the axis farther away */
 				labelDistance = (10 + Math.max(0, longest - 4) * 0.8) * numberScale + 4 * (titleScaleFactor - 1);
@@ -527,14 +535,23 @@ public class SpatialScene {
 				double[] p = start[k].clone();
 				p[k] = (min + max) / 2;
 				double d = tick * (numbers ? labelDistance : 3);
-				String name = titles != null && k < titles.length && titles[k] != null && !titles[k].isBlank() ? titles[k]
-						: names[k];
+				/* null: X, Y, Z, an empty title: no title */
+				String name = titles != null && k < titles.length && titles[k] != null ? titles[k] : names[k];
+				if (name.isBlank()) {
+					continue;
+				}
 				/* A long title is smaller */
 				float titleScale = name.length() > 3 ? 0.62f : 0.7f;
 				drawPlotText(gl, name, p[0] + out[k][0] * d, p[1] + out[k][1] * d, p[2] + out[k][2] * d,
-						titleScale * sizeFactor * titleScaleFactor);
+						titleScale * sizeFactor * titleScaleFactor, textColor(grid.plotTextColors, 2), family(grid.plotFonts, 2));
 			}
 		}
+	}
+
+	/* The categories of an axis (only for the data of a model) or null */
+	static String[] categories(SpatialStructure grid, int axis) {
+		String[][] c = grid.plotAxisCategories;
+		return c != null && axis < c.length && c[axis] != null && grid.getTextureExtent() == null ? c[axis] : null;
 	}
 
 	/* True if the axis is logarithmic (only for the data of a model, not for images) */
@@ -612,6 +629,16 @@ public class SpatialScene {
 		double step = tickStep(grid, axis, Math.abs(valueB - valueA));
 		double from = Math.min(valueA, valueB), to = Math.max(valueA, valueB);
 		java.util.List<Double> positions = new java.util.ArrayList<>();
+		/* The categories at 0, 1, 2, ... */
+		String[] categories = categories(grid, axis);
+		if (categories != null) {
+			for (int i = 0; i < categories.length; i++) {
+				if (i >= from - 1e-9 && i <= to + 1e-9) {
+					positions.add(min + (i - valueA) / (valueB - valueA) * (max - min));
+				}
+			}
+			return positions.stream().mapToDouble(Double::doubleValue).toArray();
+		}
 		for (double v = Math.ceil(from / step) * step; v <= to + step * 1e-6 && positions.size() < 1000; v += step) {
 			positions.add(min + (v - valueA) / (valueB - valueA) * (max - min));
 		}
@@ -686,7 +713,7 @@ public class SpatialScene {
 	}
 
 	/* A step of 1, 2 or 5 times a power of ten! */
-	private static double niceStep(double value) {
+	static double niceStep(double value) {
 		if (value <= 0 || Double.isNaN(value) || Double.isInfinite(value)) {
 			return 1;
 		}
@@ -798,6 +825,7 @@ public class SpatialScene {
 	/* The fonts of the legends (created with the scale of the view) */
 	private TextRenderer legendRenderer, legendTitleRenderer;
 	private float legendScale;
+	private String legendFamily;
 
 	/**
 	 * Draws the legend of categories (top left) and the color bar (right side
@@ -807,14 +835,16 @@ public class SpatialScene {
 		/* The size of the fonts and the layout: the scale of the screen and the font size */
 		float screenScale = pixelScale;
 		pixelScale *= fontScale;
-		if (legendRenderer == null || legendScale != pixelScale) {
+		String legendFont = family(fonts, 3);
+		if (legendRenderer == null || legendScale != pixelScale || !legendFont.equals(legendFamily)) {
 			if (legendRenderer != null) {
 				legendRenderer.dispose();
 				legendTitleRenderer.dispose();
 			}
 			legendScale = pixelScale;
-			legendRenderer = new TextRenderer(new Font("Verdana", Font.PLAIN, Math.max(8, Math.round(12 * pixelScale))), true, false);
-			legendTitleRenderer = new TextRenderer(new Font("Verdana", Font.BOLD, Math.max(8, Math.round(12 * pixelScale))), true, false);
+			legendFamily = legendFont;
+			legendRenderer = new TextRenderer(new Font(legendFont, Font.PLAIN, Math.max(8, Math.round(12 * pixelScale))), true, false);
+			legendTitleRenderer = new TextRenderer(new Font(legendFont, Font.BOLD, Math.max(8, Math.round(12 * pixelScale))), true, false);
 		}
 		float[] background = new float[4];
 		gl.glGetFloatv(GL.GL_COLOR_CLEAR_VALUE, background, 0);
@@ -958,7 +988,9 @@ public class SpatialScene {
 	/* A text in window coordinates (the baseline at y) */
 	private void text(TextRenderer r, String text, int x, int y, int width, int height) {
 		r.beginRendering(width, height);
-		r.setColor(colorCubeLines[0], colorCubeLines[1], colorCubeLines[2], colorCubeLines[3]);
+		/* The color of the legend */
+		float[] c = textColor(textColors, 3);
+		r.setColor(c[0], c[1], c[2], c[3]);
 		drawMath(r, parseMath(text), x, y, 1, r.getBounds("A").getHeight());
 		r.endRendering();
 	}
@@ -993,7 +1025,17 @@ public class SpatialScene {
 				String part;
 				int j;
 				if (text.charAt(i + 1) == '{') {
-					int close = text.indexOf('}', i + 2);
+					/* The matching brace (nested braces, e.g., e^{-(x^{2})}) */
+					int close = -1;
+					for (int k = i + 2, depth = 1; k < n; k++) {
+						char ch = text.charAt(k);
+						if (ch == '{') {
+							depth++;
+						} else if (ch == '}' && --depth == 0) {
+							close = k;
+							break;
+						}
+					}
 					if (close < 0) {
 						b.append(c);
 						i++;
@@ -1072,6 +1114,7 @@ public class SpatialScene {
 	/* The font of the title of the plot view (created with the scale of the view) */
 	private TextRenderer titleRenderer;
 	private float titleScale;
+	private String titleFamily;
 	/* The height of the title drawn in the current frame (the legend is drawn below) */
 	private int titleHeight;
 
@@ -1087,16 +1130,19 @@ public class SpatialScene {
 	public void drawPlotTitle(GL2 gl, String title, int width, int height, float pixelScale, float fontScale) {
 		float screenScale = pixelScale;
 		pixelScale *= fontScale;
-		if (titleRenderer == null || titleScale != pixelScale) {
+		String titleFont = family(fonts, 0);
+		if (titleRenderer == null || titleScale != pixelScale || !titleFont.equals(titleFamily)) {
 			if (titleRenderer != null) {
 				titleRenderer.dispose();
 			}
 			titleScale = pixelScale;
-			titleRenderer = new TextRenderer(new Font("Verdana", Font.BOLD, Math.max(10, Math.round(16 * pixelScale))), true, false);
+			titleFamily = titleFont;
+			titleRenderer = new TextRenderer(new Font(titleFont, Font.BOLD, Math.max(10, Math.round(16 * pixelScale))), true, false);
 		}
 		String[] lines = title.split("\n");
 		titleRenderer.beginRendering(width, height);
-		titleRenderer.setColor(colorCubeLines[0], colorCubeLines[1], colorCubeLines[2], colorCubeLines[3]);
+		float[] titleColor = textColor(textColors, 0);
+		titleRenderer.setColor(titleColor[0], titleColor[1], titleColor[2], titleColor[3]);
 		double lineHeight = titleRenderer.getBounds("Ag").getHeight() * 1.3;
 		double ascent = titleRenderer.getBounds("A").getHeight();
 		for (int i = 0; i < lines.length; i++) {
@@ -1109,8 +1155,70 @@ public class SpatialScene {
 		titleHeight = (int) Math.round(12 * screenScale + lines.length * lineHeight);
 	}
 
+	/* The colors of the texts of the plot view (title, numbers, axis titles, legend; -1 = the color of the lines) */
+	private int[] textColors;
+
+	void setTextColors(int[] colors) {
+		this.textColors = colors;
+	}
+
+	/* The color of a text (the slot of the colors or the color of the lines) */
+	float[] textColor(int[] colors, int slot) {
+		if (colors != null && slot < colors.length && colors[slot] >= 0) {
+			int rgb = colors[slot];
+			return new float[] { ((rgb >> 16) & 0xff) / 255f, ((rgb >> 8) & 0xff) / 255f, (rgb & 0xff) / 255f, 1 };
+		}
+		return colorCubeLines.clone();
+	}
+
+	/* A text at a position facing the camera (centered) with a color! */
+	void drawPlotText(GL2 gl, String text, double x, double y, double z, float scale, float[] color) {
+		drawPlotText(gl, text, x, y, z, scale, color, null);
+	}
+
+	/* A text at a position facing the camera with a color and a font family (null = the default font) */
+	void drawPlotText(GL2 gl, String text, double x, double y, double z, float scale, float[] color, String family) {
+		float[] previous = drawColor;
+		String previousFont = drawFont;
+		drawColor = color;
+		drawFont = family;
+		drawPlotText(gl, text, x, y, z, scale);
+		drawColor = previous;
+		drawFont = previousFont;
+	}
+
+	/* The font family of drawPlotText (null = the default font) */
+	private String drawFont;
+	/* The renderers of the 3D texts with other font families (the same size and style as the default) */
+	private final java.util.Map<String, TextRenderer> plotRenderers = new java.util.HashMap<>();
+
+	private TextRenderer plotRenderer(String family) {
+		if (family == null || family.equals(DEFAULT_FONT)) {
+			return renderer;
+		}
+		return plotRenderers.computeIfAbsent(family, f -> new TextRenderer(new Font(f, Font.BOLD, 22), true, false));
+	}
+
+	/* The default font of the plot texts */
+	static final String DEFAULT_FONT = "Verdana";
+
+	/* The font families of the plot texts (title, numbers, axis titles, legend; null = the default) */
+	private String[] fonts;
+
+	void setFonts(String[] fonts) {
+		this.fonts = fonts;
+	}
+
+	/* The font family of a slot (the default if none is set) */
+	static String family(String[] fonts, int slot) {
+		return fonts != null && slot < fonts.length && fonts[slot] != null && !fonts[slot].isBlank() ? fonts[slot] : DEFAULT_FONT;
+	}
+
+	/* The color of drawPlotText (null = the color of the lines) */
+	private float[] drawColor;
+
 	/* A text at a position facing the camera (centered)! */
-	private void drawPlotText(GL2 gl, String text, double x, double y, double z, float scale) {
+	void drawPlotText(GL2 gl, String text, double x, double y, double z, float scale) {
 		gl.glPushMatrix();
 		gl.glTranslated(x, y, z);
 		float[] mv = new float[16];
@@ -1127,15 +1235,16 @@ public class SpatialScene {
 		mv[9] = 0;
 		mv[10] = scaleView;
 		gl.glLoadMatrixf(mv, 0);
-		renderer.begin3DRendering();
-		renderer.setColor(colorCubeLines[0], colorCubeLines[1], colorCubeLines[2], colorCubeLines[3]);
+		TextRenderer r = plotRenderer(drawFont);
+		r.begin3DRendering();
+		float[] c = drawColor != null ? drawColor : colorCubeLines;
+		r.setColor(c[0], c[1], c[2], c[3]);
 		/* A text with superscripts and subscripts (see parseMath) */
 		java.util.List<Segment> segments = parseMath(text);
-		double ascent = renderer.getBounds("A").getHeight();
-		double textWidth = mathWidth(renderer, segments);
-		drawMath(renderer, segments, (float) (-textWidth / 2 * scale), (float) (-renderer.getBounds("Ag").getHeight() / 3 * scale), scale,
-				ascent);
-		renderer.end3DRendering();
+		double ascent = r.getBounds("A").getHeight();
+		double textWidth = mathWidth(r, segments);
+		drawMath(r, segments, (float) (-textWidth / 2 * scale), (float) (-r.getBounds("Ag").getHeight() / 3 * scale), scale, ascent);
+		r.end3DRendering();
 		gl.glPopMatrix();
 	}
 

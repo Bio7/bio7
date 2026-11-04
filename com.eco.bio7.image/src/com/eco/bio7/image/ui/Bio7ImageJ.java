@@ -350,17 +350,46 @@ public class Bio7ImageJ implements ImageJHost, ImageListener {
 		}
 	}
 
+	/* The images which are moved into views (opened in a burst, e.g., Stack to Images) */
+	private static final java.util.List<ImagePlus> pendingViews = new java.util.ArrayList<>();
+
 	@Override
 	public void imageOpened(ImagePlus imp) {
 		if (!ImageJWindowAction.isOpenImagesAsViews()) {
 			return;
 		}
-		/* Opened in a tab of the ImageJ-Canvas view. Moved into a view (see the Window menu)! */
-		Util.getDisplay().asyncExec(() -> {
-			if (getTab(imp) != null && imp.getWindow() != null && !imp.getWindow().isClosed()) {
-				ImageJWindowAction.openAsView(imp);
-			}
-		});
+		/*
+		 * Opened in a tab of the ImageJ-Canvas view. Moved into a view (see the Window
+		 * menu). The images opened in a burst are moved together (faster, only the
+		 * last view is activated)!
+		 */
+		synchronized (pendingViews) {
+			pendingViews.add(imp);
+		}
+		/*
+		 * The views are opened when no image was opened for a short time (the timer
+		 * is started again for each image, e.g., Stack to Images opens the images one
+		 * after the other in the UI thread)!
+		 */
+		Display display = Util.getDisplay();
+		display.asyncExec(() -> display.timerExec(OPEN_VIEWS_DELAY, OPEN_PENDING_VIEWS));
+	}
+
+	/* The time without a new image before the pending images are moved into views (ms) */
+	private static final int OPEN_VIEWS_DELAY = 40;
+	private static final Runnable OPEN_PENDING_VIEWS = Bio7ImageJ::openPendingViews;
+
+	/* Moves the pending images into views (in the UI thread) */
+	private static void openPendingViews() {
+		java.util.List<ImagePlus> images;
+		synchronized (pendingViews) {
+			images = new java.util.ArrayList<>(pendingViews);
+			pendingViews.clear();
+		}
+		images.removeIf(imp -> getTab(imp) == null || imp.getWindow() == null || imp.getWindow().isClosed());
+		if (!images.isEmpty()) {
+			ImageJWindowAction.openAsViews(images);
+		}
 	}
 
 	@Override

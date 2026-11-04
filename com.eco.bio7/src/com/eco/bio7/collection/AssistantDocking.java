@@ -66,8 +66,11 @@ public final class AssistantDocking {
 		}
 		installed = true;
 		/*
-		 * Show is sent before the shell of the plugin is displayed. The shell is made
-		 * transparent, so that it does not flash up before it is docked!
+		 * Show is sent before the shell of the plugin is displayed. The controls are
+		 * moved into the view at once (before the shell is displayed, also on slow
+		 * machines), the shell is transparent and (where the transparency is not
+		 * supported, e.g., X11 without a compositor) outside of the screens. The empty
+		 * shell is hidden later (it cannot be hidden while it is shown)!
 		 */
 		display.addFilter(SWT.Show, e -> {
 			if (e.widget instanceof Shell && isAssistant((Shell) e.widget)) {
@@ -75,7 +78,15 @@ public final class AssistantDocking {
 				if (s.getData(DOCKED) == null && s.getData(UNDOCKED) == null) {
 					s.setData(DOCKED, Boolean.TRUE);
 					s.setAlpha(0);
-					display.asyncExec(() -> dock(s));
+					Composite parent = moveControls(s);
+					if (parent != null) {
+						if (!"cocoa".equals(SWT.getPlatform())) {
+							/* macOS moves windows back onto the screen (the transparency works there) */
+							Rectangle screens = display.getBounds();
+							s.setBounds(screens.x + screens.width + 500, screens.y + screens.height + 500, 1, 1);
+						}
+						display.asyncExec(() -> dock(s, parent));
+					}
 				}
 			}
 		});
@@ -100,27 +111,24 @@ public final class AssistantDocking {
 		return title.startsWith(TITLE_START) && title.endsWith(TITLE_END);
 	}
 
-	/* Moves the controls of the shell into a custom view! */
-	private static void dock(Shell s) {
-		if (s.isDisposed() || shell != null) {
-			return;
-		}
+	/*
+	 * Moves the controls of the shell into a custom view (in the Show event of the
+	 * shell, before it is displayed). Returns the composite of the view or null if
+	 * the assistant stays a window!
+	 */
+	private static Composite moveControls(Shell s) {
 		Control[] children = s.getChildren();
+		boolean movable = shell == null || shell.isDisposed();
 		for (Control c : children) {
-			if (!c.isReparentable()) {
-				/* The platform cannot move the controls, the assistant stays a window! */
-				s.setData(UNDOCKED, Boolean.TRUE);
-				s.setData(DOCKED, null);
-				s.setAlpha(255);
-				return;
-			}
+			/* The platform cannot move the controls, the assistant stays a window! */
+			movable &= c.isReparentable();
 		}
-		Composite parent = new CustomView().getComposite(VIEW_NAME, s.getImage());
+		Composite parent = movable ? new CustomView().getComposite(VIEW_NAME, s.getImage()) : null;
 		if (parent == null) {
 			s.setData(UNDOCKED, Boolean.TRUE);
 			s.setData(DOCKED, null);
 			s.setAlpha(255);
-			return;
+			return null;
 		}
 		Layout layout = s.getLayout();
 		parent.setLayout(layout);
@@ -128,10 +136,19 @@ public final class AssistantDocking {
 		for (Control c : children) {
 			c.setParent(parent);
 		}
+		parent.layout(true, true);
+		return parent;
+	}
+
+	/* Hides the empty shell and connects the view with the shell of the plugin! */
+	private static void dock(Shell s, Composite parent) {
+		if (s.isDisposed() || parent.isDisposed()) {
+			return;
+		}
+		Control[] children = parent.getChildren();
 		s.setVisible(false);
 		shell = s;
 		content = parent;
-		parent.layout(true, true);
 
 		Listener sync = e -> syncBounds();
 		parent.addListener(SWT.Resize, sync);

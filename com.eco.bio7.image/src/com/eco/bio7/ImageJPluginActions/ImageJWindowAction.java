@@ -238,11 +238,15 @@ public class ImageJWindowAction extends Action implements IMenuCreator {
 
 					}
 				});
+				/* Arranges the floating windows of the image views */
+				new MenuItem(fMenu, SWT.SEPARATOR);
+				addArrangeItem(fMenu, "Cascade Image Views", false);
+				addArrangeItem(fMenu, "Tile Image Views", true);
 				MenuItem[] menuItems = fMenu.getItems();
-				int defaultMenuEntries = 6;
+				int defaultMenuEntries = 9;
 				/*If we use the plugin in the Bio7 RCP!*/
 				if (bio7RCP) {
-					defaultMenuEntries = 7;
+					defaultMenuEntries = 10;
 				}
 				/* The kept check item shows the current preference (e.g., changed in the preferences)! */
 				for (int i = 0; i < defaultMenuEntries && i < menuItems.length; i++) {
@@ -345,6 +349,37 @@ public class ImageJWindowAction extends Action implements IMenuCreator {
 
 	}
 
+	/*
+	 * A menu item to arrange the floating image views: with several monitors a
+	 * submenu with the monitors (the order of the fullscreen), else on the monitor
+	 * of the workbench window!
+	 */
+	private static void addArrangeItem(Menu menu, String text, boolean tile) {
+		org.eclipse.swt.widgets.Display display = menu.getDisplay();
+		org.eclipse.swt.widgets.Monitor[] monitors = Fullscreen.getMonitors(display);
+		if (monitors.length < 2) {
+			MenuItem item = new MenuItem(menu, SWT.PUSH);
+			item.setText(text);
+			item.addListener(SWT.Selection, _ -> CustomDetachedImageJView.arrangeFloatingViews(tile));
+			return;
+		}
+		MenuItem item = new MenuItem(menu, SWT.CASCADE);
+		item.setText(text);
+		Menu sub = new Menu(menu);
+		item.setMenu(sub);
+		org.eclipse.swt.widgets.Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow() != null
+				? PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell()
+				: null;
+		org.eclipse.swt.widgets.Monitor current = shell != null ? shell.getMonitor() : null;
+		for (int i = 0; i < monitors.length; i++) {
+			org.eclipse.swt.widgets.Monitor monitor = monitors[i];
+			org.eclipse.swt.graphics.Rectangle b = monitor.getBounds();
+			MenuItem m = new MenuItem(sub, SWT.PUSH);
+			m.setText("Monitor " + (i + 1) + " (" + b.width + " \u00D7 " + b.height + (monitor.equals(current) ? ", main window" : "") + ")");
+			m.addListener(SWT.Selection, _ -> CustomDetachedImageJView.arrangeFloatingViews(tile, monitor));
+		}
+	}
+
 	/** The preference to open new images as views by default. */
 	public static final String OPEN_IMAGES_AS_VIEWS = "OPEN_IMAGES_AS_VIEWS";
 
@@ -361,21 +396,42 @@ public class ImageJWindowAction extends Action implements IMenuCreator {
 	 * thread.
 	 */
 	public static void openAsView(ImagePlus imp) {
-		if (!Activator.getDefault().getPreferenceStore().getBoolean("ENABLE_DETACHED_VIEW_WINDOWS")) {
-			CustomDetachedImageJView.detach(imp, null);
-			return;
-		}
+		openAsViews(java.util.List.of(imp));
+	}
+
+	/**
+	 * Opens images of the ImageJ-Canvas view in views (e.g., the images of Stack
+	 * to Images): the views are created together without a redraw of the
+	 * workbench window between the views and only the last view is activated.
+	 * Must be called in the SWT UI thread.
+	 */
+	public static void openAsViews(java.util.List<ImagePlus> images) {
+		boolean floating = Activator.getDefault().getPreferenceStore().getBoolean("ENABLE_DETACHED_VIEW_WINDOWS");
 		int openViews = 0;
 		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		IWorkbenchPage page = window != null ? window.getActivePage() : null;
-		if (page != null) {
+		if (floating && page != null) {
 			for (IViewReference ref : page.getViewReferences()) {
 				if (CustomDetachedImageJView.ID.equals(ref.getId())) {
 					openViews++;
 				}
 			}
 		}
-		CustomDetachedImageJView.detach(imp, floatingBounds(openViews));
+		org.eclipse.swt.widgets.Shell shell = window != null ? window.getShell() : null;
+		boolean redraw = shell != null && images.size() > 1;
+		if (redraw) {
+			shell.setRedraw(false);
+		}
+		try {
+			for (int i = 0; i < images.size(); i++) {
+				boolean last = i == images.size() - 1;
+				CustomDetachedImageJView.detach(images.get(i), floating ? floatingBounds(openViews++) : null, last);
+			}
+		} finally {
+			if (redraw && !shell.isDisposed()) {
+				shell.setRedraw(true);
+			}
+		}
 	}
 
 	/* The location and size of the n-th floating image view (see the preferences)! */
