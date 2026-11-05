@@ -358,9 +358,26 @@ public final class ToolbarArtwork {
 			return;
 		}
 		sashPaints++;
-		gc.setClipping(area);
-		gc.drawImage(sashPicture, -o.x, -o.y);
-		gc.setClipping(clipping);
+		/*
+		 * Only the gaps, not below the views: GTK shows the container through the
+		 * transparent tool bars of a tab row (e.g., the minimize and maximize buttons,
+		 * the folder does not paint below its children), the band would be visible below
+		 * a tab row there
+		 */
+		org.eclipse.swt.graphics.Region gaps = new org.eclipse.swt.graphics.Region(container.getDisplay());
+		try {
+			gaps.add(area);
+			for (Control child : container.getChildren()) {
+				if (child.isVisible() && !(child instanceof org.eclipse.swt.widgets.Sash)) {
+					gaps.subtract(child.getBounds());
+				}
+			}
+			gc.setClipping(gaps);
+			gc.drawImage(sashPicture, -o.x, -o.y);
+		} finally {
+			gc.setClipping(clipping);
+			gaps.dispose();
+		}
 	}
 
 	/** True if the control (e.g., a tab folder) is directly below the main toolbar (no gap). */

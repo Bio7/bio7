@@ -808,10 +808,15 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 	@Override
 	public boolean performOk() {
 		saveCurrent();
-		/* The changes of the active theme are applied! */
-		CustomTheme active = ToolbarArtwork.getTheme();
-		if (active != null) {
-			CustomTheme saved = ThemeStore.find(active.getFolderName());
+		/*
+		 * The changes of the active theme are applied! The active theme of the
+		 * preferences (set at once), not the theme of the artwork: it is changed later
+		 * (asyncExec), e.g., after a default theme was activated and the dialog is
+		 * closed at once for the restart, the custom theme would be activated again
+		 */
+		String activeFolder = ThemeStore.activeFolder();
+		if (!activeFolder.isEmpty()) {
+			CustomTheme saved = ThemeStore.find(activeFolder);
 			if (saved != null) {
 				ThemeStore.activate(saved);
 			}

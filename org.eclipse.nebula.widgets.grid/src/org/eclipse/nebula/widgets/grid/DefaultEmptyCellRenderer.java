@@ -49,8 +49,9 @@ public class DefaultEmptyCellRenderer extends GridCellRenderer
         if (isSelected())
         {
         	boolean hasFocus = table.isFocusOnGrid();
-        	Color backgroundColor = hasFocus?getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION):getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW);
-            Color foregroundColor = hasFocus?getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT):getDisplay().getSystemColor(SWT.COLOR_BLACK);
+        	/*Changed for Bio7: the selection colors of a theme (see GridHeaderColors)!*/
+        	Color backgroundColor = GridHeaderColors.selection(hasFocus, hasFocus?getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION):getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW));
+            Color foregroundColor = GridHeaderColors.selectionText(hasFocus, hasFocus?getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT):getDisplay().getSystemColor(SWT.COLOR_BLACK));
         	gc.setBackground(backgroundColor);
             gc.setForeground(foregroundColor);
         }

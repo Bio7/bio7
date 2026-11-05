@@ -22,3 +22,12 @@
 @import url("platform:/plugin/com.eco.bio7.themes/css/dark/eclipse/e4-dark-drag-styling.css");
 @import url("platform:/plugin/com.eco.bio7.themes/css/dark/eclipse/e4-dark_linux_platform.css");
 @import url("platform:/plugin/com.eco.bio7.themes/css/dark/e4-dark_bio7.css");
+
+/*
+ * Linux: the editor area with the default tab height (-1, not 8px of the Eclipse
+ * dark theme): with the low tab row the minimize and maximize buttons (GTK)
+ * overlap the empty editor area (like the light theme for Linux)
+ */
+#org-eclipse-ui-editorss {
+	swt-tab-height: -1px;
+}

@@ -37,8 +37,9 @@ public class DefaultFocusRenderer extends AbstractRenderer
 
         if (item.getParent().isSelected(item))
         {
-            gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION));
-            gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT));
+            /*Changed for Bio7: the selection colors of a theme (see GridHeaderColors)!*/
+            gc.setBackground(org.eclipse.nebula.widgets.grid.GridHeaderColors.selection(true, getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION)));
+            gc.setForeground(org.eclipse.nebula.widgets.grid.GridHeaderColors.selectionText(true, getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT)));
         }
         else
         {

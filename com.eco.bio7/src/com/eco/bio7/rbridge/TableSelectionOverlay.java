@@ -35,8 +35,8 @@ import com.eco.bio7.themes.ThemeStore;
  * LibreOffice): a border around the selected cells (also several separate
  * ranges, selected with Ctrl/Cmd or Shift), a light fill and a handle at the
  * lower right corner of each range. The color is the accent color of the
- * active custom theme (the icon color) or a blue for the light and the dark
- * theme.
+ * active custom theme (the icon color), a blue for the light theme or a grey
+ * for the dark theme.
  */
 public final class TableSelectionOverlay {
 
@@ -70,7 +70,8 @@ public final class TableSelectionOverlay {
 		try {
 			org.eclipse.e4.ui.css.swt.theme.IThemeEngine engine = ThemeStore.engine();
 			org.eclipse.e4.ui.css.swt.theme.ITheme active = engine != null ? engine.getActiveTheme() : null;
-			dark = active != null && active.getId().contains("dark");
+			/* The theme of the preferences if the engine has no active theme yet (e.g., at the start) */
+			dark = active != null ? active.getId().contains("dark") : com.eco.bio7.util.Util.isDarkTheme();
 			if (active != null && CustomTheme.isCustomThemeId(active.getId())) {
 				CustomTheme theme = ThemeStore.find(CustomTheme.folderOf(active.getId()));
 				if (theme != null) {
@@ -81,8 +82,12 @@ public final class TableSelectionOverlay {
 			/* The system color */
 		}
 		if (rgb == null) {
-			/* A strong blue (the selection colors of the systems are too light for a border) */
-			rgb = dark ? new RGB(0x5A, 0xA0, 0xFF) : new RGB(0x1E, 0x66, 0xD0);
+			/*
+			 * The dark theme: a light grey (like the grey selection of the cells), the
+			 * light theme: a strong blue (the selection colors of the system are too light
+			 * for a border)
+			 */
+			rgb = dark ? new RGB(0xA8, 0xAC, 0xB2) : new RGB(0x1E, 0x66, 0xD0);
 		}
 		if (color == null || !rgb.equals(colorRgb)) {
 			color = new Color(display, rgb);

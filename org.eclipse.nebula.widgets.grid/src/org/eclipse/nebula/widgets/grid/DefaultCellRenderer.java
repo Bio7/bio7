@@ -258,7 +258,8 @@ public class DefaultCellRenderer extends GridCellRenderer {
 			Rectangle focusRect = new Rectangle(getBounds().x, getBounds().y, getBounds().width - 1,
 					getBounds().height);
 
-			gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
+			/*Changed for Bio7: the selection text color of a theme (the list foreground is black in the dark theme on Windows)!*/
+			gc.setForeground(GridHeaderColors.selectionText(true, getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND)));
 			gc.drawRectangle(focusRect);
 
 			if (isFocus()) {

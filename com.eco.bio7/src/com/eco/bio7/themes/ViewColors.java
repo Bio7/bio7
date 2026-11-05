@@ -46,6 +46,8 @@ final class ViewColors {
 
 	/* Colors the views when they are visible (in all workbench windows) */
 	static void install() {
+		/* Windows: the separators with a grey line in a dark theme (the native line is white) */
+		SeparatorColors.install();
 		if (installed || !PlatformUI.isWorkbenchRunning()) {
 			return;
 		}
@@ -155,7 +157,8 @@ final class ViewColors {
 			/* The selection with the focus: stronger (towards the text color) */
 			GridHeaderColors.setSelectionColors(mix(inactive, text, 0.2), text, inactive, text, mix(header, inactive, 0.7),
 					mix(inactive, text, 0.35));
-		} else if (com.eco.bio7.util.Util.isThemeBlack()) {
+		} else if (com.eco.bio7.util.Util.isDarkTheme()) {
+			/* The theme of the preferences (the active theme of the engine is not known yet at the start) */
 			GridHeaderColors.setSelectionColors(new RGB(0x50, 0x55, 0x5c), new RGB(0xf0, 0xf0, 0xf0), new RGB(0x3c, 0x3f, 0x44),
 					new RGB(0xcc, 0xcc, 0xcc), new RGB(0x46, 0x4a, 0x50), new RGB(0x62, 0x67, 0x6e));
 			/* The lines between the cells: not the light background of the system */

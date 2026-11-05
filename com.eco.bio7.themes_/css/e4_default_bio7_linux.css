@@ -285,6 +285,8 @@ background-color: #ffffff;
 /*No fixed tab height on GTK: the minimize/maximize toolbar of the empty editor area is higher!*/
 #org-eclipse-ui-editorss {
 	padding: 0.0px 5.0px 7.0px;
+	/* The default tab height again after the dark theme (8px, see e4-dark.css) */
+	swt-tab-height: -1px;
 }
 
 /*The colour for all view toolbars. Not set!*/

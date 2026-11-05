@@ -71,7 +71,11 @@ public class ThemeTabRendering extends Bio7TabRendering {
 	@Override
 	protected void draw(int part, int state, Rectangle bounds, GC gc) {
 		CustomTheme theme = ToolbarArtwork.getTheme();
-		boolean translucent = theme != null && theme.getTabSelectedOpacity() < 100;
+		/*
+		 * Not on GTK: the offscreen tab (see drawTranslucentTab) is not painted there
+		 * (the selected tab is invisible or partly painted), the tab is opaque
+		 */
+		boolean translucent = theme != null && theme.getTabSelectedOpacity() < 100 && !GTK;
 		if (part >= 0 && (state & SWT.SELECTED) != 0 && translucent) {
 			drawTranslucentTab(part, state, bounds, gc, theme.getTabSelectedOpacity());
 		} else {
@@ -300,6 +304,18 @@ public class ThemeTabRendering extends Bio7TabRendering {
 		boolean onBottom = folder.getTabPosition() == SWT.BOTTOM;
 		Rectangle header = new Rectangle(0, onBottom ? size.y - height : 0, size.x, height);
 		Rectangle area = header.intersection(bounds);
+		/*
+		 * Not over the content of the folder (the picture is a little higher than the
+		 * tab row): the content covers it, but not below the transparent tool bars of
+		 * the folder on GTK (e.g., the minimize and maximize buttons of the empty editor
+		 * area), there the lower rows of the picture would be visible
+		 */
+		if (!onBottom && folder.getItemCount() == 0) {
+			int contentTop = folder.getClientArea().y;
+			if (contentTop > header.y) {
+				area = area.intersection(new Rectangle(header.x, header.y, header.width, contentTop - header.y));
+			}
+		}
 		if (area.isEmpty()) {
 			return;
 		}
@@ -332,7 +348,14 @@ public class ThemeTabRendering extends Bio7TabRendering {
 		gc.drawImage(picture, header.x, header.y);
 		gc.setClipping(clipping);
 		/* The part of the tab row with the picture (the controls of the tab row paint only this part) */
-		this.paintedArea = header.equals(this.header) && paintedArea != null ? paintedArea.union(area) : area;
+		/*
+		 * The background of the whole tab row (the widest part, not the union of all
+		 * parts: it would keep a former higher tab row, e.g., after the tab height
+		 * was changed, and the tool bars would paint the picture below the tab row)
+		 */
+		if (!header.equals(this.header) || paintedArea == null || area.width >= paintedArea.width) {
+			this.paintedArea = area;
+		}
 		this.header = header;
 		/* A tab row of the band directly below the toolbar (see paintTopEdge) */
 		continuousTop = band != null && !ToolbarArtwork.isBelowBand(folder) && ToolbarArtwork.isBelowToolbar(folder);
@@ -424,7 +447,13 @@ public class ThemeTabRendering extends Bio7TabRendering {
 				 * picture (e.g., a light line of the artwork). Below it is transparent!
 				 */
 				Rectangle visible = paintedArea != null ? paintedArea.intersection(header) : header;
-				if (!visible.isEmpty()) {
+				/*
+				 * GTK: the tool bars of the folder (e.g., minimize and maximize) are transparent
+				 * and show the tab row of the folder (also the lines of the renderer painted
+				 * over the picture, which a copy of the picture would cover)
+				 */
+				boolean folderToolBar = GTK && control instanceof ToolBar && control.getParent() == folder;
+				if (!visible.isEmpty() && !folderToolBar) {
 					Rectangle clipping = event.gc.getClipping();
 					event.gc.setClipping(clipping.intersection(new Rectangle(visible.x - p.x, visible.y - p.y, visible.width, visible.height)));
 					event.gc.drawImage(picture, header.x - p.x, header.y - p.y);
@@ -453,9 +482,14 @@ public class ThemeTabRendering extends Bio7TabRendering {
 		}
 	}
 
+	/* GTK (not Windows: there a tool bar gets the part of the picture as its background image, see setPart) */
 	private static void transparent(ToolBar toolBar) {
 		if (toolBar.isDisposed()) {
 			return;
+		}
+		/* The tiled background image of the folder (a tab row with a gradient, see Bio7TabRendering.transparent) */
+		if (toolBar.getBackgroundImage() != null) {
+			toolBar.setBackgroundImage(null);
 		}
 		Color color = toolBar.getBackground();
 		if (color == null || color.getAlpha() != 0) {
@@ -554,6 +588,20 @@ public class ThemeTabRendering extends Bio7TabRendering {
 			}
 		}
 		return false;
+	}
+
+	/*
+	 * The tab row as the folder shows it: the part painted with the picture (it
+	 * ends a little above the tab height, see Bio7TabRendering.keepInTabRow)
+	 */
+	@Override
+	protected int tabRowBottom() {
+		int bottom = super.tabRowBottom();
+		Rectangle area = paintedArea;
+		if (area != null && header != null && header.y == 0 && !area.isEmpty()) {
+			bottom = Math.min(bottom, area.y + area.height);
+		}
+		return bottom;
 	}
 
 	/* Another renderer (e.g., another theme): the picture is not painted anymore */

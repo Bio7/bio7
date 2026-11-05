@@ -83,26 +83,47 @@ public class Bio7TabRendering extends CTabRendering {
 		});
 	}
 
-	/* The tool bar ends at the bottom of the tab row (it keeps its preferred height) */
+	/**
+	 * The bottom of the visible tab row in the folder (the tool bars of the folder
+	 * end there).
+	 */
+	protected int tabRowBottom() {
+		return folder.getTabHeight() + 1;
+	}
+
+	/*
+	 * The tool bar ends at the bottom of the tab row: moved up if it is higher than
+	 * the space below its position, cut if it is higher than the tab row (e.g.,
+	 * the padding of the buttons of GTK)
+	 */
 	private void keepInTabRow(ToolBar toolBar) {
 		if (toolBar.isDisposed() || toolBar.getData(KEPT) != this || folder.isDisposed() || folder.getTabPosition() != SWT.TOP
 				|| folder.getItemCount() > 0) {
 			return;
 		}
-		int tabRowBottom = folder.getTabHeight() + 1;
+		int bottom = tabRowBottom();
 		Rectangle bounds = toolBar.getBounds();
-		if (bounds.y + bounds.height <= tabRowBottom || bounds.y >= tabRowBottom) {
+		if (bottom <= 0 || bounds.y + bounds.height <= bottom || bounds.y >= bottom) {
 			return;
 		}
 		int preferred = toolBar.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
-		int height = Math.max(preferred, tabRowBottom - bounds.y);
-		int y = Math.max(0, tabRowBottom - height);
+		int height = Math.min(Math.max(preferred, bottom - bounds.y), bottom);
+		int y = bottom - height;
 		if (y != bounds.y || height != bounds.height) {
 			toolBar.setBounds(bounds.x, y, bounds.width, height);
 		}
 	}
 
+	/*
+	 * The folder gives its tool bars the background of the tab row: with a
+	 * gradient (e.g., the dark themes) as a tiled background image (see
+	 * CTabFolder.updateBkImages), which is drawn over the transparent color (a
+	 * block of the tab row color below the buttons), else as a color
+	 */
 	private static void transparent(ToolBar toolBar) {
+		if (toolBar.getBackgroundImage() != null) {
+			toolBar.setBackgroundImage(null);
+		}
 		Color color = toolBar.getBackground();
 		if (color == null || color.getAlpha() != 0) {
 			toolBar.setBackground(TRANSPARENT);

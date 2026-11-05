@@ -455,6 +455,9 @@ public final class ThemeStore {
 				removeEditorBackground();
 				ViewColors.apply();
 				flush();
+			} else {
+				/* Between the default themes (e.g., the grid selection of the dark theme) after the theme was changed */
+				org.eclipse.swt.widgets.Display.getDefault().asyncExec(ViewColors::apply);
 			}
 		});
 	}
