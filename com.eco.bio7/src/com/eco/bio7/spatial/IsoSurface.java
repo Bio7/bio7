@@ -77,7 +77,13 @@ public class IsoSurface {
 	private int nz;
 	private float stepX = 1;
 	private float stepY = 1;
-	private float stepZ = 1; // with the calibrated voxel depth
+	private double stepZ = 1; // with the calibrated voxel depth (double: the exact calibration)
+	/* The depth of a voxel relative to its width (the calibration of the stack) */
+	private double voxelDepth = 1;
+	/* The resolution of the measured surface (1 = the voxels of the stack, 2 - 4 = an upsampled stack) */
+	private int measureResolution = 1;
+	/* The largest number of voxels of an upsampled stack for the measurements */
+	private static final long MAX_MEASURE_VOXELS = 256L * 1024 * 1024;
 	private float width;
 	private float height;
 	private float depth;
@@ -227,7 +233,8 @@ public class IsoSurface {
 			nz = td;
 			stepX = sx;
 			stepY = sy;
-			stepZ = (float) (sz * voxelDepth);
+			stepZ = sz * voxelDepth;
+			this.voxelDepth = voxelDepth;
 			width = w;
 			height = h;
 			depth = (float) (d * voxelDepth);
@@ -262,6 +269,14 @@ public class IsoSurface {
 	}
 
 	/* The values of a channel (current frame) of a stack with a reduced resolution! */
+	/**
+	 * The gray value of an RGB pixel for the iso surface and the measurements (the
+	 * luminance 0.299 R + 0.587 G + 0.114 B).
+	 */
+	static float luminance(int c) {
+		return (float) (0.299 * ((c >> 16) & 0xff) + 0.587 * ((c >> 8) & 0xff) + 0.114 * (c & 0xff));
+	}
+
 	private static float[] readChannel(ImagePlus imp, int channel, int sx, int sy, int sz, int tw, int th,
 			int td) {
 		float[] values = new float[tw * th * td];
@@ -276,7 +291,7 @@ public class IsoSurface {
 					float value;
 					if (rgb) {
 						int c = ip.getPixel(x * sx, y * sy);
-						value = (float) (0.299 * ((c >> 16) & 0xff) + 0.587 * ((c >> 8) & 0xff) + 0.114 * (c & 0xff));
+						value = luminance(c);
 					} else {
 						value = ip.getf(x * sx, y * sy);
 					}
@@ -397,7 +412,8 @@ public class IsoSurface {
 			nz = d;
 			stepX = 1;
 			stepY = 1;
-			stepZ = (float) voxelDepth;
+			stepZ = voxelDepth;
+			this.voxelDepth = voxelDepth;
 			width = w;
 			height = h;
 			depth = (float) (d * voxelDepth);
@@ -702,43 +718,60 @@ public class IsoSurface {
 	 */
 	MeasureData getMeasurementData() {
 		MeasureData display = getMeasureData();
-		if (display == null || !isReduced()) {
+		int resolution;
+		synchronized (this) {
+			resolution = meshOnly ? 1 : measureResolution;
+		}
+		if (display == null || (!isReduced() && resolution == 1)) {
 			return display;
 		}
 		ImagePlus imp;
 		double iso;
 		float sigma;
 		int iterations;
-		float voxelDepth;
+		double voxelDepth;
 		synchronized (this) {
 			imp = image;
 			iso = isoValue;
 			/* The smoothing in voxels of the stack */
 			sigma = smoothing;
 			iterations = meshSmoothing;
-			voxelDepth = depth / imp.getNSlices();
+			voxelDepth = this.voxelDepth;
 		}
-		Cut cut = currentCut(1, 1, voxelDepth);
-		List<Object> key = new ArrayList<>(List.of(imp, imp.getChannel(), imp.getFrame(), iso, sigma, iterations));
+		if (imp == null) {
+			return display;
+		}
+		int w = imp.getWidth(), h = imp.getHeight(), d = imp.getNSlices();
+		/* The resolution which fits into the memory (the upsampled stack) */
+		while (resolution > 1 && (long) w * h * d * resolution * resolution * resolution > MAX_MEASURE_VOXELS) {
+			resolution--;
+		}
+		int f = resolution;
+		Cut cut = currentCut(1f / f, 1f / f, (float) (voxelDepth / f));
+		List<Object> key = new ArrayList<>(List.of(imp, imp.getChannel(), imp.getFrame(), iso, sigma, iterations, f));
 		key.addAll(cut.key);
 		synchronized (this) {
 			if (fullData != null && key.equals(fullKey)) {
 				return fullData;
 			}
 		}
-		int w = imp.getWidth(), h = imp.getHeight(), d = imp.getNSlices();
 		float[] values = readChannel(imp, imp.getChannel(), 1, 1, 1, w, h, d);
-		Mesh mesh = computeMesh(values, w, h, d, iso, sigma, iterations, cut);
+		if (f > 1) {
+			values = upsample(values, w, h, d, f);
+		}
+		/* The smoothing in voxels of the stack: in voxels of the upsampled stack */
+		Mesh mesh = computeMesh(values, w * f, h * f, d * f, iso, sigma * f, iterations, cut);
 		MeasureData m = new MeasureData();
 		m.vertices = mesh.vertices;
 		m.triangles = mesh.triangles;
 		m.data = values;
-		m.nx = w;
-		m.ny = h;
-		m.nz = d;
-		m.stepX = 1;
-		m.stepY = 1;
-		m.stepZ = voxelDepth;
+		m.nx = w * f;
+		m.ny = h * f;
+		m.nz = d * f;
+		m.stepX = 1.0 / f;
+		m.stepY = 1.0 / f;
+		m.stepZ = voxelDepth / f;
+		m.resolution = f;
 		m.pixelSize = display.pixelSize;
 		m.unit = display.unit;
 		m.isoValue = iso;
@@ -750,6 +783,81 @@ public class IsoSurface {
 			}
 		}
 		return m;
+	}
+
+	/**
+	 * Sets the resolution of the measured surface: 1 measures the iso surface of
+	 * the voxels of the stack (the default), 2 - 4 the iso surface of the stack
+	 * upsampled with cubic interpolation (Catmull-Rom) by this factor in x, y and z
+	 * (more accurate for small objects of a few voxels, the display is not
+	 * changed). The factor is reduced if the upsampled stack would be too large.
+	 *
+	 * @param resolution the factor (1 - 4)
+	 */
+	public void setMeasureResolution(int resolution) {
+		synchronized (this) {
+			int r = Math.max(1, Math.min(4, resolution));
+			if (r != measureResolution) {
+				measureResolution = r;
+				fullData = null;
+				fullKey = null;
+			}
+		}
+	}
+
+	/** Returns the resolution of the measured surface (see setMeasureResolution). */
+	public synchronized int getMeasureResolution() {
+		return measureResolution;
+	}
+
+	/*
+	 * The stack upsampled by the factor with cubic convolution (Catmull-Rom,
+	 * separable, interpolating: the values of the voxels are kept; clamped at the
+	 * borders). The voxel j of the upsampled stack is at the position (j + 0.5) / f
+	 * - 0.5 of the stack (the same extent). The cubic interpolation reconstructs
+	 * curved surfaces better than the trilinear interpolation (small objects)!
+	 */
+	private static float[] upsample(float[] values, int w, int h, int d, int f) {
+		float[] a = values;
+		int[] size = { w, h, d };
+		for (int axis = 0; axis < 3; axis++) {
+			int n = size[axis], m = n * f;
+			/* The four source indices and weights of the positions of the axis */
+			int[][] index = new int[m][4];
+			double[][] weight = new double[m][4];
+			for (int j = 0; j < m; j++) {
+				double g = (j + 0.5) / f - 0.5;
+				int i0 = (int) Math.floor(g);
+				double t = g - i0;
+				weight[j][0] = ((-0.5 * t + 1.0) * t - 0.5) * t;
+				weight[j][1] = (1.5 * t - 2.5) * t * t + 1.0;
+				weight[j][2] = ((-1.5 * t + 2.0) * t + 0.5) * t;
+				weight[j][3] = (0.5 * t - 0.5) * t * t;
+				for (int k = 0; k < 4; k++) {
+					index[j][k] = Math.max(0, Math.min(n - 1, i0 - 1 + k));
+				}
+			}
+			int sx = axis == 0 ? m : size[0], sy = axis == 1 ? m : size[1], sz = axis == 2 ? m : size[2];
+			float[] b = new float[sx * sy * sz];
+			int ow = size[0], oh = size[1];
+			for (int z = 0; z < sz; z++) {
+				for (int y = 0; y < sy; y++) {
+					for (int x = 0; x < sx; x++) {
+						int j = axis == 0 ? x : axis == 1 ? y : z;
+						double v = 0;
+						for (int k = 0; k < 4; k++) {
+							int i = index[j][k];
+							int src = axis == 0 ? (z * oh + y) * ow + i : axis == 1 ? (z * oh + i) * ow + x : (i * oh + y) * ow + x;
+							v += weight[j][k] * a[src];
+						}
+						b[(z * sy + y) * sx + x] = (float) v;
+					}
+				}
+			}
+			size[axis] = m;
+			a = b;
+		}
+		return a;
 	}
 
 	/** Returns true if the display is reduced to the maximum size (see setMaxSize). */
@@ -823,6 +931,30 @@ public class IsoSurface {
 		}
 	}
 
+	/** Returns true while the surface is computed in the background (see update). */
+	public synchronized boolean isComputing() {
+		return dirty || (worker != null && worker.isAlive());
+	}
+
+	/**
+	 * Waits until the surface has been computed in the background, e.g., in a script
+	 * after load or setIsoValue.
+	 *
+	 * @param timeoutMillis the maximum time to wait
+	 * @return true if the surface is computed, false after the timeout
+	 * @throws InterruptedException if the thread is interrupted
+	 */
+	public boolean waitForSurface(long timeoutMillis) throws InterruptedException {
+		long end = System.currentTimeMillis() + timeoutMillis;
+		while (isComputing()) {
+			if (System.currentTimeMillis() > end) {
+				return false;
+			}
+			Thread.sleep(10);
+		}
+		return true;
+	}
+
 	private void computeLoop() {
 		while (true) {
 			float[] values;
@@ -872,7 +1004,7 @@ public class IsoSurface {
 		synchronized (this) {
 			sx = stepX;
 			sy = stepY;
-			sz = stepZ;
+			sz = (float) stepZ;
 		}
 		return currentCut(sx, sy, sz);
 	}
@@ -987,7 +1119,11 @@ public class IsoSurface {
 					for (float[] p : cut.planes) {
 						v = Math.min(v, (p[0] * x + p[1] * y + p[2] * z + p[3]) * slope);
 					}
-					if (maskField != null) {
+					/*
+					 * Only near the boundary of the mask: the kept voxels far from it (+1) don't
+					 * limit the values (else the surfaces of all objects would move)
+					 */
+					if (maskField != null && maskField[i] < 0.9999f) {
 						v = Math.min(v, maskField[i] * slope);
 					}
 					g[i++] = v + iso;
@@ -1265,6 +1401,23 @@ public class IsoSurface {
 	}
 
 	/* Trilinear interpolation (clamped at the borders)! */
+	/* Trilinear interpolation in double (for the measurements, clamped at the borders)! */
+	static double sampleDouble(float[] f, int w, int h, int d, double x, double y, double z) {
+		x = Math.max(0, Math.min(w - 1, x));
+		y = Math.max(0, Math.min(h - 1, y));
+		z = Math.max(0, Math.min(d - 1, z));
+		int x0 = (int) x, y0 = (int) y, z0 = (int) z;
+		int x1 = Math.min(w - 1, x0 + 1), y1 = Math.min(h - 1, y0 + 1), z1 = Math.min(d - 1, z0 + 1);
+		double tx = x - x0, ty = y - y0, tz = z - z0;
+		double c00 = f[(z0 * h + y0) * w + x0] * (1 - tx) + f[(z0 * h + y0) * w + x1] * tx;
+		double c10 = f[(z0 * h + y1) * w + x0] * (1 - tx) + f[(z0 * h + y1) * w + x1] * tx;
+		double c01 = f[(z1 * h + y0) * w + x0] * (1 - tx) + f[(z1 * h + y0) * w + x1] * tx;
+		double c11 = f[(z1 * h + y1) * w + x0] * (1 - tx) + f[(z1 * h + y1) * w + x1] * tx;
+		double c0 = c00 * (1 - ty) + c10 * ty;
+		double c1 = c01 * (1 - ty) + c11 * ty;
+		return c0 * (1 - tz) + c1 * tz;
+	}
+
 	static float sample(float[] f, int w, int h, int d, float x, float y, float z) {
 		x = Math.max(0, Math.min(w - 1, x));
 		y = Math.max(0, Math.min(h - 1, y));
@@ -1291,10 +1444,11 @@ public class IsoSurface {
 	/* A separable Gaussian filter (sigma in voxels, clamped at the borders)! */
 	private static float[] gaussian(float[] values, int w, int h, int d, float sigma) {
 		int radius = Math.max(1, (int) Math.ceil(2.5 * sigma));
-		float[] kernel = new float[2 * radius + 1];
-		float sum = 0;
+		/* The kernel and the sums in double (the result is stored as float) */
+		double[] kernel = new double[2 * radius + 1];
+		double sum = 0;
 		for (int i = -radius; i <= radius; i++) {
-			kernel[i + radius] = (float) Math.exp(-(i * i) / (2.0 * sigma * sigma));
+			kernel[i + radius] = Math.exp(-(i * i) / (2.0 * sigma * sigma));
 			sum += kernel[i + radius];
 		}
 		for (int i = 0; i < kernel.length; i++) {
@@ -1313,12 +1467,12 @@ public class IsoSurface {
 			for (int i = 0; i < a.length; i++) {
 				int pos = (i / stride) % n;
 				int base = i - pos * stride;
-				float value = 0;
+				double value = 0;
 				for (int k = -radius; k <= radius; k++) {
 					int p = Math.max(0, Math.min(n - 1, pos + k));
 					value += kernel[k + radius] * a[base + p * stride];
 				}
-				b[i] = value;
+				b[i] = (float) value;
 			}
 			float[] t = a;
 			a = b;
@@ -1542,7 +1696,7 @@ public class IsoSurface {
 			pos[i * 3] = (meshVertices[i * 3] + 0.5f) * stepX;
 			float y = (meshVertices[i * 3 + 1] + 0.5f) * stepY;
 			pos[i * 3 + 1] = flip ? y : height - y;
-			pos[i * 3 + 2] = (meshVertices[i * 3 + 2] + 0.5f) * stepZ;
+			pos[i * 3 + 2] = (meshVertices[i * 3 + 2] + 0.5f) * (float) stepZ;
 		}
 		int[] idx = meshTriangles.clone();
 		if (!flip) {
@@ -2320,7 +2474,8 @@ public class IsoSurface {
 		int[] triangles;
 		float[] data;
 		int nx, ny, nz;
-		float stepX, stepY, stepZ; // the size of a data voxel in pixels
+		double stepX, stepY, stepZ; // the size of a data voxel in pixels (z: with the calibrated voxel depth)
+		int resolution = 1; // the upsampling of the stack for the measurements (see setMeasureResolution)
 		double pixelSize;
 		String unit;
 		double isoValue;
@@ -2463,6 +2618,7 @@ public class IsoSurface {
 			stepX = 1;
 			stepY = 1;
 			stepZ = 1;
+			voxelDepth = 1;
 			width = w;
 			height = h;
 			depth = d;

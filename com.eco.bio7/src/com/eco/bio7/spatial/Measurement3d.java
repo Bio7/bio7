@@ -207,6 +207,9 @@ public class Measurement3d {
 			}
 			component[i] = index[root];
 		}
+		/* The inner surfaces (cavities) belong to the object which encloses them */
+		int[] surfaces = new int[count];
+		count = mergeCavities(p, t, component, count, surfaces);
 		double[] vol = new double[count], area = new double[count];
 		double[][] first = new double[count][3], second = new double[count][6];
 		double[][] min = new double[count][3], max = new double[count][3];
@@ -216,8 +219,8 @@ public class Measurement3d {
 			java.util.Arrays.fill(min[c], Double.MAX_VALUE);
 			java.util.Arrays.fill(max[c], -Double.MAX_VALUE);
 		}
-		/* The values one voxel inside of the surface (the normals point outside) */
-		float[] normals = IsoSurface.computeNormals(v, t);
+		/* The values one voxel inside of the surface (the normals point outside, in double) */
+		double[] normals = vertexNormals(v, t);
 		for (int i = 0; i < nv; i++) {
 			int c = component[i];
 			vertices[c]++;
@@ -226,17 +229,29 @@ public class Measurement3d {
 				max[c][k] = Math.max(max[c][k], p[i * 3 + k]);
 			}
 			valueSum[c] += m.data == null ? Double.NaN
-					: IsoSurface.sample(m.data, m.nx, m.ny, m.nz, v[i * 3] - normals[i * 3],
-							v[i * 3 + 1] - normals[i * 3 + 1], v[i * 3 + 2] - normals[i * 3 + 2]);
+					: IsoSurface.sampleDouble(m.data, m.nx, m.ny, m.nz, v[i * 3] - normals[i * 3] * m.resolution,
+							v[i * 3 + 1] - normals[i * 3 + 1] * m.resolution, v[i * 3 + 2] - normals[i * 3 + 2] * m.resolution);
 		}
-		/* Volume, moments (signed tetrahedra with the origin) and area of the triangles */
+		/*
+		 * Volume, moments (signed tetrahedra with a reference point: the center of the
+		 * box of the object; the same for closed surfaces, but without the
+		 * cancellation of large terms of small objects far from the origin) and area
+		 * of the triangles
+		 */
+		double[][] ref = new double[count][3];
+		for (int c = 0; c < count; c++) {
+			for (int k = 0; k < 3; k++) {
+				ref[c][k] = min[c][k] <= max[c][k] ? (min[c][k] + max[c][k]) / 2 : 0;
+			}
+		}
 		for (int i = 0; i < t.length; i += 3) {
 			int a = t[i] * 3, b = t[i + 1] * 3, d = t[i + 2] * 3;
 			int c = component[t[i]];
 			triangles[c]++;
-			double ax = p[a], ay = p[a + 1], az = p[a + 2];
-			double bx = p[b], by = p[b + 1], bz = p[b + 2];
-			double cx = p[d], cy = p[d + 1], cz = p[d + 2];
+			double[] r = ref[c];
+			double ax = p[a] - r[0], ay = p[a + 1] - r[1], az = p[a + 2] - r[2];
+			double bx = p[b] - r[0], by = p[b + 1] - r[1], bz = p[b + 2] - r[2];
+			double cx = p[d] - r[0], cy = p[d + 1] - r[1], cz = p[d + 2] - r[2];
 			double tv = (ax * (by * cz - bz * cy) - ay * (bx * cz - bz * cx) + az * (bx * cy - by * cx)) / 6.0;
 			vol[c] += tv;
 			double sxs = ax + bx + cx, sys = ay + by + cy, szs = az + bz + cz;
@@ -267,22 +282,28 @@ public class Measurement3d {
 		for (int i = 0; i < nv; i++) {
 			memberList[memberFill[component[i]]++] = i;
 		}
-		double minVolume = getMinObjectSize() * sx * sy * sz;
-		double maxVolume = getMaxObjectSize() > 0 ? getMaxObjectSize() * sx * sy * sz : Double.MAX_VALUE;
+		/* The Euler characteristic V - E + F of the objects (the unique edges, also of non-manifold edges) */
+		int[] edges = countEdges(t, component, nv, count);
+		/* The object sizes in voxels of the stack (also for an upsampled stack, see IsoSurface.setMeasureResolution) */
+		double stackVoxel = sx * sy * sz * Math.pow(m.resolution, 3);
+		double minVolume = getMinObjectSize() * stackVoxel;
+		double maxVolume = getMaxObjectSize() > 0 ? getMaxObjectSize() * stackVoxel : Double.MAX_VALUE;
 		List<double[]> rows = new ArrayList<>();
 		for (int c = 0; c < count; c++) {
 			double V = Math.abs(vol[c]);
 			if (V < minVolume || V > maxVolume || V == 0) {
 				continue;
 			}
-			double[] centroid = { first[c][0] / vol[c], first[c][1] / vol[c], first[c][2] / vol[c] };
+			/* The centroid relative to the reference point (for the covariance) and in the data */
+			double[] relative = { first[c][0] / vol[c], first[c][1] / vol[c], first[c][2] / vol[c] };
+			double[] centroid = { ref[c][0] + relative[0], ref[c][1] + relative[1], ref[c][2] + relative[2] };
 			double[][] cov = new double[3][3];
-			cov[0][0] = second[c][0] / vol[c] - centroid[0] * centroid[0];
-			cov[1][1] = second[c][1] / vol[c] - centroid[1] * centroid[1];
-			cov[2][2] = second[c][2] / vol[c] - centroid[2] * centroid[2];
-			cov[0][1] = cov[1][0] = second[c][3] / vol[c] - centroid[0] * centroid[1];
-			cov[0][2] = cov[2][0] = second[c][4] / vol[c] - centroid[0] * centroid[2];
-			cov[1][2] = cov[2][1] = second[c][5] / vol[c] - centroid[1] * centroid[2];
+			cov[0][0] = second[c][0] / vol[c] - relative[0] * relative[0];
+			cov[1][1] = second[c][1] / vol[c] - relative[1] * relative[1];
+			cov[2][2] = second[c][2] / vol[c] - relative[2] * relative[2];
+			cov[0][1] = cov[1][0] = second[c][3] / vol[c] - relative[0] * relative[1];
+			cov[0][2] = cov[2][0] = second[c][4] / vol[c] - relative[0] * relative[2];
+			cov[1][2] = cov[2][1] = second[c][5] / vol[c] - relative[1] * relative[2];
 			double[] eigen = eigenvalues(cov);
 			/* A solid ellipsoid with the semi-axis a has the variance a^2 / 5 */
 			double[] axes = new double[3];
@@ -290,9 +311,12 @@ public class Measurement3d {
 				axes[k] = 2 * Math.sqrt(5 * Math.max(0, eigen[k]));
 			}
 			double sphericity = Math.cbrt(Math.PI) * Math.pow(6 * V, 2.0 / 3.0) / area[c];
-			/* Closed surface: Euler characteristic V - E + F with E = 3F / 2 */
-			double euler = vertices[c] - triangles[c] / 2.0;
-			double holes = Math.max(0, Math.round((2 - euler) / 2));
+			/*
+			 * The genus (tunnels) of the closed surfaces of the object: the sum of (2 -
+			 * chi) / 2 of the surfaces (the outer surface and the cavities)
+			 */
+			double euler = vertices[c] - edges[c] + triangles[c];
+			double holes = Math.max(0, Math.round((2.0 * surfaces[c] - euler) / 2));
 			/* The last value is the part (removed below) */
 			rows.add(new double[] { V, area[c], sphericity, centroid[0], centroid[1], centroid[2], axes[0], axes[1],
 					axes[2], axes[1] > 0 ? axes[0] / axes[1] : Double.NaN, axes[2] > 0 ? axes[1] / axes[2] : Double.NaN,
@@ -351,7 +375,7 @@ public class Measurement3d {
 				header[k + 1] = ISO_COLUMNS[k] + (units[k].isEmpty() ? "" : " [" + units[k] + "]");
 			}
 			List<String[]> table = new ArrayList<>();
-			int[] rowColors = new int[result.length + 1];
+			int[] rowColors = new int[result.length + 2];
 			double totalVolume = 0, totalArea = 0;
 			for (int i = 0; i < result.length; i++) {
 				String[] row = new String[header.length];
@@ -371,6 +395,14 @@ public class Measurement3d {
 			total[2] = format(totalArea);
 			table.add(total);
 			rowColors[result.length] = -1;
+			/* The settings of the measured surface (the results depend on them) */
+			String[] settings = new String[header.length];
+			java.util.Arrays.fill(settings, "");
+			settings[0] = "Settings";
+			String[] text = settings(m);
+			System.arraycopy(text, 0, settings, 1, Math.min(text.length, header.length - 1));
+			table.add(settings);
+			rowColors[result.length + 1] = -1;
 			String title = m.image != null ? m.image.getTitle() : "Model";
 			Grid grid = showSheet("Iso Objects " + title, header, table, rowColors);
 			if (grid != null) {
@@ -634,7 +666,8 @@ public class Measurement3d {
 	 *         objects)} or null if no surface is available
 	 */
 	public double[][][] measureDistances(boolean showTable) {
-		return measureDistances(showTable, null);
+		/* The cast selects the public method (null would select the private SubMonitor variant) */
+		return measureDistances(showTable, (IProgressMonitor) null);
 	}
 
 	/**
@@ -777,7 +810,7 @@ public class Measurement3d {
 				surface[a][a] = 0;
 				for (int b = a + 1; b < n; b++) {
 					double[][] points = new double[2][];
-					double d = surfaceDistance(p, t, start, incident, members[a], trees[b], box[b], Double.MAX_VALUE,
+					double d = surfaceDistance(p, t, start, incident, trees[a], trees[b], box[b], Double.MAX_VALUE,
 							points);
 					if (Double.isNaN(d)) {
 						continue;
@@ -809,7 +842,7 @@ public class Measurement3d {
 					continue;
 				}
 				double[][] points = new double[2][];
-				double d = surfaceDistance(p, t, start, incident, members[a], trees[seed], box[seed],
+				double d = surfaceDistance(p, t, start, incident, trees[a], trees[seed], box[seed],
 						Double.MAX_VALUE, points);
 				if (!Double.isNaN(d)) {
 					nearestSurfaceDistance[a] = d;
@@ -821,7 +854,7 @@ public class Measurement3d {
 						continue;
 					}
 					points = new double[2][];
-					d = surfaceDistance(p, t, start, incident, members[a], trees[b], box[b], nearestSurfaceDistance[a],
+					d = surfaceDistance(p, t, start, incident, trees[a], trees[b], box[b], nearestSurfaceDistance[a],
 							points);
 					if (!Double.isNaN(d) && d < nearestSurfaceDistance[a]) {
 						nearestSurfaceDistance[a] = d;
@@ -958,7 +991,7 @@ public class Measurement3d {
 							row.append('0');
 							continue;
 						}
-						appendNumber(row, surfaceDistance(p, t, start, incident, members[a], trees[b], box[b], Double.MAX_VALUE, points));
+						appendNumber(row, surfaceDistance(p, t, start, incident, trees[a], trees[b], box[b], Double.MAX_VALUE, points));
 					}
 					return row.append('\n').toString();
 				}).toArray(String[]::new);
@@ -979,10 +1012,15 @@ public class Measurement3d {
 		return header.append('\n').toString();
 	}
 
-	/* A distance with 4 decimals (fast for many values, NaN if no distance) */
+	/* A distance with 4 decimals (fast for many values, NaN if no distance; other decimals see setDecimals) */
 	private static void appendNumber(StringBuilder sb, double v) {
 		if (Double.isNaN(v) || Double.isInfinite(v)) {
 			sb.append("NaN");
+			return;
+		}
+		/* Other decimals than the default (see setDecimals): like the tables */
+		if (decimals != 4) {
+			sb.append(format(v));
 			return;
 		}
 		long scaled = Math.round(v * 10000);
@@ -1127,12 +1165,16 @@ public class Measurement3d {
 	}
 
 	/*
-	 * The shortest distance between the surface of object a (the vertices) and the
-	 * surface of object b (the k-d tree of the vertices): the nearest vertices,
-	 * refined with the triangles around them. NaN if not closer than the limit!
+	 * The shortest distance between the surfaces (the triangles) of object a and
+	 * object b (the k-d trees of their vertices). The nearest vertices give an
+	 * upper bound. The closest points of two triangles are not always vertices
+	 * (edge to edge, inside of a triangle), so the triangles are compared exactly
+	 * with bounding volume hierarchies of the triangles (only the boxes nearer than
+	 * the current distance). NaN if not closer than the limit!
 	 */
-	private static double surfaceDistance(double[] p, int[] t, int[] start, int[] incident, int[] verticesA,
+	private static double surfaceDistance(double[] p, int[] t, int[] start, int[] incident, KdTree treeA,
 			KdTree treeB, double[] boxB, double limit, double[][] points) {
+		int[] verticesA = treeA.index;
 		double[] best = { limit == Double.MAX_VALUE ? Double.MAX_VALUE : limit * limit, -1 };
 		int bestA = -1;
 		for (int i : verticesA) {
@@ -1153,70 +1195,222 @@ public class Measurement3d {
 			return Double.NaN;
 		}
 		int bestB = (int) best[1];
-		/* Refined: the vertex of a to the triangles of b and the vertex of b to the triangles of a */
 		double distance = Math.sqrt(best[0]);
-		double[] pa = { p[bestA * 3], p[bestA * 3 + 1], p[bestA * 3 + 2] };
-		double[] pb = { p[bestB * 3], p[bestB * 3 + 1], p[bestB * 3 + 2] };
-		points[0] = pa;
-		points[1] = pb;
-		for (int side = 0; side < 2; side++) {
-			double[] q = side == 0 ? pa : pb;
-			int vertex = side == 0 ? bestB : bestA;
-			for (int k = start[vertex]; k < start[vertex + 1]; k++) {
-				int tri = incident[k] * 3;
-				double[] c = closestPointOnTriangle(q, p, t[tri], t[tri + 1], t[tri + 2]);
-				double d = Math.sqrt((c[0] - q[0]) * (c[0] - q[0]) + (c[1] - q[1]) * (c[1] - q[1])
-						+ (c[2] - q[2]) * (c[2] - q[2]));
-				if (d < distance) {
-					distance = d;
-					points[0] = side == 0 ? pa : c;
-					points[1] = side == 0 ? c : pb;
+		points[0] = new double[] { p[bestA * 3], p[bestA * 3 + 1], p[bestA * 3 + 2] };
+		points[1] = new double[] { p[bestB * 3], p[bestB * 3 + 1], p[bestB * 3 + 2] };
+		/* Exact: the triangles of a and b (bounding volume hierarchies, branch and bound with the distance) */
+		double[] state = { distance };
+		treeA.triangles(p, t, start, incident).distance(0, treeB.triangles(p, t, start, incident), 0, p, t, state, points);
+		return state[0];
+	}
+
+	private static double[] triangleBox(double[] p, int[] t, int tri) {
+		double[] b = { Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE,
+				-Double.MAX_VALUE };
+		for (int k = 0; k < 3; k++) {
+			int v = t[tri * 3 + k] * 3;
+			for (int a = 0; a < 3; a++) {
+				b[a] = Math.min(b[a], p[v + a]);
+				b[a + 3] = Math.max(b[a + 3], p[v + a]);
+			}
+		}
+		return b;
+	}
+
+	/*
+	 * The shortest distance between two triangles if it is below the limit (0 if
+	 * they intersect, else the limit): the vertices to the other triangle and the
+	 * edges to the edges (pair: the closest points, set only for a smaller
+	 * distance; scratch: 12 values).
+	 */
+	private static double triangleDistance(double[] p, int[] t, int ta, int tb, double limit, boolean overlap,
+			double[][] pair, double[] scratch) {
+		int[] a = { t[ta * 3], t[ta * 3 + 1], t[ta * 3 + 2] };
+		int[] b = { t[tb * 3], t[tb * 3 + 1], t[tb * 3 + 2] };
+		/* Intersection (only possible if the boxes overlap): an edge of one triangle through the other */
+		if (overlap) {
+			for (int side = 0; side < 2; side++) {
+				int[] e = side == 0 ? a : b, f = side == 0 ? b : a;
+				for (int k = 0; k < 3; k++) {
+					double[] hit = segmentTriangle(p, e[k], e[(k + 1) % 3], f[0], f[1], f[2]);
+					if (hit != null) {
+						pair[0] = hit;
+						pair[1] = hit.clone();
+						return 0;
+					}
 				}
 			}
 		}
-		return distance;
+		double best = limit * limit;
+		double[] c = scratch;
+		for (int side = 0; side < 2; side++) {
+			int[] e = side == 0 ? a : b, f = side == 0 ? b : a;
+			for (int k = 0; k < 3; k++) {
+				int v = e[k] * 3;
+				closestPointOnTriangle(p[v], p[v + 1], p[v + 2], p, f[0], f[1], f[2], c);
+				double dx = p[v] - c[0], dy = p[v + 1] - c[1], dz = p[v + 2] - c[2];
+				double d2 = dx * dx + dy * dy + dz * dz;
+				if (d2 < best) {
+					best = d2;
+					double[] q = { p[v], p[v + 1], p[v + 2] }, r = { c[0], c[1], c[2] };
+					pair[0] = side == 0 ? q : r;
+					pair[1] = side == 0 ? r : q;
+				}
+			}
+		}
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
+				closestSegmentSegment(p, a[i], a[(i + 1) % 3], b[j], b[(j + 1) % 3], c);
+				double dx = c[0] - c[3], dy = c[1] - c[4], dz = c[2] - c[5];
+				double d2 = dx * dx + dy * dy + dz * dz;
+				if (d2 < best) {
+					best = d2;
+					pair[0] = new double[] { c[0], c[1], c[2] };
+					pair[1] = new double[] { c[3], c[4], c[5] };
+				}
+			}
+		}
+		return Math.sqrt(best);
+	}
+
+	/*
+	 * The closest points of the segments p1 q1 and p2 q2 (Ericson, Real-Time
+	 * Collision Detection 5.1.9): out[0 - 2] on the first, out[3 - 5] on the second
+	 */
+	private static void closestSegmentSegment(double[] p, int i1, int j1, int i2, int j2, double[] out) {
+		double p1x = p[i1 * 3], p1y = p[i1 * 3 + 1], p1z = p[i1 * 3 + 2];
+		double p2x = p[i2 * 3], p2y = p[i2 * 3 + 1], p2z = p[i2 * 3 + 2];
+		double d1x = p[j1 * 3] - p1x, d1y = p[j1 * 3 + 1] - p1y, d1z = p[j1 * 3 + 2] - p1z;
+		double d2x = p[j2 * 3] - p2x, d2y = p[j2 * 3 + 1] - p2y, d2z = p[j2 * 3 + 2] - p2z;
+		double rx = p1x - p2x, ry = p1y - p2y, rz = p1z - p2z;
+		double a = d1x * d1x + d1y * d1y + d1z * d1z, e = d2x * d2x + d2y * d2y + d2z * d2z;
+		double f = d2x * rx + d2y * ry + d2z * rz;
+		double s, u;
+		double eps = 1e-30;
+		if (a <= eps && e <= eps) {
+			s = u = 0;
+		} else if (a <= eps) {
+			s = 0;
+			u = clamp01(f / e);
+		} else {
+			double c = d1x * rx + d1y * ry + d1z * rz;
+			if (e <= eps) {
+				u = 0;
+				s = clamp01(-c / a);
+			} else {
+				double b = d1x * d2x + d1y * d2y + d1z * d2z, denom = a * e - b * b;
+				s = denom != 0 ? clamp01((b * f - c * e) / denom) : 0;
+				u = (b * s + f) / e;
+				if (u < 0) {
+					u = 0;
+					s = clamp01(-c / a);
+				} else if (u > 1) {
+					u = 1;
+					s = clamp01((b - c) / a);
+				}
+			}
+		}
+		out[0] = p1x + d1x * s;
+		out[1] = p1y + d1y * s;
+		out[2] = p1z + d1z * s;
+		out[3] = p2x + d2x * u;
+		out[4] = p2y + d2y * u;
+		out[5] = p2z + d2z * u;
+	}
+
+	private static double clamp01(double v) {
+		return v < 0 ? 0 : v > 1 ? 1 : v;
+	}
+
+	/* The intersection of the segment (i, j) with the triangle (a, b, c) or null (Moeller-Trumbore) */
+	private static double[] segmentTriangle(double[] p, int i, int j, int a, int b, int c) {
+		double ox = p[i * 3], oy = p[i * 3 + 1], oz = p[i * 3 + 2];
+		double dx = p[j * 3] - ox, dy = p[j * 3 + 1] - oy, dz = p[j * 3 + 2] - oz;
+		double e1x = p[b * 3] - p[a * 3], e1y = p[b * 3 + 1] - p[a * 3 + 1], e1z = p[b * 3 + 2] - p[a * 3 + 2];
+		double e2x = p[c * 3] - p[a * 3], e2y = p[c * 3 + 1] - p[a * 3 + 1], e2z = p[c * 3 + 2] - p[a * 3 + 2];
+		double hx = dy * e2z - dz * e2y, hy = dz * e2x - dx * e2z, hz = dx * e2y - dy * e2x;
+		double det = e1x * hx + e1y * hy + e1z * hz;
+		if (Math.abs(det) < 1e-30) {
+			return null;
+		}
+		double inv = 1 / det;
+		double sx = ox - p[a * 3], sy = oy - p[a * 3 + 1], sz = oz - p[a * 3 + 2];
+		double u = (sx * hx + sy * hy + sz * hz) * inv;
+		if (u < 0 || u > 1) {
+			return null;
+		}
+		double qx = sy * e1z - sz * e1y, qy = sz * e1x - sx * e1z, qz = sx * e1y - sy * e1x;
+		double v = (dx * qx + dy * qy + dz * qz) * inv;
+		if (v < 0 || u + v > 1) {
+			return null;
+		}
+		double s = (e2x * qx + e2y * qy + e2z * qz) * inv;
+		if (s < 0 || s > 1) {
+			return null;
+		}
+		return new double[] { ox + dx * s, oy + dy * s, oz + dz * s };
 	}
 
 	/* The closest point on the triangle (a, b, c) to q (Ericson, Real-Time Collision Detection) */
 	private static double[] closestPointOnTriangle(double[] q, double[] p, int ia, int ib, int ic) {
+		double[] out = new double[3];
+		closestPointOnTriangle(q[0], q[1], q[2], p, ia, ib, ic, out);
+		return out;
+	}
+
+	/* The closest point (out) on the triangle (a, b, c) to q (Ericson, Real-Time Collision Detection) */
+	private static void closestPointOnTriangle(double qx, double qy, double qz, double[] p, int ia, int ib, int ic, double[] out) {
 		double ax = p[ia * 3], ay = p[ia * 3 + 1], az = p[ia * 3 + 2];
 		double abx = p[ib * 3] - ax, aby = p[ib * 3 + 1] - ay, abz = p[ib * 3 + 2] - az;
 		double acx = p[ic * 3] - ax, acy = p[ic * 3 + 1] - ay, acz = p[ic * 3 + 2] - az;
-		double apx = q[0] - ax, apy = q[1] - ay, apz = q[2] - az;
+		double apx = qx - ax, apy = qy - ay, apz = qz - az;
 		double d1 = abx * apx + aby * apy + abz * apz, d2 = acx * apx + acy * apy + acz * apz;
 		if (d1 <= 0 && d2 <= 0) {
-			return new double[] { ax, ay, az };
+			set(out, ax, ay, az);
+			return;
 		}
-		double bpx = q[0] - p[ib * 3], bpy = q[1] - p[ib * 3 + 1], bpz = q[2] - p[ib * 3 + 2];
+		double bpx = qx - p[ib * 3], bpy = qy - p[ib * 3 + 1], bpz = qz - p[ib * 3 + 2];
 		double d3 = abx * bpx + aby * bpy + abz * bpz, d4 = acx * bpx + acy * bpy + acz * bpz;
 		if (d3 >= 0 && d4 <= d3) {
-			return new double[] { p[ib * 3], p[ib * 3 + 1], p[ib * 3 + 2] };
+			set(out, p[ib * 3], p[ib * 3 + 1], p[ib * 3 + 2]);
+			return;
 		}
 		double vc = d1 * d4 - d3 * d2;
 		if (vc <= 0 && d1 >= 0 && d3 <= 0) {
 			double w = d1 / (d1 - d3);
-			return new double[] { ax + w * abx, ay + w * aby, az + w * abz };
+			set(out, ax + w * abx, ay + w * aby, az + w * abz);
+			return;
 		}
-		double cpx = q[0] - p[ic * 3], cpy = q[1] - p[ic * 3 + 1], cpz = q[2] - p[ic * 3 + 2];
+		double cpx = qx - p[ic * 3], cpy = qy - p[ic * 3 + 1], cpz = qz - p[ic * 3 + 2];
 		double d5 = abx * cpx + aby * cpy + abz * cpz, d6 = acx * cpx + acy * cpy + acz * cpz;
 		if (d6 >= 0 && d5 <= d6) {
-			return new double[] { p[ic * 3], p[ic * 3 + 1], p[ic * 3 + 2] };
+			set(out, p[ic * 3], p[ic * 3 + 1], p[ic * 3 + 2]);
+			return;
 		}
 		double vb = d5 * d2 - d1 * d6;
 		if (vb <= 0 && d2 >= 0 && d6 <= 0) {
 			double w = d2 / (d2 - d6);
-			return new double[] { ax + w * acx, ay + w * acy, az + w * acz };
+			set(out, ax + w * acx, ay + w * acy, az + w * acz);
+			return;
 		}
 		double va = d3 * d6 - d5 * d4;
 		if (va <= 0 && (d4 - d3) >= 0 && (d5 - d6) >= 0) {
 			double w = (d4 - d3) / ((d4 - d3) + (d5 - d6));
 			double bx = p[ib * 3], by = p[ib * 3 + 1], bz = p[ib * 3 + 2];
-			return new double[] { bx + w * (p[ic * 3] - bx), by + w * (p[ic * 3 + 1] - by),
-					bz + w * (p[ic * 3 + 2] - bz) };
+			set(out, bx + w * (p[ic * 3] - bx), by + w * (p[ic * 3 + 1] - by),
+					bz + w * (p[ic * 3 + 2] - bz));
+			return;
 		}
 		double denom = 1 / (va + vb + vc);
 		double v = vb * denom, w = vc * denom;
-		return new double[] { ax + abx * v + acx * w, ay + aby * v + acy * w, az + abz * v + acz * w };
+		set(out, ax + abx * v + acx * w, ay + aby * v + acy * w, az + abz * v + acz * w);
+			return;
+	}
+
+	private static void set(double[] out, double x, double y, double z) {
+		out[0] = x;
+		out[1] = y;
+		out[2] = z;
 	}
 
 	/* The bounding box (min x, y, z, max x, y, z) of vertices */
@@ -1243,9 +1437,190 @@ public class Measurement3d {
 	}
 
 	/* A k-d tree of vertices (the nearest vertex of a point) */
+	/* The triangles of the vertices of an object (indices of the triangles) */
+	private static int[] objectTriangles(int[] vertices, int[] start, int[] incident) {
+		java.util.BitSet set = new java.util.BitSet();
+		for (int i : vertices) {
+			for (int k = start[i]; k < start[i + 1]; k++) {
+				set.set(incident[k]);
+			}
+		}
+		return set.stream().toArray();
+	}
+
+	/* A bounding volume hierarchy (axis aligned boxes) of the triangles of an object */
+	private static final class TriangleTree {
+		private static final int LEAF = 4;
+		private final int[] tri;
+		private final double[] centers;
+		/* The boxes of the triangles (in the order of tri) */
+		private double[] triBox;
+		private double[] box = new double[64 * 6];
+		private int[] left = new int[64], right = new int[64], from = new int[64], to = new int[64];
+		private int nodes;
+
+		TriangleTree(double[] p, int[] t, int[] triangles) {
+			tri = triangles.clone();
+			centers = new double[tri.length * 3];
+			for (int i = 0; i < tri.length; i++) {
+				for (int k = 0; k < 3; k++) {
+					int v = t[tri[i] * 3 + k] * 3;
+					for (int a = 0; a < 3; a++) {
+						centers[i * 3 + a] += p[v + a] / 3;
+					}
+				}
+			}
+			int[] order = new int[tri.length];
+			for (int i = 0; i < order.length; i++) {
+				order[i] = i;
+			}
+			build(p, t, order, 0, order.length);
+			int[] sorted = new int[tri.length];
+			for (int i = 0; i < order.length; i++) {
+				sorted[i] = tri[order[i]];
+			}
+			System.arraycopy(sorted, 0, tri, 0, sorted.length);
+			triBox = new double[tri.length * 6];
+			for (int i = 0; i < tri.length; i++) {
+				System.arraycopy(triangleBox(p, t, tri[i]), 0, triBox, i * 6, 6);
+			}
+		}
+
+		private int build(double[] p, int[] t, int[] order, int lo, int hi) {
+			int node = nodes++;
+			if (node >= left.length) {
+				int n = left.length * 2;
+				box = java.util.Arrays.copyOf(box, n * 6);
+				left = java.util.Arrays.copyOf(left, n);
+				right = java.util.Arrays.copyOf(right, n);
+				from = java.util.Arrays.copyOf(from, n);
+				to = java.util.Arrays.copyOf(to, n);
+			}
+			double[] b = { Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE,
+					-Double.MAX_VALUE };
+			for (int i = lo; i < hi; i++) {
+				int tr = tri[order[i]];
+				for (int k = 0; k < 3; k++) {
+					int v = t[tr * 3 + k] * 3;
+					for (int a = 0; a < 3; a++) {
+						b[a] = Math.min(b[a], p[v + a]);
+						b[a + 3] = Math.max(b[a + 3], p[v + a]);
+					}
+				}
+			}
+			System.arraycopy(b, 0, box, node * 6, 6);
+			from[node] = lo;
+			to[node] = hi;
+			left[node] = right[node] = -1;
+			if (hi - lo > LEAF) {
+				/* The split at the median of the centers along the longest axis */
+				int axis = 0;
+				for (int a = 1; a < 3; a++) {
+					if (b[a + 3] - b[a] > b[axis + 3] - b[axis]) {
+						axis = a;
+					}
+				}
+				final int ax = axis;
+				Integer[] part = new Integer[hi - lo];
+				for (int i = lo; i < hi; i++) {
+					part[i - lo] = order[i];
+				}
+				java.util.Arrays.sort(part, (o1, o2) -> Double.compare(centers[o1 * 3 + ax], centers[o2 * 3 + ax]));
+				for (int i = lo; i < hi; i++) {
+					order[i] = part[i - lo];
+				}
+				int mid = (lo + hi) >>> 1;
+				int l = build(p, t, order, lo, mid);
+				int r = build(p, t, order, mid, hi);
+				left[node] = l;
+				right[node] = r;
+			}
+			return node;
+		}
+
+		private double boxDistance2(int a, TriangleTree other, int b) {
+			double d = 0;
+			for (int k = 0; k < 3; k++) {
+				double g = Math.max(0, Math.max(other.box[b * 6 + k] - box[a * 6 + k + 3], box[a * 6 + k] - other.box[b * 6 + k + 3]));
+				d += g * g;
+			}
+			return d;
+		}
+
+		private double size(int node) {
+			double s = 0;
+			for (int k = 0; k < 3; k++) {
+				s = Math.max(s, box[node * 6 + k + 3] - box[node * 6 + k]);
+			}
+			return s;
+		}
+
+		/* The distance of the nodes (state[0]: the current distance, updated with the closest points) */
+		void distance(int a, TriangleTree other, int b, double[] p, int[] t, double[] state, double[][] points) {
+			if (boxDistance2(a, other, b) >= state[0] * state[0]) {
+				return;
+			}
+			boolean leafA = left[a] < 0, leafB = other.left[b] < 0;
+			if (leafA && leafB) {
+				double[][] pair = new double[2][];
+				double[] scratch = new double[12];
+				for (int i = from[a]; i < to[a]; i++) {
+					for (int j = other.from[b]; j < other.to[b]; j++) {
+						double g = 0;
+						for (int k = 0; k < 3; k++) {
+							double gk = Math.max(0, Math.max(other.triBox[j * 6 + k] - triBox[i * 6 + k + 3],
+									triBox[i * 6 + k] - other.triBox[j * 6 + k + 3]));
+							g += gk * gk;
+						}
+						if (g >= state[0] * state[0]) {
+							continue;
+						}
+						double d = triangleDistance(p, t, tri[i], other.tri[j], state[0], g == 0, pair, scratch);
+						if (d < state[0]) {
+							state[0] = d;
+							points[0] = pair[0];
+							points[1] = pair[1];
+						}
+					}
+				}
+				return;
+			}
+			/* Descend the larger node, the nearer child first */
+			if (leafB || (!leafA && size(a) >= other.size(b))) {
+				int c1 = left[a], c2 = right[a];
+				if (boxDistance2(c2, other, b) < boxDistance2(c1, other, b)) {
+					int tmp = c1;
+					c1 = c2;
+					c2 = tmp;
+				}
+				distance(c1, other, b, p, t, state, points);
+				distance(c2, other, b, p, t, state, points);
+			} else {
+				int c1 = other.left[b], c2 = other.right[b];
+				if (boxDistance2(a, other, c2) < boxDistance2(a, other, c1)) {
+					int tmp = c1;
+					c1 = c2;
+					c2 = tmp;
+				}
+				distance(a, other, c1, p, t, state, points);
+				distance(a, other, c2, p, t, state, points);
+			}
+		}
+	}
+
 	private static final class KdTree {
 		private final double[] p;
 		private final int[] index;
+		/* The bounding volume hierarchy of the triangles of the object (see triangles) */
+		private TriangleTree triangles;
+
+		/* The hierarchy of the triangles of the object (built once, also for parallel threads) */
+		synchronized TriangleTree triangles(double[] p, int[] t, int[] start, int[] incident) {
+			if (triangles == null) {
+				triangles = new TriangleTree(p, t, objectTriangles(index, start, incident));
+			}
+			return triangles;
+		}
 
 		KdTree(double[] p, int[] vertices) {
 			this.p = p;
@@ -1351,20 +1726,404 @@ public class Measurement3d {
 		iso.setObjectColors(null, null);
 	}
 
-	/* The largest distance between the vertices of a part (members from - to, at most 3000 vertices) */
+	/*
+	 * The largest distance between the vertices of a part (members from - to),
+	 * exact: all pairs for up to 4000 vertices, else a lower bound from the extreme
+	 * vertices of 512 directions and the farthest vertex of every vertex in a tree
+	 * of boxes (only the boxes which can be farther than the current diameter).
+	 */
 	private static double feret(double[] p, int[] members, int from, int to) {
 		int size = to - from;
-		int stride = Math.max(1, size / 3000);
+		int[] candidates;
+		if (size <= 4000) {
+			candidates = java.util.Arrays.copyOfRange(members, from, to);
+		} else {
+			int directions = 512;
+			java.util.BitSet extreme = new java.util.BitSet();
+			double golden = Math.PI * (3 - Math.sqrt(5));
+			for (int k = 0; k < directions; k++) {
+				/* Fibonacci directions of a hemisphere (the minimum is the opposite direction) */
+				double z = 1 - (k + 0.5) / directions;
+				double r = Math.sqrt(1 - z * z);
+				double dx = r * Math.cos(golden * k), dy = r * Math.sin(golden * k);
+				double min = Double.MAX_VALUE, max = -Double.MAX_VALUE;
+				int imin = members[from], imax = members[from];
+				for (int i = from; i < to; i++) {
+					int a = members[i];
+					double s = p[a * 3] * dx + p[a * 3 + 1] * dy + p[a * 3 + 2] * z;
+					if (s < min) {
+						min = s;
+						imin = a;
+					}
+					if (s > max) {
+						max = s;
+						imax = a;
+					}
+				}
+				extreme.set(imin);
+				extreme.set(imax);
+			}
+			candidates = extreme.stream().toArray();
+		}
 		double max = 0;
-		for (int i = from; i < to; i += stride) {
-			int a = members[i] * 3;
-			for (int j = i + stride; j < to; j += stride) {
-				int b = members[j] * 3;
+		int ia = candidates[0];
+		for (int i = 0; i < candidates.length; i++) {
+			int a = candidates[i] * 3;
+			for (int j = i + 1; j < candidates.length; j++) {
+				int b = candidates[j] * 3;
 				double dx = p[a] - p[b], dy = p[a + 1] - p[b + 1], dz = p[a + 2] - p[b + 2];
-				max = Math.max(max, dx * dx + dy * dy + dz * dz);
+				double d2 = dx * dx + dy * dy + dz * dz;
+				if (d2 > max) {
+					max = d2;
+					ia = candidates[i];
+				}
+			}
+		}
+		if (size > 4000) {
+			/* The farthest vertex of an end point (all vertices) until the distance doesn't increase */
+			int a = ia;
+			for (int iteration = 0; iteration < 8; iteration++) {
+				double best = 0;
+				int ib = a;
+				for (int i = from; i < to; i++) {
+					int b = members[i];
+					double dx = p[a * 3] - p[b * 3], dy = p[a * 3 + 1] - p[b * 3 + 1], dz = p[a * 3 + 2] - p[b * 3 + 2];
+					double d2 = dx * dx + dy * dy + dz * dz;
+					if (d2 > best) {
+						best = d2;
+						ib = b;
+					}
+				}
+				if (best <= max) {
+					break;
+				}
+				max = best;
+				a = ib;
+			}
+			/* Exact: the farthest vertex of every vertex (pruned with the current diameter) */
+			FarTree tree = new FarTree(p, java.util.Arrays.copyOfRange(members, from, to));
+			for (int i = from; i < to; i++) {
+				int b = members[i] * 3;
+				max = tree.farthest(p[b], p[b + 1], p[b + 2], max);
 			}
 		}
 		return Math.sqrt(max);
+	}
+
+	/* A tree of boxes of vertices for the farthest vertex of a position (see feret) */
+	private static final class FarTree {
+		private static final int LEAF = 8;
+		private final double[] p;
+		private final int[] index;
+		private double[] box = new double[64 * 6];
+		private int[] left = new int[64], right = new int[64], from = new int[64], to = new int[64];
+		private int nodes;
+
+		FarTree(double[] p, int[] vertices) {
+			this.p = p;
+			this.index = vertices;
+			build(0, vertices.length);
+		}
+
+		private int build(int lo, int hi) {
+			int node = nodes++;
+			if (node >= left.length) {
+				int n = left.length * 2;
+				box = java.util.Arrays.copyOf(box, n * 6);
+				left = java.util.Arrays.copyOf(left, n);
+				right = java.util.Arrays.copyOf(right, n);
+				from = java.util.Arrays.copyOf(from, n);
+				to = java.util.Arrays.copyOf(to, n);
+			}
+			double[] b = { Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE,
+					-Double.MAX_VALUE };
+			for (int i = lo; i < hi; i++) {
+				int v = index[i] * 3;
+				for (int k = 0; k < 3; k++) {
+					b[k] = Math.min(b[k], p[v + k]);
+					b[k + 3] = Math.max(b[k + 3], p[v + k]);
+				}
+			}
+			System.arraycopy(b, 0, box, node * 6, 6);
+			from[node] = lo;
+			to[node] = hi;
+			left[node] = right[node] = -1;
+			if (hi - lo > LEAF) {
+				int axis = 0;
+				for (int k = 1; k < 3; k++) {
+					if (b[k + 3] - b[k] > b[axis + 3] - b[axis]) {
+						axis = k;
+					}
+				}
+				int mid = (lo + hi) >>> 1;
+				select(lo, hi - 1, mid, axis);
+				int l = build(lo, mid);
+				int r = build(mid, hi);
+				left[node] = l;
+				right[node] = r;
+			}
+			return node;
+		}
+
+		/* Quickselect: the element k at its sorted position (by the axis) */
+		private void select(int lo, int hi, int k, int axis) {
+			while (hi > lo) {
+				double pivot = p[index[(lo + hi) >>> 1] * 3 + axis];
+				int i = lo, j = hi;
+				while (i <= j) {
+					while (p[index[i] * 3 + axis] < pivot) {
+						i++;
+					}
+					while (p[index[j] * 3 + axis] > pivot) {
+						j--;
+					}
+					if (i <= j) {
+						int tmp = index[i];
+						index[i] = index[j];
+						index[j] = tmp;
+						i++;
+						j--;
+					}
+				}
+				if (k <= j) {
+					hi = j;
+				} else if (k >= i) {
+					lo = i;
+				} else {
+					return;
+				}
+			}
+		}
+
+		/* The largest squared distance from the position to the box of the node */
+		private double maxDistance2(int node, double x, double y, double z) {
+			int o = node * 6;
+			double dx = Math.max(Math.abs(x - box[o]), Math.abs(x - box[o + 3]));
+			double dy = Math.max(Math.abs(y - box[o + 1]), Math.abs(y - box[o + 4]));
+			double dz = Math.max(Math.abs(z - box[o + 2]), Math.abs(z - box[o + 5]));
+			return dx * dx + dy * dy + dz * dz;
+		}
+
+		/* The squared distance of the farthest vertex if it is larger than best2, else best2 */
+		double farthest(double x, double y, double z, double best2) {
+			return search(0, x, y, z, best2);
+		}
+
+		private double search(int node, double x, double y, double z, double best2) {
+			if (maxDistance2(node, x, y, z) <= best2) {
+				return best2;
+			}
+			if (left[node] < 0) {
+				for (int i = from[node]; i < to[node]; i++) {
+					int v = index[i] * 3;
+					double dx = p[v] - x, dy = p[v + 1] - y, dz = p[v + 2] - z;
+					best2 = Math.max(best2, dx * dx + dy * dy + dz * dz);
+				}
+				return best2;
+			}
+			int a = left[node], b = right[node];
+			if (maxDistance2(b, x, y, z) > maxDistance2(a, x, y, z)) {
+				int tmp = a;
+				a = b;
+				b = tmp;
+			}
+			best2 = search(a, x, y, z, best2);
+			return search(b, x, y, z, best2);
+		}
+	}
+
+	/*
+	 * Assigns the inner surfaces (a negative signed volume, e.g., the surface of a
+	 * cavity) to the smallest part with a positive volume which encloses them (an
+	 * odd number of crossings of a ray in the x direction). The parts are numbered
+	 * again (the component of each vertex is changed) and surfaces contains the
+	 * number of closed surfaces of each part. Returns the number of parts.
+	 */
+	private static int mergeCavities(double[] p, int[] t, int[] component, int count, int[] surfaces) {
+		int nv = component.length;
+		double[] signed = new double[count];
+		double[][] lo = new double[count][3], hi = new double[count][3];
+		int[] representative = new int[count];
+		java.util.Arrays.fill(representative, -1);
+		for (int c = 0; c < count; c++) {
+			java.util.Arrays.fill(lo[c], Double.MAX_VALUE);
+			java.util.Arrays.fill(hi[c], -Double.MAX_VALUE);
+		}
+		for (int i = 0; i < nv; i++) {
+			int c = component[i];
+			if (representative[c] < 0) {
+				representative[c] = i;
+			}
+			for (int k = 0; k < 3; k++) {
+				lo[c][k] = Math.min(lo[c][k], p[i * 3 + k]);
+				hi[c][k] = Math.max(hi[c][k], p[i * 3 + k]);
+			}
+		}
+		for (int i = 0; i < t.length; i += 3) {
+			int a = t[i] * 3, b = t[i + 1] * 3, d = t[i + 2] * 3;
+			signed[component[t[i]]] += (p[a] * (p[b + 1] * p[d + 2] - p[b + 2] * p[d + 1])
+					- p[a + 1] * (p[b] * p[d + 2] - p[b + 2] * p[d]) + p[a + 2] * (p[b] * p[d + 1] - p[b + 1] * p[d])) / 6.0;
+		}
+		int[] owner = new int[count];
+		for (int c = 0; c < count; c++) {
+			owner[c] = c;
+		}
+		/* The cavities and their test points (a vertex, slightly moved to avoid hits of edges) */
+		List<Integer> cavities = new ArrayList<>();
+		for (int c = 0; c < count; c++) {
+			if (signed[c] < 0 && representative[c] >= 0) {
+				cavities.add(c);
+			}
+		}
+		if (!cavities.isEmpty()) {
+			int nc = cavities.size();
+			double[][] q = new double[nc][];
+			/* The cavities in the cells of a grid of the y-z plane (the rays in the x direction) */
+			double minY = Double.MAX_VALUE, minZ = Double.MAX_VALUE;
+			for (int i = 0; i < nv; i++) {
+				minY = Math.min(minY, p[i * 3 + 1]);
+				minZ = Math.min(minZ, p[i * 3 + 2]);
+			}
+			double size = 1e-9;
+			for (int c = 0; c < count; c++) {
+				size = Math.max(size, Math.max(hi[c][1] - lo[c][1], hi[c][2] - lo[c][2]));
+			}
+			double cell = Math.max(size / 256, 1e-9);
+			java.util.Map<Long, List<Integer>> grid = new java.util.HashMap<>();
+			for (int k = 0; k < nc; k++) {
+				int r = representative[cavities.get(k)] * 3;
+				double jitter = 1e-5 * cell;
+				q[k] = new double[] { p[r], p[r + 1] + jitter * 0.7548776662, p[r + 2] + jitter * 0.5698402910 };
+				long key = (long) Math.floor((q[k][1] - minY) / cell) * 1000003L + (long) Math.floor((q[k][2] - minZ) / cell);
+				grid.computeIfAbsent(key, key_ -> new ArrayList<>()).add(k);
+			}
+			/* The crossings of the ray of each cavity with the triangles of the other parts */
+			java.util.Map<Long, Integer> crossings = new java.util.HashMap<>();
+			for (int i = 0; i < t.length; i += 3) {
+				int part = component[t[i]];
+				if (signed[part] <= 0) {
+					continue;
+				}
+				int a = t[i] * 3, b = t[i + 1] * 3, d = t[i + 2] * 3;
+				double y0 = Math.min(p[a + 1], Math.min(p[b + 1], p[d + 1])), y1 = Math.max(p[a + 1], Math.max(p[b + 1], p[d + 1]));
+				double z0 = Math.min(p[a + 2], Math.min(p[b + 2], p[d + 2])), z1 = Math.max(p[a + 2], Math.max(p[b + 2], p[d + 2]));
+				long gy0 = (long) Math.floor((y0 - minY) / cell), gy1 = (long) Math.floor((y1 - minY) / cell);
+				long gz0 = (long) Math.floor((z0 - minZ) / cell), gz1 = (long) Math.floor((z1 - minZ) / cell);
+				for (long gy = gy0; gy <= gy1; gy++) {
+					for (long gz = gz0; gz <= gz1; gz++) {
+						List<Integer> list = grid.get(gy * 1000003L + gz);
+						if (list == null) {
+							continue;
+						}
+						for (int k : list) {
+							int c = cavities.get(k);
+							if (signed[part] <= -signed[c] || q[k][0] > hi[part][0] || q[k][1] < y0 || q[k][1] > y1 || q[k][2] < z0
+									|| q[k][2] > z1) {
+								continue;
+							}
+							if (crossesX(q[k], p, a, b, d)) {
+								crossings.merge((long) k * count + part, 1, Integer::sum);
+							}
+						}
+					}
+				}
+			}
+			/* The smallest enclosing part (an odd number of crossings) */
+			for (int k = 0; k < nc; k++) {
+				int c = cavities.get(k);
+				int best = -1;
+				for (int part = 0; part < count; part++) {
+					Integer n = crossings.get((long) k * count + part);
+					if (n != null && (n & 1) == 1 && (best < 0 || signed[part] < signed[best])) {
+						best = part;
+					}
+				}
+				if (best >= 0) {
+					owner[c] = best;
+				}
+			}
+		}
+		/* The new numbers of the parts */
+		int[] number = new int[count];
+		java.util.Arrays.fill(number, -1);
+		int parts = 0;
+		for (int c = 0; c < count; c++) {
+			if (owner[c] == c) {
+				number[c] = parts++;
+			}
+		}
+		java.util.Arrays.fill(surfaces, 0);
+		for (int c = 0; c < count; c++) {
+			surfaces[number[owner[c]]]++;
+		}
+		for (int i = 0; i < nv; i++) {
+			component[i] = number[owner[component[i]]];
+		}
+		return parts;
+	}
+
+	/*
+	 * True if the ray from q in the +x direction crosses the triangle a, b, d (the
+	 * point in the triangle projected to the y-z plane and the crossing in front of
+	 * q).
+	 */
+	private static boolean crossesX(double[] q, double[] p, int a, int b, int d) {
+		double ay = p[a + 1] - q[1], az = p[a + 2] - q[2];
+		double by = p[b + 1] - q[1], bz = p[b + 2] - q[2];
+		double dy = p[d + 1] - q[1], dz = p[d + 2] - q[2];
+		double w0 = by * dz - bz * dy, w1 = dy * az - dz * ay, w2 = ay * bz - az * by;
+		boolean inside = (w0 >= 0 && w1 >= 0 && w2 >= 0) || (w0 <= 0 && w1 <= 0 && w2 <= 0);
+		double sum = w0 + w1 + w2;
+		if (!inside || sum == 0) {
+			return false;
+		}
+		/* The x of the crossing (barycentric weights) */
+		double x = (w0 * p[a] + w1 * p[b] + w2 * p[d]) / sum;
+		return x > q[0];
+	}
+
+	/* The area weighted vertex normals (unit length, in double) of the mesh */
+	private static double[] vertexNormals(float[] pos, int[] idx) {
+		double[] nor = new double[pos.length];
+		for (int i = 0; i < idx.length; i += 3) {
+			int a = idx[i] * 3, b = idx[i + 1] * 3, c = idx[i + 2] * 3;
+			double ux = pos[b] - pos[a], uy = pos[b + 1] - pos[a + 1], uz = pos[b + 2] - pos[a + 2];
+			double vx = pos[c] - pos[a], vy = pos[c + 1] - pos[a + 1], vz = pos[c + 2] - pos[a + 2];
+			double nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+			for (int k : new int[] { a, b, c }) {
+				nor[k] += nx;
+				nor[k + 1] += ny;
+				nor[k + 2] += nz;
+			}
+		}
+		for (int i = 0; i < nor.length; i += 3) {
+			double l = Math.sqrt(nor[i] * nor[i] + nor[i + 1] * nor[i + 1] + nor[i + 2] * nor[i + 2]);
+			if (l > 0) {
+				nor[i] /= l;
+				nor[i + 1] /= l;
+				nor[i + 2] /= l;
+			}
+		}
+		return nor;
+	}
+
+	/* The number of the unique edges of each part (also the edges of more than two triangles) */
+	private static int[] countEdges(int[] t, int[] component, int nv, int count) {
+		long[] keys = new long[t.length];
+		for (int i = 0; i < t.length; i += 3) {
+			for (int k = 0; k < 3; k++) {
+				int a = t[i + k], b = t[i + (k + 1) % 3];
+				keys[i + k] = (long) Math.min(a, b) * nv + Math.max(a, b);
+			}
+		}
+		java.util.Arrays.sort(keys);
+		int[] edges = new int[count];
+		for (int i = 0; i < keys.length; i++) {
+			if (i == 0 || keys[i] != keys[i - 1]) {
+				edges[component[(int) (keys[i] / nv)]]++;
+			}
+		}
+		return edges;
 	}
 
 	private static int find(int[] parent, int i) {
@@ -1379,6 +2138,52 @@ public class Measurement3d {
 		int ra = find(parent, a), rb = find(parent, b);
 		if (ra != rb) {
 			parent[ra] = rb;
+		}
+	}
+
+	/*
+	 * The settings of a measured surface: the iso value, the Gaussian smoothing, the
+	 * mesh smoothing, the resolution and the object sizes!
+	 */
+	private String[] settings(IsoSurface.MeasureData m) {
+		if (m.origin != null) {
+			return new String[] { "Model (imported mesh)", "Min. object size: " + getMinObjectSize() + " voxels" };
+		}
+		return new String[] { "Iso value: " + format(m.isoValue), "Smoothing: " + format(iso.getSmoothing()) + " voxels",
+				"Mesh smoothing: " + iso.getMeshSmoothing() + " iterations", "Resolution: " + m.resolution + "x",
+				"Min. object size: " + getMinObjectSize() + " voxels",
+				"Max. object size: " + (getMaxObjectSize() > 0 ? getMaxObjectSize() + " voxels" : "all") };
+	}
+
+	/**
+	 * Returns the settings of the measured iso surface (the iso value, the
+	 * smoothing, the mesh smoothing, the resolution and the object sizes), which
+	 * are also shown in the last row of the table of the objects.
+	 *
+	 * @return the settings as text or null if no surface is available
+	 */
+	public String getSettings() {
+		IsoSurface.MeasureData m = iso.getMeasurementData();
+		return m == null ? null : String.join(", ", settings(m));
+	}
+
+	/**
+	 * Picks the first visible point of the iso surface (or of the volume) along a
+	 * ray like the mouse (the ruler, see getPoints), e.g., in a script.
+	 *
+	 * @param start the start of the ray (relative positions 0 - 1 of the data, y = 0
+	 *              is the first row)
+	 * @param end   the end of the ray
+	 * @return true if a point has been added
+	 */
+	public boolean pick(double[] start, double[] end) {
+		int before;
+		synchronized (this) {
+			before = points.size();
+		}
+		pick(new double[][] { start.clone(), end.clone() });
+		synchronized (this) {
+			return points.size() > before;
 		}
 	}
 
@@ -1430,7 +2235,8 @@ public class Measurement3d {
 	 * ImageJ image or the data of a model) in the region of the clipping (the box,
 	 * the cutting plane and the mask, the whole stack without a clipping). The
 	 * threshold is the iso value (if an iso surface of the data is available) or
-	 * the threshold of the image (else NaN).
+	 * the threshold of the image (else NaN). The values of an RGB stack are the
+	 * luminance 0.299 R + 0.587 G + 0.114 B (like the iso surface).
 	 *
 	 * @param showTable true displays the results in a new sheet of the Bio7 table
 	 * @return the values of REGION_COLUMNS or null if no data is available
@@ -1460,12 +2266,14 @@ public class Measurement3d {
 			for (int z = 0; z < d; z++) {
 				ImageProcessor ip = stack.getProcessor(imp.getStackIndex(imp.getChannel(), z + 1, imp.getFrame()));
 				ip.setCalibrationTable(imp.getProcessor().getCalibrationTable());
+				boolean rgb = ip instanceof ij.process.ColorProcessor;
 				for (int y = 0; y < h; y++) {
 					for (int x = 0; x < w; x++) {
 						if (!region.isAll() && !region.contains((x + 0.5) / w, (y + 0.5) / h, (z + 0.5) / d)) {
 							continue;
 						}
-						double value = ip.getPixelValue(x, y);
+						/* RGB: the luminance like the iso surface (the threshold is its iso value) */
+						double value = rgb ? IsoSurface.luminance(ip.getPixel(x, y)) : ip.getPixelValue(x, y);
 						n++;
 						sum += value;
 						sum2 += value * value;
@@ -1594,8 +2402,8 @@ public class Measurement3d {
 			double value;
 			double level;
 			if (m != null) {
-				value = IsoSurface.sample(m.data, m.nx, m.ny, m.nz, (float) (rx * m.nx - 0.5),
-						(float) (ry * m.ny - 0.5), (float) (rz * m.nz - 0.5));
+				value = IsoSurface.sampleDouble(m.data, m.nx, m.ny, m.nz, rx * m.nx - 0.5, ry * m.ny - 0.5,
+						rz * m.nz - 0.5);
 				level = m.isoValue;
 			} else {
 				value = volume.getOpacityAt(rx, ry, rz);
@@ -1644,7 +2452,19 @@ public class Measurement3d {
 		double bestT = hit[1];
 		/* The hit and a position half a voxel inside (for the value) */
 		double length = Math.sqrt(dx * dx + dy * dy + dz * dz);
-		double inside = bestT + (length > 0 ? 0.5 / length : 0);
+		double step = length > 0 ? 0.5 / length : 0;
+		/*
+		 * The inside is against the normal of the triangle (the faces are oriented
+		 * to the outside): a ray which leaves the object (e.g., the front is
+		 * clipped) has the inside behind the hit
+		 */
+		int tri = (int) hit[0] * 3;
+		float[] mv = m.vertices;
+		int ia = m.triangles[tri] * 3, ib = m.triangles[tri + 1] * 3, ic = m.triangles[tri + 2] * 3;
+		double ux = mv[ib] - mv[ia], uy = mv[ib + 1] - mv[ia + 1], uz = mv[ib + 2] - mv[ia + 2];
+		double wx = mv[ic] - mv[ia], wy = mv[ic + 1] - mv[ia + 1], wz = mv[ic + 2] - mv[ia + 2];
+		double nx = uy * wz - uz * wy, ny = uz * wx - ux * wz, nz = ux * wy - uy * wx;
+		double inside = bestT + (dx * nx + dy * ny + dz * nz > 0 ? -step : step);
 		double[] point = { (ox + dx * bestT + 0.5) / m.nx, (oy + dy * bestT + 0.5) / m.ny,
 				(oz + dz * bestT + 0.5) / m.nz, (ox + dx * inside + 0.5) / m.nx, (oy + dy * inside + 0.5) / m.ny,
 				(oz + dz * inside + 0.5) / m.nz, 0 };
@@ -1813,11 +2633,12 @@ public class Measurement3d {
 			int x = clamp((int) (r[0] * w), w), y = clamp((int) (r[1] * h), h), z = clamp((int) (r[2] * d), d);
 			ImageProcessor ip = imp.getStack().getProcessor(imp.getStackIndex(imp.getChannel(), z + 1, imp.getFrame()));
 			ip.setCalibrationTable(imp.getProcessor().getCalibrationTable());
-			return ip.getPixelValue(x, y);
+			/* RGB: the luminance like the iso surface and the region */
+			return ip instanceof ij.process.ColorProcessor ? IsoSurface.luminance(ip.getPixel(x, y)) : ip.getPixelValue(x, y);
 		}
 		if (m != null && m.data != null) {
-			return IsoSurface.sample(m.data, m.nx, m.ny, m.nz, (float) (r[0] * m.nx - 0.5),
-					(float) (r[1] * m.ny - 0.5), (float) (r[2] * m.nz - 0.5));
+			return IsoSurface.sampleDouble(m.data, m.nx, m.ny, m.nz, r[0] * m.nx - 0.5, r[1] * m.ny - 0.5,
+					r[2] * m.nz - 0.5);
 		}
 		return Double.NaN;
 	}
@@ -2177,14 +2998,59 @@ public class Measurement3d {
 
 	/* ------------------------------ Table ------------------------------ */
 
+	/* The decimals of the tables and the CSV files (-1: full precision, see setDecimals) */
+	private static volatile int decimals = 4;
+
+	/**
+	 * Sets the number of decimals of the values in the tables and in the CSV files
+	 * of the matrices (default 4). -1 shows the full precision: the shortest
+	 * decimal number which gives the same double value when it is read (no
+	 * rounding).
+	 *
+	 * @param digits the decimals (0 - 15) or -1 for the full precision
+	 */
+	public void setDecimals(int digits) {
+		decimals = digits < 0 ? -1 : Math.min(15, digits);
+	}
+
+	/** Returns the decimals of the tables (see setDecimals, -1 = full precision). */
+	public int getDecimals() {
+		return decimals;
+	}
+
+	/**
+	 * Formats a value like the tables of the measurements (see setDecimals).
+	 *
+	 * @param v the value
+	 * @return the text
+	 */
+	public static String formatValue(double v) {
+		return format(v);
+	}
+
 	private static String format(double v) {
 		if (Double.isNaN(v)) {
 			return "NaN";
 		}
+		if (Double.isInfinite(v)) {
+			return v > 0 ? "Infinity" : "-Infinity";
+		}
 		if (v == 0) {
 			return "0";
 		}
-		return IJ.d2s(v, 4, 9);
+		int d = decimals;
+		if (d < 0) {
+			/* The shortest representation which is read as the same double (without an exponent) */
+			return new java.math.BigDecimal(Double.toString(v)).stripTrailingZeros().toPlainString();
+		}
+		if (d == 4) {
+			return IJ.d2s(v, 4, 9);
+		}
+		/* Small values with the significant digits (else they would be 0) */
+		if (d > 0 && Math.abs(v) < Math.pow(10, -(d - 1))) {
+			return String.format(java.util.Locale.ROOT, "%." + (d - 1) + "E", v);
+		}
+		return new java.math.BigDecimal(v).setScale(d, java.math.RoundingMode.HALF_UP).toPlainString();
 	}
 
 	/*

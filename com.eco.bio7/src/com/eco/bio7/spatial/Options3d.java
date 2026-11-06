@@ -3549,6 +3549,41 @@ public class Options3d extends ViewPart {
 		maxSpinner.setSelection(0);
 		maxSpinner.setToolTipText("Larger objects of the iso surface are not measured (0 measures all objects)");
 
+		Label resolutionLabel = new Label(compositeMeasure, SWT.NONE);
+		resolutionLabel.setText("Measurement Resolution:");
+		final Combo resolutionCombo = new Combo(compositeMeasure, SWT.READ_ONLY);
+		resolutionCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		resolutionCombo.setItems("1x (Voxels of the Stack)", "2x (Small Objects)", "3x", "4x");
+		resolutionCombo.select(0);
+		resolutionCombo.setToolTipText(
+				"The resolution of the measured iso surface: 2x - 4x upsample the stack (cubic interpolation) for the measurements, more accurate for objects of a few voxels (the display is not changed)");
+		resolutionCombo.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				IsoSurface iso = isoSurface();
+				if (iso != null) {
+					iso.setMeasureResolution(resolutionCombo.getSelectionIndex() + 1);
+				}
+			}
+		});
+
+		Label decimalsLabel = new Label(compositeMeasure, SWT.NONE);
+		decimalsLabel.setText("Decimals of the Tables:");
+		final Combo decimalsCombo = new Combo(compositeMeasure, SWT.READ_ONLY);
+		decimalsCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		decimalsCombo.setItems("4 (Default)", "6", "9", "12", "Full Precision");
+		decimalsCombo.select(0);
+		decimalsCombo.setToolTipText(
+				"The decimals of the values in the tables and in the CSV files of the matrices (Full Precision: the shortest number which is read as the same double value, no rounding)");
+		decimalsCombo.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Measurement3d measurement = SpatialUtil.getMeasurement();
+				if (measurement != null) {
+					int[] digits = { 4, 6, 9, 12, -1 };
+					measurement.setDecimals(digits[decimalsCombo.getSelectionIndex()]);
+				}
+			}
+		});
+
 		final Button objectsButton = new Button(compositeMeasure, SWT.PUSH);
 		GridData gd_objectsButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 		objectsButton.setLayoutData(gd_objectsButton);
@@ -3563,6 +3598,9 @@ public class Options3d extends ViewPart {
 				}
 				measurement.setMinObjectSize(minSpinner.getSelection());
 				measurement.setMaxObjectSize(maxSpinner.getSelection());
+				if (isoSurface() != null) {
+					isoSurface().setMeasureResolution(resolutionCombo.getSelectionIndex() + 1);
+				}
 				infoLabel.setText("Measuring at full resolution...");
 				Display display = objectsButton.getDisplay();
 				/* Large stacks: in the background */
@@ -3614,6 +3652,9 @@ public class Options3d extends ViewPart {
 				measurement.setMatrixFolder(folder);
 				measurement.setMinObjectSize(minSpinner.getSelection());
 				measurement.setMaxObjectSize(maxSpinner.getSelection());
+				if (isoSurface() != null) {
+					isoSurface().setMeasureResolution(resolutionCombo.getSelectionIndex() + 1);
+				}
 				infoLabel.setText("Measuring the distances... (progress in the status bar)");
 				Display display = distanceButton.getDisplay();
 				/* One measurement at a time (the sheets of two measurements would be mixed) */
