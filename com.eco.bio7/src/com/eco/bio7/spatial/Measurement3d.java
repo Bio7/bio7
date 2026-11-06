@@ -230,7 +230,8 @@ public class Measurement3d {
 			}
 			valueSum[c] += m.data == null ? Double.NaN
 					: IsoSurface.sampleDouble(m.data, m.nx, m.ny, m.nz, v[i * 3] - normals[i * 3] * m.resolution,
-							v[i * 3 + 1] - normals[i * 3 + 1] * m.resolution, v[i * 3 + 2] - normals[i * 3 + 2] * m.resolution);
+							v[i * 3 + 1] - normals[i * 3 + 1] * m.resolution, v[i * 3 + 2] - normals[i * 3 + 2] * m.resolution)
+							+ m.valueOffset;
 		}
 		/*
 		 * Volume, moments (signed tetrahedra with a reference point: the center of the
@@ -2236,7 +2237,8 @@ public class Measurement3d {
 	 * the cutting plane and the mask, the whole stack without a clipping). The
 	 * threshold is the iso value (if an iso surface of the data is available) or
 	 * the threshold of the image (else NaN). The values of an RGB stack are the
-	 * luminance 0.299 R + 0.587 G + 0.114 B (like the iso surface).
+	 * luminance 0.299 R + 0.587 G + 0.114 B (like the iso surface), the values of
+	 * a 64-bit stack are read in double.
 	 *
 	 * @param showTable true displays the results in a new sheet of the Bio7 table
 	 * @return the values of REGION_COLUMNS or null if no data is available
@@ -2267,13 +2269,16 @@ public class Measurement3d {
 				ImageProcessor ip = stack.getProcessor(imp.getStackIndex(imp.getChannel(), z + 1, imp.getFrame()));
 				ip.setCalibrationTable(imp.getProcessor().getCalibrationTable());
 				boolean rgb = ip instanceof ij.process.ColorProcessor;
+				/* 64-bit stacks in double */
+				ij.process.DoubleProcessor dp = ip instanceof ij.process.DoubleProcessor ? (ij.process.DoubleProcessor) ip : null;
 				for (int y = 0; y < h; y++) {
 					for (int x = 0; x < w; x++) {
 						if (!region.isAll() && !region.contains((x + 0.5) / w, (y + 0.5) / h, (z + 0.5) / d)) {
 							continue;
 						}
 						/* RGB: the luminance like the iso surface (the threshold is its iso value) */
-						double value = rgb ? IsoSurface.luminance(ip.getPixel(x, y)) : ip.getPixelValue(x, y);
+						double value = rgb ? IsoSurface.luminance(ip.getPixel(x, y))
+								: dp != null ? dp.getd(x, y) : ip.getPixelValue(x, y);
 						n++;
 						sum += value;
 						sum2 += value * value;
@@ -2403,7 +2408,7 @@ public class Measurement3d {
 			double level;
 			if (m != null) {
 				value = IsoSurface.sampleDouble(m.data, m.nx, m.ny, m.nz, rx * m.nx - 0.5, ry * m.ny - 0.5,
-						rz * m.nz - 0.5);
+						rz * m.nz - 0.5) + m.valueOffset;
 				level = m.isoValue;
 			} else {
 				value = volume.getOpacityAt(rx, ry, rz);
@@ -2633,12 +2638,15 @@ public class Measurement3d {
 			int x = clamp((int) (r[0] * w), w), y = clamp((int) (r[1] * h), h), z = clamp((int) (r[2] * d), d);
 			ImageProcessor ip = imp.getStack().getProcessor(imp.getStackIndex(imp.getChannel(), z + 1, imp.getFrame()));
 			ip.setCalibrationTable(imp.getProcessor().getCalibrationTable());
-			/* RGB: the luminance like the iso surface and the region */
+			/* RGB: the luminance like the iso surface and the region; 64-bit: in double */
+			if (ip instanceof ij.process.DoubleProcessor) {
+				return ((ij.process.DoubleProcessor) ip).getd(x, y);
+			}
 			return ip instanceof ij.process.ColorProcessor ? IsoSurface.luminance(ip.getPixel(x, y)) : ip.getPixelValue(x, y);
 		}
 		if (m != null && m.data != null) {
 			return IsoSurface.sampleDouble(m.data, m.nx, m.ny, m.nz, r[0] * m.nx - 0.5, r[1] * m.ny - 0.5,
-					r[2] * m.nz - 0.5);
+					r[2] * m.nz - 0.5) + m.valueOffset;
 		}
 		return Double.NaN;
 	}

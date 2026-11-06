@@ -138,6 +138,13 @@ public class IsoSurface {
 	private int colorMode = COLOR_SINGLE;
 	private int colorChannel = 0;
 	private float[] colorData;
+	/*
+	 * The stored values are value - valueOffset (64-bit stacks: the minimum of the
+	 * stack, else 0), so the float values keep the precision of the contrast also
+	 * for large values; colorOffset is the offset of the color values!
+	 */
+	private double valueOffset = 0;
+	private double colorOffset = 0;
 	private int[] imageColors; // The displayed colors (RGB) of the stack
 	private double colorMin;
 	private double colorMax = 255;
@@ -193,11 +200,13 @@ public class IsoSurface {
 		int th = (h + sy - 1) / sy;
 		int td = (d + sz - 1) / sz;
 		int channel = imp.getChannel();
-		float[] values = readChannel(imp, channel, sx, sy, sz, tw, th, td);
+		double offset = stackOffset(imp, channel);
+		float[] values = readChannel(imp, channel, sx, sy, sz, tw, th, td, offset);
 		/* The values of another channel for the intensity colors! */
 		int cc = colorChannel;
 		boolean otherChannel = cc > 0 && cc != channel && cc <= imp.getNChannels();
-		float[] colorValues = otherChannel ? readChannel(imp, cc, sx, sy, sz, tw, th, td) : values;
+		double otherOffset = otherChannel ? stackOffset(imp, cc) : offset;
+		float[] colorValues = otherChannel ? readChannel(imp, cc, sx, sy, sz, tw, th, td, otherOffset) : values;
 		int[] displayColors = readDisplayColors(imp, sx, sy, sz, tw, th, td);
 		ColorModel otherLut = null;
 		double otherMin = 0;
@@ -256,7 +265,9 @@ public class IsoSurface {
 				isoValue = iso;
 			}
 			isoExplicit = keepIso;
+			valueOffset = offset;
 			colorData = colorValues;
+			colorOffset = otherOffset;
 			customColorData = false;
 			customColorRange = false;
 			imageColors = displayColors;
@@ -277,8 +288,33 @@ public class IsoSurface {
 		return (float) (0.299 * ((c >> 16) & 0xff) + 0.587 * ((c >> 8) & 0xff) + 0.114 * (c & 0xff));
 	}
 
+	/*
+	 * The offset of the values of a channel: the minimum of a 64-bit stack (the
+	 * values are stored as value - offset in float, see readChannel), else 0!
+	 */
+	private static double stackOffset(ImagePlus imp, int channel) {
+		ImageStack stack = imp.getStack();
+		int d = imp.getNSlices(), frame = imp.getFrame();
+		double min = Double.POSITIVE_INFINITY;
+		for (int z = 0; z < d; z++) {
+			ImageProcessor ip = stack.getProcessor(imp.getStackIndex(channel, z + 1, frame));
+			if (!(ip instanceof ij.process.DoubleProcessor)) {
+				return 0;
+			}
+			ij.process.DoubleProcessor dp = (ij.process.DoubleProcessor) ip;
+			int n = ip.getWidth() * ip.getHeight();
+			for (int i = 0; i < n; i++) {
+				double v = dp.getd(i);
+				if (v < min) {
+					min = v;
+				}
+			}
+		}
+		return Double.isFinite(min) ? min : 0;
+	}
+
 	private static float[] readChannel(ImagePlus imp, int channel, int sx, int sy, int sz, int tw, int th,
-			int td) {
+			int td, double offset) {
 		float[] values = new float[tw * th * td];
 		ImageStack stack = imp.getStack();
 		int d = imp.getNSlices();
@@ -292,6 +328,9 @@ public class IsoSurface {
 					if (rgb) {
 						int c = ip.getPixel(x * sx, y * sy);
 						value = luminance(c);
+					} else if (ip instanceof ij.process.DoubleProcessor) {
+						/* 64-bit: the difference to the offset in double, then float */
+						value = (float) (((ij.process.DoubleProcessor) ip).getd(x * sx, y * sy) - offset);
 					} else {
 						value = ip.getf(x * sx, y * sy);
 					}
@@ -429,9 +468,11 @@ public class IsoSurface {
 			imageColors = null;
 			colorLut = null;
 			/* A color array (see setColorData) of the same size is kept! */
+			valueOffset = 0;
 			if (!customColorData || colorData == null || colorData.length != copy.length) {
 				customColorData = false;
 				colorData = copy;
+				colorOffset = 0;
 				if (!customColorRange) {
 					colorMin = min;
 					colorMax = max;
@@ -464,6 +505,7 @@ public class IsoSurface {
 		}
 		synchronized (this) {
 			colorData = copy;
+			colorOffset = 0;
 			customColorData = true;
 			if (!customColorRange) {
 				colorMin = min;
@@ -522,6 +564,7 @@ public class IsoSurface {
 	public synchronized void resetColors() {
 		customColorData = false;
 		colorData = data;
+		colorOffset = valueOffset;
 		customColorRange = false;
 		colorMin = displayMin;
 		colorMax = displayMax;
@@ -539,6 +582,7 @@ public class IsoSurface {
 	public synchronized void clearColorData() {
 		customColorData = false;
 		colorData = data;
+		colorOffset = valueOffset;
 		if (!customColorRange) {
 			colorMin = displayMin;
 			colorMax = displayMax;
@@ -573,8 +617,8 @@ public class IsoSurface {
 				min = Math.min(min, v);
 				max = Math.max(max, v);
 			}
-			colorMin = min;
-			colorMax = max;
+			colorMin = min + colorOffset;
+			colorMax = max + colorOffset;
 		}
 		colorsDirty = true;
 	}
@@ -690,7 +734,7 @@ public class IsoSurface {
 			w = nx;
 			h = ny;
 			d = nz;
-			iso = isoValue;
+			iso = isoValue - valueOffset;
 			/* The smoothing in voxels of the stack (the reduced display: in its voxels) */
 			sigma = smoothing / stepX;
 			iterations = meshSmoothing;
@@ -755,12 +799,16 @@ public class IsoSurface {
 				return fullData;
 			}
 		}
-		float[] values = readChannel(imp, imp.getChannel(), 1, 1, 1, w, h, d);
+		double offset;
+		synchronized (this) {
+			offset = valueOffset;
+		}
+		float[] values = readChannel(imp, imp.getChannel(), 1, 1, 1, w, h, d, offset);
 		if (f > 1) {
 			values = upsample(values, w, h, d, f);
 		}
 		/* The smoothing in voxels of the stack: in voxels of the upsampled stack */
-		Mesh mesh = computeMesh(values, w * f, h * f, d * f, iso, sigma * f, iterations, cut);
+		Mesh mesh = computeMesh(values, w * f, h * f, d * f, iso - offset, sigma * f, iterations, cut);
 		MeasureData m = new MeasureData();
 		m.vertices = mesh.vertices;
 		m.triangles = mesh.triangles;
@@ -772,6 +820,7 @@ public class IsoSurface {
 		m.stepY = 1.0 / f;
 		m.stepZ = voxelDepth / f;
 		m.resolution = f;
+		m.valueOffset = offset;
 		m.pixelSize = display.pixelSize;
 		m.unit = display.unit;
 		m.isoValue = iso;
@@ -971,7 +1020,7 @@ public class IsoSurface {
 				w = nx;
 				h = ny;
 				d = nz;
-				iso = isoValue;
+				iso = isoValue - valueOffset;
 				/* The smoothing in voxels of the stack (the reduced display: in its voxels) */
 				sigma = smoothing / stepX;
 				iterations = meshSmoothing;
@@ -1227,7 +1276,7 @@ public class IsoSurface {
 				/* The normals point outside (lower values)! */
 				float value = sample(colorData, nx, ny, nz, x - depthInside * inward[i * 3],
 						y - depthInside * inward[i * 3 + 1], z - depthInside * inward[i * 3 + 2]);
-				t = (value - colorMin) / range;
+				t = (value + colorOffset - colorMin) / range;
 			} else {
 				t = nz > 1 ? z / (nz - 1) : 0;
 			}
@@ -1334,7 +1383,7 @@ public class IsoSurface {
 		double range = colorMax > colorMin ? colorMax - colorMin : 1;
 		int[] histogram = new int[256];
 		for (float v : colorData) {
-			int index = (int) Math.round((v - colorMin) / range * 255);
+			int index = (int) Math.round((v + colorOffset - colorMin) / range * 255);
 			if (index >= 0 && index <= 255) {
 				histogram[index]++;
 			}
@@ -2476,6 +2525,7 @@ public class IsoSurface {
 		int nx, ny, nz;
 		double stepX, stepY, stepZ; // the size of a data voxel in pixels (z: with the calibrated voxel depth)
 		int resolution = 1; // the upsampling of the stack for the measurements (see setMeasureResolution)
+		double valueOffset; // the stored data are value - valueOffset (64-bit stacks)
 		double pixelSize;
 		String unit;
 		double isoValue;
@@ -2559,6 +2609,7 @@ public class IsoSurface {
 		m.pixelSize = pixelSize;
 		m.unit = unit;
 		m.isoValue = isoValue;
+		m.valueOffset = valueOffset;
 		m.image = image;
 		m.origin = meshOnly ? meshOrigin.clone() : null;
 		return m;
@@ -2605,6 +2656,8 @@ public class IsoSurface {
 		}
 		synchronized (this) {
 			data = null;
+			valueOffset = 0;
+			colorOffset = 0;
 			image = null;
 			fullData = null;
 			fullKey = null;
