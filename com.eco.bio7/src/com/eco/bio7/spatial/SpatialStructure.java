@@ -45,6 +45,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 
 import com.eco.bio7.Bio7Plugin;
@@ -321,6 +322,17 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		canvas.setSize(canvasWidth, canvasHeight);
 		/* The HiDPI scale (NEWT sizes are pixels on some platforms) for the overlays! */
 		canvas.addListener(SWT.Resize, _ -> updateCanvasPixelScale());
+		/* A move to a display with another resolution (no resize event of the canvas) */
+		canvas.addListener(SWT.ZoomChanged, _ -> updateCanvasPixelScale());
+		canvas.addListener(SWT.Show, _ -> updateCanvasPixelScale());
+		final Shell canvasShell = canvas.getShell();
+		final Listener moveListener = _ -> updateCanvasPixelScale();
+		canvasShell.addListener(SWT.Move, moveListener);
+		canvas.addListener(SWT.Dispose, _ -> {
+			if (!canvasShell.isDisposed()) {
+				canvasShell.removeListener(SWT.Move, moveListener);
+			}
+		});
 		/*
 		 * Workaround for HiDPI scaling on Windows: NewtCanvasSWT sizes the NEWT window
 		 * with the SWT client area in points but NEWT on Windows expects pixels. Our
@@ -555,6 +567,24 @@ public class SpatialStructure implements KeyListener, MouseListener {
 
 		public void dispose(GLAutoDrawable drawable) {
 		}
+	}
+
+	/*
+	 * The scale of the pixels of the view for the axis orientation overlay (its
+	 * viewport is sized in pixels). On macOS the size of the NEWT window is in points
+	 * and its surface in pixels: their ratio is the current scale, also after the
+	 * window has been moved to a display with another resolution (the size of the
+	 * canvas in points doesn't change, so there is no resize event). On the other
+	 * platforms the scale of SWT is used (updated, e.g., by a zoom change event).
+	 */
+	private float overlayPixelScale() {
+		if (Util.getOS().equals("Mac") && glWindow != null) {
+			int w = glWindow.getWidth(), sw = glWindow.getSurfaceWidth();
+			if (w > 0 && sw > 0) {
+				return sw / (float) w;
+			}
+		}
+		return canvasPixelScale;
 	}
 
 	private void updateCanvasPixelScale() {
@@ -840,9 +870,17 @@ public class SpatialStructure implements KeyListener, MouseListener {
 				getFps(drawable);
 
 			}
-			/* The axis orientation overlay in the top right corner (like in Blender)! */
+			/*
+			 * The axis orientation overlay in the top right corner (like in Blender) with
+			 * the current scale of the display (also after a move of the window to a
+			 * display with another resolution)!
+			 */
 			if (showAxisGizmo) {
-				axisGizmo.render(gl, width, height, canvasPixelScale);
+				axisGizmo.render(gl, width, height, overlayPixelScale());
+			}
+			/* The texts are created again for a display with another resolution */
+			if (scene != null) {
+				scene.setSurfaceScale(overlayPixelScale());
 			}
 			/* The title of the plot view at the top of the view */
 			String title = plotTitle;

@@ -833,7 +833,8 @@ public class SpatialScene {
 	 */
 	public void drawLegends(GL2 gl, PlotLegend legend, PlotLegend colorBar, int width, int height, float pixelScale, float fontScale) {
 		/* The size of the fonts and the layout: the scale of the screen and the font size */
-		float screenScale = pixelScale;
+		/* The layout (margins, sizes) with the scale of the current display */
+		float screenScale = surfaceScale > 0 ? surfaceScale : pixelScale;
 		pixelScale *= fontScale;
 		String legendFont = family(fonts, 3);
 		if (legendRenderer == null || legendScale != pixelScale || !legendFont.equals(legendFamily)) {
@@ -1118,6 +1119,32 @@ public class SpatialScene {
 	/* The height of the title drawn in the current frame (the legend is drawn below) */
 	private int titleHeight;
 
+	/* The scale of the GL surface (the display) of the current title and legend renderers */
+	private float surfaceScale = -1;
+
+	/**
+	 * The scale of the GL surface of the current frame (the display of the view).
+	 * The text renderers create their glyphs for the display, so the title and the
+	 * legend renderers are created again when the window was moved to a display
+	 * with another resolution (in the GL thread).
+	 */
+	public void setSurfaceScale(float scale) {
+		if (scale == surfaceScale) {
+			return;
+		}
+		surfaceScale = scale;
+		if (titleRenderer != null) {
+			titleRenderer.dispose();
+			titleRenderer = null;
+		}
+		if (legendRenderer != null) {
+			legendRenderer.dispose();
+			legendTitleRenderer.dispose();
+			legendRenderer = null;
+			legendTitleRenderer = null;
+		}
+	}
+
 	/** Called if no title is drawn in the frame (the legend at the top). */
 	public void noPlotTitle() {
 		titleHeight = 0;
@@ -1128,7 +1155,8 @@ public class SpatialScene {
 	 * separated with \n).
 	 */
 	public void drawPlotTitle(GL2 gl, String title, int width, int height, float pixelScale, float fontScale) {
-		float screenScale = pixelScale;
+		/* The layout (margins, sizes) with the scale of the current display */
+		float screenScale = surfaceScale > 0 ? surfaceScale : pixelScale;
 		pixelScale *= fontScale;
 		String titleFont = family(fonts, 0);
 		if (titleRenderer == null || titleScale != pixelScale || !titleFont.equals(titleFamily)) {

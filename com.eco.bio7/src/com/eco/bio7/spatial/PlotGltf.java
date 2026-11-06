@@ -648,7 +648,8 @@ final class PlotGltf {
 		String[] fonts = plot.fontsOf();
 		StringBuilder s = new StringBuilder();
 		for (int i = 0; i < 3; i++) {
-			String file = fontFile(fonts[i], bold);
+			/* The default font of the 3D view if no font is set */
+			String file = fontFile(fonts[i] != null && !fonts[i].isBlank() ? fonts[i] : SpatialScene.DEFAULT_FONT, bold);
 			s.append(i > 0 ? ", " : "").append(file != null ? py(file) : "None");
 		}
 		return s.toString();
@@ -893,22 +894,18 @@ final class PlotGltf {
 			    curve = bpy.data.curves.new(body[:20] or "Text", type='FONT')
 			    curve.body = body
 			    curve.size = size
-			    # The font of the text kind (the bold style if available)
-			    font_file = None
+			    # The font of the text kind (the bold style if available, an offset of the
+			    # outline would distort the letters)
 			    for file in ((TEXT_BOLD_FONTS[kind], TEXT_FONTS[kind]) if bold else (TEXT_FONTS[kind],)):
 			        if file and os.path.exists(file):
 			            try:
 			                curve.font = bpy.data.fonts.load(file, check_existing=True)
-			                font_file = file
 			                break
 			            except RuntimeError:
 			                pass
 			    curve.align_x = 'CENTER'
 			    curve.align_y = 'CENTER'
 			    curve.extrude = size * 0.02
-			    # A bold text with the default font of Blender (an offset distorts other fonts)
-			    if bold and font_file is None:
-			        curve.offset = size * 0.015
 			    obj = bpy.data.objects.new("Text " + body[:20], curve)
 			    obj.location = (x, y, z)
 			    obj.data.materials.append(text_materials[kind])
