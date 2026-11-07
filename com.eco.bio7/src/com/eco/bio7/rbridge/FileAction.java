@@ -55,33 +55,10 @@ public class FileAction extends Action implements IMenuCreator {
 		}
 		fMenu = new Menu(parent);
 
+		/* The import and the export of a format together */
 		MenuItem menuItem51 = new MenuItem(fMenu, SWT.PUSH);
 
 		menuItem51.setText("Load Bio7 XML");
-
-		new MenuItem(fMenu, SWT.SEPARATOR);
-
-		MenuItem menuItem = new MenuItem(fMenu, SWT.PUSH);
-
-		menuItem.setText("Import Excel (97-2003)");
-
-		MenuItem menuItem01 = new MenuItem(fMenu, SWT.PUSH);
-
-		menuItem01.setText("Import Excel (2007-2013 XML)");
-
-		new MenuItem(fMenu, SWT.SEPARATOR);
-
-		MenuItem menuItemOds = new MenuItem(fMenu, SWT.PUSH);
-
-		menuItemOds.setText("Import LibreOffice (ODS)");
-
-		new MenuItem(fMenu, SWT.SEPARATOR);
-
-		MenuItem menuItem5 = new MenuItem(fMenu, SWT.PUSH);
-
-		menuItem5.setText("Import CSV");
-
-		new MenuItem(fMenu, SWT.SEPARATOR);
 
 		MenuItem menuItem6 = new MenuItem(fMenu, SWT.PUSH);
 
@@ -89,9 +66,19 @@ public class FileAction extends Action implements IMenuCreator {
 
 		new MenuItem(fMenu, SWT.SEPARATOR);
 
+		MenuItem menuItem = new MenuItem(fMenu, SWT.PUSH);
+
+		menuItem.setText("Import Excel (97-2003)");
+
 		MenuItem menuItem1 = new MenuItem(fMenu, SWT.PUSH);
 
 		menuItem1.setText("Export as Excel (97-2003)");
+
+		new MenuItem(fMenu, SWT.SEPARATOR);
+
+		MenuItem menuItem01 = new MenuItem(fMenu, SWT.PUSH);
+
+		menuItem01.setText("Import Excel (2007-2013 XML)");
 
 		MenuItem menuItem11 = new MenuItem(fMenu, SWT.PUSH);
 
@@ -99,11 +86,19 @@ public class FileAction extends Action implements IMenuCreator {
 
 		new MenuItem(fMenu, SWT.SEPARATOR);
 
+		MenuItem menuItemOds = new MenuItem(fMenu, SWT.PUSH);
+
+		menuItemOds.setText("Import LibreOffice (ODS)");
+
 		MenuItem menuItemOdsExport = new MenuItem(fMenu, SWT.PUSH);
 
 		menuItemOdsExport.setText("Export as LibreOffice (ODS)");
 
 		new MenuItem(fMenu, SWT.SEPARATOR);
+
+		MenuItem menuItem5 = new MenuItem(fMenu, SWT.PUSH);
+
+		menuItem5.setText("Import CSV");
 
 		MenuItem menuItem2 = new MenuItem(fMenu, SWT.PUSH);
 
