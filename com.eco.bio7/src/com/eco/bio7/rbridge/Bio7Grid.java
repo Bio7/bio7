@@ -283,6 +283,8 @@ public class Bio7Grid {
 					Color col=colorRegistry.get(colorAsString);
 					if(col==null){
 						colorRegistry.put(colorAsString, new RGB(r,g,b));
+						/* The registered color (else the first call of a color sets no color) */
+						col=colorRegistry.get(colorAsString);
 					}
 					grid.getItem(row).setBackground(column, col);
 
@@ -352,6 +354,123 @@ public class Bio7Grid {
 	 *            the title for the column.
 	 * 
 	 */
+
+	/**
+	 * Returns the title of a column of a sheet like in a spreadsheet: A, B, ...,
+	 * Z, AA, AB, ... (the title of the columns of the Bio7 table, e.g., for ranges
+	 * of cells like B2:B51).
+	 *
+	 * @param index the index of the column (0 based)
+	 * @return the title
+	 */
+	public static String columnName(int index) {
+		StringBuilder b = new StringBuilder();
+		int c = index + 1;
+		while (c > 0) {
+			b.insert(0, (char) ('A' + (c - 1) % 26));
+			c = (c - 1) / 26;
+		}
+		return b.toString();
+	}
+
+	/* The widths of the columns before they were fitted to the content (the data of a sheet) */
+	private static final String FITTED_WIDTHS = "bio7.fittedColumnWidths";
+	/* The maximum width of a fitted column (e.g., a long text) */
+	private static final int MAX_FITTED_WIDTH = 600;
+
+	/**
+	 * Returns true if the columns of a sheet are fitted to the content (see
+	 * fitColumns).
+	 */
+	public static boolean isFitted(Grid grid) {
+		return grid != null && !grid.isDisposed() && grid.getData(FITTED_WIDTHS) != null;
+	}
+
+	/**
+	 * Fits the widths of the columns of a sheet to the content (the widest text
+	 * of a column and its title, at most 600 points) or restores the widths before
+	 * (in the user interface thread). For large sheets the texts with the most
+	 * characters of each column are measured.
+	 *
+	 * @param grid the sheet
+	 * @param fit  true fits the columns, false restores the widths before
+	 */
+	public static void fitColumns(Grid grid, boolean fit) {
+		if (grid == null || grid.isDisposed()) {
+			return;
+		}
+		int columns = grid.getColumnCount();
+		if (!fit) {
+			int[] before = (int[]) grid.getData(FITTED_WIDTHS);
+			grid.setData(FITTED_WIDTHS, null);
+			if (before != null) {
+				for (int c = 0; c < columns; c++) {
+					grid.getColumn(c).setWidth(c < before.length ? before[c] : 50);
+				}
+			}
+			return;
+		}
+		int[] before = new int[columns];
+		for (int c = 0; c < columns; c++) {
+			before[c] = grid.getColumn(c).getWidth();
+		}
+		int rows = grid.getItemCount();
+		/* The candidates of each column: the 20 texts with the most characters and the cells with an image */
+		final int k = 20;
+		int[][] longest = new int[columns][k];
+		int[][] lengths = new int[columns][k];
+		java.util.List<java.util.List<Integer>> images = new java.util.ArrayList<>();
+		for (int c = 0; c < columns; c++) {
+			java.util.Arrays.fill(longest[c], -1);
+			java.util.Arrays.fill(lengths[c], -1);
+			images.add(new java.util.ArrayList<>());
+		}
+		for (int r = 0; r < rows; r++) {
+			GridItem item = grid.getItem(r);
+			for (int c = 0; c < columns; c++) {
+				int len = item.getText(c).length();
+				int[] l = lengths[c];
+				if (len > l[k - 1]) {
+					/* Sorted insertion (descending) */
+					int i = k - 1;
+					while (i > 0 && l[i - 1] < len) {
+						l[i] = l[i - 1];
+						longest[c][i] = longest[c][i - 1];
+						i--;
+					}
+					l[i] = len;
+					longest[c][i] = r;
+				}
+				if (item.getImage(c) != null && images.get(c).size() < 50) {
+					images.get(c).add(r);
+				}
+			}
+		}
+		org.eclipse.swt.graphics.GC gc = new org.eclipse.swt.graphics.GC(grid);
+		try {
+			for (int c = 0; c < columns; c++) {
+				GridColumn column = grid.getColumn(c);
+				gc.setFont(grid.getFont());
+				int width = column.getHeaderRenderer().computeSize(gc, SWT.DEFAULT, SWT.DEFAULT, column).x;
+				java.util.Set<Integer> candidates = new java.util.LinkedHashSet<>();
+				for (int r : longest[c]) {
+					if (r >= 0) {
+						candidates.add(r);
+					}
+				}
+				candidates.addAll(images.get(c));
+				for (int r : candidates) {
+					GridItem item = grid.getItem(r);
+					gc.setFont(item.getFont(c) != null ? item.getFont(c) : grid.getFont());
+					width = Math.max(width, column.getCellRenderer().computeSize(gc, SWT.DEFAULT, SWT.DEFAULT, item).x);
+				}
+				column.setWidth(Math.max(20, Math.min(MAX_FITTED_WIDTH, width + 2)));
+			}
+		} finally {
+			gc.dispose();
+		}
+		grid.setData(FITTED_WIDTHS, before);
+	}
 
 	public static void createColumn(final int index, final int width, final String titel) {
 		final Grid grid = RTable.getGrid();

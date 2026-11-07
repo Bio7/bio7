@@ -73,6 +73,7 @@ import org.eclipse.swt.events.TreeListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
@@ -270,8 +271,110 @@ public class Grid extends Canvas {
 	private boolean cellSelectionEnabled = false;
 	private boolean cellDragSelectionEnabled = true;
 
-	private final List<Point> selectedCells = new ArrayList<>();
-	private final List<Point> selectedCellsBeforeRangeSelect = new ArrayList<>();
+	private final CellList selectedCells = new CellList();
+	private final CellList selectedCellsBeforeRangeSelect = new CellList();
+
+	/**
+	 * A list of cells with a hash index: contains, add and remove without a search
+	 * through the whole list (a large selection, e.g. a column with many rows, is
+	 * tested for every painted cell). The order of the list is kept.
+	 */
+	private static final class CellList extends ArrayList<Point> {
+		private static final long serialVersionUID = 1L;
+		private final java.util.HashMap<Point, Integer> count = new java.util.HashMap<>();
+
+		@Override
+		public boolean add(final Point p) {
+			count.merge(new Point(p.x, p.y), 1, Integer::sum);
+			return super.add(p);
+		}
+
+		@Override
+		public void add(final int index, final Point p) {
+			count.merge(new Point(p.x, p.y), 1, Integer::sum);
+			super.add(index, p);
+		}
+
+		@Override
+		public boolean addAll(final java.util.Collection<? extends Point> c) {
+			for (final Point p : c) {
+				count.merge(new Point(p.x, p.y), 1, Integer::sum);
+			}
+			return super.addAll(c);
+		}
+
+		@Override
+		public Point set(final int index, final Point p) {
+			final Point old = super.set(index, p);
+			count.computeIfPresent(old, (k, n) -> n > 1 ? n - 1 : null);
+			count.merge(new Point(p.x, p.y), 1, Integer::sum);
+			return old;
+		}
+
+		@Override
+		public boolean contains(final Object o) {
+			return o instanceof Point && count.containsKey(o);
+		}
+
+		@Override
+		public int indexOf(final Object o) {
+			return contains(o) ? super.indexOf(o) : -1;
+		}
+
+		@Override
+		public boolean remove(final Object o) {
+			if (!contains(o)) {
+				return false;
+			}
+			final int i = super.indexOf(o);
+			if (i < 0) {
+				return false;
+			}
+			remove(i);
+			return true;
+		}
+
+		@Override
+		public Point remove(final int index) {
+			final Point p = super.remove(index);
+			count.computeIfPresent(p, (k, n) -> n > 1 ? n - 1 : null);
+			return p;
+		}
+
+		@Override
+		public boolean removeAll(final java.util.Collection<?> c) {
+			final java.util.Set<?> remove = c instanceof java.util.Set ? (java.util.Set<?>) c : new java.util.HashSet<>(c);
+			final boolean changed = super.removeIf(remove::contains);
+			if (changed) {
+				reindex();
+			}
+			return changed;
+		}
+
+		@Override
+		public boolean retainAll(final java.util.Collection<?> c) {
+			final java.util.Set<?> keep = c instanceof java.util.Set ? (java.util.Set<?>) c : new java.util.HashSet<>(c);
+			final boolean changed = super.removeIf(p -> !keep.contains(p));
+			if (changed) {
+				reindex();
+			}
+			return changed;
+		}
+
+		@Override
+		public void clear() {
+			count.clear();
+			super.clear();
+		}
+
+		/** Builds the index again (e.g., after the cells were changed). */
+		void reindex() {
+			count.clear();
+			for (final Point p : this) {
+				count.merge(new Point(p.x, p.y), 1, Integer::sum);
+			}
+		}
+	}
 
 	private boolean cellDragSelectionOccuring = false;
 	private boolean cellRowDragSelectionOccuring = false;
@@ -4193,9 +4296,8 @@ public class Grid extends Canvas {
 		}
 
 		vScroll.setSelection(vScrollAmount);
-		topIndex = -1;
-		bottomIndex = -1;
-		redraw();
+		/* Bio7: like scrolling with the scroll bar (the painted rows are moved, see onScrollSelection) */
+		onScrollSelection();
 	}
 
 	/**
@@ -5251,13 +5353,104 @@ public class Grid extends Canvas {
 	/**
 	 * Paints.
 	 *
-	 * @param event paint event
+	 * event paint event
 	 */
+	/*
+	 * Bio7: the painted grid in an image (the rows are moved when scrolling by
+	 * less rows than are visible and only the new rows are painted: painting the
+	 * texts of all cells is slow). Each other redraw paints the whole image again.
+	 */
+	private Image paintCache;
+	private boolean paintCacheValid;
+	private int paintCacheHScroll;
+	private int pendingScrollDy;
+	private boolean scrollRedraw;
+	/* The regions which are redrawn (painted again into the image, more than 16: all) */
+	private final java.util.List<Rectangle> dirtyRegions = new java.util.ArrayList<>();
+
+	@Override
+	public void redraw() {
+		paintCacheValid = false;
+		super.redraw();
+	}
+
+	@Override
+	public void redraw(final int x, final int y, final int width, final int height, final boolean all) {
+		if (!scrollRedraw && width > 0 && height > 0) {
+			/* Only this region is painted again (e.g., the hover of a cell) */
+			if (dirtyRegions.size() >= 16) {
+				paintCacheValid = false;
+			} else {
+				dirtyRegions.add(new Rectangle(x, y, width, height));
+			}
+		}
+		super.redraw(x, y, width, height, all);
+	}
+
 	private void onPaint(final PaintEvent event) {
+		final Rectangle area = getClientArea();
+		final Point size = getSize();
+		if (size.x <= 0 || size.y <= 0) {
+			return;
+		}
+		if (paintCache == null || paintCache.isDisposed() || paintCache.getBounds().width != size.x || paintCache.getBounds().height != size.y) {
+			if (paintCache != null && !paintCache.isDisposed()) {
+				paintCache.dispose();
+			}
+			paintCache = new Image(getDisplay(), size.x, size.y);
+			paintCacheValid = false;
+		}
+		final int hScroll = getHScrollSelectionInPixels();
+		final int top = columnHeadersVisible ? headerHeight : 0;
+		final int dy = pendingScrollDy;
+		pendingScrollDy = 0;
+		final java.util.List<Rectangle> dirty = new java.util.ArrayList<>(dirtyRegions);
+		dirtyRegions.clear();
+		final GC imageGC = new GC(paintCache);
+		try {
+			imageGC.setFont(getFont());
+			final boolean move = dy != 0 && Math.abs(dy) < area.height - top;
+			if (paintCacheValid && hScroll == paintCacheHScroll && (move || dy == 0)) {
+				if (move) {
+					/* The rows moved, the new rows are painted */
+					/* Moved down: up to the bottom of the image (the rows below the client area, too) */
+					final int height = (dy > 0 ? size.y : area.height) - top - Math.abs(dy);
+					imageGC.copyArea(0, top + Math.max(-dy, 0), size.x, height, 0, top + Math.max(dy, 0));
+					dirty.add(dy < 0 ? new Rectangle(0, area.height + dy, size.x, size.y - area.height - dy) : new Rectangle(0, top, size.x, dy));
+				}
+				/*
+				 * The regions which changed (in the coordinates after the move), 2 pixels
+				 * larger: the rows and the row headers are painted a little beyond their
+				 * bounds (covered by the next row in a full painting)
+				 */
+				for (final Rectangle r : dirty) {
+					final int y0 = Math.max(top, r.y - 2), y1 = Math.min(size.y, r.y + r.height + 2);
+					if (y1 > y0) {
+						imageGC.setClipping(Math.max(0, r.x - 2), y0, r.width + 4, y1 - y0);
+						paintGrid(imageGC);
+					}
+					/* The column headers (e.g., the selected columns) */
+					if (r.y < top && r.y + r.height > 0) {
+						imageGC.setClipping(Math.max(0, r.x), 0, r.width, Math.min(top, r.y + r.height));
+						paintGrid(imageGC);
+					}
+				}
+			} else {
+				imageGC.setClipping((Rectangle) null);
+				paintGrid(imageGC);
+			}
+			paintCacheValid = true;
+			paintCacheHScroll = hScroll;
+		} finally {
+			imageGC.dispose();
+		}
+		event.gc.drawImage(paintCache, 0, 0);
+	}
+
+	private void paintGrid(final GC gc) {
 		final InsertMark insertMark = new InsertMark(); // we will populate these values while drawing the cells
 
 		final GridCellSpanManager cellSpanManager = new GridCellSpanManager();
-		final GC gc = event.gc;
 		final Rectangle originalClipping = gc.getClipping();
 
 		gc.setBackground(getBackground());
@@ -5272,7 +5465,10 @@ public class Grid extends Canvas {
 		int y = 0;
 		final int extraFill = getExtraFill(controlSize);
 		if (columnHeadersVisible) {
-			paintHeader(gc, extraFill);
+			/* Bio7: not if only rows are painted (scrolling) */
+			if (originalClipping == null || originalClipping.y < headerHeight) {
+				paintHeader(gc, extraFill);
+			}
 			y += headerHeight;
 		}
 
@@ -5406,6 +5602,14 @@ public class Grid extends Canvas {
 				item = null;
 			}
 
+			/* Bio7: a row outside of the area which is painted (e.g., scrolling: the new rows only) */
+			if (item != null && originalClipping != null
+					&& (y + item.getHeight() + 1 < originalClipping.y || y > originalClipping.y + originalClipping.height)) {
+				y += item.getHeight() + 1;
+				row++;
+				continue;
+			}
+
 			if (item != null) {
 				boolean cellInRowSelected = false;
 
@@ -5487,7 +5691,8 @@ public class Grid extends Canvas {
 
 							column.getCellRenderer().paint(gc, item);
 
-							gc.setClipping((Rectangle) null);
+							/* Bio7: the clipping of the painting (not none: only a region may be painted, see onPaint) */
+							gc.setClipping(originalClipping);
 
 							// collect the insertMark position
 							if (!insertMark.posFound && insertMarkItem == item
@@ -6218,6 +6423,8 @@ public class Grid extends Canvas {
 	 */
 	private Event updateCellSelection(final Vector<Point> newCells, final int stateMask, final boolean dragging,
 			final boolean reverseDuplicateSelections) {
+		/* Bio7: only the changed cells are painted again (after the event, see flushSelectionChange) */
+		markSelectionChange();
 		boolean shift = false;
 		boolean ctrl = false;
 
@@ -6348,10 +6555,168 @@ public class Grid extends Canvas {
 			followupCellSelectionEventOwed = true;
 		}
 
-		final Rectangle clientArea = getClientArea();
-		redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
+		/* Bio7: painted in flushSelectionChange (only the changed cells, not the whole table) */
 
 		return e;
+	}
+
+	/* Bio7: the visible selection before a change (null if no change is pending) */
+	private SelectionSnapshot selectionSnapshot;
+
+	/** The selection state of the visible cells (to paint only the changed cells). */
+	private static final class SelectionSnapshot {
+		int topIndex;
+		int hScroll;
+		GridItem[] rows;
+		int[] rowY;
+		int[] rowHeight;
+		GridColumn[] cols;
+		int[] colX;
+		int[] colWidth;
+		boolean[] selected;
+		GridItem focusItem;
+		GridColumn focusColumn;
+		java.util.Set<GridColumn> selectedColumns;
+
+		boolean sameLayout(final SelectionSnapshot o) {
+			return topIndex == o.topIndex && hScroll == o.hScroll && java.util.Arrays.equals(rows, o.rows)
+					&& java.util.Arrays.equals(rowY, o.rowY) && java.util.Arrays.equals(cols, o.cols)
+					&& java.util.Arrays.equals(colX, o.colX) && java.util.Arrays.equals(colWidth, o.colWidth);
+		}
+	}
+
+	/*
+	 * Bio7: remembers the selection of the visible cells before the first change
+	 * and paints the changed cells after the event (the focus cell is changed after
+	 * updateCellSelection, too).
+	 */
+	private void markSelectionChange() {
+		if (selectionSnapshot != null) {
+			return;
+		}
+		selectionSnapshot = takeSelectionSnapshot();
+		getDisplay().asyncExec(this::flushSelectionChange);
+	}
+
+	private SelectionSnapshot takeSelectionSnapshot() {
+		final SelectionSnapshot s = new SelectionSnapshot();
+		final Rectangle area = getClientArea();
+		s.topIndex = getTopIndex();
+		s.hScroll = getHScrollSelectionInPixels();
+		final java.util.List<GridItem> rows = new java.util.ArrayList<>();
+		final java.util.List<Integer> ys = new java.util.ArrayList<>();
+		int y = columnHeadersVisible ? headerHeight : 0;
+		for (int i = Math.max(0, s.topIndex); i < items.size() && y < area.height; i++) {
+			final GridItem item = items.get(i);
+			if (item.isVisible()) {
+				rows.add(item);
+				ys.add(y);
+				y += item.getHeight() + 1;
+			}
+		}
+		s.rows = rows.toArray(new GridItem[0]);
+		s.rowY = new int[s.rows.length];
+		s.rowHeight = new int[s.rows.length];
+		for (int i = 0; i < s.rows.length; i++) {
+			s.rowY[i] = ys.get(i);
+			s.rowHeight[i] = s.rows[i].getHeight();
+		}
+		final java.util.List<GridColumn> cols = new java.util.ArrayList<>();
+		final java.util.List<Integer> xs = new java.util.ArrayList<>();
+		final int left = rowHeaderVisible ? rowHeaderWidth : 0;
+		int x = left - s.hScroll;
+		for (final GridColumn column : displayOrderedColumns) {
+			if (!column.isVisible()) {
+				continue;
+			}
+			final int w = column.getWidth();
+			if (x + w > left && x < area.width) {
+				cols.add(column);
+				xs.add(x);
+			}
+			x += w;
+			if (x >= area.width) {
+				break;
+			}
+		}
+		s.cols = cols.toArray(new GridColumn[0]);
+		s.colX = new int[s.cols.length];
+		s.colWidth = new int[s.cols.length];
+		for (int i = 0; i < s.cols.length; i++) {
+			s.colX[i] = xs.get(i);
+			s.colWidth[i] = s.cols[i].getWidth();
+		}
+		s.selected = new boolean[s.rows.length * s.cols.length];
+		final Point p = new Point(0, 0);
+		for (int r = 0; r < s.rows.length; r++) {
+			p.y = s.rows[r].getRowIndex();
+			for (int c = 0; c < s.cols.length; c++) {
+				p.x = s.cols[c].index;
+				s.selected[r * s.cols.length + c] = selectedCells.contains(p);
+			}
+		}
+		s.focusItem = focusItem;
+		s.focusColumn = focusColumn;
+		s.selectedColumns = new java.util.HashSet<>(selectedColumns);
+		return s;
+	}
+
+	private void flushSelectionChange() {
+		final SelectionSnapshot old = selectionSnapshot;
+		selectionSnapshot = null;
+		if (old == null || isDisposed()) {
+			return;
+		}
+		final SelectionSnapshot now = takeSelectionSnapshot();
+		if (!old.sameLayout(now)) {
+			/* Scrolled: all */
+			redraw();
+			return;
+		}
+		if (columnHeadersVisible && !old.selectedColumns.equals(now.selectedColumns)) {
+			/* The headers of the columns which were selected or are selected now */
+			for (int c = 0; c < now.cols.length; c++) {
+				if (old.selectedColumns.contains(now.cols[c]) != now.selectedColumns.contains(now.cols[c])) {
+					redraw(now.colX[c], 0, now.colWidth[c], headerHeight, false);
+				}
+			}
+		}
+		int minR = Integer.MAX_VALUE, maxR = -1, minC = Integer.MAX_VALUE, maxC = -1;
+		final int n = now.cols.length;
+		for (int r = 0; r < now.rows.length; r++) {
+			for (int c = 0; c < n; c++) {
+				if (old.selected[r * n + c] != now.selected[r * n + c]) {
+					minR = Math.min(minR, r);
+					maxR = Math.max(maxR, r);
+					minC = Math.min(minC, c);
+					maxC = Math.max(maxC, c);
+				}
+			}
+		}
+		if (old.focusItem != now.focusItem || old.focusColumn != now.focusColumn) {
+			for (final SelectionSnapshot s : new SelectionSnapshot[] { old, now }) {
+				final int r = java.util.Arrays.asList(now.rows).indexOf(s.focusItem);
+				final int c = java.util.Arrays.asList(now.cols).indexOf(s.focusColumn);
+				if (r >= 0) {
+					minR = Math.min(minR, r);
+					maxR = Math.max(maxR, r);
+					/* The whole row if the column is not visible (row focus) */
+					minC = Math.min(minC, c >= 0 ? c : 0);
+					maxC = Math.max(maxC, c >= 0 ? c : n - 1);
+				}
+			}
+		}
+		if (maxR < 0 || maxC < 0) {
+			return;
+		}
+		final int x0 = now.colX[minC], x1 = now.colX[maxC] + now.colWidth[maxC];
+		final int y0 = now.rowY[minR], y1 = now.rowY[maxR] + now.rowHeight[maxR] + 1;
+		/* 3 pixels larger: the border of the selection beside the changed cells */
+		redraw(x0 - 3, y0 - 3, x1 - x0 + 6, y1 - y0 + 6, false);
+		if (rowHeaderVisible) {
+			/* The row headers of the changed rows (selected rows are marked) */
+			redraw(0, y0 - 1, rowHeaderWidth, y1 - y0 + 2, false);
+		}
 	}
 
 	/**
@@ -6384,13 +6749,7 @@ public class Grid extends Canvas {
 		}
 
 		if (getColumn(newCell.x).getCellSelectionEnabled()) {
-			boolean found = false;
-			for (final Point p : selectedCells) {
-				if (newCell.equals(p)) {
-					found = true;
-					break;
-				}
-			}
+			final boolean found = selectedCells.contains(newCell);
 
 			if (!found) {
 				if (selectionType == GridSelectionType.SINGLE && selectedCells.size() > 0) {
@@ -6405,8 +6764,13 @@ public class Grid extends Canvas {
 		// Update the list of which columns have all their cells selected
 		selectedColumns.clear();
 
+		/* Each column once (not once for each selected cell) */
+		final java.util.Set<GridColumn> added = new java.util.HashSet<>();
 		for (final Point cell : selectedCells) {
-			selectedColumns.add(getColumn(cell.x));
+			final GridColumn column = getColumn(cell.x);
+			if (added.add(column)) {
+				selectedColumns.add(column);
+			}
 		}
 	}
 
@@ -6418,6 +6782,11 @@ public class Grid extends Canvas {
 		addListener(SWT.Dispose, disposeListener);
 
 		addPaintListener(this::onPaint);
+		addListener(SWT.Dispose, e -> {
+			if (paintCache != null && !paintCache.isDisposed()) {
+				paintCache.dispose();
+			}
+		});
 
 		addListener(SWT.Resize, e -> onResize());
 
@@ -6654,7 +7023,7 @@ public class Grid extends Canvas {
 						}
 						// showColumn(col);
 						showItem(item);
-						redraw();
+						/* Bio7: the changed cells are painted (see flushSelectionChange) */
 					} else if (rowHeaderVisible) {
 						if (e.x <= rowHeaderWidth) {
 
@@ -7540,10 +7909,46 @@ public class Grid extends Canvas {
 	 * Scrollbar selection event handler.
 	 */
 	private void onScrollSelection() {
+		/* Bio7: the top row of the last painting (-1: unknown) */
+		final int oldTop = topIndex;
 		topIndex = -1;
 		bottomIndex = -1;
 		refreshHoverState();
-		redraw(getClientArea().x, getClientArea().y, getClientArea().width, getClientArea().height, false);
+		final Rectangle area = getClientArea();
+		/*
+		 * Bio7: scrolling by less rows than are visible: the painted rows are moved and
+		 * only the new rows are painted (painting the texts of all cells is slow)
+		 */
+		final int newTop = getTopIndex();
+		final int top = columnHeadersVisible ? headerHeight : 0;
+		boolean move = oldTop >= 0 && newTop >= 0 && oldTop != newTop && !isTree && itemHeight > 0
+				&& Math.abs(newTop - oldTop) < (area.height - top) / (itemHeight + 1);
+		int dy = 0;
+		if (move) {
+			final int from = Math.min(oldTop, newTop), to = Math.max(oldTop, newTop);
+			for (int i = from; i < to && move; i++) {
+				final GridItem it = items.get(i);
+				if (!it.isVisible()) {
+					move = false;
+				} else {
+					dy += it.getHeight() + 1;
+				}
+			}
+			dy = newTop > oldTop ? -dy : dy;
+		}
+		if (move && paintCacheValid && Math.abs(pendingScrollDy + dy) < area.height - top) {
+			/* The image of the grid is moved in the next painting (see onPaint) */
+			pendingScrollDy += dy;
+			scrollRedraw = true;
+			try {
+				redraw(area.x, area.y, area.width, area.height, false);
+			} finally {
+				scrollRedraw = false;
+			}
+		} else {
+			pendingScrollDy = 0;
+			redraw(area.x, area.y, area.width, area.height, false);
+		}
 	}
 
 	/**
@@ -7644,6 +8049,16 @@ public class Grid extends Canvas {
 	 * @param y mouse y
 	 * @return true if a new section of the table is now being hovered
 	 */
+	/* Bio7: the bounds of a hovered cell with its grid lines (null if none) */
+	private Rectangle hoverCellBounds(final GridItem item, final GridColumn column) {
+		if (item == null || column == null || item.isDisposed() || column.isDisposed() || !item.isVisible()
+				|| !column.isVisible() || item.getRowIndex() < 0 || !isShown(item)) {
+			return null;
+		}
+		final Rectangle r = item.getBounds(column.index);
+		return new Rectangle(r.x - 1, r.y - 1, r.width + 2, r.height + 2);
+	}
+
 	private boolean handleCellHover(final int x, final int y) {
 
 		String detail = "";
@@ -7725,14 +8140,31 @@ public class Grid extends Canvas {
 
 		if (hoveringItem != item || !hoveringDetail.equals(detail) || hoveringColumn != col
 				|| hoverColGroup != hoverColumnGroupHeader || hoverColHeader != hoveringColumnHeader) {
+			/*
+			 * Bio7: only the cell which was hovered and the hovered cell are painted again
+			 * (the cell renderers show the hover in the cell only), the whole area if a
+			 * header is hovered
+			 */
+			final boolean headers = hoverColGroup != hoverColumnGroupHeader || hoverColHeader != hoveringColumnHeader;
+			final Rectangle oldCell = hoverCellBounds(hoveringItem, hoveringColumn);
 			hoveringItem = item;
 			hoveringDetail = detail;
 			hoveringColumn = col;
 			hoveringColumnHeader = hoverColHeader;
 			hoverColumnGroupHeader = hoverColGroup;
 
-			final Rectangle clientArea = getClientArea();
-			redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
+			final Rectangle newCell = hoverCellBounds(item, col);
+			if (headers) {
+				final Rectangle clientArea = getClientArea();
+				redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, false);
+			} else {
+				if (oldCell != null) {
+					redraw(oldCell.x, oldCell.y, oldCell.width, oldCell.height, false);
+				}
+				if (newCell != null && !newCell.equals(oldCell)) {
+					redraw(newCell.x, newCell.y, newCell.width, newCell.height, false);
+				}
+			}
 
 			hoverChange = true;
 		}
@@ -7920,6 +8352,7 @@ public class Grid extends Canvas {
 					selectionModified = true;
 				}
 			}
+			selectedCells.reindex();
 		}
 
 		columns.remove(column);
@@ -8031,22 +8464,38 @@ public class Grid extends Canvas {
 			}
 		}
 
-		estimate(sizingGC -> {
-			if (items.size() == 1 && !userModifiedItemHeight) {
-				itemHeight = computeItemHeight(item, sizingGC);
-				// virtual problems here
-				if ((getStyle() & SWT.VIRTUAL) != 0) {
-					item.setHasSetData(false);
+		/*
+		 * Bio7: a GC only if something must be measured (the first item, the row
+		 * header): the default row header (the row numbers) is measured only if the
+		 * number of the digits grows (the last item has the widest number), not for
+		 * each new item (faster for many items)
+		 */
+		final boolean firstItem = items.size() == 1 && !userModifiedItemHeight;
+		final boolean defaultHeader = rowHeaderRenderer instanceof DefaultRowHeaderRenderer;
+		final int digits = String.valueOf(items.size()).length();
+		final boolean measureHeader = isRowHeaderVisible() && isAutoWidth() && (!defaultHeader || digits > measuredHeaderDigits);
+		if (firstItem || measureHeader) {
+			estimate(sizingGC -> {
+				if (firstItem) {
+					itemHeight = computeItemHeight(item, sizingGC);
+					// virtual problems here
+					if ((getStyle() & SWT.VIRTUAL) != 0) {
+						item.setHasSetData(false);
+					}
 				}
+				if (measureHeader) {
+					final GridItem widest = defaultHeader ? items.get(items.size() - 1) : item;
+					rowHeaderWidth = Math.max(rowHeaderWidth, //
+							rowHeaderRenderer.computeSize(sizingGC, SWT.DEFAULT, SWT.DEFAULT, widest).x
+									+ (defaultHeader ? widestNumberExtra(sizingGC, widest) : 0));
+				}
+			});
+			if (measureHeader && defaultHeader) {
+				measuredHeaderDigits = digits;
 			}
+		}
 
-			item.initializeHeight(itemHeight);
-
-			if (isRowHeaderVisible() && isAutoWidth()) {
-				rowHeaderWidth = Math.max(rowHeaderWidth, //
-						rowHeaderRenderer.computeSize(sizingGC, SWT.DEFAULT, SWT.DEFAULT, item).x);
-			}
-		});
+		item.initializeHeight(itemHeight);
 
 		scrollValuesObsolete = true;
 		topIndex = -1;
@@ -8054,7 +8503,7 @@ public class Grid extends Canvas {
 
 		currentVisibleItems++;
 
-		redraw();
+		redrawSoon();
 
 		return row;
 	}
@@ -10529,13 +10978,77 @@ public class Grid extends Canvas {
 	}
 
 	private void computeRowHeaderWidth(final int minWidth) {
+		final boolean defaultHeader = rowHeaderRenderer instanceof DefaultRowHeaderRenderer;
 		estimate(sizingGC -> {//
-			final int width = items.stream() //
+			/*
+			 * Bio7: the default row header (the row numbers): only the items with an own
+			 * header (text, image or font) and the last item (the widest number) are
+			 * measured, not all items (faster for many items)
+			 */
+			final int last = items.size() - 1;
+			final int width = (defaultHeader ? java.util.stream.IntStream.rangeClosed(0, last) //
+					.filter(i -> i == last || items.get(i).getHeaderText() != null || items.get(i).getHeaderImage() != null
+							|| items.get(i).getHeaderFont() != null) //
+					.mapToObj(items::get) : items.stream()) //
 					.mapToInt(item -> rowHeaderRenderer.computeSize(sizingGC, SWT.DEFAULT, SWT.DEFAULT, item).x) //
 					.max() //
 					.orElse(minWidth);
-			rowHeaderWidth = width > minWidth ? width : minWidth;
+			final int extra = defaultHeader && last >= 0 ? widestNumberExtra(sizingGC, items.get(last)) : 0;
+			rowHeaderWidth = width + extra > minWidth ? width + extra : minWidth;
 		});
+		measuredHeaderDigits = String.valueOf(Math.max(1, items.size())).length();
+	}
+
+	/*
+	 * Bio7: the additional width of the widest row number with the digits of the
+	 * number of the item (e.g., 888888 instead of 300000; the digits of a font can
+	 * have different widths)
+	 */
+	private int widestNumberExtra(final GC gc, final GridItem item) {
+		if (item.getHeaderText() != null || item.getHeaderFont() != null) {
+			return 0;
+		}
+		final Font previous = gc.getFont();
+		gc.setFont(getFont());
+		final String number = String.valueOf(item.getRowIndex() + 1);
+		/* Each digit repeated to the length of the number (the widths of single digits are rounded) */
+		int widestWidth = 0;
+		for (char c = '0'; c <= '9'; c++) {
+			widestWidth = Math.max(widestWidth, gc.stringExtent(String.valueOf(c).repeat(number.length())).x);
+		}
+		final int extra = widestWidth - gc.stringExtent(number).x;
+		gc.setFont(previous);
+		return Math.max(0, extra);
+	}
+
+	/*
+	 * Bio7: the number of the digits of the measured row numbers (see newItem) and
+	 * the redraw of many changes (see redrawSoon)
+	 */
+	private int measuredHeaderDigits;
+	private boolean redrawPending;
+	private boolean redrawSkipped;
+
+	/**
+	 * Redraws the grid once for many changes (e.g., the texts of many cells): the
+	 * first call redraws, the next calls in the same turn of the event loop are
+	 * collected and redrawn once afterwards (a redraw of each change is slow for
+	 * many items).
+	 */
+	void redrawSoon() {
+		if (!redrawPending) {
+			redrawPending = true;
+			redraw();
+			getDisplay().asyncExec(() -> {
+				redrawPending = false;
+				if (redrawSkipped && !isDisposed()) {
+					redrawSkipped = false;
+					redraw();
+				}
+			});
+		} else {
+			redrawSkipped = true;
+		}
 	}
 
 	private int estimateWithResult(final ToIntFunction<GC> function) {

@@ -101,7 +101,7 @@ public class TransferMatrixToGridJob extends UIJob {
 					int diff = matrix[0].length - colCount;
 					for (int i = 0; i < diff; i++) {
 						GridColumn column = new GridColumn(grid, SWT.NONE);
-						column.setText("C " + (i + 1 + colCount));
+						column.setText(Bio7Grid.columnName(i + colCount));
 						column.setWidth(50);
 					}
 				}

@@ -124,7 +124,7 @@ class Spread {
 			GridColumn column = new GridColumn(grid, SWT.NONE);
 			//column.setHeaderRenderer(new CustomColumnHeaderRenderer());
 			column.addListener(SWT.Selection, sortListener);
-			column.setText("C " + (i + 1));
+			column.setText(Bio7Grid.columnName(i));
 			column.setWidth(50);
 
 		}
@@ -370,7 +370,7 @@ class Spread {
 								}
                                 /*Dynamically resize column amount!*/
 								else if (column == grid.getColumnCount()) {
-									GridHistory.of(grid).recordGrid("Add Column", () -> Bio7Grid.createColumn(cols, grid.getColumn(column - 1).getWidth(), "C " + (grid.getColumnCount() + 1)));
+									GridHistory.of(grid).recordGrid("Add Column", () -> Bio7Grid.createColumn(cols, grid.getColumn(column - 1).getWidth(), Bio7Grid.columnName(grid.getColumnCount())));
 
 									GridItem gi = grid.getItem(index);
 									GridColumn col = grid.getColumn(column);

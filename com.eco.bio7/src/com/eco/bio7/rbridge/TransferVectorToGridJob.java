@@ -130,7 +130,7 @@ public class TransferVectorToGridJob extends UIJob {
 
 						else {
 							/* Add columns if we exceed the size! */
-							Bio7Grid.createColumn(j, 50, "C" + (j + plusC + 1));
+							Bio7Grid.createColumn(j, 50, Bio7Grid.columnName(j + plusC));
 							String value = String.valueOf(vector[j]);
 							grid.getItem(0 + plusR).setText(j + plusC, value);
 						}
@@ -178,7 +178,7 @@ public class TransferVectorToGridJob extends UIJob {
 						}
 						/* Add columns if we exceed the size! */
 						else {
-							Bio7Grid.createColumn(j, 50, "C" + (j + plusC + 1));
+							Bio7Grid.createColumn(j, 50, Bio7Grid.columnName(j + plusC));
 							String value = String.valueOf(vector[j]);
 							grid.getItem(0 + plusR).setText(j + plusC, value);
 						}

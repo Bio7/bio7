@@ -13,9 +13,6 @@
 
 package com.eco.bio7.rbridge;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.eclipse.nebula.widgets.grid.Grid;
 import org.eclipse.nebula.widgets.grid.GridItem;
 import org.eclipse.swt.SWT;
@@ -55,10 +52,10 @@ public final class TableSelectionOverlay {
 		grid.setData(INSTALLED, Boolean.TRUE);
 		/* Called after the painting of the grid (the listener of the grid is first) */
 		grid.addListener(SWT.Paint, e -> paint(grid, e));
-		/* The whole border is drawn again if the selection changes */
-		grid.addListener(SWT.Selection, _ -> grid.redraw());
-		grid.addListener(SWT.MouseUp, _ -> grid.redraw());
-		grid.addListener(SWT.KeyUp, _ -> grid.redraw());
+		/*
+		 * The grid paints the changed cells of a selection (and the border beside
+		 * them). The color of the whole selection changes with the focus.
+		 */
 		grid.addListener(SWT.FocusIn, _ -> grid.redraw());
 		grid.addListener(SWT.FocusOut, _ -> grid.redraw());
 	}
@@ -97,83 +94,154 @@ public final class TableSelectionOverlay {
 	}
 
 	private static void paint(Grid grid, Event e) {
-		Point[] cells = grid.getCellSelection();
-		if (cells == null || cells.length == 0) {
+		if (grid.getCellSelectionCount() == 0) {
 			return;
-		}
-		/* Only the visible rows are drawn (e.g., a selected column with many rows) */
-		int top = grid.getTopIndex(), itemHeight = Math.max(1, grid.getItemHeight());
-		int bottom = top + grid.getClientArea().height / itemHeight + 2;
-		Set<Long> selected = new HashSet<>(cells.length * 2);
-		for (Point p : cells) {
-			selected.add(key(p.x, p.y));
 		}
 		GC gc = e.gc;
 		Rectangle area = grid.getClientArea();
 		int headerHeight = grid.getHeaderVisible() ? grid.getHeaderHeight() : 0;
 		int rowHeaderWidth = grid.isRowHeaderVisible() ? grid.getItemHeaderWidth() : 0;
-		/* Only in the area of the cells (not over the headers) */
-		gc.setClipping(new Rectangle(area.x + rowHeaderWidth, area.y + headerHeight, area.width - rowHeaderWidth, area.height - headerHeight));
-		Color c = color(grid.getDisplay());
-		boolean focus = grid.isFocusControl();
-		gc.setAntialias(SWT.OFF);
-		/* The fill (light) */
-		gc.setBackground(c);
-		gc.setAlpha(focus ? 38 : 22);
-		for (Point p : cells) {
-			if (p.y < top - 1 || p.y > bottom) {
-				continue;
-			}
-			Rectangle r = bounds(grid, p);
-			if (r != null && r.intersects(e.x, e.y, e.width, e.height)) {
-				gc.fillRectangle(r);
+		/* Only in the area of the cells (not over the headers) and in the painted region */
+		Rectangle clip = new Rectangle(area.x + rowHeaderWidth, area.y + headerHeight, area.width - rowHeaderWidth, area.height - headerHeight).intersection(new Rectangle(e.x, e.y, e.width, e.height));
+		if (clip.isEmpty()) {
+			return;
+		}
+		/* The visible rows (with their positions) */
+		int top = grid.getTopIndex(), count = grid.getItemCount();
+		java.util.List<GridItem> rows = new java.util.ArrayList<>();
+		java.util.List<Integer> rowY = new java.util.ArrayList<>();
+		int y = area.y + headerHeight;
+		for (int i = Math.max(0, top); i < count && y < area.y + area.height; i++) {
+			GridItem item = grid.getItem(i);
+			if (item.isVisible()) {
+				rows.add(item);
+				rowY.add(y);
+				y += item.getHeight() + 1;
 			}
 		}
-		/* The border: the edges of the cells without a selected neighbor */
+		/* The visible columns (with their positions) */
+		int columnCount = grid.getColumnCount();
+		int[] order = grid.getColumnOrder();
+		int x = rows.isEmpty() ? 0 : rows.get(0).getBounds(order.length > 0 ? order[0] : 0).x;
+		java.util.List<Integer> cols = new java.util.ArrayList<>(), colX = new java.util.ArrayList<>(), colW = new java.util.ArrayList<>();
+		for (int index : order) {
+			if (index < 0 || index >= columnCount || !grid.getColumn(index).isVisible()) {
+				continue;
+			}
+			int w = grid.getColumn(index).getWidth();
+			if (x + w > area.x + rowHeaderWidth && x < area.x + area.width) {
+				cols.add(index);
+				colX.add(x);
+				colW.add(w);
+			}
+			x += w;
+			if (x >= area.x + area.width) {
+				break;
+			}
+		}
+		int nr = rows.size(), nc = cols.size();
+		if (nr == 0 || nc == 0) {
+			return;
+		}
+		/* The selection of the visible cells and of the cells around them (the edges) */
+		boolean[][] sel = new boolean[nr + 2][nc + 2];
+		Point p = new Point(0, 0);
+		for (int r = -1; r <= nr; r++) {
+			int rowIndex = r < 0 ? rows.get(0).getRowIndex() - 1 : r == nr ? rows.get(nr - 1).getRowIndex() + 1 : rows.get(r).getRowIndex();
+			if (rowIndex < 0 || rowIndex >= count) {
+				continue;
+			}
+			p.y = rowIndex;
+			for (int c = -1; c <= nc; c++) {
+				int col = c < 0 ? previous(order, cols.get(0)) : c == nc ? next(order, cols.get(nc - 1)) : cols.get(c);
+				if (col < 0) {
+					continue;
+				}
+				p.x = col;
+				sel[r + 1][c + 1] = grid.isCellSelected(p);
+			}
+		}
+		Color color = color(grid.getDisplay());
+		boolean focus = grid.isFocusControl();
+		gc.setClipping(clip);
+		gc.setAntialias(SWT.OFF);
+		gc.setBackground(color);
+		/*
+		 * A cell owns its grid lines at the right and at the bottom: the fill and the
+		 * border are drawn over the grid lines between the selected cells (no gaps)
+		 */
+		gc.setAlpha(focus ? 38 : 22);
+		for (int r = 0; r < nr; r++) {
+			int y0 = rowY.get(r), h = rows.get(r).getHeight() + 1;
+			for (int c = 0; c < nc; c++) {
+				if (sel[r + 1][c + 1]) {
+					/* The cells in a row are filled together */
+					int c1 = c;
+					while (c1 + 1 < nc && sel[r + 1][c1 + 2]) {
+						c1++;
+					}
+					gc.fillRectangle(colX.get(c), y0, colX.get(c1) + colW.get(c1) - colX.get(c), h);
+					c = c1;
+				}
+			}
+		}
+		/* The border: the edges of the cells without a selected neighbor (2 pixels) */
 		gc.setAlpha(focus ? 255 : 200);
-		gc.setForeground(c);
-		gc.setLineWidth(2);
-		for (Point p : cells) {
-			if (p.y < top - 1 || p.y > bottom) {
-				continue;
-			}
-			Rectangle r = bounds(grid, p);
-			if (r == null || !r.intersects(e.x - 4, e.y - 4, e.width + 8, e.height + 8)) {
-				continue;
-			}
-			int x0 = r.x, y0 = r.y, x1 = r.x + r.width - 1, y1 = r.y + r.height - 1;
-			if (!selected.contains(key(p.x, p.y - 1))) {
-				gc.drawLine(x0, y0 + 1, x1, y0 + 1);
-			}
-			if (!selected.contains(key(p.x, p.y + 1))) {
-				gc.drawLine(x0, y1, x1, y1);
-			}
-			if (!selected.contains(key(p.x - 1, p.y))) {
-				gc.drawLine(x0 + 1, y0, x0 + 1, y1);
-			}
-			if (!selected.contains(key(p.x + 1, p.y))) {
-				gc.drawLine(x1, y0, x1, y1);
+		for (int r = 0; r < nr; r++) {
+			int y0 = rowY.get(r), h = rows.get(r).getHeight() + 1;
+			for (int c = 0; c < nc; c++) {
+				if (!sel[r + 1][c + 1]) {
+					continue;
+				}
+				int x0 = colX.get(c), w = colW.get(c);
+				boolean up = sel[r][c + 1], down = sel[r + 2][c + 1], left = sel[r + 1][c], right = sel[r + 1][c + 2];
+				if (!up) {
+					gc.fillRectangle(x0, y0, w, 2);
+				}
+				if (!down) {
+					gc.fillRectangle(x0, y0 + h - 2, w, 2);
+				}
+				if (!left) {
+					gc.fillRectangle(x0, y0, 2, h);
+				}
+				if (!right) {
+					gc.fillRectangle(x0 + w - 2, y0, 2, h);
+				}
+				/* The inner corners (a selected neighbor without the diagonal cell) */
+				if (up && left && !sel[r][c]) {
+					gc.fillRectangle(x0, y0, 2, 2);
+				}
+				if (up && right && !sel[r][c + 2]) {
+					gc.fillRectangle(x0 + w - 2, y0, 2, 2);
+				}
+				if (down && left && !sel[r + 2][c]) {
+					gc.fillRectangle(x0, y0 + h - 2, 2, 2);
+				}
+				if (down && right && !sel[r + 2][c + 2]) {
+					gc.fillRectangle(x0 + w - 2, y0 + h - 2, 2, 2);
+				}
 			}
 		}
 		gc.setAlpha(255);
-		gc.setLineWidth(1);
-		gc.setClipping((Rectangle) null);
+		gc.setClipping(new Rectangle(e.x, e.y, e.width, e.height));
 	}
 
-	/* The bounds of a cell (null if the row is not visible) */
-	private static Rectangle bounds(Grid grid, Point p) {
-		if (p.y < 0 || p.y >= grid.getItemCount() || p.x < 0 || p.x >= grid.getColumnCount()) {
-			return null;
+	/* The column before and after a column in the display order (-1 if none) */
+	private static int previous(int[] order, int column) {
+		for (int i = 0; i < order.length; i++) {
+			if (order[i] == column) {
+				return i > 0 ? order[i - 1] : -1;
+			}
 		}
-		GridItem item = grid.getItem(p.y);
-		if (!item.isVisible()) {
-			return null;
-		}
-		Rectangle r = item.getBounds(p.x);
-		return r != null && r.width > 0 && r.height > 0 ? r : null;
+		return -1;
 	}
 
-	private static long key(int column, int row) {
-		return ((long) row << 20) ^ (column & 0xFFFFF);
+	private static int next(int[] order, int column) {
+		for (int i = 0; i < order.length; i++) {
+			if (order[i] == column) {
+				return i + 1 < order.length ? order[i + 1] : -1;
+			}
+		}
+		return -1;
 	}
 }

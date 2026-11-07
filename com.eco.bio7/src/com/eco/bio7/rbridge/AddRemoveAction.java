@@ -316,7 +316,7 @@ public class AddRemoveAction extends Action implements IMenuCreator {
 	private void renameColumnsSorted(Grid grid) {
 		for (int i = 0; i < grid.getColumnCount(); i++) {
 			GridColumn c = grid.getColumn(i);
-			c.setText("C " + (i + 1));
+			c.setText(Bio7Grid.columnName(i));
 		}
 	}
 

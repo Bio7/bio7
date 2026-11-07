@@ -408,14 +408,7 @@ public final class PlotTable {
 
 	/** The name of a column like a spreadsheet (0 = A, 25 = Z, 26 = AA). */
 	public static String columnLetters(int column) {
-		StringBuilder b = new StringBuilder();
-		int c = column + 1;
-		while (c > 0) {
-			int r = (c - 1) % 26;
-			b.insert(0, (char) ('A' + r));
-			c = (c - 1) / 26;
-		}
-		return b.toString();
+		return com.eco.bio7.rbridge.Bio7Grid.columnName(column);
 	}
 
 	/**
@@ -540,7 +533,7 @@ public final class PlotTable {
 		shell.setLayout(layout);
 		Label info = new Label(shell, SWT.WRAP);
 		info.setText((description != null ? description + "\n" : "") + "Sheet: " + sheet.sheet() + " (" + sheet.columns()
-				+ " columns). The data of each role is a range of cells: type it (e.g., B2:B51; the columns A, B, C, ... are the columns C 1, C 2, C 3, ... of the table), choose a column or select the cells in the table (Select).");
+				+ " columns). The data of each role is a range of cells: type it (e.g., B2:B51), choose a column or select the cells in the table (Select).");
 		GridData infoData = new GridData(SWT.FILL, SWT.TOP, true, false, 4, 1);
 		infoData.widthHint = 460;
 		info.setLayoutData(infoData);

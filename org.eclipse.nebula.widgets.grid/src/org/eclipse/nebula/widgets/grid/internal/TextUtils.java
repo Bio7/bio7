@@ -54,29 +54,40 @@ public class TextUtils {
 			return text;
 		}
 
-		if (width >= gc.stringExtent(text).x) {
+		/* Bio7: the measures of the texts in a cache (see TextWidths) */
+		if (width >= TextWidths.width(gc, text)) {
 			return text;
 		}
-
+		String key = width + "|" + style + "|" + text;
+		String cached = TextWidths.shortText(gc, key);
+		if (cached != null) {
+			return cached;
+		}
+		String result;
 		switch (style) {
 		case SWT.LEFT:
-			return getShortStringTruncatedInTheBeginning(gc, text, width);
+			result = getShortStringTruncatedInTheBeginning(gc, text, width);
+			break;
 		case SWT.RIGHT:
-			return getShortStringTruncatedInTheEnd(gc, text, width);
+			result = getShortStringTruncatedInTheEnd(gc, text, width);
+			break;
 		case SWT.CENTER:
-			return getShortStringTruncatedInTheMiddle(gc, text, width);
+			result = getShortStringTruncatedInTheMiddle(gc, text, width);
+			break;
 		default:
-			return text;
+			result = text;
 		}
+		TextWidths.putShortText(gc, key, result);
+		return result;
 
 	}
 
 	private static String getShortStringTruncatedInTheBeginning(GC gc, String text, int width) {
 		char[] chars = text.toCharArray();
-		int calcWidth = gc.stringExtent("...").x;
+		int calcWidth = TextWidths.dots(gc);
 		int index = chars.length - 1;
 		while (calcWidth < width && index >= 0) {
-			int step = gc.getCharWidth(chars[index]);
+			int step = TextWidths.charWidth(gc, chars[index]);
 			calcWidth += step;
 			if (calcWidth >= width) {
 				break;
@@ -93,11 +104,11 @@ public class TextUtils {
 
 	private static String getShortStringTruncatedInTheEnd(GC gc, String text, int width) {
 		char[] chars = text.toCharArray();
-		int calcWidth = gc.stringExtent("...").x;
+		int calcWidth = TextWidths.dots(gc);
 		int index = 0;
 		int length = chars.length;
 		while (calcWidth < width && index < length) {
-			int step = gc.getCharWidth(chars[index]);
+			int step = TextWidths.charWidth(gc, chars[index]);
 			calcWidth += step;
 			if (calcWidth >= width) {
 				break;
@@ -122,17 +133,17 @@ public class TextUtils {
 		int length = chars.length;
 		int left = 0;
 		int right = length - 1;
-		int calcWidth = gc.stringExtent("...").x;
+		int calcWidth = TextWidths.dots(gc);
 
 		while (left < right) {
-			int step = gc.getCharWidth(chars[left]);
+			int step = TextWidths.charWidth(gc, chars[left]);
 			calcWidth += step;
 			if (calcWidth >= width) {
 				break;
 			}
 			left++;
 
-			step = gc.getCharWidth(chars[right]);
+			step = TextWidths.charWidth(gc, chars[right]);
 			calcWidth += step;
 			if (calcWidth >= width) {
 				break;

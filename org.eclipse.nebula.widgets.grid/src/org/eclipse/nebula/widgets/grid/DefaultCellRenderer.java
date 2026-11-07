@@ -19,6 +19,7 @@ package org.eclipse.nebula.widgets.grid;
 import org.eclipse.nebula.widgets.grid.internal.BranchRenderer;
 import org.eclipse.nebula.widgets.grid.internal.CheckBoxRenderer;
 import org.eclipse.nebula.widgets.grid.internal.TextUtils;
+import org.eclipse.nebula.widgets.grid.internal.TextWidths;
 import org.eclipse.nebula.widgets.grid.internal.ToggleRenderer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -185,19 +186,20 @@ public class DefaultCellRenderer extends GridCellRenderer {
 		if (!isWordWrap()) {
 			String text = TextUtils.getShortStr(gc, item.getText(getColumn()), width, truncationStyle);
 
+			/* Bio7: the measures of the texts in a cache (see TextWidths) */
 			if (getAlignment() == SWT.RIGHT) {
-				int len = gc.stringExtent(text).x;
+				int len = TextWidths.width(gc, text);
 				if (len < width) {
 					x += width - len;
 				}
 			} else if (getAlignment() == SWT.CENTER) {
-				int len = gc.stringExtent(text).x;
+				int len = TextWidths.width(gc, text);
 				if (len < width) {
 					x += (width - len) / 2;
 				}
 			}
 
-			int verticalDelta = getVerticalAlignmentAdjustment(gc.stringExtent(text).y, height);
+			int verticalDelta = getVerticalAlignmentAdjustment(text.isEmpty() ? gc.stringExtent(text).y : TextWidths.height(gc), height);
 			gc.drawString(text, getBounds().x + x, getBounds().y + textTopMargin + topMargin + verticalDelta, true);
 		} else {
 			if (textLayout == null) {

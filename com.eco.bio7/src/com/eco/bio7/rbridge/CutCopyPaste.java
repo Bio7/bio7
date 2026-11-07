@@ -175,7 +175,7 @@ public class CutCopyPaste {
 						Bio7Grid.createRow(grid.getItemCount(), grid.getItemHeight());
 					}
 					while (cell.x >= grid.getColumnCount()) {
-						Bio7Grid.createColumn(grid.getColumnCount(), 50, "C" + (grid.getColumnCount() + 1));
+						Bio7Grid.createColumn(grid.getColumnCount(), 50, Bio7Grid.columnName(grid.getColumnCount()));
 					}
 					grid.getItem(cell.y).setText(cell.x, values.get(k));
 				}

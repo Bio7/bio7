@@ -71,13 +71,11 @@ public class FileAction extends Action implements IMenuCreator {
 
 		new MenuItem(fMenu, SWT.SEPARATOR);
 
-		/*
-		 * MenuItem menuItem3 = new MenuItem(fMenu, SWT.PUSH);
-		 * 
-		 * menuItem3.setText("Import OpenOffice");
-		 * 
-		 * new MenuItem(fMenu, SWT.SEPARATOR);
-		 */
+		MenuItem menuItemOds = new MenuItem(fMenu, SWT.PUSH);
+
+		menuItemOds.setText("Import LibreOffice (ODS)");
+
+		new MenuItem(fMenu, SWT.SEPARATOR);
 
 		MenuItem menuItem5 = new MenuItem(fMenu, SWT.PUSH);
 
@@ -101,13 +99,11 @@ public class FileAction extends Action implements IMenuCreator {
 
 		new MenuItem(fMenu, SWT.SEPARATOR);
 
-		/*
-		 * MenuItem menuItem4 = new MenuItem(fMenu, SWT.PUSH);
-		 * 
-		 * menuItem4.setText("Export as OpenOffice");
-		 * 
-		 * new MenuItem(fMenu, SWT.SEPARATOR);
-		 */
+		MenuItem menuItemOdsExport = new MenuItem(fMenu, SWT.PUSH);
+
+		menuItemOdsExport.setText("Export as LibreOffice (ODS)");
+
+		new MenuItem(fMenu, SWT.SEPARATOR);
 
 		MenuItem menuItem2 = new MenuItem(fMenu, SWT.PUSH);
 
@@ -256,6 +252,31 @@ public class FileAction extends Action implements IMenuCreator {
 		 * 
 		 * } });
 		 */
+		/* LibreOffice spreadsheets (*.ods): each sheet of the file is a sheet of the table, all sheets are exported */
+		menuItemOds.addSelectionListener(new SelectionListener() {
+
+			public void widgetSelected(SelectionEvent e) {
+				final String file = Bio7Dialog.openFile(new String[] { "*.ods", "*." });
+				if (file != null) {
+					new LoadOdsJob(file).schedule();
+				}
+			}
+
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+		});
+		menuItemOdsExport.addSelectionListener(new SelectionListener() {
+
+			public void widgetSelected(SelectionEvent e) {
+				String save = Bio7Dialog.saveFile("*.ods");
+				if (save != null) {
+					new SaveOdsJob(save).schedule();
+				}
+			}
+
+			public void widgetDefaultSelected(SelectionEvent e) {
+			}
+		});
 		menuItem11.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {

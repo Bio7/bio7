@@ -1642,7 +1642,8 @@ public class GridItem extends Item {
 			SWT.error(SWT.ERROR_NULL_ARGUMENT);
 		}
 		parent.getDataVisualizer().setText(this, index, text);
-		parent.redraw();
+		/* Bio7: once for many texts (see Grid.redrawSoon) */
+		parent.redrawSoon();
 	}
 
 	/**
@@ -1651,7 +1652,8 @@ public class GridItem extends Item {
 	@Override
 	public void setText(String string) {
 		parent.getDataVisualizer().setText(this, 0, string);
-		parent.redraw();
+		/* Bio7: once for many texts (see Grid.redrawSoon) */
+		parent.redrawSoon();
 	}
 
 	/**

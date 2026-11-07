@@ -470,13 +470,15 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 						String num = stringBuild + (i + 1);
 						// System.out.println(num);
 
-						try {
-							connection.assign(num, sheetdata[i]);
-						} catch (REngineException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
+						/* Numbers as doubles (full precision), else R decides (texts) */
+						if (!RNumbers.assign(connection, num, sheetdata[i])) {
+							try {
+								connection.assign(num, sheetdata[i]);
+							} catch (REngineException e1) {
+								e1.printStackTrace();
+							}
+							connection.eval("try(if(sum(is.na(as.numeric(" + num + "[" + num + "!=\"NA\"])))==0){" + num + "<-as.numeric(" + num + ")}else{" + num + "<-as.character(" + num + ")})");
 						}
-						connection.eval("try(if(sum(is.na(as.numeric(" + num + "[" + num + "!=\"NA\"])))==0){" + num + "<-as.numeric(" + num + ")}else{" + num + "<-as.character(" + num + ")})");
 						connection.eval("try(" + text + "<-data.frame(" + text + "," + num + "))");
 						connection.eval("try(remove(" + num + "))");
 					}
@@ -579,17 +581,20 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 
 						name = stringBuild + (i + 1);
 						str.append("X" + (i + 1) + ",");
-						try {
-							connection.assign(name, sheetdata[i]);
-						} catch (REngineException e1) {
+						/* Numbers as doubles (full precision), else R decides (texts) */
+						if (!RNumbers.assign(connection, name, sheetdata[i])) {
+							try {
+								connection.assign(name, sheetdata[i]);
+							} catch (REngineException e1) {
 
-							e1.printStackTrace();
+								e1.printStackTrace();
+							}
+
+							/*
+							 * If no String is present convert to integer ->NA values will also be converted!
+							 */
+							connection.eval("try(if(sum(is.na(as.numeric(" + name + "[" + name + "!=\"NA\"])))==0){" + name + "<-as.numeric(" + name + ")}else{" + name + "<-as.character(" + name + ")})");
 						}
-
-						/*
-						 * If no String is present convert to integer ->NA values will also be converted!
-						 */
-						connection.eval("try(if(sum(is.na(as.numeric(" + name + "[" + name + "!=\"NA\"])))==0){" + name + "<-as.numeric(" + name + ")}else{" + name + "<-as.character(" + name + ")})");
 
 						connection.eval("try(" + text + "<-data.frame(" + text + "," + name + "))");
 
@@ -675,12 +680,14 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 
 				RConnection c = RServe.getConnection();
 				try {
-					c.assign(input, dataVector);
-					try {
-						c.eval("" + input + "<-as.numeric(" + input + ")");
-					} catch (RserveException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
+					/* Numbers as doubles (full precision), else R converts the texts */
+					if (!RNumbers.assign(c, input, dataVector)) {
+						c.assign(input, dataVector);
+						try {
+							c.eval("" + input + "<-as.numeric(" + input + ")");
+						} catch (RserveException e1) {
+							e1.printStackTrace();
+						}
 					}
 				} catch (REngineException e1) {
 					// TODO Auto-generated catch block

@@ -77,6 +77,7 @@ public class RTable extends ViewPart {
 	private Action addRow;
 	private Action undoAction;
 	private Action redoAction;
+	private Action fitColumnsAction;
 	/* Updates the undo/redo actions when a history changes! */
 	private final Runnable historyListener = () -> {
 		Display display = Display.getDefault();
@@ -152,6 +153,10 @@ public class RTable extends ViewPart {
 		redoAction.setToolTipText(canRedo ? "Redo " + history.getRedoLabel() : "Redo");
 		undoAction.setText(canUndo ? "Undo " + history.getUndoLabel() : "Undo");
 		redoAction.setText(canRedo ? "Redo " + history.getRedoLabel() : "Redo");
+		/* The fitted column widths of the active sheet */
+		if (fitColumnsAction != null) {
+			fitColumnsAction.setChecked(Bio7Grid.isFitted(grid));
+		}
 	}
 
 	/**
@@ -361,12 +366,25 @@ public class RTable extends ViewPart {
 		redoAction.setImageDescriptor(images.getImageDescriptor(ISharedImages.IMG_TOOL_REDO));
 		redoAction.setDisabledImageDescriptor(images.getImageDescriptor(ISharedImages.IMG_TOOL_REDO_DISABLED));
 
+		/* The column widths fitted to the content (the complete numbers), pressed again: the widths before */
+		fitColumnsAction = new Action("Fit Column Widths", org.eclipse.jface.action.IAction.AS_CHECK_BOX) {
+			public void run() {
+				Grid grid = RTable.getGrid();
+				if (grid != null) {
+					Bio7Grid.fitColumns(grid, !Bio7Grid.isFitted(grid));
+					setChecked(Bio7Grid.isFitted(grid));
+				}
+			}
+		};
+		fitColumnsAction.setToolTipText("Fit the column widths to the content (the complete numbers and texts); press again: the widths before");
+		fitColumnsAction.setImageDescriptor(ImageDescriptor.createFromImage(Bio7Plugin.getImageDescriptor("/icons/views/fitcolumnaction.svg").createImage()));
+
 	}
 
 	private void renameColumnsSorted(Grid grid) {
 		for (int i = 0; i < grid.getColumnCount(); i++) {
 			GridColumn c = grid.getColumn(i);
-			c.setText("C " + (i + 1));
+			c.setText(Bio7Grid.columnName(i));
 		}
 	}
 
@@ -387,6 +405,7 @@ public class RTable extends ViewPart {
 		toolbarManager.add(addSpread);
 		toolbarManager.add(addColumn);
 		toolbarManager.add(addRow);
+		toolbarManager.add(fitColumnsAction);
 
 		//toolbarManager.add(new PlaceholderLabel().getPlaceholderLabel());
 

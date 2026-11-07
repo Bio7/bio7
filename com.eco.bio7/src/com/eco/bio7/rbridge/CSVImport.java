@@ -180,7 +180,7 @@ public class CSVImport {
 		table.setLinesVisible(true);
 		for (int i = 0; i < 20; i++) {
 			GridColumn column = new GridColumn(table, SWT.NONE);
-			column.setText("C " + (i + 1));
+			column.setText(Bio7Grid.columnName(i));
 			column.setWidth(50);
 
 		}
@@ -589,7 +589,7 @@ public class CSVImport {
 		}
 		table.setRedraw(false);
 		for (int i = 0; i < table.getColumnCount(); i++) {
-			table.getColumn(i).setText("C " + (i + 1));
+			table.getColumn(i).setText(Bio7Grid.columnName(i));
 		}
 		for (int r = 0; r < rows.size() && r < table.getItemCount(); r++) {
 			String[] row = rows.get(r);

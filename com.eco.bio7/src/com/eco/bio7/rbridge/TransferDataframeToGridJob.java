@@ -90,7 +90,7 @@ public class TransferDataframeToGridJob extends UIJob {
 				int diff = lengthX - colCount;
 				for (int i = 0; i < diff; i++) {
 					GridColumn column = new GridColumn(grid, SWT.NONE);
-					column.setText("C " + (i + 1 + colCount));
+					column.setText(Bio7Grid.columnName(i + colCount));
 					column.setWidth(50);
 				}
 			}
@@ -109,7 +109,11 @@ public class TransferDataframeToGridJob extends UIJob {
 						if (format) {
 							matrix = c.eval("try(format(" + name + "[," + (j + 1) + "],trim = TRUE,digits=" + digits + "))").asStrings();
 						} else {
-							matrix = c.eval("try(as.character(" + name + "[," + (j + 1) + "]))").asStrings();
+							/* A numeric column with full precision (as.character writes 15 digits) */
+							matrix = RNumbers.texts(c, name + "[," + (j + 1) + "]");
+							if (matrix == null) {
+								matrix = c.eval("try(as.character(" + name + "[," + (j + 1) + "]))").asStrings();
+							}
 						}
 					} catch (REXPMismatchException e) {
 
@@ -151,7 +155,11 @@ public class TransferDataframeToGridJob extends UIJob {
 						if (format) {
 							matrix = c.eval("try(format(" + name + "[," + (j + 1) + "],trim = TRUE,digits=" + digits + "))").asStrings();
 						} else {
-							matrix = c.eval("try(as.character(" + name + "[," + (j + 1) + "]))").asStrings();
+							/* A numeric column with full precision (as.character writes 15 digits) */
+							matrix = RNumbers.texts(c, name + "[," + (j + 1) + "]");
+							if (matrix == null) {
+								matrix = c.eval("try(as.character(" + name + "[," + (j + 1) + "]))").asStrings();
+							}
 						}
 					} catch (REXPMismatchException e) {
 
