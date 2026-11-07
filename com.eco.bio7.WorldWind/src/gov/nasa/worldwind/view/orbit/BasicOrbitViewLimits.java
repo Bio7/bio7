@@ -91,8 +91,13 @@ public class BasicOrbitViewLimits extends BasicViewPropertyLimits implements Orb
         this.minCenterElevation = -Double.MAX_VALUE;
         this.maxCenterElevation = Double.MAX_VALUE;
         this.minZoom = 0;
-        this.maxZoom = Double.MAX_VALUE;
+        // Bio7: the view can't zoom out further than 50 000 km (the earth is still visible, about a third
+        // of the view); zoomed out much further the projection has no precision (no ray from the screen)
+        this.maxZoom = DEFAULT_MAX_ZOOM;
     }
+
+    /** Bio7: the default maximum distance of the eye from the center position (meters). */
+    public static final double DEFAULT_MAX_ZOOM = 5.0e7;
 
     /** {@inheritDoc} */
     @Override

@@ -550,7 +550,14 @@ public class ViewUtil
         if (a == null || b == null)
             return null;
 
-        return new Line(eye, b.subtract3(a).normalize3());
+        // Bio7: zoomed out very far the near and the far point can be equal (the precision of the
+        // projection), then there is no direction (no ray, like the other cases above)
+        Vec4 direction = b.subtract3(a);
+        double length = direction.getLength3();
+        if (!(length > 0) || Double.isInfinite(length))
+            return null;
+
+        return new Line(eye, direction.normalize3());
     }
 
     public static double computePixelSizeAtDistance(double distance, Angle fieldOfView, java.awt.Rectangle viewport)

@@ -370,7 +370,12 @@ public class SpatialView extends ViewPart {
 		if (grid == null) {
 			return;
 		}
+		/* The plot of a model or a script is removed (before the defaults are set: clear restores the scene) */
+		Plot3D.clear();
 		grid.resetToDefaults();
+		/* The compiled model of the 3D view is removed (it doesn't run again), play/pause is off */
+		grid.setFromOpenGl(false);
+		removeOpenGLModel();
 		org.eclipse.jface.preference.IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		for (String key : new String[] { "plotView", "showAxisGizmo", "textureFlipVertically", "axisImageCoordinates",
 				"spatialX", "spatialY", "spatialZ" }) {
@@ -391,8 +396,56 @@ public class SpatialView extends ViewPart {
 	}
 
 	public void dispose() {
-
+		/*
+		 * The compiled model of the 3D view is removed: else a new 3D view calls its
+		 * setup and run methods again. Play/pause is off (a new view doesn't run a
+		 * model) and the plot is removed.
+		 */
+		SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+		if (grid != null) {
+			grid.setFromOpenGl(false);
+		}
+		removeOpenGLModel();
+		/* The plot is removed (else it is displayed again with a new model) */
+		Plot3D.clear();
 		super.dispose();
+	}
+
+	/*
+	 * Removes the compiled model if it draws in the 3D view (OpenGL methods), after
+	 * its close method. Other models (e.g., of the time steps or a custom view) are
+	 * kept.
+	 */
+	private static void removeOpenGLModel() {
+		com.eco.bio7.compile.Model model = com.eco.bio7.methods.Compiled.getModel();
+		if (model == null || !usesOpenGL(model)) {
+			return;
+		}
+		try {
+			model.close();
+		} catch (RuntimeException e) {
+			e.printStackTrace();
+		}
+		com.eco.bio7.methods.Compiled.setModel(null);
+	}
+
+	/* True if the class of the model implements one of the OpenGL methods of Model */
+	private static boolean usesOpenGL(com.eco.bio7.compile.Model model) {
+		Class<?>[][] parameters = { { com.jogamp.opengl.GL2.class, com.jogamp.opengl.glu.GLU.class, com.jogamp.opengl.util.gl2.GLUT.class },
+				{ com.jogamp.opengl.GLAutoDrawable.class }, {} };
+		String[][] names = { { "setup", "run" }, { "setup", "run" }, { "getGLProfile" } };
+		for (int i = 0; i < parameters.length; i++) {
+			for (String name : names[i]) {
+				try {
+					if (model.getClass().getMethod(name, parameters[i]).getDeclaringClass() != com.eco.bio7.compile.Model.class) {
+						return true;
+					}
+				} catch (NoSuchMethodException | SecurityException e) {
+					/* Not available */
+				}
+			}
+		}
+		return false;
 	}
 
 }
