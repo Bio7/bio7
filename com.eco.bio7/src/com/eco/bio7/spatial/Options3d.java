@@ -138,6 +138,8 @@ public class Options3d extends ViewPart {
 		viewParent = parent;
 		partComposite = parent.getParent();
 		createContents(parent);
+		/* Undo and redo of the removed parts of the iso surface with the shortcuts of the workbench */
+		SurfaceUndo.install(getViewSite());
 		/* Scrolling a tab doesn't change the sliders under the mouse */
 		com.eco.bio7.util.WheelScrollGuard.install(parent);
 		/*
@@ -3203,6 +3205,13 @@ public class Options3d extends ViewPart {
 					+ "area in the current view). With the Rotate tool, press on a point of any measurement (also a single point) "
 					+ "to select and move it (elsewhere the mouse rotates the view). Selecting \"Fit Spline\" changes the selected "
 					+ "line or area. A click elsewhere ends the selection." },
+			{ "Cutting the Surface Open", "The Surface Eraser (tool bar) removes the visible triangles under the brush while "
+					+ "dragging; \"Remove Surface of the Area\" removes the surface of the selected area (else of the last area: a "
+					+ "polygon, a freehand area, an object or a cavity). Through the opening you can look and measure inside (the mouse "
+					+ "tools pass through removed parts, e.g., the Volume tool on the inner wall of a cavity). Undo, Redo (also Cmd/Ctrl + Z, "
+					+ "Shift + Cmd/Ctrl + Z in the 3D view) and Restore Surface. The removed parts are kept when the surface is "
+					+ "computed again (e.g., another iso value). The objects (Measure Iso Surface Objects) are measured with the "
+					+ "complete surface (an open surface has no volume)." },
 			{ "Adding and Deleting Points", "Shift + click on the surface adds a point to the selected segmented line, polygon "
 					+ "or freehand area (between the two points of the nearest segment; drag it while the button is pressed). "
 					+ "Delete (or Backspace) deletes the active point (red: the last pressed or added point), Shift + Delete the "
@@ -3309,6 +3318,15 @@ public class Options3d extends ViewPart {
 				gc.setLineWidth(Math.max(1, Math.round(2.2f * k)));
 				gc.drawLine(Math.round(10 * k), Math.round(9.5f * k), Math.round(10 * k), Math.round(14.5f * k));
 				break;
+			case Clipping.TOOL_SURFACE_ERASER: {
+				/* An eraser: a tilted block with its tip on a line */
+				int[] body = { Math.round(4 * k), Math.round(12 * k), Math.round(11 * k), Math.round(5 * k), Math.round(17 * k),
+						Math.round(11 * k), Math.round(11 * k), Math.round(17 * k), Math.round(7 * k), Math.round(17 * k) };
+				gc.drawPolygon(body);
+				gc.drawLine(Math.round(7.5f * k), Math.round(8.5f * k), Math.round(13.5f * k), Math.round(14.5f * k));
+				gc.drawLine(Math.round(11 * k), Math.round(17 * k), Math.round(18 * k), Math.round(17 * k));
+				break;
+			}
 			case Clipping.TOOL_NONE: {
 				/* Rotate: a circular arrow */
 				gc.drawArc(Math.round(3 * k), Math.round(3 * k), Math.round(14 * k), Math.round(14 * k), 120, 270);
@@ -3815,6 +3833,11 @@ public class Options3d extends ViewPart {
 		measureItem.setControl(scrollMeasure);
 		compositeMeasure.setLayout(new GridLayout(2, false));
 		scrollMeasure.setMinSize(200, 540);
+		/* The height of the content (all rows can be scrolled to, also with wrapped texts at another width) */
+		scrollMeasure.addListener(SWT.Resize, _ -> {
+			int width = Math.max(200, scrollMeasure.getClientArea().width);
+			scrollMeasure.setMinSize(200, compositeMeasure.computeSize(width, SWT.DEFAULT).y);
+		});
 		scrollMeasure.setContent(compositeMeasure);
 		scrollMeasure.setExpandVertical(true);
 		scrollMeasure.setExpandHorizontal(true);
@@ -4033,7 +4056,7 @@ public class Options3d extends ViewPart {
 		final org.eclipse.swt.widgets.ToolBar toolBar = new org.eclipse.swt.widgets.ToolBar(compositeMeasure, SWT.FLAT | SWT.WRAP);
 		toolBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 		final int[] toolIds = { Clipping.TOOL_NONE, Clipping.TOOL_STRAIGHT, Clipping.TOOL_PICK, Clipping.TOOL_ANGLE,
-				Clipping.TOOL_POINT, Clipping.TOOL_POLYGON, Clipping.TOOL_FREEHAND, Clipping.TOOL_VOLUME };
+				Clipping.TOOL_POINT, Clipping.TOOL_POLYGON, Clipping.TOOL_FREEHAND, Clipping.TOOL_VOLUME, Clipping.TOOL_SURFACE_ERASER };
 		final String[] toolTips = { "Rotate: the mouse rotates the view (no measurement). With a measurement tool: Alt (Option) or space + drag rotates, Escape switches the tool off",
 				"Straight line: click the start and the end on the surface (or drag) – the length (straight or along the surface)",
 				"Segmented line: click points on the surface – distances and length (a double-click ends the line; straight or along the surface)",
@@ -4041,7 +4064,8 @@ public class Options3d extends ViewPart {
 				"Point: click on the surface – position, value and object of each point",
 				"Polygon: click the corners on the surface, a double-click (or a click on the first corner) closes it – perimeter, polygon area and surface area",
 				"Freehand: drag around an area on the surface – perimeter, polygon area and surface area",
-				"Volume: click on an object – its volume; click on the inner wall of a cavity (cut open with the clipping) – the volume of the cavity; drag an outline – the volume inside of the outline (the whole depth)" };
+				"Volume: click on an object – its volume; click on the inner wall of a cavity (cut open with the clipping) – the volume of the cavity; drag an outline – the volume inside of the outline (the whole depth)",
+				"Surface eraser: drag over the iso surface – the visible triangles under the brush are removed (the surface is cut open; Undo / Redo, Cmd/Ctrl + Z)" };
 		final String rotateHint = " Alt (Option) or space + drag rotates the view, Escape switches the tool off.";
 		final String[] toolInfo = { "Rotate: the mouse rotates the view. An unfinished line, angle or polygon is continued when its tool is selected again.",
 				"Straight line: click the start and the end on the surface (or drag from the start to the end). The results are in the table \"3D Points\"." + rotateHint,
@@ -4050,7 +4074,8 @@ public class Options3d extends ViewPart {
 				"Point: click on the surface. The results are in the table \"3D Points\"." + rotateHint,
 				"Polygon: click the corners on the surface; a double-click or a click on the first corner closes the polygon. The results are in the table \"3D Areas\"." + rotateHint,
 				"Freehand: drag around an area on the surface. The results are in the table \"3D Areas\"." + rotateHint,
-				"Volume: click on an object (its volume) or drag an outline (the volume inside of the outline, the whole depth). The results are in the table \"3D Areas\"." + rotateHint };
+				"Volume: click on an object (its volume) or drag an outline (the volume inside of the outline, the whole depth). The results are in the table \"3D Areas\"." + rotateHint,
+				"Surface eraser: drag over the surface to remove it (cut it open, e.g., to measure inside). Undo / Redo with the buttons or Cmd/Ctrl + Z, Shift + Cmd/Ctrl + Z." + rotateHint };
 		final org.eclipse.swt.widgets.ToolItem[] toolItems = new org.eclipse.swt.widgets.ToolItem[toolIds.length];
 		final Clipping[] observed = new Clipping[1];
 		final Runnable[] toolListener = new Runnable[1];
@@ -4215,6 +4240,71 @@ public class Options3d extends ViewPart {
 			}
 		});
 
+		/* The surface cut open: the surface of an area removed, the eraser size, undo, redo and restore */
+		Label cutLabel = new Label(compositeMeasure, SWT.NONE);
+		cutLabel.setText("Cut the Surface Open:");
+		cutLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		final Button removeAreaButton = new Button(compositeMeasure, SWT.PUSH);
+		removeAreaButton.setText("Remove Surface of the Area");
+		removeAreaButton.setToolTipText("Removes the surface of the selected area (else of the last area: polygon, freehand, object or cavity)."
+				+ "\nThe surface is cut open, e.g., to measure inside (the objects are measured complete).");
+		removeAreaButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		removeAreaButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Measurement3d measurement = SpatialUtil.getMeasurement();
+				if (measurement != null && !measurement.removeAreaSurface()) {
+					infoLabel.setText("Measure an area (polygon, freehand, object or cavity) first!");
+				}
+			}
+		});
+		Label eraserLabel = new Label(compositeMeasure, SWT.NONE);
+		eraserLabel.setText("Eraser Size (Points):");
+		eraserLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		final Spinner eraserSpinner = new Spinner(compositeMeasure, SWT.BORDER);
+		eraserSpinner.setMinimum(1);
+		eraserSpinner.setMaximum(200);
+		Measurement3d eraserMeasurement = SpatialUtil.getMeasurement();
+		eraserSpinner.setSelection(eraserMeasurement != null ? (int) Math.round(eraserMeasurement.getEraserRadius()) : 12);
+		eraserSpinner.setToolTipText("The radius of the surface eraser (points of the screen)");
+		eraserSpinner.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		eraserSpinner.addListener(SWT.Selection, _ -> {
+			Measurement3d measurement = SpatialUtil.getMeasurement();
+			if (measurement != null) {
+				measurement.setEraserRadius(eraserSpinner.getSelection());
+			}
+		});
+		org.eclipse.swt.widgets.Composite cutButtons = new org.eclipse.swt.widgets.Composite(compositeMeasure, SWT.NONE);
+		GridLayout cutLayout = new GridLayout(3, true);
+		cutLayout.marginWidth = 0;
+		cutLayout.marginHeight = 0;
+		cutButtons.setLayout(cutLayout);
+		cutButtons.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		String[] cutNames = { "Undo", "Redo", "Restore Surface" };
+		String[] cutTips = { "Undoes the last removal (Cmd/Ctrl + Z in the 3D view)", "Redoes the removal (Shift + Cmd/Ctrl + Z in the 3D view)",
+				"Restores the whole surface (can be undone)" };
+		for (int i = 0; i < 3; i++) {
+			final int action = i;
+			Button b = new Button(cutButtons, SWT.PUSH);
+			b.setText(cutNames[i]);
+			b.setToolTipText(cutTips[i]);
+			b.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+			b.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(final SelectionEvent e) {
+					IsoSurface iso = isoSurface();
+					if (iso == null) {
+						return;
+					}
+					if (action == 0) {
+						iso.undoRemoval();
+					} else if (action == 1) {
+						iso.redoRemoval();
+					} else {
+						iso.restoreSurface();
+					}
+				}
+			});
+		}
+
 		final Button clearButton = new Button(compositeMeasure, SWT.PUSH);
 		clearButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 		clearButton.setText("Clear Points and Areas");
@@ -4243,6 +4333,8 @@ public class Options3d extends ViewPart {
 				}
 			}
 		});
+		/* All rows of the tab can be scrolled to (the height of the content) */
+		scrollMeasure.setMinSize(200, Math.max(540, compositeMeasure.computeSize(SWT.DEFAULT, SWT.DEFAULT).y));
 	}
 
 	/* A note if the display is reduced (the measurements use the full resolution) */

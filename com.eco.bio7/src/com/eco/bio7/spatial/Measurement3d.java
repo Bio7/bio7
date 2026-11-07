@@ -2173,8 +2173,9 @@ public class Measurement3d {
 		if (m.origin != null) {
 			return new String[] { "Model (imported mesh)", "Min. object size: " + getMinObjectSize() + " voxels" };
 		}
-		String surface = m.selection != null && !m.selection.isAll() ? "Values: " + m.selection
-				: "Iso value: " + format(m.isoValue);
+		String surface = (m.selection != null && !m.selection.isAll() ? "Values: " + m.selection
+				: "Iso value: " + format(m.isoValue))
+				+ (iso.hasRemovedSurface() ? " (removed parts of the surface: only the display and the mouse tools, the objects are measured complete)" : "");
 		return new String[] { surface, "Smoothing: " + format(iso.getSmoothing()) + " voxels",
 				"Mesh smoothing: " + iso.getMeshSmoothing() + " iterations", "Resolution: " + m.resolution + "x",
 				"Min. object size: " + getMinObjectSize() + " voxels",
@@ -2626,8 +2627,13 @@ public class Measurement3d {
 		double bestT = Double.MAX_VALUE;
 		int bestTriangle = -1;
 		int count = subset != null ? subset.length : t.length / 3;
+		java.util.BitSet hidden = m.hidden;
 		for (int k = 0; k < count; k++) {
 			int i = (subset != null ? subset[k] : k) * 3;
+			/* A removed part of the surface (cut open): the ray passes */
+			if (hidden != null && hidden.get(i / 3)) {
+				continue;
+			}
 			int a = t[i] * 3, b = t[i + 1] * 3, c = t[i + 2] * 3;
 			double e1x = v[b] - v[a], e1y = v[b + 1] - v[a + 1], e1z = v[b + 2] - v[a + 2];
 			double e2x = v[c] - v[a], e2y = v[c + 1] - v[a + 1], e2z = v[c + 2] - v[a + 2];
@@ -2739,7 +2745,11 @@ public class Measurement3d {
 		int[] list = new int[t.length / 3];
 		int count = 0;
 		double eps = 1e-6;
+		java.util.BitSet hidden = m.hidden;
 		for (int i = 0; i < t.length; i += 3) {
+			if (hidden != null && hidden.get(i / 3)) {
+				continue;
+			}
 			double min = Double.MAX_VALUE, max = -Double.MAX_VALUE;
 			for (int k = 0; k < 3; k++) {
 				int a = t[i + k] * 3;
@@ -2808,6 +2818,9 @@ public class Measurement3d {
 		final List<int[]> controlTriangles = new ArrayList<>();
 		/* The outline is a closed spline through the controls */
 		boolean spline;
+		/* The triangles of the surface inside of the outline (the measured surface, full resolution) */
+		int[] fullMesh;
+		int[] fullTriangles;
 
 		Area(int type) {
 			this.type = type;
@@ -2861,7 +2874,7 @@ public class Measurement3d {
 		@Override
 		public void pressed(int tool, double x, double y, double[][] ray, int clickCount) {
 			/* A handle of the selected measurement: moved (the measurement is measured again) */
-			if (clickCount < 2 && tool != Clipping.TOOL_VOLUME) {
+			if (clickCount < 2 && tool != Clipping.TOOL_VOLUME && tool != Clipping.TOOL_SURFACE_ERASER) {
 				Handle handle = findHandle(x, y, true);
 				if (handle != null) {
 					select(handle);
@@ -2923,6 +2936,12 @@ public class Measurement3d {
 			case Clipping.TOOL_POLYGON:
 				polygonClick(x, y, ray, clickCount);
 				break;
+			case Clipping.TOOL_SURFACE_ERASER:
+				/* One stroke is one step of undo; it removes the surface which is visible at its start */
+				iso.beginRemoval();
+				beginStroke();
+				eraseAt(x, y, ray);
+				break;
 			case Clipping.TOOL_FREEHAND:
 			case Clipping.TOOL_VOLUME:
 				synchronized (Measurement3d.this) {
@@ -2945,6 +2964,10 @@ public class Measurement3d {
 				if (moveHandle(editing, ray)) {
 					editMoved = true;
 				}
+				return;
+			}
+			if (tool == Clipping.TOOL_SURFACE_ERASER) {
+				eraseAt(x, y, ray);
 				return;
 			}
 			if (tool != Clipping.TOOL_FREEHAND && tool != Clipping.TOOL_VOLUME) {
@@ -2976,6 +2999,10 @@ public class Measurement3d {
 				if (editMoved) {
 					finishEdit(handle);
 				}
+				return;
+			}
+			if (tool == Clipping.TOOL_SURFACE_ERASER) {
+				iso.endRemoval();
 				return;
 			}
 			if (tool == Clipping.TOOL_STRAIGHT) {
@@ -3401,6 +3428,201 @@ public class Measurement3d {
 		});
 	}
 
+	/* The radius of the surface eraser (points of the screen) */
+	private volatile double eraserRadius = 12;
+
+	/** Returns the radius of the surface eraser (points of the screen). */
+	public double getEraserRadius() {
+		return eraserRadius;
+	}
+
+	/** Sets the radius of the surface eraser (points of the screen, 1 - 200). */
+	public void setEraserRadius(double radius) {
+		eraserRadius = Math.max(1, Math.min(200, radius));
+	}
+
+	/*
+	 * Removes the visible surface under the eraser: the triangles connected with
+	 * the hit triangle within the radius around the hit (the radius of the brush in
+	 * the window at the depth of the hit), of the measured and the displayed
+	 * surface
+	 */
+	/* The surface at the start of a stroke of the eraser (the removed triangles of the display and the measured surface) */
+	private IsoSurface.MeasureData strokeDisplay, strokeFull;
+
+	private void beginStroke() {
+		IsoSurface.MeasureData display = iso.getMeasureData(), full = iso.getMeasurementData();
+		strokeDisplay = display == null ? null : display.withHidden(display.hidden == null ? null : (java.util.BitSet) display.hidden.clone());
+		strokeFull = full == null ? null : full == display ? strokeDisplay
+				: full.withHidden(full.hidden == null ? null : (java.util.BitSet) full.hidden.clone());
+	}
+
+	private void eraseAt(double x, double y, double[][] ray) {
+		IsoSurface.MeasureData display = strokeDisplay, full = strokeFull;
+		IsoSurface.MeasureData nowDisplay = iso.getMeasureData();
+		/* A new surface (e.g., computed again): the state now */
+		if (display == null || nowDisplay == null || display.triangles != nowDisplay.triangles) {
+			beginStroke();
+			display = strokeDisplay;
+			full = strokeFull;
+		}
+		if (ray == null || display == null || display.vertices == null) {
+			return;
+		}
+		/* The hit of the surface which was visible at the start of the stroke (not through the new hole) */
+		double[] extent = displayedExtent();
+		if (extent == null) {
+			return;
+		}
+		Clipping.Region region = clipping.getRegion(extent, HeightMaps.isFlipVertically());
+		IsoSurface.MeasureData mf = full != null ? full : display;
+		double[] hitFull = intersect(mf, ray, region, null);
+		if (hitFull == null) {
+			return;
+		}
+		double[] hitDisplay = display == mf ? hitFull : intersect(display, ray, region, null);
+		Hit h = new Hit();
+		double ox = ray[0][0] * mf.nx - 0.5, oy = ray[0][1] * mf.ny - 0.5, oz = ray[0][2] * mf.nz - 0.5;
+		double ddx = (ray[1][0] - ray[0][0]) * mf.nx, ddy = (ray[1][1] - ray[0][1]) * mf.ny, ddz = (ray[1][2] - ray[0][2]) * mf.nz;
+		h.point = new double[] { (ox + ddx * hitFull[1] + 0.5) / mf.nx, (oy + ddy * hitFull[1] + 0.5) / mf.ny, (oz + ddz * hitFull[1] + 0.5) / mf.nz };
+		h.full = (int) hitFull[0];
+		h.display = hitDisplay != null ? (int) hitDisplay[0] : -1;
+		double[][] side = clipping.rayAt(x + eraserRadius * lastPixelScale, y);
+		if (side == null) {
+			return;
+		}
+		/* The brush radius at the depth of the hit (relative positions) */
+		double[] a0 = ray[0], a1 = ray[1], p = h.point;
+		double dx = a1[0] - a0[0], dy = a1[1] - a0[1], dz = a1[2] - a0[2];
+		double t = ((p[0] - a0[0]) * dx + (p[1] - a0[1]) * dy + (p[2] - a0[2]) * dz) / (dx * dx + dy * dy + dz * dz);
+		double[] q = { side[0][0] + (side[1][0] - side[0][0]) * t, side[0][1] + (side[1][1] - side[0][1]) * t,
+				side[0][2] + (side[1][2] - side[0][2]) * t };
+		java.util.Set<Long> keys = new java.util.HashSet<>();
+		keys.addAll(brushKeys(mf, h.full, p, q));
+		if (display != mf && h.display >= 0) {
+			keys.addAll(brushKeys(display, h.display, p, q));
+		}
+		iso.removeSurface(keys);
+	}
+
+	/* The keys of the triangles of a mesh connected with the start triangle within the radius |q - p| around p */
+	private java.util.Set<Long> brushKeys(IsoSurface.MeasureData m, int start, double[] p, double[] q) {
+		if (m == null || start < 0 || m.triangles == null || start * 3 >= m.triangles.length) {
+			return java.util.Collections.emptySet();
+		}
+		float[] v = m.vertices;
+		int[] t = m.triangles;
+		/* In voxel coordinates of the mesh */
+		double px = p[0] * m.nx - 0.5, py = p[1] * m.ny - 0.5, pz = p[2] * m.nz - 0.5;
+		double qx = q[0] * m.nx - 0.5, qy = q[1] * m.ny - 0.5, qz = q[2] * m.nz - 0.5;
+		double r2 = (qx - px) * (qx - px) + (qy - py) * (qy - py) + (qz - pz) * (qz - pz);
+		int[][] inc = incidence(m);
+		int[] startOf = inc[0], incident = inc[1];
+		java.util.BitSet visited = new java.util.BitSet(t.length / 3);
+		java.util.ArrayDeque<Integer> queue = new java.util.ArrayDeque<>();
+		List<Integer> found = new ArrayList<>();
+		visited.set(start);
+		queue.add(start);
+		java.util.BitSet hidden = m.hidden;
+		while (!queue.isEmpty()) {
+			int k = queue.poll();
+			found.add(k);
+			for (int c = 0; c < 3; c++) {
+				int vertex = t[k * 3 + c];
+				for (int j = startOf[vertex]; j < startOf[vertex + 1]; j++) {
+					int nb = incident[j];
+					if (visited.get(nb) || (hidden != null && hidden.get(nb))) {
+						continue;
+					}
+					visited.set(nb);
+					double cx = 0, cy = 0, cz = 0;
+					for (int e = 0; e < 3; e++) {
+						int a = t[nb * 3 + e] * 3;
+						cx += v[a] / 3.0;
+						cy += v[a + 1] / 3.0;
+						cz += v[a + 2] / 3.0;
+					}
+					if ((cx - px) * (cx - px) + (cy - py) * (cy - py) + (cz - pz) * (cz - pz) <= r2) {
+						queue.add(nb);
+					}
+				}
+			}
+		}
+		return iso.removalKeys(v, t, m.nx, m.ny, m.nz, found.stream().mapToInt(Integer::intValue).toArray());
+	}
+
+	/* The triangles of each vertex of a mesh (cached for the last meshes) */
+	private final java.util.Map<int[], int[][]> incidenceCache = new java.util.IdentityHashMap<>();
+
+	private synchronized int[][] incidence(IsoSurface.MeasureData m) {
+		int[][] cached = incidenceCache.get(m.triangles);
+		if (cached != null) {
+			return cached;
+		}
+		int[] t = m.triangles;
+		int nv = m.vertices.length / 3;
+		int[] start = new int[nv + 1];
+		for (int i : t) {
+			start[i + 1]++;
+		}
+		for (int i = 0; i < nv; i++) {
+			start[i + 1] += start[i];
+		}
+		int[] fill = start.clone();
+		int[] incident = new int[t.length];
+		for (int i = 0; i < t.length; i++) {
+			incident[fill[t[i]]++] = i / 3;
+		}
+		if (incidenceCache.size() > 2) {
+			incidenceCache.clear();
+		}
+		int[][] result = { start, incident };
+		incidenceCache.put(t, result);
+		return result;
+	}
+
+	/**
+	 * Removes the surface of the selected area (else of the last measured area
+	 * with a surface: a polygon, a freehand area, an object or a cavity) from the
+	 * displayed iso surface: the surface is cut open (e.g., to measure inside of
+	 * an object). The removed parts are kept when the surface is computed again;
+	 * see IsoSurface.undoRemoval, redoRemoval and restoreSurface. The measurement
+	 * of the objects uses the complete surface.
+	 *
+	 * @return true if a part of the surface has been removed
+	 */
+	public boolean removeAreaSurface() {
+		Area a = null;
+		synchronized (this) {
+			if (selectedArea >= 0 && selectedArea < areas.size()) {
+				a = areas.get(selectedArea);
+			} else {
+				for (int i = areas.size() - 1; i >= 0 && a == null; i--) {
+					Area b = areas.get(i);
+					if ((b.fullTriangles != null && b.fullTriangles.length > 0) || (b.displayTriangles != null && b.displayTriangles.length > 0)) {
+						a = b;
+					}
+				}
+			}
+		}
+		if (a == null) {
+			return false;
+		}
+		IsoSurface.MeasureData display = iso.getMeasureData(), full = iso.getMeasurementData();
+		java.util.Set<Long> keys = new java.util.HashSet<>();
+		if (full != null && a.fullTriangles != null && a.fullMesh == full.triangles) {
+			keys.addAll(iso.removalKeys(full.vertices, full.triangles, full.nx, full.ny, full.nz, a.fullTriangles));
+		}
+		if (display != null && a.displayTriangles != null && a.displayMesh == display.triangles) {
+			keys.addAll(iso.removalKeys(display.vertices, display.triangles, display.nx, display.ny, display.nz, a.displayTriangles));
+		}
+		if (keys.isEmpty()) {
+			return false;
+		}
+		iso.removeSurface(keys);
+		return true;
+	}
+
 	/* The number of points of the kind in the current line */
 	private synchronized int pointCount(int kind) {
 		int count = 0;
@@ -3688,6 +3910,8 @@ public class Measurement3d {
 			a.row = new double[] { a.type, points, perimeter, flat, rf.area, volumeInside, object };
 			a.displayMesh = display.triangles;
 			a.displayTriangles = displayTriangles;
+			a.fullMesh = full.triangles;
+			a.fullTriangles = rf.triangles;
 		}
 		return true;
 	}
@@ -3959,7 +4183,11 @@ public class Measurement3d {
 		double[] eye = view.eye == null ? null
 				: new double[] { view.eye[0] * m.nx - 0.5, view.eye[1] * m.ny - 0.5, view.eye[2] * m.nz - 0.5 };
 		boolean[] candidate = new boolean[nt];
+		java.util.BitSet hidden = m.hidden;
 		for (int k = 0; k < nt; k++) {
+			if (hidden != null && hidden.get(k)) {
+				continue;
+			}
 			int a = t[k * 3], b = t[k * 3 + 1], c = t[k * 3 + 2];
 			if (Double.isNaN(wx[a]) || Double.isNaN(wx[b]) || Double.isNaN(wx[c])) {
 				continue;
@@ -4562,6 +4790,36 @@ public class Measurement3d {
 		return out;
 	}
 
+	/* The window positions of the vertices of the last mesh in the last view (cached) */
+	private int[] projectedMesh;
+	private double[] projectedView;
+	private float[][] projected;
+
+	private synchronized float[][] projection(IsoSurface.MeasureData m, Clipping.View view) {
+		double[] key = new double[view.m.length + view.viewport.length + view.b.length + 1];
+		System.arraycopy(view.m, 0, key, 0, view.m.length);
+		for (int i = 0; i < view.viewport.length; i++) {
+			key[view.m.length + i] = view.viewport[i];
+		}
+		System.arraycopy(view.b, 0, key, view.m.length + view.viewport.length, view.b.length);
+		key[key.length - 1] = view.flip ? 1 : 0;
+		if (projected != null && projectedMesh == m.triangles && java.util.Arrays.equals(projectedView, key)) {
+			return projected;
+		}
+		float[] v = m.vertices;
+		int nv = v.length / 3;
+		float[] px = new float[nv], py = new float[nv];
+		for (int i = 0; i < nv; i++) {
+			double[] w = view.window((v[i * 3] + 0.5) / m.nx, (v[i * 3 + 1] + 0.5) / m.ny, (v[i * 3 + 2] + 0.5) / m.nz);
+			px[i] = w == null ? Float.NaN : (float) w[0];
+			py[i] = w == null ? Float.NaN : (float) w[1];
+		}
+		projected = new float[][] { px, py };
+		projectedMesh = m.triangles;
+		projectedView = key;
+		return projected;
+	}
+
 	/*
 	 * Picks the visible surface (the measured surface, inside of the clipping
 	 * region) at window positions near the given positions: only the triangles in
@@ -4571,6 +4829,11 @@ public class Measurement3d {
 		private final IsoSurface.MeasureData m;
 		private final Clipping.Region region;
 		private final int[] subset;
+		/* The triangles of the subset in cells of the window (8 pixels): a ray tests only the triangles of its cell */
+		private static final double CELL = 8;
+		private double gridX, gridY;
+		private int gridW, gridH;
+		private int[] cellStart, cellTriangles;
 
 		SurfacePicker(Clipping.View view, List<double[]> window) {
 			IsoSurface.MeasureData display = iso.isDisplayed() ? iso.getMeasureData() : null;
@@ -4593,14 +4856,8 @@ public class Measurement3d {
 				maxY = Math.max(maxY, w[1]);
 			}
 			double margin = 4;
-			float[] v = m.vertices;
-			int nv = v.length / 3;
-			float[] px = new float[nv], py = new float[nv];
-			for (int i = 0; i < nv; i++) {
-				double[] w = view.window((v[i * 3] + 0.5) / m.nx, (v[i * 3 + 1] + 0.5) / m.ny, (v[i * 3 + 2] + 0.5) / m.nz);
-				px[i] = w == null ? Float.NaN : (float) w[0];
-				py[i] = w == null ? Float.NaN : (float) w[1];
-			}
+			float[][] projected = projection(m, view);
+			float[] px = projected[0], py = projected[1];
 			int[] t = m.triangles;
 			int[] list = new int[t.length / 3];
 			int count = 0;
@@ -4618,11 +4875,68 @@ public class Measurement3d {
 					y0 = Math.min(y0, py[a]);
 					y1 = Math.max(y1, py[a]);
 				}
-				if (valid && x1 >= minX - margin && x0 <= maxX + margin && y1 >= minY - margin && y0 <= maxY + margin) {
+				if (valid && x1 >= minX - margin && x0 <= maxX + margin && y1 >= minY - margin && y0 <= maxY + margin
+						&& (m.hidden == null || !m.hidden.get(i / 3))) {
 					list[count++] = i / 3;
 				}
 			}
 			subset = java.util.Arrays.copyOf(list, count);
+			/* The cells of the triangles (the box of each triangle in the window) */
+			gridX = minX - margin;
+			gridY = minY - margin;
+			gridW = Math.max(1, (int) Math.ceil((maxX - minX + 2 * margin) / CELL) + 1);
+			gridH = Math.max(1, (int) Math.ceil((maxY - minY + 2 * margin) / CELL) + 1);
+			if ((long) gridW * gridH > 4_000_000) {
+				return;
+			}
+			int[] counts = new int[gridW * gridH + 1];
+			for (int pass = 0; pass < 2; pass++) {
+				int[] fill = pass == 1 ? cellStart.clone() : null;
+				for (int k : subset) {
+					float x0 = Float.MAX_VALUE, y0 = Float.MAX_VALUE, x1 = -Float.MAX_VALUE, y1 = -Float.MAX_VALUE;
+					for (int c = 0; c < 3; c++) {
+						int a = t[k * 3 + c];
+						x0 = Math.min(x0, px[a]);
+						x1 = Math.max(x1, px[a]);
+						y0 = Math.min(y0, py[a]);
+						y1 = Math.max(y1, py[a]);
+					}
+					int cx0 = cell(x0, gridX, gridW), cx1 = cell(x1, gridX, gridW), cy0 = cell(y0, gridY, gridH), cy1 = cell(y1, gridY, gridH);
+					for (int cy = cy0; cy <= cy1; cy++) {
+						for (int cx = cx0; cx <= cx1; cx++) {
+							if (pass == 0) {
+								counts[cy * gridW + cx + 1]++;
+							} else {
+								cellTriangles[fill[cy * gridW + cx]++] = k;
+							}
+						}
+					}
+				}
+				if (pass == 0) {
+					for (int i = 0; i < gridW * gridH; i++) {
+						counts[i + 1] += counts[i];
+					}
+					cellStart = counts;
+					cellTriangles = new int[counts[gridW * gridH]];
+				}
+			}
+		}
+
+		private int cell(double v, double origin, int size) {
+			return Math.max(0, Math.min(size - 1, (int) Math.floor((v - origin) / CELL)));
+		}
+
+		/* The triangles of the cell of a window position (the whole subset outside of the grid) */
+		private int[] candidates(double x, double y) {
+			if (cellStart == null) {
+				return subset;
+			}
+			double cx = (x - gridX) / CELL, cy = (y - gridY) / CELL;
+			if (cx < 0 || cy < 0 || cx >= gridW || cy >= gridH) {
+				return subset;
+			}
+			int c = (int) cy * gridW + (int) cx;
+			return java.util.Arrays.copyOfRange(cellTriangles, cellStart[c], cellStart[c + 1]);
 		}
 
 		/* The relative position and the triangle {x, y, z, triangle} at the window position or null */
@@ -4636,7 +4950,7 @@ public class Measurement3d {
 				double[] h = m == null ? volumeHit(ray) : null;
 				return h == null ? null : new double[] { h[0], h[1], h[2], -1 };
 			}
-			double[] hit = intersect(m, ray, region, subset);
+			double[] hit = intersect(m, ray, region, candidates(x, y));
 			if (hit == null) {
 				return null;
 			}

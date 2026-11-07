@@ -358,6 +358,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		canvas.setFocus();
 		glWindow.addKeyListener(this);
 		glWindow.addMouseListener(this);
+		glWindow.addWindowListener(activation);
 		// canvas.addMouseMotionListener(this);
 		// canvas.addMouseWheelListener(this);
 
@@ -471,6 +472,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 			window.addGLEventListener(profileName == null ? renderer : modelRenderer);
 			window.addKeyListener(this);
 			window.addMouseListener(this);
+			window.addWindowListener(activation);
 			modelProfile = profileName;
 			glWindow = window;
 			canvas.setNEWTChild(window);
@@ -1377,6 +1379,25 @@ public class SpatialStructure implements KeyListener, MouseListener {
 			/* Space + drag rotates the view while a mouse tool is selected */
 			spaceDown = true;
 		}
+		/* Cmd/Ctrl + Z: undo the removal of a part of the iso surface, with Shift (or Cmd/Ctrl + Y): redo */
+		/*
+		 * The typed character decides (the key code is the position of the key on a
+		 * US keyboard: on a German keyboard the key Z has the code of Y); without a
+		 * character the key code
+		 */
+		char keyChar = Character.toLowerCase(evt.getKeyChar());
+		boolean letter = keyChar >= 'a' && keyChar <= 'z';
+		boolean undoKey = letter ? keyChar == 'z' : evt.getKeyCode() == KeyEvent.VK_Z;
+		boolean redoKey = letter ? keyChar == 'y' : evt.getKeyCode() == KeyEvent.VK_Y;
+		if ((evt.isMetaDown() || evt.isControlDown()) && (undoKey || redoKey)) {
+			/* (Also the menu of the workbench may handle the key: once) */
+			if (redoKey || evt.isShiftDown()) {
+				SurfaceUndo.redo();
+			} else {
+				SurfaceUndo.undo();
+			}
+			return;
+		}
 		if (walkthrough == false) {
 			int keyCode = evt.getKeyCode();
 			switch (keyCode) {
@@ -1646,6 +1667,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		SpatialEvents.setPressEvent(evt);
 
 		mousePressed = true;
+		activateView();
 		prevMouseX = evt.getX();
 		prevMouseY = evt.getY();
 		mouseButton = evt.getButton();
@@ -1769,6 +1791,37 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	 * has been selected), so that the first click in the view is handled as a click
 	 * and is not only used to activate the window (macOS).
 	 */
+	/*
+	 * The OpenGL window got the keyboard: the 3D view is the active part of the
+	 * workbench (the shortcuts of the menu, e.g., Undo and Redo, go to the 3D
+	 * view; on macOS they don't reach the OpenGL window)
+	 */
+	private final com.jogamp.newt.event.WindowAdapter activation = new com.jogamp.newt.event.WindowAdapter() {
+		@Override
+		public void windowGainedFocus(com.jogamp.newt.event.WindowEvent e) {
+			activateView();
+		}
+	};
+
+	/* Activates the 3D view in the workbench (if another part is active) */
+	private void activateView() {
+		SpatialView part = view;
+		if (part == null) {
+			return;
+		}
+		org.eclipse.swt.widgets.Display display = PlatformUI.getWorkbench().getDisplay();
+		display.asyncExec(() -> {
+			try {
+				org.eclipse.ui.IWorkbenchPage page = part.getSite() != null ? part.getSite().getPage() : null;
+				if (page != null && page.getActivePart() != part) {
+					page.activate(part);
+				}
+			} catch (RuntimeException ex) {
+				/* The view is closed */
+			}
+		});
+	}
+
 	public void focusView() {
 		GLWindow window = glWindow;
 		if (window != null && window.isNativeValid()) {

@@ -68,10 +68,12 @@ public class Clipping {
 	public static final int TOOL_STRAIGHT = 8;
 	/** Measurement: an angle (three clicks, the second point is the vertex). */
 	public static final int TOOL_ANGLE = 9;
+	/** The surface eraser: a drag removes the visible triangles of the iso surface under the brush (cut open). */
+	public static final int TOOL_SURFACE_ERASER = 10;
 
 	/** Returns true if the tool is a measurement tool (see setMeasureToolListener). */
 	public static boolean isMeasureTool(int tool) {
-		return tool >= TOOL_PICK && tool <= TOOL_ANGLE;
+		return tool >= TOOL_PICK && tool <= TOOL_SURFACE_ERASER;
 	}
 
 	/**

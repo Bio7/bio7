@@ -80,6 +80,17 @@ public class IsoSurface {
 	private ValueSelection selection = ValueSelection.ALL;
 	private ValueSelection activeSelection = ValueSelection.ALL;
 	private float[] rawData;
+	/*
+	 * The removed parts of the surface (cut open, see removeSurface): voxels of
+	 * the stack (keys of the positions), the operations for undo / redo and the
+	 * hidden triangles of the displayed mesh
+	 */
+	private final java.util.Set<Long> removedVoxels = new java.util.HashSet<>();
+	private final java.util.ArrayDeque<long[]> removedUndo = new java.util.ArrayDeque<>();
+	private final java.util.ArrayDeque<long[]> removedRedo = new java.util.ArrayDeque<>();
+	private java.util.Set<Long> removing;
+	private int removedVersion;
+	private java.util.BitSet hiddenTriangles;
 	private int nx;
 	private int ny;
 	private int nz;
@@ -274,8 +285,11 @@ public class IsoSurface {
 			lut = ip instanceof ColorProcessor ? null : ip.getColorModel();
 			fullData = null;
 			fullKey = null;
-			/* A reload of the same stack keeps a selected iso value! */
+			/* A reload of the same stack keeps a selected iso value (and the removed parts of the surface)! */
 			boolean keepIso = imp == image && isoExplicit;
+			if (imp != image) {
+				resetRemoved();
+			}
 			image = imp;
 			if (!keepIso) {
 				isoValue = iso;
@@ -464,6 +478,7 @@ public class IsoSurface {
 			data = copy;
 			rawData = null;
 			activeSelection = ValueSelection.ALL;
+			resetRemoved();
 			nx = w;
 			ny = h;
 			nz = d;
@@ -816,6 +831,11 @@ public class IsoSurface {
 		key.addAll(cut.key);
 		synchronized (this) {
 			if (fullData != null && key.equals(fullKey)) {
+				/* The removed parts of the surface (changed without a new mesh) */
+				if (fullData.hiddenVersion != removedVersion) {
+					fullData.hidden = hidden(fullData.vertices, fullData.triangles, fullData.nx, fullData.ny, fullData.nz);
+					fullData.hiddenVersion = removedVersion;
+				}
 				return fullData;
 			}
 		}
@@ -855,6 +875,8 @@ public class IsoSurface {
 		m.image = imp;
 		synchronized (this) {
 			if (image == imp) {
+				m.hidden = hidden(m.vertices, m.triangles, m.nx, m.ny, m.nz);
+				m.hiddenVersion = removedVersion;
 				fullData = m;
 				fullKey = key;
 			}
@@ -981,6 +1003,7 @@ public class IsoSurface {
 		data = null;
 		rawData = null;
 		activeSelection = ValueSelection.ALL;
+		resetRemoved();
 		image = null;
 		meshVertices = null;
 		meshTriangles = null;
@@ -1788,6 +1811,7 @@ public class IsoSurface {
 		positions = pos;
 		indices = idx;
 		normals = computeNormals(pos, idx);
+		hiddenTriangles = hidden(meshVertices, meshTriangles, nx, ny, nz);
 	}
 
 	/* Area weighted vertex normals! */
@@ -1964,13 +1988,14 @@ public class IsoSurface {
 		gl.glGenBuffers(4, buffers, 0);
 		FloatBuffer pos = Buffers.newDirectFloatBuffer(positions);
 		FloatBuffer nor = Buffers.newDirectFloatBuffer(normals);
-		IntBuffer idx = Buffers.newDirectIntBuffer(indices);
+		int[] drawn = visibleIndices();
+		IntBuffer idx = Buffers.newDirectIntBuffer(drawn);
 		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, buffers[0]);
 		gl.glBufferData(GL.GL_ARRAY_BUFFER, (long) positions.length * 4, pos, GL.GL_STATIC_DRAW);
 		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, buffers[1]);
 		gl.glBufferData(GL.GL_ARRAY_BUFFER, (long) normals.length * 4, nor, GL.GL_STATIC_DRAW);
 		gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, buffers[2]);
-		gl.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, (long) indices.length * 4, idx, GL.GL_STATIC_DRAW);
+		gl.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, (long) drawn.length * 4, idx, GL.GL_STATIC_DRAW);
 		if (vertexColors != null && vertexColors.length == positions.length) {
 			/* RGBA with the opacity! */
 			int n = vertexColors.length / 3;
@@ -1987,7 +2012,253 @@ public class IsoSurface {
 		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
 		gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0);
 		hasBuffers = true;
-		indexCount = indices.length;
+		indexCount = drawn.length;
+	}
+
+	/* The indices of the triangles which are not removed (see removeSurface) */
+	private int[] visibleIndices() {
+		java.util.BitSet hidden = hiddenTriangles;
+		if (hidden == null || hidden.isEmpty()) {
+			return indices;
+		}
+		int n = indices.length / 3;
+		int[] out = new int[(n - hidden.cardinality()) * 3];
+		int k = 0;
+		for (int t = 0; t < n && k < out.length; t++) {
+			if (!hidden.get(t)) {
+				out[k++] = indices[t * 3];
+				out[k++] = indices[t * 3 + 1];
+				out[k++] = indices[t * 3 + 2];
+			}
+		}
+		return k == out.length ? out : java.util.Arrays.copyOf(out, k);
+	}
+
+	/* ------------------------- The removed parts of the surface ------------------------- */
+
+	/* The size of the grid of the keys: the voxels of the stack (else of the data) */
+	private int[] removalGrid() {
+		if (image != null) {
+			return new int[] { image.getWidth(), image.getHeight(), image.getNSlices() };
+		}
+		return new int[] { Math.max(1, nx), Math.max(1, ny), Math.max(1, nz) };
+	}
+
+	/* The key of the voxel at a relative position (0 - 1) */
+	synchronized long removalKey(double rx, double ry, double rz) {
+		int[] g = removalGrid();
+		long x = Math.max(0, Math.min(g[0] - 1, (long) Math.floor(rx * g[0])));
+		long y = Math.max(0, Math.min(g[1] - 1, (long) Math.floor(ry * g[1])));
+		long z = Math.max(0, Math.min(g[2] - 1, (long) Math.floor(rz * g[2])));
+		return (z * g[1] + y) * g[0] + x;
+	}
+
+	/*
+	 * The keys of triangles of a mesh (voxel coordinates of a grid nx, ny, nz):
+	 * the voxels of the centers and, for triangles larger than a voxel of the
+	 * stack (a reduced display), all voxels of their box
+	 */
+	synchronized java.util.Set<Long> removalKeys(float[] v, int[] t, int mnx, int mny, int mnz, int[] triangles) {
+		java.util.Set<Long> keys = new java.util.HashSet<>();
+		int[] g = removalGrid();
+		for (int k : triangles) {
+			double cx = 0, cy = 0, cz = 0;
+			double x0 = Double.MAX_VALUE, y0 = Double.MAX_VALUE, z0 = Double.MAX_VALUE, x1 = -Double.MAX_VALUE, y1 = -Double.MAX_VALUE, z1 = -Double.MAX_VALUE;
+			for (int c = 0; c < 3; c++) {
+				int a = t[k * 3 + c] * 3;
+				double rx = (v[a] + 0.5) / mnx, ry = (v[a + 1] + 0.5) / mny, rz = (v[a + 2] + 0.5) / mnz;
+				cx += rx / 3;
+				cy += ry / 3;
+				cz += rz / 3;
+				x0 = Math.min(x0, rx);
+				x1 = Math.max(x1, rx);
+				y0 = Math.min(y0, ry);
+				y1 = Math.max(y1, ry);
+				z0 = Math.min(z0, rz);
+				z1 = Math.max(z1, rz);
+			}
+			keys.add(removalKey(cx, cy, cz));
+			int ix0 = (int) Math.floor(x0 * g[0]), ix1 = (int) Math.floor(x1 * g[0]);
+			int iy0 = (int) Math.floor(y0 * g[1]), iy1 = (int) Math.floor(y1 * g[1]);
+			int iz0 = (int) Math.floor(z0 * g[2]), iz1 = (int) Math.floor(z1 * g[2]);
+			/* A triangle of a reduced mesh: the voxels of its box (at most 4 x 4 x 4) */
+			if ((ix1 - ix0) * (iy1 - iy0) * (iz1 - iz0) > 0 && ix1 - ix0 <= 4 && iy1 - iy0 <= 4 && iz1 - iz0 <= 4
+					&& (mnx < g[0] || mny < g[1] || mnz < g[2])) {
+				for (int z = iz0; z <= iz1; z++) {
+					for (int y = iy0; y <= iy1; y++) {
+						for (int x = ix0; x <= ix1; x++) {
+							keys.add(removalKey((x + 0.5) / g[0], (y + 0.5) / g[1], (z + 0.5) / g[2]));
+						}
+					}
+				}
+			}
+		}
+		return keys;
+	}
+
+	/* The removed triangles of a mesh (the center in a removed voxel) or null */
+	private java.util.BitSet hidden(float[] v, int[] t, int mnx, int mny, int mnz) {
+		if (removedVoxels.isEmpty() || v == null || t == null) {
+			return null;
+		}
+		java.util.BitSet bits = new java.util.BitSet(t.length / 3);
+		for (int k = 0; k < t.length / 3; k++) {
+			double cx = 0, cy = 0, cz = 0;
+			for (int c = 0; c < 3; c++) {
+				int a = t[k * 3 + c] * 3;
+				cx += (v[a] + 0.5) / mnx / 3;
+				cy += (v[a + 1] + 0.5) / mny / 3;
+				cz += (v[a + 2] + 0.5) / mnz / 3;
+			}
+			if (removedVoxels.contains(removalKey(cx, cy, cz))) {
+				bits.set(k);
+			}
+		}
+		return bits;
+	}
+
+	/* A change of the removed parts: the hidden triangles of the display again */
+	private void removedChanged() {
+		removedVersion++;
+		hiddenTriangles = hidden(meshVertices, meshTriangles, nx, ny, nz);
+		upload = true;
+	}
+
+	private void resetRemoved() {
+		removedVoxels.clear();
+		removedUndo.clear();
+		removedRedo.clear();
+		removing = null;
+		removedVersion++;
+		hiddenTriangles = null;
+	}
+
+	/*
+	 * Removes parts of the surface (keys of voxels, see removalKeys): one
+	 * operation for undo, or a part of the operation started with beginRemoval
+	 */
+	synchronized void removeSurface(java.util.Set<Long> keys) {
+		java.util.Set<Long> added = new java.util.HashSet<>();
+		for (long k : keys) {
+			if (removedVoxels.add(k)) {
+				added.add(k);
+			}
+		}
+		if (added.isEmpty()) {
+			return;
+		}
+		if (removing != null) {
+			removing.addAll(added);
+		} else {
+			removedUndo.push(added.stream().mapToLong(Long::longValue).toArray());
+			removedRedo.clear();
+		}
+		removedChanged();
+	}
+
+	/* Starts an operation of several removals (e.g., a stroke of the eraser) */
+	synchronized void beginRemoval() {
+		removing = new java.util.HashSet<>();
+	}
+
+	/* Ends the operation of several removals (one step of undo) */
+	synchronized void endRemoval() {
+		if (removing != null && !removing.isEmpty()) {
+			removedUndo.push(removing.stream().mapToLong(Long::longValue).toArray());
+			removedRedo.clear();
+		}
+		removing = null;
+	}
+
+	/**
+	 * Undoes the last removal of a part of the surface (see the Surface Eraser and
+	 * "Remove Surface of the Area" of the Measure tab).
+	 *
+	 * @return true if a removal has been undone
+	 */
+	public synchronized boolean undoRemoval() {
+		endRemoval();
+		long[] op = removedUndo.poll();
+		if (op == null) {
+			return false;
+		}
+		if (op.length > 0 && op[0] == Long.MIN_VALUE) {
+			/* A restore of all parts: removed again */
+			for (int i = 1; i < op.length; i++) {
+				removedVoxels.add(op[i]);
+			}
+		} else {
+			for (long k : op) {
+				removedVoxels.remove(k);
+			}
+		}
+		removedRedo.push(op);
+		removedChanged();
+		return true;
+	}
+
+	/**
+	 * Redoes the last undone removal.
+	 *
+	 * @return true if a removal has been redone
+	 */
+	public synchronized boolean redoRemoval() {
+		long[] op = removedRedo.poll();
+		if (op == null) {
+			return false;
+		}
+		if (op.length > 0 && op[0] == Long.MIN_VALUE) {
+			for (int i = 1; i < op.length; i++) {
+				removedVoxels.remove(op[i]);
+			}
+		} else {
+			for (long k : op) {
+				removedVoxels.add(k);
+			}
+		}
+		removedUndo.push(op);
+		removedChanged();
+		return true;
+	}
+
+	/**
+	 * Restores the whole surface (all removed parts; an operation of undo, too).
+	 */
+	public synchronized void restoreSurface() {
+		endRemoval();
+		if (removedVoxels.isEmpty()) {
+			return;
+		}
+		long[] op = new long[removedVoxels.size() + 1];
+		op[0] = Long.MIN_VALUE;
+		int i = 1;
+		for (long k : removedVoxels) {
+			op[i++] = k;
+		}
+		removedVoxels.clear();
+		removedUndo.push(op);
+		removedRedo.clear();
+		removedChanged();
+	}
+
+	/** Returns true if a removal can be undone (redone). */
+	public synchronized boolean canUndoRemoval() {
+		return !removedUndo.isEmpty();
+	}
+
+	/** Returns true if an undone removal can be redone. */
+	public synchronized boolean canRedoRemoval() {
+		return !removedRedo.isEmpty();
+	}
+
+	/** Returns true if parts of the surface are removed (cut open). */
+	public synchronized boolean hasRemovedSurface() {
+		return !removedVoxels.isEmpty();
+	}
+
+	/** Returns the number of the hidden (removed) triangles of the displayed surface. */
+	public synchronized int getRemovedTriangles() {
+		return hiddenTriangles != null ? hiddenTriangles.cardinality() : 0;
 	}
 
 	/* The selected color or the color of the LUT at the iso value! */
@@ -2106,7 +2377,8 @@ public class IsoSurface {
 				throw new IOException("No iso surface available!");
 			}
 			pos = positions;
-			idx = indices;
+			/* Only the visible surface (without the removed parts, see removeSurface) */
+			idx = visibleIndices();
 			scale = (float) pixelSize;
 			zs = zScale;
 			e.color = getRenderColor();
@@ -2116,6 +2388,39 @@ public class IsoSurface {
 			e.title = image != null ? image.getTitle() : "iso surface";
 			e.unit = unit;
 			e.isoValue = isoValue;
+		}
+		if (idx.length == 0) {
+			throw new IOException("The whole iso surface is removed (Restore Surface)!");
+		}
+		/* A surface cut open: only the vertices of the visible triangles (no loose vertices in the file) */
+		if (idx != indices) {
+			int[] map = new int[pos.length / 3];
+			java.util.Arrays.fill(map, -1);
+			int used = 0;
+			for (int v : idx) {
+				if (map[v] < 0) {
+					map[v] = used++;
+				}
+			}
+			float[] compact = new float[used * 3];
+			float[] colors = e.vertexColors != null && e.vertexColors.length == pos.length ? new float[used * 3] : null;
+			for (int v = 0; v < map.length; v++) {
+				if (map[v] >= 0) {
+					System.arraycopy(pos, v * 3, compact, map[v] * 3, 3);
+					if (colors != null) {
+						System.arraycopy(e.vertexColors, v * 3, colors, map[v] * 3, 3);
+					}
+				}
+			}
+			int[] remapped = new int[idx.length];
+			for (int i = 0; i < idx.length; i++) {
+				remapped[i] = map[idx[i]];
+			}
+			pos = compact;
+			idx = remapped;
+			if (e.vertexColors != null) {
+				e.vertexColors = colors;
+			}
 		}
 		float[] p = new float[pos.length];
 		for (int i = 0; i < pos.length; i += 3) {
@@ -2563,6 +2868,36 @@ public class IsoSurface {
 		float[] values;
 		double valuesOffset;
 		ValueSelection selection = ValueSelection.ALL;
+		/* The removed (hidden) triangles (the surface cut open, see removeSurface) or null */
+		java.util.BitSet hidden;
+		int hiddenVersion = -1;
+
+		/* A copy with other hidden triangles (e.g., the state at the start of a stroke of the eraser) */
+		MeasureData withHidden(java.util.BitSet other) {
+			MeasureData m = new MeasureData();
+			m.vertices = vertices;
+			m.triangles = triangles;
+			m.data = data;
+			m.nx = nx;
+			m.ny = ny;
+			m.nz = nz;
+			m.stepX = stepX;
+			m.stepY = stepY;
+			m.stepZ = stepZ;
+			m.resolution = resolution;
+			m.valueOffset = valueOffset;
+			m.values = values;
+			m.valuesOffset = valuesOffset;
+			m.selection = selection;
+			m.pixelSize = pixelSize;
+			m.unit = unit;
+			m.isoValue = isoValue;
+			m.image = image;
+			m.origin = origin;
+			m.hidden = other;
+			m.hiddenVersion = hiddenVersion;
+			return m;
+		}
 		double pixelSize;
 		String unit;
 		double isoValue;
@@ -2630,7 +2965,11 @@ public class IsoSurface {
 		}
 		gl.glColor4f(rgb[0], rgb[1], rgb[2], alpha);
 		gl.glBegin(GL.GL_TRIANGLES);
+		java.util.BitSet hidden = hiddenTriangles;
 		for (int t : triangles) {
+			if (hidden != null && hidden.get(t)) {
+				continue;
+			}
 			for (int k = 0; k < 3; k++) {
 				int v = indices[t * 3 + k] * 3;
 				gl.glVertex3f(positions[v], positions[v + 1], positions[v + 2]);
@@ -2664,6 +3003,8 @@ public class IsoSurface {
 		boolean all = activeSelection.isAll();
 		m.isoValue = all ? isoValue : activeSelection.isoLevel();
 		m.valueOffset = all ? valueOffset : 0;
+		m.hidden = hiddenTriangles;
+		m.hiddenVersion = removedVersion;
 		m.image = image;
 		m.origin = meshOnly ? meshOrigin.clone() : null;
 		return m;
@@ -2716,6 +3057,7 @@ public class IsoSurface {
 			fullData = null;
 			fullKey = null;
 			meshOnly = true;
+			resetRemoved();
 			meshName = mesh.name;
 			meshFileColors = mesh.colors;
 			meshOrigin = new double[] { b[0] * scale, b[4] * scale, b[2] * scale };

@@ -81,6 +81,8 @@ public class SpatialView extends ViewPart {
 
 		Image[] imagesTemp = Util.getShell().getImages();
 		initializeToolBar();
+		/* Undo and redo of the removed parts of the iso surface with the shortcuts of the workbench */
+		SurfaceUndo.install(getViewSite());
 		/* Add a listener to detect detached views! */
 		parent.addControlListener(new ControlAdapter() {
 			@Override
