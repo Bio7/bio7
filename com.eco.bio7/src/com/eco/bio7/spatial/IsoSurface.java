@@ -72,6 +72,14 @@ public class IsoSurface {
 
 	/* The (reduced) stack */
 	private float[] data;
+	/*
+	 * The selected values of a stack (see setSelection) and the selection of the
+	 * loaded stack (resolved, e.g., the threshold of the image); with a selection
+	 * data is the field of the selection and rawData the values of the stack
+	 */
+	private ValueSelection selection = ValueSelection.ALL;
+	private ValueSelection activeSelection = ValueSelection.ALL;
+	private float[] rawData;
 	private int nx;
 	private int ny;
 	private int nz;
@@ -201,12 +209,18 @@ public class IsoSurface {
 		int td = (d + sz - 1) / sz;
 		int channel = imp.getChannel();
 		double offset = stackOffset(imp, channel);
-		float[] values = readChannel(imp, channel, sx, sy, sz, tw, th, td, offset);
+		float[] raw = readChannel(imp, channel, sx, sy, sz, tw, th, td, offset);
+		/* Only the selected values (e.g., the threshold of the image or labels): the field of the selection */
+		ValueSelection active;
+		synchronized (this) {
+			active = selection.resolve(imp);
+		}
+		float[] values = active.isAll() ? raw : active.field(raw, offset);
 		/* The values of another channel for the intensity colors! */
 		int cc = colorChannel;
 		boolean otherChannel = cc > 0 && cc != channel && cc <= imp.getNChannels();
 		double otherOffset = otherChannel ? stackOffset(imp, cc) : offset;
-		float[] colorValues = otherChannel ? readChannel(imp, cc, sx, sy, sz, tw, th, td, otherOffset) : values;
+		float[] colorValues = otherChannel ? readChannel(imp, cc, sx, sy, sz, tw, th, td, otherOffset) : raw;
 		int[] displayColors = readDisplayColors(imp, sx, sy, sz, tw, th, td);
 		ColorModel otherLut = null;
 		double otherMin = 0;
@@ -237,6 +251,8 @@ public class IsoSurface {
 			meshOnly = false;
 			meshFileColors = null;
 			data = values;
+			rawData = active.isAll() ? null : raw;
+			activeSelection = active;
 			nx = tw;
 			ny = th;
 			nz = td;
@@ -446,6 +462,8 @@ public class IsoSurface {
 			meshOnly = false;
 			meshFileColors = null;
 			data = copy;
+			rawData = null;
+			activeSelection = ValueSelection.ALL;
 			nx = w;
 			ny = h;
 			nz = d;
@@ -734,7 +752,7 @@ public class IsoSurface {
 			w = nx;
 			h = ny;
 			d = nz;
-			iso = isoValue - valueOffset;
+			iso = meshIso();
 			/* The smoothing in voxels of the stack (the reduced display: in its voxels) */
 			sigma = smoothing / stepX;
 			iterations = meshSmoothing;
@@ -774,9 +792,11 @@ public class IsoSurface {
 		float sigma;
 		int iterations;
 		double voxelDepth;
+		ValueSelection active;
 		synchronized (this) {
 			imp = image;
 			iso = isoValue;
+			active = activeSelection;
 			/* The smoothing in voxels of the stack */
 			sigma = smoothing;
 			iterations = meshSmoothing;
@@ -792,7 +812,7 @@ public class IsoSurface {
 		}
 		int f = resolution;
 		Cut cut = currentCut(1f / f, 1f / f, (float) (voxelDepth / f));
-		List<Object> key = new ArrayList<>(List.of(imp, imp.getChannel(), imp.getFrame(), iso, sigma, iterations, f));
+		List<Object> key = new ArrayList<>(List.of(imp, imp.getChannel(), imp.getFrame(), iso, sigma, iterations, f, active));
 		key.addAll(cut.key);
 		synchronized (this) {
 			if (fullData != null && key.equals(fullKey)) {
@@ -803,16 +823,23 @@ public class IsoSurface {
 		synchronized (this) {
 			offset = valueOffset;
 		}
-		float[] values = readChannel(imp, imp.getChannel(), 1, 1, 1, w, h, d, offset);
+		float[] raw = readChannel(imp, imp.getChannel(), 1, 1, 1, w, h, d, offset);
+		/* A selection (e.g., labels): the field of the selection, upsampled like the values */
+		float[] values = active.isAll() ? raw : active.field(raw, offset);
 		if (f > 1) {
 			values = upsample(values, w, h, d, f);
+			raw = active.isAll() ? values : upsample(raw, w, h, d, f);
 		}
 		/* The smoothing in voxels of the stack: in voxels of the upsampled stack */
-		Mesh mesh = computeMesh(values, w * f, h * f, d * f, iso - offset, sigma * f, iterations, cut);
+		double level = active.isAll() ? iso - offset : active.isoLevel();
+		Mesh mesh = computeMesh(values, w * f, h * f, d * f, level, sigma * f, iterations, cut);
 		MeasureData m = new MeasureData();
 		m.vertices = mesh.vertices;
 		m.triangles = mesh.triangles;
 		m.data = values;
+		m.values = raw;
+		m.valuesOffset = offset;
+		m.selection = active;
 		m.nx = w * f;
 		m.ny = h * f;
 		m.nz = d * f;
@@ -820,10 +847,11 @@ public class IsoSurface {
 		m.stepY = 1.0 / f;
 		m.stepZ = voxelDepth / f;
 		m.resolution = f;
-		m.valueOffset = offset;
+		/* With a selection the data is the field of the selection (its iso value) */
+		m.valueOffset = active.isAll() ? offset : 0;
 		m.pixelSize = display.pixelSize;
 		m.unit = display.unit;
-		m.isoValue = iso;
+		m.isoValue = active.isAll() ? iso : active.isoLevel();
 		m.image = imp;
 		synchronized (this) {
 			if (image == imp) {
@@ -951,6 +979,8 @@ public class IsoSurface {
 		fullData = null;
 		fullKey = null;
 		data = null;
+		rawData = null;
+		activeSelection = ValueSelection.ALL;
 		image = null;
 		meshVertices = null;
 		meshTriangles = null;
@@ -1020,7 +1050,7 @@ public class IsoSurface {
 				w = nx;
 				h = ny;
 				d = nz;
-				iso = isoValue - valueOffset;
+				iso = meshIso();
 				/* The smoothing in voxels of the stack (the reduced display: in its voxels) */
 				sigma = smoothing / stepX;
 				iterations = meshSmoothing;
@@ -1366,7 +1396,7 @@ public class IsoSurface {
 	 * values of the same channel at the surface are close to it) or NaN.
 	 */
 	public synchronized double getIsoPosition() {
-		if (colorMode != COLOR_INTENSITY || customColorData || colorMax <= colorMin) {
+		if (colorMode != COLOR_INTENSITY || customColorData || colorMax <= colorMin || !activeSelection.isAll()) {
 			return Double.NaN;
 		}
 		return Math.max(0, Math.min(1, (isoValue - colorMin) / (colorMax - colorMin)));
@@ -2514,7 +2544,7 @@ public class IsoSurface {
 		int vertices = positions != null ? positions.length / 3 : 0;
 		int triangles = indices != null ? indices.length / 3 : 0;
 		return title + ": " + nx + " x " + ny + " x " + nz + " voxels, " + vertices + " vertices, " + triangles
-				+ " triangles";
+				+ " triangles" + (activeSelection.isAll() ? "" : " (" + activeSelection + ")");
 	}
 
 	/* A snapshot of the mesh and the data for the measurements (see Measurement3d)! */
@@ -2526,6 +2556,13 @@ public class IsoSurface {
 		double stepX, stepY, stepZ; // the size of a data voxel in pixels (z: with the calibrated voxel depth)
 		int resolution = 1; // the upsampling of the stack for the measurements (see setMeasureResolution)
 		double valueOffset; // the stored data are value - valueOffset (64-bit stacks)
+		/*
+		 * The values of the stack (value - valuesOffset): the data or, with a
+		 * selection, the values of the stack (the data is the field of the selection)
+		 */
+		float[] values;
+		double valuesOffset;
+		ValueSelection selection = ValueSelection.ALL;
 		double pixelSize;
 		String unit;
 		double isoValue;
@@ -2554,14 +2591,26 @@ public class IsoSurface {
 	 */
 	synchronized void renderTriangles(GL2 gl, boolean cartesian, int[] mesh, int[] triangles, float[] rgb,
 			boolean fill, float lineWidth) {
+		renderTriangles(gl, cartesian, mesh, triangles, rgb, fill, lineWidth, 1);
+	}
+
+	/* The same, translucent (alpha < 1, e.g., a measured area on the surface)! */
+	synchronized void renderTriangles(GL2 gl, boolean cartesian, int[] mesh, int[] triangles, float[] rgb,
+			boolean fill, float lineWidth, float alpha) {
 		if (!show || positions == null || indices == null || mesh != meshTriangles || triangles == null) {
 			return;
 		}
 		float d = depth * zScale;
-		gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT | GL2.GL_POLYGON_BIT | GL2.GL_LINE_BIT);
+		gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT | GL2.GL_POLYGON_BIT | GL2.GL_LINE_BIT
+				| GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 		gl.glPushMatrix();
 		if (cartesian) {
 			gl.glTranslatef(-width / 2, -height / 2, -d / 2);
+		}
+		if (alpha < 1) {
+			gl.glEnable(GL.GL_BLEND);
+			gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+			gl.glDepthMask(false);
 		}
 		gl.glScalef(1, 1, zScale);
 		gl.glDisable(GL2.GL_LIGHTING);
@@ -2579,7 +2628,7 @@ public class IsoSurface {
 			gl.glPolygonOffset(-3, -8);
 			gl.glLineWidth(lineWidth);
 		}
-		gl.glColor3f(rgb[0], rgb[1], rgb[2]);
+		gl.glColor4f(rgb[0], rgb[1], rgb[2], alpha);
 		gl.glBegin(GL.GL_TRIANGLES);
 		for (int t : triangles) {
 			for (int k = 0; k < 3; k++) {
@@ -2600,6 +2649,9 @@ public class IsoSurface {
 		m.vertices = meshVertices;
 		m.triangles = meshTriangles;
 		m.data = data;
+		m.values = rawData != null ? rawData : data;
+		m.valuesOffset = valueOffset;
+		m.selection = activeSelection;
 		m.nx = nx;
 		m.ny = ny;
 		m.nz = nz;
@@ -2608,8 +2660,10 @@ public class IsoSurface {
 		m.stepZ = stepZ;
 		m.pixelSize = pixelSize;
 		m.unit = unit;
-		m.isoValue = isoValue;
-		m.valueOffset = valueOffset;
+		/* With a selection the data is the field of the selection (its iso value) */
+		boolean all = activeSelection.isAll();
+		m.isoValue = all ? isoValue : activeSelection.isoLevel();
+		m.valueOffset = all ? valueOffset : 0;
 		m.image = image;
 		m.origin = meshOnly ? meshOrigin.clone() : null;
 		return m;
@@ -2728,6 +2782,45 @@ public class IsoSurface {
 
 	public synchronized double getDisplayMax() {
 		return displayMax;
+	}
+
+	/**
+	 * Sets the values of the stack for the iso surface (used by the next load, a
+	 * loaded stack is loaded again): ValueSelection.ALL (the iso surface of the
+	 * iso value, the default), ValueSelection.IMAGE_THRESHOLD (the values in the
+	 * threshold of the image in ImageJ, e.g., only the particles), a range of
+	 * values (ValueSelection.range) or the labels of a segmentation
+	 * (ValueSelection.labels). With a selection the iso value is not used.
+	 *
+	 * @param selection the selection (null = all values)
+	 */
+	public void setSelection(ValueSelection selection) {
+		boolean loaded;
+		synchronized (this) {
+			this.selection = selection != null ? selection : ValueSelection.ALL;
+			loaded = image != null && data != null;
+		}
+		if (loaded) {
+			reload();
+		}
+	}
+
+	/** Returns the selection of the values (see setSelection). */
+	public synchronized ValueSelection getSelection() {
+		return selection;
+	}
+
+	/**
+	 * Returns the selection of the loaded stack (e.g., the range of the threshold
+	 * of the image) or ValueSelection.ALL.
+	 */
+	public synchronized ValueSelection getActiveSelection() {
+		return activeSelection;
+	}
+
+	/* The iso value of the mesh in the stored data: the iso value or the level of the field of a selection */
+	private double meshIso() {
+		return activeSelection.isAll() ? isoValue - valueOffset : activeSelection.isoLevel();
 	}
 
 	public synchronized double getIsoValue() {

@@ -91,6 +91,8 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	private int canvasHeight, canvasWidth;
 	private float scaleValue = 1.0f; // scale for the terrain.
 	private boolean keys[] = new boolean[256];
+	/* The space key is pressed (space + drag rotates the view while a mouse tool is selected) */
+	private volatile boolean spaceDown;
 	private int prevMouseX = 0;
 	private int prevMouseY = 0;
 	private float sizeX = 1000;
@@ -1354,6 +1356,9 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		SpatialEvents.setKeyReleaseEvent(evt);
 
 		keys[evt.getKeyCode()] = false;
+		if (evt.getKeyCode() == KeyEvent.VK_SPACE) {
+			spaceDown = false;
+		}
 		/* Release the movement keys for the walkthrough! */
 		doRotateX = false;
 		doRotateY = false;
@@ -1368,6 +1373,10 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		SpatialEvents.setKeyPressed(true);
 		SpatialEvents.setKeyPressEvent(evt);
 
+		if (evt.getKeyCode() == KeyEvent.VK_SPACE) {
+			/* Space + drag rotates the view while a mouse tool is selected */
+			spaceDown = true;
+		}
 		if (walkthrough == false) {
 			int keyCode = evt.getKeyCode();
 			switch (keyCode) {
@@ -1413,9 +1422,18 @@ public class SpatialStructure implements KeyListener, MouseListener {
 			case KeyEvent.VK_H:
 				dozv = dozv + 10;
 				break;
+			case KeyEvent.VK_DELETE:
+			case KeyEvent.VK_BACK_SPACE:
+				/* The active point of the selected measurement (Shift: the measurement) is deleted */
+				final boolean whole = evt.isShiftDown();
+				new Thread(() -> measurement.deleteSelected(whole), "Delete Measurement Point").start();
+				break;
 			case KeyEvent.VK_ESCAPE:
 				if (glWindow.isFullscreen()) {
 					view.recreateGLCanvas();
+				} else if (Clipping.isMeasureTool(clipping.getTool())) {
+					/* Escape switches the measurement tool off (the mouse rotates the view again) */
+					clipping.setTool(Clipping.TOOL_NONE);
 				}
 				break;
 			case KeyEvent.VK_F2:
@@ -1638,9 +1656,15 @@ public class SpatialStructure implements KeyListener, MouseListener {
 			renderer.startDrag(new Point(evt.getX(), evt.getY()));
 			return;
 		}
-		/* The mouse tools of the clipping (eraser, plane) with the left mouse button (NEWT: pixel units)! */
-		clippingDrag = evt.getButton() == 1 && !walkthrough
-				&& clipping.toolPressed(evt.getX(), evt.getY(), evt.isShiftDown());
+		/*
+		 * The mouse tools of the clipping (eraser, plane) and of the measurements with
+		 * the left mouse button (NEWT: pixel units)! With the Alt (Option) key or the
+		 * space key pressed the view is rotated (also while a tool is selected, e.g.,
+		 * within a measurement).
+		 */
+		boolean rotateKey = evt.isAltDown() || spaceDown;
+		clippingDrag = evt.getButton() == 1 && !walkthrough && !rotateKey
+				&& clipping.toolPressed(evt.getX(), evt.getY(), evt.isShiftDown(), evt.getClickCount());
 		if (clippingDrag) {
 			return;
 		}
@@ -1731,7 +1755,25 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	public void mouseEntered(MouseEvent evt) {
 		SpatialEvents.setMouseEntered(true);
 		SpatialEvents.setMouseEnteredEvent(evt);
+		/*
+		 * A mouse tool (ruler, eraser): the 3D view gets the focus, so the first click
+		 * is not only used to activate the OpenGL window (macOS)
+		 */
+		if (clipping.getTool() != Clipping.TOOL_NONE) {
+			focusView();
+		}
+	}
 
+	/**
+	 * Gives the focus to the OpenGL window of the 3D view (e.g., after a mouse tool
+	 * has been selected), so that the first click in the view is handled as a click
+	 * and is not only used to activate the window (macOS).
+	 */
+	public void focusView() {
+		GLWindow window = glWindow;
+		if (window != null && window.isNativeValid()) {
+			window.requestFocus(false);
+		}
 	}
 
 	public void mouseClicked(MouseEvent evt) {
@@ -1761,7 +1803,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		mousePressed = false;
 		if (clippingDrag) {
 			clippingDrag = false;
-			clipping.toolReleased();
+			clipping.toolReleased(evt.getX(), evt.getY());
 		}
 		SpatialEvents.setMouseDragged(false);
 		SpatialEvents.setDragEvent(null);

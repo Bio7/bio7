@@ -54,8 +54,54 @@ public class Clipping {
 	public static final int TOOL_PLANE = 1;
 	/** The mouse removes voxels along the view direction (Shift: restores voxels). */
 	public static final int TOOL_ERASER = 2;
-	/** A mouse click picks a point on the displayed data (see setPickListener). */
+	/** A mouse click picks a point on the displayed data (see setPickListener): a line (ruler). */
 	public static final int TOOL_PICK = 3;
+	/** Measurement: single points (position, value, object). */
+	public static final int TOOL_POINT = 4;
+	/** Measurement: a polygon on the surface (clicks, a double-click closes it). */
+	public static final int TOOL_POLYGON = 5;
+	/** Measurement: a freehand area on the surface (drag). */
+	public static final int TOOL_FREEHAND = 6;
+	/** Measurement: the volume of an object (click) or inside of an outline (drag). */
+	public static final int TOOL_VOLUME = 7;
+	/** Measurement: a straight line (two clicks or a drag). */
+	public static final int TOOL_STRAIGHT = 8;
+	/** Measurement: an angle (three clicks, the second point is the vertex). */
+	public static final int TOOL_ANGLE = 9;
+
+	/** Returns true if the tool is a measurement tool (see setMeasureToolListener). */
+	public static boolean isMeasureTool(int tool) {
+		return tool >= TOOL_PICK && tool <= TOOL_ANGLE;
+	}
+
+	/**
+	 * The listener of the measurement tools: the mouse events with the window
+	 * position (pixels of the OpenGL surface, y from the top) and the view ray
+	 * through the data (relative positions, start and end, or null outside).
+	 */
+	public interface MeasureToolListener {
+		void pressed(int tool, double x, double y, double[][] ray, int clickCount);
+
+		void dragged(int tool, double x, double y, double[][] ray);
+
+		void released(int tool, double x, double y);
+
+		/**
+		 * A press without a tool (TOOL_NONE): true if a measurement is edited (e.g., a
+		 * point is moved; the drag and the release are sent with TOOL_NONE), false
+		 * rotates the view.
+		 */
+		default boolean editPressed(double x, double y, double[][] ray) {
+			return false;
+		}
+	}
+
+	private MeasureToolListener measureToolListener;
+
+	/** Sets the listener of the measurement tools (see MeasureToolListener). */
+	public void setMeasureToolListener(MeasureToolListener listener) {
+		measureToolListener = listener;
+	}
 
 	/* The maximum size of a mask (per axis) */
 	private static final int MAX_MASK_SIZE = 512;
@@ -140,6 +186,15 @@ public class Clipping {
 	private int[] dataSize;
 	private double lastX, lastY;
 	private boolean shiftDrag;
+	/* A measurement is edited without a tool (see MeasureToolListener.editPressed) */
+	private volatile boolean editDrag;
+	/* The shift key was pressed with the last press of the mouse (see isShiftPressed) */
+	private volatile boolean pressShift;
+
+	/** Returns true if the shift key was pressed with the last press of the mouse. */
+	public boolean isShiftPressed() {
+		return pressShift;
+	}
 	/* The removed voxels of an eraser stroke (published as a mask while dragging) */
 	private BitSet stroke;
 	private int strokeW, strokeH, strokeD;
@@ -387,7 +442,7 @@ public class Clipping {
 	}
 
 	/**
-	 * Stores the matrices of the view for the mouse tools (if a tool is selected).
+	 * Stores the matrices of the view for the mouse tools (of each frame).
 	 *
 	 * @param gl     the OpenGL context (the scene coordinates of the current model
 	 *               view matrix)
@@ -395,7 +450,12 @@ public class Clipping {
 	 * @param flip   true if the first row of the data is at the bottom
 	 */
 	public synchronized void setView(GL2 gl, double[] bounds, boolean flip) {
-		if (tool == TOOL_NONE || bounds == null) {
+		/*
+		 * Also without a selected tool: the view of the last frame is needed for the
+		 * first click after a tool has been selected (the view is not drawn again
+		 * before the click)
+		 */
+		if (bounds == null) {
 			viewBounds = null;
 			return;
 		}
@@ -421,19 +481,50 @@ public class Clipping {
 	 * @return true if the tool handles the drag (else the view is rotated)
 	 */
 	public boolean toolPressed(double x, double y, boolean shift) {
+		return toolPressed(x, y, shift, 1);
+	}
+
+	/**
+	 * Starts a drag of the mouse tool (see toolPressed(double, double, boolean))
+	 * with the click count of the mouse event (2 = a double-click, e.g., closes a
+	 * polygon).
+	 */
+	public boolean toolPressed(double x, double y, boolean shift, int clickCount) {
 		double[][] pickRay = null;
+		int current;
+		pressShift = shift;
+		/* Without a tool: a point of a measurement can be moved (else the view is rotated) */
+		MeasureToolListener editListener = measureToolListener;
+		double[][] editRay = null;
+		boolean noTool;
+		synchronized (this) {
+			noTool = tool == TOOL_NONE && viewBounds != null;
+			if (noTool && editListener != null) {
+				editRay = relativeRay(x, y);
+			}
+		}
+		if (noTool && editListener != null && editListener.editPressed(x, y, editRay)) {
+			editDrag = true;
+			return true;
+		}
 		synchronized (this) {
 			if (tool == TOOL_NONE || viewBounds == null) {
 				return false;
 			}
-			if (tool == TOOL_PICK) {
+			current = tool;
+			if (isMeasureTool(tool)) {
 				pickRay = relativeRay(x, y);
 			}
 		}
-		if (tool == TOOL_PICK) {
-			java.util.function.Consumer<double[][]> listener = pickListener;
-			if (pickRay != null && listener != null) {
-				listener.accept(pickRay);
+		if (isMeasureTool(current)) {
+			MeasureToolListener measure = measureToolListener;
+			if (measure != null) {
+				measure.pressed(current, x, y, pickRay, clickCount);
+			} else if (current == TOOL_PICK) {
+				java.util.function.Consumer<double[][]> listener = pickListener;
+				if (pickRay != null && listener != null) {
+					listener.accept(pickRay);
+				}
 			}
 			return true;
 		}
@@ -470,6 +561,32 @@ public class Clipping {
 
 	/** Continues the drag of the mouse tool (see toolPressed). */
 	public void toolDragged(double x, double y) {
+		if (editDrag) {
+			MeasureToolListener measure = measureToolListener;
+			double[][] ray;
+			synchronized (this) {
+				ray = viewBounds != null ? relativeRay(x, y) : null;
+			}
+			if (measure != null) {
+				measure.dragged(TOOL_NONE, x, y, ray);
+			}
+			return;
+		}
+		int current;
+		double[][] ray = null;
+		synchronized (this) {
+			current = tool;
+			if (isMeasureTool(tool) && viewBounds != null) {
+				ray = relativeRay(x, y);
+			}
+		}
+		if (isMeasureTool(current)) {
+			MeasureToolListener measure = measureToolListener;
+			if (measure != null) {
+				measure.dragged(current, x, y, ray);
+			}
+			return;
+		}
 		synchronized (this) {
 			if (viewBounds == null) {
 				return;
@@ -503,6 +620,30 @@ public class Clipping {
 
 	/** Ends the drag of the mouse tool. */
 	public void toolReleased() {
+		toolReleased(Double.NaN, Double.NaN);
+	}
+
+	/** Ends the drag of the mouse tool at the window position (see toolPressed). */
+	public void toolReleased(double x, double y) {
+		if (editDrag) {
+			editDrag = false;
+			MeasureToolListener measure = measureToolListener;
+			if (measure != null) {
+				measure.released(TOOL_NONE, x, y);
+			}
+			return;
+		}
+		int current;
+		synchronized (this) {
+			current = tool;
+		}
+		if (isMeasureTool(current)) {
+			MeasureToolListener measure = measureToolListener;
+			if (measure != null) {
+				measure.released(current, x, y);
+			}
+			return;
+		}
 		synchronized (this) {
 			if (stroke == null) {
 				return;
@@ -650,6 +791,77 @@ public class Clipping {
 			return null;
 		}
 		return new double[] { o[0] / o[3], o[1] / o[3], o[2] / o[3] };
+	}
+
+	/**
+	 * Returns the view ray (start and end, relative positions 0 - 1 of the data)
+	 * of a window position (pixels of the OpenGL surface, from the left and from
+	 * the top, like the mouse events of the tools) in the last drawn frame, or
+	 * null.
+	 */
+	public synchronized double[][] rayAt(double x, double y) {
+		return viewBounds == null ? null : relativeRay(x, y);
+	}
+
+	/**
+	 * Returns the window position (pixels of the OpenGL surface, y from the top,
+	 * like the mouse events of the tools) of a position of the data (relative 0 - 1,
+	 * y = 0 is the first row) in the last drawn frame, or null.
+	 */
+	public synchronized double[] projectToWindow(double[] relative) {
+		View v = view();
+		return v == null ? null : v.window(relative[0], relative[1], relative[2]);
+	}
+
+	/* The view of the last frame for many projections (see View) */
+	synchronized View view() {
+		if (viewBounds == null || modelview == null || projection == null || viewport == null) {
+			return null;
+		}
+		View v = new View(multiply(projection, modelview), viewport.clone(), viewBounds.clone(), viewFlip);
+		/* The camera position (the origin of the eye coordinates) in relative positions of the data */
+		double[] inv = invert(modelview);
+		if (inv != null) {
+			double[] e = transform(inv, new double[] { 0, 0, 0, 1 });
+			if (Math.abs(e[3]) > 1e-15) {
+				double[] b = viewBounds;
+				double ry = (e[1] / e[3] - b[2]) / (b[3] - b[2]);
+				v.eye = new double[] { (e[0] / e[3] - b[0]) / (b[1] - b[0]), viewFlip ? ry : 1 - ry, (e[2] / e[3] - b[4]) / (b[5] - b[4]) };
+			}
+		}
+		return v;
+	}
+
+	/* The projection of relative positions of the data to window positions (y from the top) */
+	static final class View {
+		final double[] m;
+		final int[] viewport;
+		final double[] b;
+		final boolean flip;
+		/* The camera in relative positions of the data (or null) */
+		double[] eye;
+
+		View(double[] m, int[] viewport, double[] b, boolean flip) {
+			this.m = m;
+			this.viewport = viewport;
+			this.b = b;
+			this.flip = flip;
+		}
+
+		/* The window position (x, y) or null behind the camera */
+		double[] window(double rx, double ry, double rz) {
+			double px = b[0] + rx * (b[1] - b[0]);
+			double py = b[2] + (flip ? ry : 1 - ry) * (b[3] - b[2]);
+			double pz = b[4] + rz * (b[5] - b[4]);
+			double cx = m[0] * px + m[4] * py + m[8] * pz + m[12];
+			double cy = m[1] * px + m[5] * py + m[9] * pz + m[13];
+			double cw = m[3] * px + m[7] * py + m[11] * pz + m[15];
+			if (cw <= 0) {
+				return null;
+			}
+			double nx = cx / cw, ny = cy / cw;
+			return new double[] { viewport[0] + (nx + 1) / 2 * viewport[2], viewport[3] - (viewport[1] + (ny + 1) / 2 * viewport[3]) };
+		}
 	}
 
 	/* The window position (y from the top) of a point in scene coordinates! */

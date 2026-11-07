@@ -76,6 +76,25 @@ public class Measurement3d {
 	private final List<double[]> points = new ArrayList<>();
 	/* The highlighted triangles of the points: {mesh, triangles} (null for the volume) */
 	private final List<int[][]> pointTriangles = new ArrayList<>();
+	/*
+	 * The path along the surface from the previous point of a line to a point
+	 * (relative positions, from the previous point to the point) or null (a
+	 * straight segment)
+	 */
+	private final List<double[][]> pointDrapes = new ArrayList<>();
+	/* The lines follow the surface (see setFollowSurface) */
+	private volatile boolean followSurface;
+	/* The segmented lines and the areas (polygon, freehand) are fitted with a spline (see setFitSpline) */
+	private volatile boolean fitSpline;
+	/*
+	 * The selected measurement (edited with its handles): an area, a single point
+	 * or a line (path and kind of the points); -1 = none
+	 */
+	private int selectedArea = -1, selectedPoint = -1, selectedPath = -1, selectedKind = -1;
+	private static final float[] SELECTED_COLOR = { 1f, 0.85f, 0.1f };
+	private static final float[] ACTIVE_COLOR = { 1f, 0.3f, 0.2f };
+	/* The active point of the selection (the last pressed or added point, deleted with the Delete key) */
+	private Handle activeHandle;
 	private Grid pointGrid;
 	private int minObjectSize = 10;
 	/* 0 = no maximum */
@@ -115,6 +134,8 @@ public class Measurement3d {
 		this.volume = volume;
 		this.clipping = clipping;
 		clipping.setPickListener(this::pick);
+		clipping.setMeasureToolListener(new ToolHandler());
+		clipping.addChangeListener(this::toolChanged);
 	}
 
 	/** Returns the minimum size of a measured object (voxels of the data). */
@@ -228,10 +249,11 @@ public class Measurement3d {
 				min[c][k] = Math.min(min[c][k], p[i * 3 + k]);
 				max[c][k] = Math.max(max[c][k], p[i * 3 + k]);
 			}
-			valueSum[c] += m.data == null ? Double.NaN
-					: IsoSurface.sampleDouble(m.data, m.nx, m.ny, m.nz, v[i * 3] - normals[i * 3] * m.resolution,
+			/* The values of the stack (also with a selection of the values) */
+			valueSum[c] += m.values == null ? Double.NaN
+					: IsoSurface.sampleDouble(m.values, m.nx, m.ny, m.nz, v[i * 3] - normals[i * 3] * m.resolution,
 							v[i * 3 + 1] - normals[i * 3 + 1] * m.resolution, v[i * 3 + 2] - normals[i * 3 + 2] * m.resolution)
-							+ m.valueOffset;
+							+ m.valuesOffset;
 		}
 		/*
 		 * Volume, moments (signed tetrahedra with a reference point: the center of the
@@ -357,6 +379,7 @@ public class Measurement3d {
 			vertexObject = displayObject;
 			measuredData = m;
 			measuredObject = objectOfVertex;
+			objectRows = result;
 			objectLabels = labels;
 			objectColors = colors;
 			objectCount = result.length;
@@ -2150,7 +2173,9 @@ public class Measurement3d {
 		if (m.origin != null) {
 			return new String[] { "Model (imported mesh)", "Min. object size: " + getMinObjectSize() + " voxels" };
 		}
-		return new String[] { "Iso value: " + format(m.isoValue), "Smoothing: " + format(iso.getSmoothing()) + " voxels",
+		String surface = m.selection != null && !m.selection.isAll() ? "Values: " + m.selection
+				: "Iso value: " + format(m.isoValue);
+		return new String[] { surface, "Smoothing: " + format(iso.getSmoothing()) + " voxels",
 				"Mesh smoothing: " + iso.getMeshSmoothing() + " iterations", "Resolution: " + m.resolution + "x",
 				"Min. object size: " + getMinObjectSize() + " voxels",
 				"Max. object size: " + (getMaxObjectSize() > 0 ? getMaxObjectSize() + " voxels" : "all") };
@@ -2248,16 +2273,25 @@ public class Measurement3d {
 		ImagePlus imp = m != null ? m.image : volume.getImage();
 		double[] extent = displayedExtent();
 		/* Not for an imported mesh (no voxels) */
-		if ((imp == null && (m == null || m.data == null)) || extent == null) {
+		if ((imp == null && (m == null || m.values == null)) || extent == null) {
 			return null;
 		}
 		Clipping.Region region = clipping.getRegion(extent, HeightMaps.isFlipVertically());
 		double threshold = Double.NaN;
-		if (m != null) {
+		/* A selection of the values (e.g., labels): the selected voxels instead of the voxels above the iso value */
+		ValueSelection selected = m != null && m.selection != null && !m.selection.isAll() ? m.selection : null;
+		if (selected == null && volume.getImage() == imp && imp != null && m == null) {
+			ValueSelection v = volume.getActiveSelection();
+			selected = v.isAll() ? null : v;
+		}
+		if (selected != null) {
+			threshold = Double.NaN;
+		} else if (m != null) {
 			threshold = m.isoValue;
 		} else if (imp.getProcessor().getMinThreshold() != ImageProcessor.NO_THRESHOLD) {
 			threshold = imp.getProcessor().getMinThreshold();
 		}
+		boolean counted = selected != null || !Double.isNaN(threshold);
 		long n = 0, above = 0;
 		double sum = 0, sum2 = 0, min = Double.MAX_VALUE, max = -Double.MAX_VALUE;
 		double voxelVolume;
@@ -2284,7 +2318,7 @@ public class Measurement3d {
 						sum2 += value * value;
 						min = Math.min(min, value);
 						max = Math.max(max, value);
-						if (value >= threshold) {
+						if (selected != null ? selected.contains(value) : value >= threshold) {
 							above++;
 						}
 					}
@@ -2301,13 +2335,13 @@ public class Measurement3d {
 								&& !region.contains((x + 0.5) / m.nx, (y + 0.5) / m.ny, (z + 0.5) / m.nz)) {
 							continue;
 						}
-						double value = m.data[(z * m.ny + y) * m.nx + x];
+						double value = m.values[(z * m.ny + y) * m.nx + x] + m.valuesOffset;
 						n++;
 						sum += value;
 						sum2 += value * value;
 						min = Math.min(min, value);
 						max = Math.max(max, value);
-						if (value >= threshold) {
+						if (selected != null ? selected.contains(value) : value >= threshold) {
 							above++;
 						}
 					}
@@ -2322,18 +2356,27 @@ public class Measurement3d {
 		double mean = n > 0 ? sum / n : Double.NaN;
 		double sd = n > 1 ? Math.sqrt(Math.max(0, (sum2 - sum * sum / n) / (n - 1))) : Double.NaN;
 		double[] result = { n, n * voxelVolume, mean, sd, min, max, sum, threshold,
-				Double.isNaN(threshold) ? Double.NaN : above, Double.isNaN(threshold) ? Double.NaN : above * voxelVolume,
-				Double.isNaN(threshold) || n == 0 ? Double.NaN : above / (double) n };
+				!counted ? Double.NaN : above, !counted ? Double.NaN : above * voxelVolume,
+				!counted || n == 0 ? Double.NaN : above / (double) n };
 		if (showTable) {
 			String[] header = new String[REGION_COLUMNS.length + 1];
 			header[0] = "Region";
 			for (int k = 0; k < REGION_COLUMNS.length; k++) {
 				header[k + 1] = REGION_COLUMNS[k] + (k == 1 || k == 9 ? " [" + unit + "^3]" : "");
 			}
+			if (selected != null) {
+				/* The selected values (e.g., labels) instead of a threshold */
+				header[8] = "Selected Values";
+				header[9] = "Selected Voxels";
+				header[10] = "Selected Volume [" + unit + "^3]";
+			}
 			String[] row = new String[header.length];
 			row[0] = describeRegion();
 			for (int k = 0; k < result.length; k++) {
 				row[k + 1] = k == 0 ? String.valueOf((long) result[k]) : format(result[k]);
+			}
+			if (selected != null) {
+				row[8] = selected.toString();
 			}
 			List<String[]> table = new ArrayList<>();
 			table.add(row);
@@ -2370,7 +2413,14 @@ public class Measurement3d {
 	/* ------------------------------ Points ------------------------------ */
 
 	/** The columns of the picked points (see getPoints). */
-	public static final String[] POINT_COLUMNS = { "X", "Y", "Z", "Value", "Object", "Distance", "Length" };
+	public static final String[] POINT_COLUMNS = { "X", "Y", "Z", "Value", "Object", "Distance", "Length", "Angle" };
+	/**
+	 * The kinds of the picked points: a point of a segmented line, a single point,
+	 * a point of a straight line and a point of an angle (the second point is the
+	 * vertex).
+	 */
+	public static final int POINT_LINE = 0, POINT_SINGLE = 1, POINT_STRAIGHT = 2, POINT_ANGLE = 3;
+	private static final String[] POINT_TYPES = { "Segmented Line", "Point", "Straight Line", "Angle" };
 
 	/*
 	 * Picks the first visible voxel along the view ray (the iso surface or the
@@ -2382,15 +2432,31 @@ public class Measurement3d {
 			pickMesh(m, ray);
 			return;
 		}
+		double[] point = volumeHit(ray);
+		if (point != null) {
+			addPoint(point, null);
+		}
+	}
+
+	/*
+	 * The first visible voxel along the view ray (the iso value of the stack or
+	 * the threshold of the volume, inside of the clipping region): the relative
+	 * position, the position inside and the object (0) or null!
+	 */
+	private double[] volumeHit(double[][] ray) {
+		if (ray == null) {
+			return null;
+		}
+		IsoSurface.MeasureData m = iso.isDisplayed() ? iso.getMeasureData() : null;
 		boolean useVolume = m == null && volume.isDisplayed();
 		double[] extent = displayedExtent();
 		if ((m == null && !useVolume) || extent == null) {
-			return;
+			return null;
 		}
 		Clipping.Region region = clipping.getRegion(extent, HeightMaps.isFlipVertically());
 		int[] size = m != null ? new int[] { m.nx, m.ny, m.nz } : volume.getDataSize();
 		if (size == null) {
-			return;
+			return null;
 		}
 		double[] a = ray[0], b = ray[1];
 		double dx = (b[0] - a[0]) * size[0], dy = (b[1] - a[1]) * size[1], dz = (b[2] - a[2]) * size[2];
@@ -2423,13 +2489,12 @@ public class Measurement3d {
 				double back = (1 - f) / steps;
 				/* The position of the surface and a position half a voxel inside (for the value) */
 				double inside = 2.0 / steps - back;
-				double[] point = { rx - (b[0] - a[0]) * back, ry - (b[1] - a[1]) * back, rz - (b[2] - a[2]) * back,
+				return new double[] { rx - (b[0] - a[0]) * back, ry - (b[1] - a[1]) * back, rz - (b[2] - a[2]) * back,
 						rx + (b[0] - a[0]) * inside, ry + (b[1] - a[1]) * inside, rz + (b[2] - a[2]) * inside, 0 };
-				addPoint(point, null);
-				return;
 			}
 			previous = value;
 		}
+		return null;
 	}
 
 	/*
@@ -2438,16 +2503,66 @@ public class Measurement3d {
 	 * triangle of the displayed surface!
 	 */
 	private void pickMesh(IsoSurface.MeasureData display, double[][] ray) {
+		Hit h = surfaceHit(ray);
+		if (h == null) {
+			return;
+		}
+		addPoint(h.point, highlight(display, h));
+	}
+
+	/* The highlighted triangle of a hit and its neighbors (the triangles with a vertex of it) or null */
+	private static int[][] highlight(IsoSurface.MeasureData display, Hit h) {
+		if (display == null || h == null || h.display < 0 || display.triangles != h.displayMesh) {
+			return null;
+		}
+		int[] t = display.triangles;
+		int triangle = h.display;
+		int va = t[triangle * 3], vb = t[triangle * 3 + 1], vc = t[triangle * 3 + 2];
+		List<Integer> list = new ArrayList<>();
+		for (int i = 0; i < t.length; i += 3) {
+			if (i / 3 == triangle) {
+				continue;
+			}
+			for (int k = 0; k < 3; k++) {
+				if (t[i + k] == va || t[i + k] == vb || t[i + k] == vc) {
+					list.add(i / 3);
+					break;
+				}
+			}
+		}
+		return new int[][] { t, { triangle }, list.stream().mapToInt(Integer::intValue).toArray() };
+	}
+
+	/* A point on the surface: the relative position, the position inside, the object and the triangles */
+	private static final class Hit {
+		double[] point;
+		int full;
+		int display;
+		int[] displayMesh;
+	}
+
+	/*
+	 * The first point of the displayed iso surface along the view ray (inside of
+	 * the clipping region): the position on the measured surface (full
+	 * resolution), the position half a voxel inside, the object and the hit
+	 * triangles of the measured and the displayed surface (or null)!
+	 */
+	private Hit surfaceHit(double[][] ray) {
+		IsoSurface.MeasureData display = iso.isDisplayed() ? iso.getMeasureData() : null;
+		if (ray == null || display == null || display.vertices == null || display.triangles == null
+				|| display.triangles.length == 0) {
+			return null;
+		}
 		double[] extent = displayedExtent();
 		if (extent == null) {
-			return;
+			return null;
 		}
 		Clipping.Region region = clipping.getRegion(extent, HeightMaps.isFlipVertically());
 		double[] displayHit = intersect(display, ray, region);
 		IsoSurface.MeasureData full = iso.getMeasurementData();
 		double[] hit = full == null || full.triangles == display.triangles ? displayHit : intersect(full, ray, region);
 		if (hit == null) {
-			return;
+			return null;
 		}
 		IsoSurface.MeasureData m = full != null ? full : display;
 		/* The ray in voxel coordinates of the measured surface */
@@ -2478,31 +2593,12 @@ public class Measurement3d {
 				point[6] = measuredObject[m.triangles[(int) hit[0] * 3]];
 			}
 		}
-		/* The highlighted triangle of the display and its neighbors (the triangles with a vertex of it) */
-		int[][] highlight = null;
-		if (displayHit != null) {
-			int[] t = display.triangles;
-			int triangle = (int) displayHit[0];
-			int va = t[triangle * 3], vb = t[triangle * 3 + 1], vc = t[triangle * 3 + 2];
-			List<Integer> list = new ArrayList<>();
-			for (int i = 0; i < t.length; i += 3) {
-				if (i / 3 == triangle) {
-					continue;
-				}
-				for (int k = 0; k < 3; k++) {
-					if (t[i + k] == va || t[i + k] == vb || t[i + k] == vc) {
-						list.add(i / 3);
-						break;
-					}
-				}
-			}
-			int[] neighbors = new int[list.size()];
-			for (int i = 0; i < neighbors.length; i++) {
-				neighbors[i] = list.get(i);
-			}
-			highlight = new int[][] { t, { triangle }, neighbors };
-		}
-		addPoint(point, highlight);
+		Hit h = new Hit();
+		h.point = point;
+		h.full = (int) hit[0];
+		h.display = displayHit != null ? (int) displayHit[0] : -1;
+		h.displayMesh = display.triangles;
+		return h;
 	}
 
 	/*
@@ -2510,6 +2606,14 @@ public class Measurement3d {
 	 * (Moeller-Trumbore): {triangle, ray parameter} or null!
 	 */
 	private static double[] intersect(IsoSurface.MeasureData m, double[][] ray, Clipping.Region region) {
+		return intersect(m, ray, region, null);
+	}
+
+	/*
+	 * The first triangle along the ray of the given triangles (indices of
+	 * triangles, null = all): {triangle, ray parameter} or null!
+	 */
+	private static double[] intersect(IsoSurface.MeasureData m, double[][] ray, Clipping.Region region, int[] subset) {
 		if (m == null || m.vertices == null || m.triangles == null) {
 			return null;
 		}
@@ -2521,7 +2625,9 @@ public class Measurement3d {
 		int[] t = m.triangles;
 		double bestT = Double.MAX_VALUE;
 		int bestTriangle = -1;
-		for (int i = 0; i < t.length; i += 3) {
+		int count = subset != null ? subset.length : t.length / 3;
+		for (int k = 0; k < count; k++) {
+			int i = (subset != null ? subset[k] : k) * 3;
 			int a = t[i] * 3, b = t[i + 1] * 3, c = t[i + 2] * 3;
 			double e1x = v[b] - v[a], e1y = v[b + 1] - v[a + 1], e1z = v[b + 2] - v[a + 2];
 			double e2x = v[c] - v[a], e2y = v[c + 1] - v[a + 1], e2z = v[c + 2] - v[a + 2];
@@ -2556,22 +2662,1609 @@ public class Measurement3d {
 		return bestTriangle < 0 ? null : new double[] { bestTriangle, bestT };
 	}
 
+	/*
+	 * The path on the visible surface from a point to the next point of a line
+	 * which follows the surface: the first surface along the view rays of the
+	 * screen line between the two points (2 rays per pixel), from the point to the
+	 * next point (relative positions) or null!
+	 */
+	private double[][] drape(double[] from, double[] to) {
+		double[] wa = clipping.projectToWindow(from), wb = clipping.projectToWindow(to);
+		if (wa == null || wb == null) {
+			return null;
+		}
+		double pixels = Math.hypot(wb[0] - wa[0], wb[1] - wa[1]);
+		int n = (int) Math.max(2, Math.min(4000, Math.ceil(pixels * 2)));
+		double[][][] rays = new double[n + 1][][];
+		for (int i = 0; i <= n; i++) {
+			double f = i / (double) n;
+			rays[i] = clipping.rayAt(wa[0] + (wb[0] - wa[0]) * f, wa[1] + (wb[1] - wa[1]) * f);
+			if (rays[i] == null) {
+				return null;
+			}
+		}
+		List<double[]> path = new ArrayList<>();
+		path.add(new double[] { from[0], from[1], from[2] });
+		IsoSurface.MeasureData display = iso.isDisplayed() ? iso.getMeasureData() : null;
+		if (display != null && display.vertices != null && display.triangles != null && display.triangles.length > 0) {
+			/* The measured surface (full resolution) */
+			IsoSurface.MeasureData full = iso.getMeasurementData();
+			IsoSurface.MeasureData m = full != null && full.vertices != null && full.triangles != null ? full : display;
+			double[] extent = displayedExtent();
+			if (extent == null) {
+				return null;
+			}
+			Clipping.Region region = clipping.getRegion(extent, HeightMaps.isFlipVertically());
+			/* All rays are in one plane (through the eye and the screen line): only the triangles of this plane */
+			int[] candidates = planeTriangles(m, rays[0], rays[n]);
+			for (int i = 1; i < n; i++) {
+				double[] hit = intersect(m, rays[i], region, candidates);
+				if (hit != null) {
+					double[][] r = rays[i];
+					double t = hit[1];
+					double ox = r[0][0] * m.nx - 0.5, oy = r[0][1] * m.ny - 0.5, oz = r[0][2] * m.nz - 0.5;
+					double dx = (r[1][0] - r[0][0]) * m.nx, dy = (r[1][1] - r[0][1]) * m.ny, dz = (r[1][2] - r[0][2]) * m.nz;
+					path.add(new double[] { (ox + dx * t + 0.5) / m.nx, (oy + dy * t + 0.5) / m.ny, (oz + dz * t + 0.5) / m.nz });
+				}
+			}
+		} else {
+			for (int i = 1; i < n; i++) {
+				double[] hit = volumeHit(rays[i]);
+				if (hit != null) {
+					path.add(new double[] { hit[0], hit[1], hit[2] });
+				}
+			}
+		}
+		path.add(new double[] { to[0], to[1], to[2] });
+		return path.toArray(new double[0][]);
+	}
+
+	/* The triangles which touch the plane of two view rays (voxel coordinates of the mesh) */
+	private static int[] planeTriangles(IsoSurface.MeasureData m, double[][] first, double[][] last) {
+		double ax = first[0][0] * m.nx, ay = first[0][1] * m.ny, az = first[0][2] * m.nz;
+		double ux = first[1][0] * m.nx - ax, uy = first[1][1] * m.ny - ay, uz = first[1][2] * m.nz - az;
+		double wx = last[1][0] * m.nx - ax, wy = last[1][1] * m.ny - ay, wz = last[1][2] * m.nz - az;
+		double nx = uy * wz - uz * wy, ny = uz * wx - ux * wz, nz = ux * wy - uy * wx;
+		double norm = Math.sqrt(nx * nx + ny * ny + nz * nz);
+		if (norm == 0) {
+			return null;
+		}
+		nx /= norm;
+		ny /= norm;
+		nz /= norm;
+		/* The vertices are voxel coordinates - 0.5 (like the rays of intersect) */
+		double d = nx * (ax - 0.5) + ny * (ay - 0.5) + nz * (az - 0.5);
+		float[] v = m.vertices;
+		int[] t = m.triangles;
+		int[] list = new int[t.length / 3];
+		int count = 0;
+		double eps = 1e-6;
+		for (int i = 0; i < t.length; i += 3) {
+			double min = Double.MAX_VALUE, max = -Double.MAX_VALUE;
+			for (int k = 0; k < 3; k++) {
+				int a = t[i + k] * 3;
+				double sd = nx * v[a] + ny * v[a + 1] + nz * v[a + 2] - d;
+				min = Math.min(min, sd);
+				max = Math.max(max, sd);
+			}
+			if (min <= eps && max >= -eps) {
+				list[count++] = i / 3;
+			}
+		}
+		return java.util.Arrays.copyOf(list, count);
+	}
+
+	/* The triangles of the connected surface (vertices in common) of a triangle */
+	private static int[] connectedTriangles(int[] t, int nv, int triangle) {
+		int[] parent = new int[nv];
+		for (int i = 0; i < nv; i++) {
+			parent[i] = i;
+		}
+		for (int i = 0; i < t.length; i += 3) {
+			union(parent, t[i], t[i + 1]);
+			union(parent, t[i], t[i + 2]);
+		}
+		int root = find(parent, t[triangle * 3]);
+		int[] list = new int[t.length / 3];
+		int count = 0;
+		for (int i = 0; i < t.length; i += 3) {
+			if (find(parent, t[i]) == root) {
+				list[count++] = i / 3;
+			}
+		}
+		return java.util.Arrays.copyOf(list, count);
+	}
+
+	/* ------------------------------ Measurement tools ------------------------------ */
+
+	/** The columns of the measured areas and volumes (see getAreas). */
+	public static final String[] AREA_COLUMNS = { "Type", "Points", "Perimeter", "Polygon Area", "Surface Area", "Volume",
+			"Object" };
+	/** The types of the areas (the first value of a row of getAreas). */
+	public static final int AREA_POLYGON = 1, AREA_FREEHAND = 2, AREA_OUTLINE = 3, AREA_OBJECT = 4, AREA_CAVITY = 5;
+	private static final String[] AREA_NAMES = { "", "Polygon", "Freehand", "Volume (Outline)", "Volume (Object)",
+			"Volume (Cavity)" };
+	private static final float[] AREA_COLOR = { 0.1f, 0.75f, 1f };
+	private static final float[] VOLUME_COLOR = { 1f, 0.68f, 0.1f };
+
+	/* A measured area or volume (or one which is drawn) */
+	private static final class Area {
+		final int type;
+		/* The points on the surface (relative positions, the position inside, the object) */
+		final List<double[]> hits = new ArrayList<>();
+		/* The hit triangles of the points: {measured surface, displayed surface} */
+		final List<int[]> hitTriangles = new ArrayList<>();
+		/* The window positions of the mouse (freehand, outline) */
+		final List<double[]> outline = new ArrayList<>();
+		int[] displayMesh;
+		int[] displayTriangles;
+		double[] row;
+		/*
+		 * The points which can be edited (the corners of a polygon, the points of a
+		 * freehand area on the surface; with a spline: the control points) and their
+		 * triangles {measured surface, displayed surface}
+		 */
+		final List<double[]> controls = new ArrayList<>();
+		final List<int[]> controlTriangles = new ArrayList<>();
+		/* The outline is a closed spline through the controls */
+		boolean spline;
+
+		Area(int type) {
+			this.type = type;
+		}
+	}
+
+	private final List<Area> areas = new ArrayList<>();
+	private Area drawing;
+	private Grid areaGrid;
+	/* The kind of the next point (0 = a point of a line, 1 = a single point) and the line */
+	private int pointKind = 0;
+	private int path = 0;
+	private int lastTool = Clipping.TOOL_NONE;
+	private float lastPixelScale = 1;
+	/* The measured objects (rows of ISO_COLUMNS) of the last measurement */
+	private double[][] objectRows;
+
+	/* The mouse events of the measurement tools (see Clipping.MeasureToolListener) */
+	private final class ToolHandler implements Clipping.MeasureToolListener {
+		private boolean moved;
+		private boolean straightDrag;
+		private Handle editing;
+		private boolean editMoved;
+
+		/* Without a tool: a point of any measurement is selected and moved, else the view is rotated */
+		@Override
+		public boolean editPressed(double x, double y, double[][] ray) {
+			Handle handle = findHandle(x, y, false);
+			if (handle == null) {
+				/* Shift: a new point of the selected line or area */
+				if (clipping.isShiftPressed() && insertPoint(x, y, ray)) {
+					synchronized (Measurement3d.this) {
+						editing = activeHandle;
+					}
+					editMoved = false;
+					return true;
+				}
+				synchronized (Measurement3d.this) {
+					clearSelection();
+				}
+				return false;
+			}
+			select(handle);
+			editing = handle;
+			editMoved = false;
+			return true;
+		}
+		private double pressX, pressY;
+		private Hit pressHit;
+
+		@Override
+		public void pressed(int tool, double x, double y, double[][] ray, int clickCount) {
+			/* A handle of the selected measurement: moved (the measurement is measured again) */
+			if (clickCount < 2 && tool != Clipping.TOOL_VOLUME) {
+				Handle handle = findHandle(x, y, true);
+				if (handle != null) {
+					select(handle);
+					editing = handle;
+					editMoved = false;
+					return;
+				}
+				/* Shift: a new point of the selected line or area (it can be dragged) */
+				if (clipping.isShiftPressed() && insertPoint(x, y, ray)) {
+					synchronized (Measurement3d.this) {
+						editing = activeHandle;
+					}
+					editMoved = false;
+					return;
+				}
+				synchronized (Measurement3d.this) {
+					clearSelection();
+				}
+			}
+			editing = null;
+			switch (tool) {
+			case Clipping.TOOL_PICK:
+				/* A double-click ends the line (the next point starts a new line), the line is selected */
+				if (clickCount >= 2) {
+					synchronized (Measurement3d.this) {
+						if (pathIndices(path, POINT_LINE).length > 0) {
+							clearSelection();
+							selectedPath = path;
+							selectedKind = POINT_LINE;
+						}
+						path++;
+					}
+					return;
+				}
+				pickAs(POINT_LINE, ray);
+				break;
+			case Clipping.TOOL_POINT:
+				if (clickCount < 2) {
+					pickAs(POINT_SINGLE, ray);
+				}
+				break;
+			case Clipping.TOOL_STRAIGHT:
+				/* Two clicks or a drag (press: the start, release: the end) */
+				straightDrag = false;
+				if (clickCount < 2) {
+					int before = pointCount(POINT_STRAIGHT);
+					pickAs(POINT_STRAIGHT, ray);
+					straightDrag = before == 0 && pointCount(POINT_STRAIGHT) == 1;
+					pressX = x;
+					pressY = y;
+				}
+				break;
+			case Clipping.TOOL_ANGLE:
+				/* Three clicks: the second point is the vertex */
+				if (clickCount < 2) {
+					pickAs(POINT_ANGLE, ray);
+				}
+				break;
+			case Clipping.TOOL_POLYGON:
+				polygonClick(x, y, ray, clickCount);
+				break;
+			case Clipping.TOOL_FREEHAND:
+			case Clipping.TOOL_VOLUME:
+				synchronized (Measurement3d.this) {
+					drawing = new Area(tool == Clipping.TOOL_FREEHAND ? AREA_FREEHAND : AREA_OUTLINE);
+				}
+				moved = false;
+				pressX = x;
+				pressY = y;
+				pressHit = surfaceHit(ray);
+				addSample(x, y, pressHit);
+				break;
+			default:
+				break;
+			}
+		}
+
+		@Override
+		public void dragged(int tool, double x, double y, double[][] ray) {
+			if (editing != null) {
+				if (moveHandle(editing, ray)) {
+					editMoved = true;
+				}
+				return;
+			}
+			if (tool != Clipping.TOOL_FREEHAND && tool != Clipping.TOOL_VOLUME) {
+				return;
+			}
+			Area a;
+			double[] last;
+			synchronized (Measurement3d.this) {
+				a = drawing;
+				last = a == null || a.outline.isEmpty() ? null : a.outline.get(a.outline.size() - 1);
+			}
+			if (a == null) {
+				return;
+			}
+			if (Math.hypot(x - pressX, y - pressY) > 3) {
+				moved = true;
+			}
+			if (last != null && Math.hypot(x - last[0], y - last[1]) < 2) {
+				return;
+			}
+			addSample(x, y, surfaceHit(ray));
+		}
+
+		@Override
+		public void released(int tool, double x, double y) {
+			if (editing != null) {
+				Handle handle = editing;
+				editing = null;
+				if (editMoved) {
+					finishEdit(handle);
+				}
+				return;
+			}
+			if (tool == Clipping.TOOL_STRAIGHT) {
+				if (straightDrag && !Double.isNaN(x) && Math.hypot(x - pressX, y - pressY) > 4) {
+					pickAs(POINT_STRAIGHT, clipping.rayAt(x, y));
+				}
+				straightDrag = false;
+				return;
+			}
+			if (tool == Clipping.TOOL_FREEHAND) {
+				closeArea();
+			} else if (tool == Clipping.TOOL_VOLUME) {
+				if (moved) {
+					closeArea();
+				} else {
+					synchronized (Measurement3d.this) {
+						drawing = null;
+					}
+					objectVolume(pressHit);
+				}
+			}
+		}
+	}
+
+	/* A point of a measurement which can be moved: a point (index) or a control point of an area */
+	private static final class Handle {
+		int point = -1;
+		int area = -1;
+		int control = -1;
+	}
+
+	/*
+	 * The nearest point of a finished measurement (lines, angles, points, the
+	 * control points of polygons and freehand areas) at the window position
+	 * (within 8 points) or null
+	 */
+	private Handle findHandle(double x, double y, boolean onlySelected) {
+		Clipping.View view = clipping.view();
+		if (view == null) {
+			return null;
+		}
+		synchronized (this) {
+			if (drawing != null) {
+				return null;
+			}
+			double best = 8 * lastPixelScale;
+			Handle h = null;
+			for (int i = 0; i < points.size(); i++) {
+				double[] p = points.get(i);
+				/* Not the line which is drawn; with a tool only the selected measurement */
+				if (kindOf(p) != POINT_SINGLE && pathOf(p) == path) {
+					continue;
+				}
+				if (onlySelected && i != selectedPoint && !(pathOf(p) == selectedPath && kindOf(p) == selectedKind
+						&& kindOf(p) != POINT_SINGLE)) {
+					continue;
+				}
+				double[] w = window2(view, p);
+				double d = w == null ? Double.MAX_VALUE : Math.hypot(w[0] - x, w[1] - y);
+				if (d <= best) {
+					best = d;
+					h = new Handle();
+					h.point = i;
+				}
+			}
+			for (int i = 0; i < areas.size(); i++) {
+				Area a = areas.get(i);
+				if ((a.type != AREA_POLYGON && a.type != AREA_FREEHAND) || (onlySelected && i != selectedArea)) {
+					continue;
+				}
+				for (int c = 0; c < a.controls.size(); c++) {
+					double[] w = window2(view, a.controls.get(c));
+					double d = w == null ? Double.MAX_VALUE : Math.hypot(w[0] - x, w[1] - y);
+					if (d <= best) {
+						best = d;
+						h = new Handle();
+						h.area = i;
+						h.control = c;
+					}
+				}
+			}
+			return h;
+		}
+	}
+
+	/* The distance of a window position to a segment of window positions */
+	private static double segmentDistance(double x, double y, double[] a, double[] b) {
+		if (a == null || b == null) {
+			return Double.MAX_VALUE;
+		}
+		double dx = b[0] - a[0], dy = b[1] - a[1];
+		double len = dx * dx + dy * dy;
+		double t = len > 0 ? Math.max(0, Math.min(1, ((x - a[0]) * dx + (y - a[1]) * dy) / len)) : 0;
+		return Math.hypot(a[0] + t * dx - x, a[1] + t * dy - y);
+	}
+
+	/*
+	 * Inserts a point on the surface at the window position into the selected
+	 * segmented line, polygon or freehand area (between the two points of the
+	 * nearest segment) and measures it again. Returns false if no line or area is
+	 * selected or the position is not on the surface.
+	 */
+	private boolean insertPoint(double x, double y, double[][] ray) {
+		Clipping.View view = clipping.view();
+		int area, linePath, lineKind;
+		synchronized (this) {
+			area = selectedArea;
+			linePath = selectedPath;
+			lineKind = selectedKind;
+		}
+		if (view == null || ray == null || (area < 0 && (linePath < 0 || lineKind != POINT_LINE))) {
+			return false;
+		}
+		Hit hit = surfaceHit(ray);
+		double[] position = hit != null ? hit.point : area < 0 ? volumeHit(ray) : null;
+		if (position == null) {
+			return false;
+		}
+		if (area >= 0) {
+			Area a;
+			synchronized (this) {
+				if (area >= areas.size()) {
+					return false;
+				}
+				a = areas.get(area);
+				int n = a.controls.size(), best = -1;
+				double bestDistance = Double.MAX_VALUE;
+				for (int i = 0; i < n; i++) {
+					double d = segmentDistance(x, y, window2(view, a.controls.get(i)), window2(view, a.controls.get((i + 1) % n)));
+					if (d < bestDistance) {
+						bestDistance = d;
+						best = i;
+					}
+				}
+				if (best < 0) {
+					return false;
+				}
+				a.controls.add(best + 1, position);
+				a.controlTriangles.add(best + 1, new int[] { hit.full, hit.display });
+				if (!a.spline) {
+					a.hits.clear();
+					a.hits.addAll(a.controls);
+				}
+				Handle h = new Handle();
+				h.area = area;
+				h.control = best + 1;
+				activeHandle = h;
+			}
+			if (measureArea(a, true)) {
+				refreshAreaTable();
+			}
+			return true;
+		}
+		synchronized (this) {
+			int[] idx = pathIndices(linePath, POINT_LINE);
+			if (idx.length < 2) {
+				return false;
+			}
+			int best = -1;
+			double bestDistance = Double.MAX_VALUE;
+			for (int i = 0; i + 1 < idx.length; i++) {
+				double d = segmentDistance(x, y, window2(view, points.get(idx[i])), window2(view, points.get(idx[i + 1])));
+				if (d < bestDistance) {
+					bestDistance = d;
+					best = i;
+				}
+			}
+			double[] reference = points.get(idx[best]);
+			double[] p = java.util.Arrays.copyOf(position, reference.length);
+			for (int j = 7; j < reference.length; j++) {
+				p[j] = reference[j];
+			}
+			int at = idx[best] + 1;
+			points.add(at, p);
+			pointTriangles.add(at, hit != null ? highlight(iso.getMeasureData(), hit) : null);
+			pointDrapes.add(at, null);
+			Handle h = new Handle();
+			h.point = at;
+			activeHandle = h;
+		}
+		rebuildLine(linePath, POINT_LINE, 1, Integer.MAX_VALUE);
+		refreshPointTable();
+		return true;
+	}
+
+	/**
+	 * Deletes the active point of the selected measurement (the last pressed or
+	 * added point) or, if whole is true, the selected measurement. A line, a
+	 * polygon or a freehand area with too few points (a straight line, an angle)
+	 * is deleted. The measurement is measured again and the tables are updated.
+	 *
+	 * @param whole true deletes the selected measurement
+	 */
+	public void deleteSelected(boolean whole) {
+		Area remeasure = null;
+		int linePath = -1;
+		boolean pointsChanged = false, areasChanged = false;
+		synchronized (this) {
+			Handle h = activeHandle;
+			if (selectedArea >= 0 && selectedArea < areas.size()) {
+				Area a = areas.get(selectedArea);
+				if (!whole && h != null && h.area == selectedArea && a.controls.size() > 3) {
+					a.controls.remove(h.control);
+					a.controlTriangles.remove(h.control);
+					if (!a.spline) {
+						a.hits.clear();
+						a.hits.addAll(a.controls);
+					}
+					activeHandle = null;
+					remeasure = a;
+				} else {
+					areas.remove(selectedArea);
+					clearSelection();
+				}
+				areasChanged = true;
+			} else if (selectedPoint >= 0 && selectedPoint < points.size()) {
+				removePoints(new int[] { selectedPoint });
+				clearSelection();
+				pointsChanged = true;
+			} else if (selectedPath >= 0) {
+				int[] idx = pathIndices(selectedPath, selectedKind);
+				if (!whole && h != null && h.point >= 0 && selectedKind == POINT_LINE && idx.length > 2) {
+					removePoints(new int[] { h.point });
+					activeHandle = null;
+					linePath = selectedPath;
+				} else {
+					removePoints(idx);
+					clearSelection();
+				}
+				pointsChanged = idx.length > 0;
+			}
+		}
+		if (remeasure != null) {
+			measureArea(remeasure, true);
+		}
+		if (areasChanged) {
+			refreshAreaTable();
+		}
+		if (linePath >= 0) {
+			rebuildLine(linePath, POINT_LINE, 1, Integer.MAX_VALUE);
+		}
+		if (pointsChanged) {
+			refreshPointTable();
+		}
+	}
+
+	/* Removes points (indices of the list of points) */
+	private synchronized void removePoints(int[] indices) {
+		int[] sorted = indices.clone();
+		java.util.Arrays.sort(sorted);
+		for (int i = sorted.length - 1; i >= 0; i--) {
+			int k = sorted[i];
+			if (k >= 0 && k < points.size()) {
+				points.remove(k);
+				pointTriangles.remove(k);
+				pointDrapes.remove(k);
+			}
+		}
+	}
+
+	/* Selects the measurement of a handle (highlighted with its handles) */
+	private synchronized void select(Handle h) {
+		clearSelection();
+		activeHandle = h;
+		if (h.area >= 0) {
+			selectedArea = h.area;
+		} else if (h.point >= 0 && h.point < points.size()) {
+			double[] p = points.get(h.point);
+			if (kindOf(p) == POINT_SINGLE) {
+				selectedPoint = h.point;
+			} else {
+				selectedPath = pathOf(p);
+				selectedKind = kindOf(p);
+			}
+		}
+	}
+
+	private void clearSelection() {
+		activeHandle = null;
+		selectedArea = -1;
+		selectedPoint = -1;
+		selectedPath = -1;
+		selectedKind = -1;
+	}
+
+	/* Moves a handle to the surface (or the volume) along the view ray; false if not on the surface */
+	private boolean moveHandle(Handle h, double[][] ray) {
+		if (ray == null) {
+			return false;
+		}
+		Hit hit = surfaceHit(ray);
+		double[] position;
+		int[][] highlight = null;
+		if (hit != null) {
+			position = hit.point;
+			highlight = highlight(iso.getMeasureData(), hit);
+		} else {
+			position = volumeHit(ray);
+			if (position == null || h.area >= 0) {
+				return false;
+			}
+		}
+		if (h.area >= 0) {
+			synchronized (this) {
+				Area a = areas.get(h.area);
+				a.controls.set(h.control, position);
+				a.controlTriangles.set(h.control, new int[] { hit.full, hit.display });
+				if (!a.spline) {
+					a.hits.clear();
+					a.hits.addAll(a.controls);
+				}
+			}
+			return true;
+		}
+		int kind, pathId, k = 0;
+		synchronized (this) {
+			double[] old = points.get(h.point);
+			double[] p = java.util.Arrays.copyOf(position, old.length);
+			for (int j = 7; j < old.length; j++) {
+				p[j] = old[j];
+			}
+			points.set(h.point, p);
+			pointTriangles.set(h.point, highlight);
+			kind = kindOf(p);
+			pathId = pathOf(p);
+			int[] idx = pathIndices(pathId, kind);
+			for (int i = 0; i < idx.length; i++) {
+				if (idx[i] == h.point) {
+					k = i;
+				}
+			}
+		}
+		/* The segments to and from the point (a spline: also the next ones) */
+		if (kind == POINT_LINE || kind == POINT_STRAIGHT) {
+			rebuildLine(pathId, kind, k - 1, k + 2);
+		}
+		return true;
+	}
+
+	/* The measurement of a moved handle again (in the current view) and the tables */
+	private void finishEdit(Handle h) {
+		if (h.area >= 0) {
+			Area a;
+			synchronized (this) {
+				a = h.area < areas.size() ? areas.get(h.area) : null;
+			}
+			if (a != null && measureArea(a, true)) {
+				refreshAreaRow(h.area);
+			}
+		} else {
+			refreshPointTable();
+		}
+	}
+
+	/* Shows the changed values of all points in the table "3D Points" */
+	private void refreshPointTable() {
+		List<double[]> rows = getPoints();
+		List<String> types = getPointTypes();
+		PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
+			if (pointGrid == null || pointGrid.isDisposed()) {
+				return;
+			}
+			/* Points added or deleted: all rows again */
+			if (pointGrid.getItemCount() != rows.size()) {
+				pointGrid.disposeAllItems();
+				for (int i = 0; i < rows.size(); i++) {
+					new GridItem(pointGrid, SWT.NONE);
+				}
+			}
+			for (int i = 0; i < rows.size(); i++) {
+				String[] text = pointText(i + 1, rows.get(i), types.get(i));
+				GridItem item = pointGrid.getItem(i);
+				for (int k = 0; k < text.length; k++) {
+					item.setText(k, text[k]);
+				}
+			}
+		});
+	}
+
+	/* Shows all areas in the table "3D Areas" again (areas or points added or deleted) */
+	private void refreshAreaTable() {
+		List<String[]> rows = new ArrayList<>();
+		synchronized (this) {
+			for (int i = 0; i < areas.size(); i++) {
+				rows.add(areaText(i + 1, areas.get(i).row, areas.get(i).spline));
+			}
+		}
+		PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
+			if (areaGrid == null || areaGrid.isDisposed()) {
+				return;
+			}
+			if (areaGrid.getItemCount() != rows.size()) {
+				areaGrid.disposeAllItems();
+				for (int i = 0; i < rows.size(); i++) {
+					new GridItem(areaGrid, SWT.NONE);
+				}
+			}
+			for (int i = 0; i < rows.size(); i++) {
+				GridItem item = areaGrid.getItem(i);
+				String[] text = rows.get(i);
+				for (int k = 0; k < text.length; k++) {
+					item.setText(k, text[k]);
+				}
+			}
+		});
+	}
+
+	/* Shows the changed values of an area in the table "3D Areas" */
+	private void refreshAreaRow(int index) {
+		String[] text;
+		synchronized (this) {
+			Area a = areas.get(index);
+			text = areaText(index + 1, a.row, a.spline);
+		}
+		PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
+			if (areaGrid == null || areaGrid.isDisposed() || index >= areaGrid.getItemCount()) {
+				return;
+			}
+			GridItem item = areaGrid.getItem(index);
+			for (int k = 0; k < text.length; k++) {
+				item.setText(k, text[k]);
+			}
+		});
+	}
+
+	/* The number of points of the kind in the current line */
+	private synchronized int pointCount(int kind) {
+		int count = 0;
+		for (double[] q : points) {
+			if (pathOf(q) == path && kindOf(q) == kind) {
+				count++;
+			}
+		}
+		return count;
+	}
+
+	/* A point of the kind (see POINT_LINE) */
+	private void pickAs(int kind, double[][] ray) {
+		if (ray == null) {
+			return;
+		}
+		synchronized (this) {
+			pointKind = kind;
+		}
+		try {
+			pick(ray);
+		} finally {
+			synchronized (this) {
+				pointKind = 0;
+			}
+		}
+	}
+
+	/* A new tool: an unfinished area is removed, a line ends */
+	private void toolChanged() {
+		int tool = clipping.getTool();
+		/*
+		 * Switched off (e.g., to rotate the view) and on again: an unfinished line or
+		 * polygon is continued; only another measurement tool starts a new one
+		 */
+		if (!Clipping.isMeasureTool(tool)) {
+			return;
+		}
+		synchronized (this) {
+			if (tool != lastTool) {
+				lastTool = tool;
+				drawing = null;
+				path++;
+				/* Another measurement tool: a selection of another type ends (its handles are not moved by the new tool) */
+				if (!selectionFits(tool)) {
+					clearSelection();
+				}
+			}
+		}
+	}
+
+	/* True if the selected measurement is made with the tool (its handles can be moved with the tool) */
+	private boolean selectionFits(int tool) {
+		if (selectedArea >= 0 && selectedArea < areas.size()) {
+			int type = areas.get(selectedArea).type;
+			return (type == AREA_POLYGON && tool == Clipping.TOOL_POLYGON) || (type == AREA_FREEHAND && tool == Clipping.TOOL_FREEHAND);
+		}
+		if (selectedPoint >= 0) {
+			return tool == Clipping.TOOL_POINT;
+		}
+		if (selectedPath >= 0) {
+			return (selectedKind == POINT_LINE && tool == Clipping.TOOL_PICK) || (selectedKind == POINT_STRAIGHT && tool == Clipping.TOOL_STRAIGHT)
+					|| (selectedKind == POINT_ANGLE && tool == Clipping.TOOL_ANGLE);
+		}
+		return true;
+	}
+
+	/* A click of the polygon tool: a corner, a double-click (or a click on the first corner) closes the polygon */
+	private void polygonClick(double x, double y, double[][] ray, int clickCount) {
+		if (clickCount >= 2) {
+			closeArea();
+			return;
+		}
+		Hit h = surfaceHit(ray);
+		if (h == null) {
+			return;
+		}
+		Area a;
+		float scale;
+		synchronized (this) {
+			if (drawing == null || drawing.type != AREA_POLYGON) {
+				drawing = new Area(AREA_POLYGON);
+			}
+			a = drawing;
+			scale = lastPixelScale;
+		}
+		if (a.hits.size() >= 3) {
+			Clipping.View view = clipping.view();
+			double[] f = a.hits.get(0);
+			double[] first = view == null ? null : view.window(f[0], f[1], f[2]);
+			if (first != null && Math.hypot(first[0] - x, first[1] - y) <= 10 * scale) {
+				closeArea();
+				return;
+			}
+		}
+		addSample(Double.NaN, Double.NaN, h);
+	}
+
+	/* Adds a mouse position (NaN: none) and a point on the surface (null: none) to the drawn area */
+	private synchronized void addSample(double x, double y, Hit h) {
+		if (drawing == null) {
+			return;
+		}
+		if (!Double.isNaN(x)) {
+			drawing.outline.add(new double[] { x, y });
+		}
+		if (h != null) {
+			drawing.hits.add(h.point);
+			drawing.hitTriangles.add(new int[] { h.full, h.display });
+			drawing.displayMesh = h.displayMesh;
+		}
+	}
+
+	/*
+	 * Closes the drawn area: the outline in the window (the corners of a polygon in
+	 * the current view, else the mouse positions), the surface inside of the
+	 * outline, the perimeter, the flat area of the polygon and the volume inside
+	 * of the outline!
+	 */
+	private void closeArea() {
+		Area a;
+		synchronized (this) {
+			a = drawing;
+			drawing = null;
+		}
+		if (a == null) {
+			return;
+		}
+		/* The points which can be edited (with a spline: the control points) */
+		if (a.type == AREA_POLYGON || a.type == AREA_FREEHAND) {
+			synchronized (this) {
+				a.controls.addAll(a.hits);
+				a.controlTriangles.addAll(a.hitTriangles);
+				a.spline = fitSpline;
+			}
+			if (a.spline && a.type == AREA_FREEHAND) {
+				reduceControls(a);
+			}
+		}
+		if (!measureArea(a, a.spline)) {
+			return;
+		}
+		synchronized (this) {
+			areas.add(a);
+			/* The new polygon or freehand area is selected (its handles can be moved) */
+			clearSelection();
+			if (a.type == AREA_POLYGON || a.type == AREA_FREEHAND) {
+				selectedArea = areas.size() - 1;
+			}
+		}
+		showArea(a);
+	}
+
+	/*
+	 * The control points of a freehand area for a spline: about every 15 pixels
+	 * of the outline in the current view (at least 4 points)
+	 */
+	private void reduceControls(Area a) {
+		Clipping.View view = clipping.view();
+		synchronized (this) {
+			if (view == null || a.controls.size() < 8) {
+				return;
+			}
+			List<double[]> keep = new ArrayList<>();
+			List<int[]> keepTriangles = new ArrayList<>();
+			double[] last = null;
+			double step = 15 * lastPixelScale;
+			for (int i = 0; i < a.controls.size(); i++) {
+				double[] c = a.controls.get(i);
+				double[] w = window2(view, c);
+				if (w == null) {
+					continue;
+				}
+				if (last == null || Math.hypot(w[0] - last[0], w[1] - last[1]) >= step) {
+					keep.add(c);
+					keepTriangles.add(a.controlTriangles.get(i));
+					last = w;
+				}
+			}
+			if (keep.size() >= 4) {
+				a.controls.clear();
+				a.controls.addAll(keep);
+				a.controlTriangles.clear();
+				a.controlTriangles.addAll(keepTriangles);
+			}
+		}
+	}
+
+	/*
+	 * Measures an area in the current view: the outline in the window (the
+	 * mouse positions of a new freehand area or of a volume outline, else the
+	 * control points in the current view, a closed spline through them), the
+	 * surface inside of the outline, the perimeter, the flat area of the polygon
+	 * and the volume inside of the outline. Returns false if the area cannot be
+	 * measured.
+	 */
+	private boolean measureArea(Area a, boolean fromControls) {
+		Clipping.View view = clipping.view();
+		IsoSurface.MeasureData full = iso.getMeasurementData(), display = iso.getMeasureData();
+		if (view == null || full == null || display == null || full.vertices == null || display.vertices == null) {
+			return false;
+		}
+		List<double[]> outline = new ArrayList<>();
+		if (a.type == AREA_POLYGON || (a.type == AREA_FREEHAND && fromControls)) {
+			List<double[]> controls;
+			List<int[]> controlTriangles;
+			synchronized (this) {
+				controls = new ArrayList<>(a.controls);
+				controlTriangles = new ArrayList<>(a.controlTriangles);
+			}
+			List<double[]> corners = new ArrayList<>();
+			for (double[] c : controls) {
+				double[] w = window2(view, c);
+				if (w != null) {
+					corners.add(w);
+				}
+			}
+			if (a.spline && corners.size() >= 3) {
+				/* The closed spline in the window and its points on the surface */
+				outline = closedSpline(corners, 0.5 * lastPixelScale);
+				SurfacePicker picker = new SurfacePicker(view, outline);
+				List<double[]> hits = new ArrayList<>();
+				List<int[]> triangles = new ArrayList<>(controlTriangles);
+				for (double[] w : outline) {
+					double[] h = picker.pick(w[0], w[1]);
+					if (h != null) {
+						hits.add(new double[] { h[0], h[1], h[2], h[0], h[1], h[2], 0 });
+						triangles.add(new int[] { (int) h[3], -1 });
+					}
+				}
+				synchronized (this) {
+					a.hits.clear();
+					a.hits.addAll(hits);
+					a.hitTriangles.clear();
+					a.hitTriangles.addAll(triangles);
+				}
+			} else {
+				outline = corners;
+				synchronized (this) {
+					a.hits.clear();
+					a.hits.addAll(controls);
+					a.hitTriangles.clear();
+					a.hitTriangles.addAll(controlTriangles);
+				}
+			}
+		} else {
+			outline.addAll(a.outline);
+		}
+		if (outline.size() < 3 || (a.type != AREA_OUTLINE && a.hits.isEmpty())) {
+			return false;
+		}
+		OutlineMask mask = new OutlineMask(outline);
+		int[] fullSeeds = seeds(a, 0), displaySeeds = seeds(a, 1);
+		/* An outline without a point on the surface: all visible triangles inside */
+		boolean connected = fullSeeds.length > 0;
+		SurfaceRegion rf = surfaceRegion(full, view, mask, fullSeeds, connected);
+		int[] displayTriangles = display.triangles == full.triangles ? rf.triangles
+				: surfaceRegion(display, view, mask, displaySeeds, displaySeeds.length > 0).triangles;
+		/* The perimeter and the flat area of the polygon of the points on the surface (calibrated) */
+		double perimeter = Double.NaN, flat = Double.NaN;
+		if (a.type != AREA_OUTLINE && a.hits.size() >= 2) {
+			Scale s = scale();
+			int n = a.hits.size();
+			double[][] q = new double[n][];
+			for (int i = 0; i < n; i++) {
+				double[] h = a.hits.get(i);
+				q[i] = new double[] { h[0] * s.sizeX, h[1] * s.sizeY, h[2] * s.sizeZ };
+			}
+			perimeter = 0;
+			double ax = 0, ay = 0, az = 0;
+			for (int i = 0; i < n; i++) {
+				double[] p0 = q[i], p1 = q[(i + 1) % n];
+				perimeter += Math.sqrt((p1[0] - p0[0]) * (p1[0] - p0[0]) + (p1[1] - p0[1]) * (p1[1] - p0[1])
+						+ (p1[2] - p0[2]) * (p1[2] - p0[2]));
+				ax += p0[1] * p1[2] - p0[2] * p1[1];
+				ay += p0[2] * p1[0] - p0[0] * p1[2];
+				az += p0[0] * p1[1] - p0[1] * p1[0];
+			}
+			flat = n >= 3 ? 0.5 * Math.sqrt(ax * ax + ay * ay + az * az) : Double.NaN;
+		}
+		double volumeInside = a.type == AREA_OUTLINE ? outlineVolume(full, view, mask) : Double.NaN;
+		double object = !a.controls.isEmpty() ? a.controls.get(0)[6] : a.hits.isEmpty() ? 0 : a.hits.get(0)[6];
+		int points = a.type == AREA_POLYGON || a.spline || fromControls ? a.controls.size() : outline.size();
+		synchronized (this) {
+			a.row = new double[] { a.type, points, perimeter, flat, rf.area, volumeInside, object };
+			a.displayMesh = display.triangles;
+			a.displayTriangles = displayTriangles;
+		}
+		return true;
+	}
+
+	/* The volume of the clicked object (measured if not measured before) */
+	private void objectVolume(Hit h) {
+		if (h == null) {
+			return;
+		}
+		IsoSurface.MeasureData full = iso.getMeasurementData();
+		if (full == null) {
+			return;
+		}
+		boolean measured;
+		synchronized (this) {
+			measured = measuredData == full && measuredObject != null && objectRows != null;
+		}
+		if (!measured && measureIsoSurface(false) == null) {
+			return;
+		}
+		int object;
+		double[] row;
+		int[] mesh, objectOfVertex;
+		synchronized (this) {
+			if (measuredObject == null || measuredData == null || objectRows == null) {
+				return;
+			}
+			int[] t = measuredData.triangles;
+			object = h.full >= 0 && h.full * 3 < t.length ? measuredObject[t[h.full * 3]] : 0;
+			if (object < 1 || object > objectRows.length) {
+				return;
+			}
+			row = objectRows[object - 1];
+			mesh = objectMesh;
+			objectOfVertex = vertexObject;
+		}
+		/*
+		 * A click on an inner surface (the wall of a closed cavity, visible if the
+		 * object is cut open with the clipping): the volume of the cavity
+		 */
+		IsoSurface.MeasureData md = full;
+		int[] surface = connectedTriangles(md.triangles, md.vertices.length / 3, h.full);
+		double sx = md.stepX * md.pixelSize, sy = md.stepY * md.pixelSize, sz = md.stepZ * md.pixelSize;
+		double signed = 0, surfaceArea = 0;
+		float[] mv = md.vertices;
+		int[] mt = md.triangles;
+		for (int tri : surface) {
+			int ia = mt[tri * 3] * 3, ib = mt[tri * 3 + 1] * 3, ic = mt[tri * 3 + 2] * 3;
+			double ax = (mv[ia] + 0.5) * sx, ay = (mv[ia + 1] + 0.5) * sy, az = (mv[ia + 2] + 0.5) * sz;
+			double bx = (mv[ib] + 0.5) * sx, by = (mv[ib + 1] + 0.5) * sy, bz = (mv[ib + 2] + 0.5) * sz;
+			double cx = (mv[ic] + 0.5) * sx, cy = (mv[ic + 1] + 0.5) * sy, cz = (mv[ic + 2] + 0.5) * sz;
+			signed += (ax * (by * cz - bz * cy) - ay * (bx * cz - bz * cx) + az * (bx * cy - by * cx)) / 6.0;
+			double ux = bx - ax, uy = by - ay, uz = bz - az, wx = cx - ax, wy = cy - ay, wz = cz - az;
+			double nx = uy * wz - uz * wy, ny = uz * wx - ux * wz, nz = ux * wy - uy * wx;
+			surfaceArea += Math.sqrt(nx * nx + ny * ny + nz * nz) / 2;
+		}
+		if (signed < 0) {
+			Area a = new Area(AREA_CAVITY);
+			a.hits.add(h.point);
+			a.row = new double[] { AREA_CAVITY, 1, Double.NaN, Double.NaN, surfaceArea, -signed, object };
+			/* The displayed triangles of the cavity (the same mesh or the reduced display) */
+			a.displayMesh = h.displayMesh;
+			if (h.displayMesh == mt) {
+				a.displayTriangles = surface;
+			} else if (h.display >= 0) {
+				IsoSurface.MeasureData display = iso.getMeasureData();
+				if (display != null && display.triangles == h.displayMesh) {
+					a.displayTriangles = connectedTriangles(display.triangles, display.vertices.length / 3, h.display);
+				}
+			}
+			synchronized (this) {
+				areas.add(a);
+			}
+			showArea(a);
+			return;
+		}
+		/* The displayed triangles of the object */
+		List<Integer> list = new ArrayList<>();
+		if (mesh != null && objectOfVertex != null) {
+			for (int i = 0; i < mesh.length; i += 3) {
+				if (objectOfVertex[mesh[i]] == object) {
+					list.add(i / 3);
+				}
+			}
+		}
+		Area a = new Area(AREA_OBJECT);
+		a.hits.add(h.point);
+		a.row = new double[] { AREA_OBJECT, 1, Double.NaN, Double.NaN, row[1], row[0], object };
+		a.displayMesh = mesh;
+		a.displayTriangles = list.stream().mapToInt(Integer::intValue).toArray();
+		synchronized (this) {
+			areas.add(a);
+		}
+		showArea(a);
+	}
+
+	private static int[] seeds(Area a, int which) {
+		return a.hitTriangles.stream().mapToInt(t -> t[which]).filter(t -> t >= 0).distinct().toArray();
+	}
+
+	/*
+	 * The outline in window positions as a raster (even-odd rule, the centers of
+	 * the pixels); the pixels on the outline are tested exactly (the measured
+	 * area doesn't depend on the size of the view)
+	 */
+	private static final class OutlineMask {
+		private final int x0, y0, w, h;
+		private final java.util.BitSet bits;
+		private final java.util.BitSet border;
+		private final double[] px, py;
+
+		OutlineMask(List<double[]> polygon) {
+			double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
+			for (double[] p : polygon) {
+				minX = Math.min(minX, p[0]);
+				minY = Math.min(minY, p[1]);
+				maxX = Math.max(maxX, p[0]);
+				maxY = Math.max(maxY, p[1]);
+			}
+			x0 = (int) Math.floor(minX);
+			y0 = (int) Math.floor(minY);
+			w = (int) Math.ceil(maxX) - x0 + 1;
+			h = (int) Math.ceil(maxY) - y0 + 1;
+			bits = new java.util.BitSet(w * h);
+			int n = polygon.size();
+			double[] xs = new double[n];
+			for (int row = 0; row < h; row++) {
+				double y = y0 + row + 0.5;
+				int count = 0;
+				for (int i = 0; i < n; i++) {
+					double[] a = polygon.get(i), b = polygon.get((i + 1) % n);
+					if ((a[1] <= y && b[1] > y) || (b[1] <= y && a[1] > y)) {
+						xs[count++] = a[0] + (y - a[1]) / (b[1] - a[1]) * (b[0] - a[0]);
+					}
+				}
+				java.util.Arrays.sort(xs, 0, count);
+				for (int i = 0; i + 1 < count; i += 2) {
+					int from = (int) Math.ceil(xs[i] - 0.5 - x0), to = (int) Math.floor(xs[i + 1] - 0.5 - x0);
+					for (int x = Math.max(0, from); x <= Math.min(w - 1, to); x++) {
+						bits.set(row * w + x);
+					}
+				}
+			}
+			/* The pixels on the outline (and their neighbors): tested exactly */
+			px = new double[n];
+			py = new double[n];
+			border = new java.util.BitSet(w * h);
+			for (int i = 0; i < n; i++) {
+				double[] a = polygon.get(i), b = polygon.get((i + 1) % n);
+				px[i] = a[0];
+				py[i] = a[1];
+				int steps = (int) Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) * 4) + 1;
+				for (int k = 0; k <= steps; k++) {
+					double t = k / (double) steps;
+					int cx = (int) Math.floor(a[0] + (b[0] - a[0]) * t) - x0, cy = (int) Math.floor(a[1] + (b[1] - a[1]) * t) - y0;
+					for (int dy = -1; dy <= 1; dy++) {
+						for (int dx = -1; dx <= 1; dx++) {
+							int ex = cx + dx, ey = cy + dy;
+							if (ex >= 0 && ey >= 0 && ex < w && ey < h) {
+								border.set(ey * w + ex);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		/*
+		 * The part (0 - 1) of a triangle inside of the outline: the outline clipped
+		 * by the triangle (Sutherland-Hodgman, the triangle is convex; exact also for
+		 * an outline which is not convex)
+		 */
+		double fraction(double ax, double ay, double bx, double by, double cx, double cy) {
+			double total = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+			if (Math.abs(total) < 1e-18) {
+				return inside((ax + bx + cx) / 3, (ay + by + cy) / 3) ? 1 : 0;
+			}
+			double sign = Math.signum(total);
+			double[] tx = { ax, bx, cx }, ty = { ay, by, cy };
+			int n = px.length;
+			double[] sx = java.util.Arrays.copyOf(px, n), sy = java.util.Arrays.copyOf(py, n);
+			for (int e = 0; e < 3 && n > 0; e++) {
+				double ex0 = tx[e], ey0 = ty[e], ex1 = tx[(e + 1) % 3], ey1 = ty[(e + 1) % 3];
+				double[] ox = new double[n * 2 + 2], oy = new double[n * 2 + 2];
+				int m = 0;
+				for (int i = 0; i < n; i++) {
+					double p0x = sx[i], p0y = sy[i], p1x = sx[(i + 1) % n], p1y = sy[(i + 1) % n];
+					double d0 = sign * ((ex1 - ex0) * (p0y - ey0) - (ey1 - ey0) * (p0x - ex0));
+					double d1 = sign * ((ex1 - ex0) * (p1y - ey0) - (ey1 - ey0) * (p1x - ex0));
+					if (d1 >= 0) {
+						if (d0 < 0) {
+							double t = d0 / (d0 - d1);
+							ox[m] = p0x + t * (p1x - p0x);
+							oy[m++] = p0y + t * (p1y - p0y);
+						}
+						ox[m] = p1x;
+						oy[m++] = p1y;
+					} else if (d0 >= 0) {
+						double t = d0 / (d0 - d1);
+						ox[m] = p0x + t * (p1x - p0x);
+						oy[m++] = p0y + t * (p1y - p0y);
+					}
+				}
+				sx = ox;
+				sy = oy;
+				n = m;
+			}
+			double area = 0;
+			for (int i = 0; i < n; i++) {
+				area += sx[i] * sy[(i + 1) % n] - sx[(i + 1) % n] * sy[i];
+			}
+			return Math.max(0, Math.min(1, Math.abs(area) / Math.abs(total)));
+		}
+
+		boolean inside(double x, double y) {
+			int ix = (int) Math.floor(x) - x0, iy = (int) Math.floor(y) - y0;
+			if (ix < 0 || iy < 0 || ix >= w || iy >= h) {
+				return false;
+			}
+			if (!border.get(iy * w + ix)) {
+				return bits.get(iy * w + ix);
+			}
+			/* Near the outline: the exact even-odd test of the position */
+			boolean in = false;
+			int n = px.length;
+			for (int i = 0, j = n - 1; i < n; j = i++) {
+				if ((py[i] > y) != (py[j] > y) && x < (px[j] - px[i]) * (y - py[i]) / (py[j] - py[i]) + px[i]) {
+					in = !in;
+				}
+			}
+			return in;
+		}
+	}
+
+	private static final class SurfaceRegion {
+		double area;
+		int[] triangles = new int[0];
+	}
+
+	/*
+	 * The surface inside of the outline: the triangles which face the camera and
+	 * are inside of the outline (a vertex or the center), connected with the seed
+	 * triangles (the clicked points) or all (no seeds); the area of a triangle at
+	 * the border is the part inside (10 sample points)!
+	 */
+	private SurfaceRegion surfaceRegion(IsoSurface.MeasureData m, Clipping.View view, OutlineMask mask, int[] seeds,
+			boolean connected) {
+		SurfaceRegion r = new SurfaceRegion();
+		float[] v = m.vertices;
+		int[] t = m.triangles;
+		if (v == null || t == null) {
+			return r;
+		}
+		int nv = v.length / 3, nt = t.length / 3;
+		/* The window positions of the vertices */
+		double[] wx = new double[nv], wy = new double[nv];
+		boolean[] in = new boolean[nv];
+		for (int i = 0; i < nv; i++) {
+			double[] w = view.window((v[i * 3] + 0.5) / m.nx, (v[i * 3 + 1] + 0.5) / m.ny, (v[i * 3 + 2] + 0.5) / m.nz);
+			if (w == null) {
+				wx[i] = wy[i] = Double.NaN;
+			} else {
+				wx[i] = w[0];
+				wy[i] = w[1];
+				in[i] = mask.inside(w[0], w[1]);
+			}
+		}
+		/* The camera in voxel coordinates of the mesh */
+		double[] eye = view.eye == null ? null
+				: new double[] { view.eye[0] * m.nx - 0.5, view.eye[1] * m.ny - 0.5, view.eye[2] * m.nz - 0.5 };
+		boolean[] candidate = new boolean[nt];
+		for (int k = 0; k < nt; k++) {
+			int a = t[k * 3], b = t[k * 3 + 1], c = t[k * 3 + 2];
+			if (Double.isNaN(wx[a]) || Double.isNaN(wx[b]) || Double.isNaN(wx[c])) {
+				continue;
+			}
+			boolean inside = in[a] || in[b] || in[c]
+					|| mask.inside((wx[a] + wx[b] + wx[c]) / 3, (wy[a] + wy[b] + wy[c]) / 3);
+			if (!inside) {
+				continue;
+			}
+			if (eye != null) {
+				/* The faces are oriented to the outside: facing the camera */
+				double ux = v[b * 3] - v[a * 3], uy = v[b * 3 + 1] - v[a * 3 + 1], uz = v[b * 3 + 2] - v[a * 3 + 2];
+				double qx = v[c * 3] - v[a * 3], qy = v[c * 3 + 1] - v[a * 3 + 1], qz = v[c * 3 + 2] - v[a * 3 + 2];
+				double nx = uy * qz - uz * qy, ny = uz * qx - ux * qz, nz = ux * qy - uy * qx;
+				double cx = (v[a * 3] + v[b * 3] + v[c * 3]) / 3 - eye[0], cy = (v[a * 3 + 1] + v[b * 3 + 1] + v[c * 3 + 1]) / 3 - eye[1],
+						cz = (v[a * 3 + 2] + v[b * 3 + 2] + v[c * 3 + 2]) / 3 - eye[2];
+				if (nx * cx + ny * cy + nz * cz >= 0) {
+					continue;
+				}
+			}
+			candidate[k] = true;
+		}
+		java.util.BitSet accepted = new java.util.BitSet(nt);
+		if (connected) {
+			/* The triangles of each vertex */
+			int[] start = new int[nv + 1];
+			for (int i : t) {
+				start[i + 1]++;
+			}
+			for (int i = 0; i < nv; i++) {
+				start[i + 1] += start[i];
+			}
+			int[] fill = start.clone();
+			int[] incident = new int[t.length];
+			for (int i = 0; i < t.length; i++) {
+				incident[fill[t[i]]++] = i / 3;
+			}
+			java.util.BitSet visited = new java.util.BitSet(nt);
+			java.util.ArrayDeque<Integer> queue = new java.util.ArrayDeque<>();
+			for (int sd : seeds) {
+				if (sd >= 0 && sd < nt && !visited.get(sd)) {
+					visited.set(sd);
+					queue.add(sd);
+				}
+			}
+			while (!queue.isEmpty()) {
+				int k = queue.poll();
+				if (candidate[k]) {
+					accepted.set(k);
+				}
+				for (int c = 0; c < 3; c++) {
+					int vertex = t[k * 3 + c];
+					for (int j = start[vertex]; j < start[vertex + 1]; j++) {
+						int nb = incident[j];
+						if (!visited.get(nb) && candidate[nb]) {
+							visited.set(nb);
+							queue.add(nb);
+						}
+					}
+				}
+			}
+		} else {
+			for (int k = 0; k < nt; k++) {
+				if (candidate[k]) {
+					accepted.set(k);
+				}
+			}
+		}
+		/* The area (calibrated) of the parts inside of the outline */
+		double sx = m.stepX * m.pixelSize, sy = m.stepY * m.pixelSize, sz = m.stepZ * m.pixelSize;
+		double area = 0;
+		int[] list = new int[accepted.cardinality()];
+		int n = 0;
+		for (int k = accepted.nextSetBit(0); k >= 0; k = accepted.nextSetBit(k + 1)) {
+			int a = t[k * 3], b = t[k * 3 + 1], c = t[k * 3 + 2];
+			double fraction;
+			if (in[a] && in[b] && in[c]) {
+				fraction = 1;
+			} else {
+				/* At the border: the exact part of the triangle inside of the outline (in the window) */
+				fraction = mask.fraction(wx[a], wy[a], wx[b], wy[b], wx[c], wy[c]);
+			}
+			if (fraction <= 0) {
+				continue;
+			}
+			double ux = (v[b * 3] - v[a * 3]) * sx, uy = (v[b * 3 + 1] - v[a * 3 + 1]) * sy, uz = (v[b * 3 + 2] - v[a * 3 + 2]) * sz;
+			double qx = (v[c * 3] - v[a * 3]) * sx, qy = (v[c * 3 + 1] - v[a * 3 + 1]) * sy, qz = (v[c * 3 + 2] - v[a * 3 + 2]) * sz;
+			double nx = uy * qz - uz * qy, ny = uz * qx - ux * qz, nz = ux * qy - uy * qx;
+			area += 0.5 * Math.sqrt(nx * nx + ny * ny + nz * nz) * fraction;
+			list[n++] = k;
+		}
+		r.area = area;
+		r.triangles = java.util.Arrays.copyOf(list, n);
+		return r;
+	}
+
+	/*
+	 * The volume of the voxels of the measured stack at or above the iso value
+	 * whose centers are inside of the outline in the window (the whole depth, inside
+	 * of the clipping region); NaN for a model (no voxels)!
+	 */
+	private double outlineVolume(IsoSurface.MeasureData m, Clipping.View view, OutlineMask mask) {
+		if (m.data == null) {
+			return Double.NaN;
+		}
+		double[] extent = displayedExtent();
+		Clipping.Region region = extent == null ? null : clipping.getRegion(extent, HeightMaps.isFlipVertically());
+		float level = (float) (m.isoValue - m.valueOffset);
+		long count = 0;
+		int i = 0;
+		for (int z = 0; z < m.nz; z++) {
+			for (int y = 0; y < m.ny; y++) {
+				for (int x = 0; x < m.nx; x++, i++) {
+					if (m.data[i] < level) {
+						continue;
+					}
+					double rx = (x + 0.5) / m.nx, ry = (y + 0.5) / m.ny, rz = (z + 0.5) / m.nz;
+					if (region != null && !region.isAll() && !region.contains(rx, ry, rz)) {
+						continue;
+					}
+					double[] w = view.window(rx, ry, rz);
+					if (w != null && mask.inside(w[0], w[1])) {
+						count++;
+					}
+				}
+			}
+		}
+		return count * m.stepX * m.stepY * m.stepZ * Math.pow(m.pixelSize, 3);
+	}
+
+	/* Adds an area to the table "3D Areas" */
+	private void showArea(Area a) {
+		String[] text;
+		int number;
+		synchronized (this) {
+			number = areas.size();
+		}
+		text = areaText(number, a.row, a.spline);
+		Display display = PlatformUI.getWorkbench().getDisplay();
+		display.asyncExec(() -> {
+			if (areaGrid == null || areaGrid.isDisposed()) {
+				List<String[]> table = new ArrayList<>();
+				synchronized (Measurement3d.this) {
+					for (int i = 0; i < areas.size(); i++) {
+						table.add(areaText(i + 1, areas.get(i).row, areas.get(i).spline));
+					}
+				}
+				areaGrid = showSheet("3D Areas", areaHeader(), table, null);
+			} else {
+				GridItem item = new GridItem(areaGrid, SWT.NONE);
+				for (int k = 0; k < text.length; k++) {
+					item.setText(k, text[k]);
+				}
+				areaGrid.showItem(item);
+			}
+		});
+	}
+
+	private static String[] areaText(int number, double[] row, boolean spline) {
+		String[] text = new String[row.length + 1];
+		text[0] = String.valueOf(number);
+		text[1] = AREA_NAMES[(int) row[0]] + (spline ? " (Spline)" : "");
+		text[2] = String.valueOf((int) row[1]);
+		for (int k = 2; k < row.length - 1; k++) {
+			text[k + 1] = Double.isNaN(row[k]) ? "" : format(row[k]);
+		}
+		text[row.length] = row[row.length - 1] > 0 ? String.valueOf((int) row[row.length - 1]) : "";
+		return text;
+	}
+
+	private String[] areaHeader() {
+		String u = scale().unit;
+		return new String[] { "Area", "Type", "Points", "Perimeter [" + u + "]", "Polygon Area [" + u + "^2]",
+				"Surface Area [" + u + "^2]", "Volume [" + u + "^3]", "Object" };
+	}
+
+	/**
+	 * Returns the measured areas and volumes of the mouse tools (polygon, freehand,
+	 * volume): the values of AREA_COLUMNS (the type is one of AREA_POLYGON,
+	 * AREA_FREEHAND, AREA_OUTLINE, AREA_OBJECT; NaN if not available).
+	 *
+	 * @return a copy of the rows
+	 */
+	public synchronized List<double[]> getAreas() {
+		List<double[]> list = new ArrayList<>();
+		for (Area a : areas) {
+			list.add(a.row.clone());
+		}
+		return list;
+	}
+
+	/* Draws the measured areas (translucent on the surface) and the area which is drawn */
+	private void renderAreas(GL2 gl, double[] bounds, boolean flip, boolean cartesian, float scale) {
+		for (Area a : areas) {
+			if (a.displayTriangles != null && a.displayTriangles.length > 0) {
+				iso.renderTriangles(gl, cartesian, a.displayMesh, a.displayTriangles,
+						a.type == AREA_OUTLINE || a.type == AREA_OBJECT || a.type == AREA_CAVITY ? VOLUME_COLOR : AREA_COLOR, true, 0, 0.45f);
+			}
+		}
+		gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT | GL2.GL_LINE_BIT | GL2.GL_POINT_BIT | GL2.GL_COLOR_BUFFER_BIT);
+		gl.glDisable(GL2.GL_LIGHTING);
+		gl.glDisable(GL2.GL_TEXTURE_2D);
+		gl.glDisable(GL2.GL_TEXTURE_3D);
+		gl.glDisable(GL2.GL_DEPTH_TEST);
+		gl.glLineWidth(2);
+		gl.glColor3f(AREA_COLOR[0] * 0.6f, AREA_COLOR[1] * 0.6f, AREA_COLOR[2] * 0.6f);
+		/* The outlines of the polygons and freehand areas (the selected area in the color of the selection) */
+		for (int i = 0; i < areas.size(); i++) {
+			Area a = areas.get(i);
+			if ((a.type == AREA_POLYGON || a.type == AREA_FREEHAND) && a.hits.size() >= 2) {
+				if (i == selectedArea) {
+					gl.glColor3f(SELECTED_COLOR[0], SELECTED_COLOR[1], SELECTED_COLOR[2]);
+				} else {
+					gl.glColor3f(AREA_COLOR[0] * 0.6f, AREA_COLOR[1] * 0.6f, AREA_COLOR[2] * 0.6f);
+				}
+				gl.glBegin(GL2.GL_LINE_LOOP);
+				for (double[] r : a.hits) {
+					vertex(gl, bounds, flip, r);
+				}
+				gl.glEnd();
+			}
+		}
+		/* The area which is drawn: the line and the corners */
+		Area d = drawing;
+		if (d != null && !d.hits.isEmpty()) {
+			gl.glColor3f(AREA_COLOR[0], AREA_COLOR[1], AREA_COLOR[2]);
+			gl.glBegin(GL2.GL_LINE_STRIP);
+			for (double[] r : d.hits) {
+				vertex(gl, bounds, flip, r);
+			}
+			gl.glEnd();
+			if (d.type == AREA_POLYGON) {
+				gl.glEnable(GL2.GL_POINT_SMOOTH);
+				gl.glEnable(GL2.GL_BLEND);
+				gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
+				gl.glPointSize(7 * scale);
+				gl.glBegin(GL2.GL_POINTS);
+				for (double[] r : d.hits) {
+					vertex(gl, bounds, flip, r);
+				}
+				gl.glEnd();
+			}
+		}
+		gl.glPopAttrib();
+	}
+
 	/* Adds a picked point and displays it in the table! */
 	private void addPoint(double[] relative, int[][] highlight) {
-		double[] row;
+		int kind, linePath, index;
 		synchronized (this) {
-			points.add(relative);
+			kind = pointKind;
+			linePath = path;
+			/* The kind of the point (see POINT_LINE), the line, follow the surface and spline */
+			double[] p = java.util.Arrays.copyOf(relative, 11);
+			p[7] = kind;
+			p[8] = path;
+			/* The line follows the surface (also the first point of the line, for the type) */
+			p[9] = (kind == POINT_LINE || kind == POINT_STRAIGHT) && followSurface ? 1 : 0;
+			p[10] = kind == POINT_LINE && fitSpline ? 1 : 0;
+			points.add(p);
 			pointTriangles.add(highlight);
-			row = pointRow(points.size() - 1);
+			pointDrapes.add(null);
+			index = points.size() - 1;
+			/* A straight line ends with the second point, an angle with the third point */
+			int inPath = 0;
+			for (double[] q : points) {
+				if (pathOf(q) == path && kindOf(q) == kind) {
+					inPath++;
+				}
+			}
+			clearSelection();
+			if ((kind == POINT_STRAIGHT && inPath >= 2) || (kind == POINT_ANGLE && inPath >= 3)) {
+				/* The finished line or angle is selected (its handles can be moved) */
+				selectedPath = path;
+				selectedKind = kind;
+				path++;
+			}
 		}
-		String[] text = pointText(points.size(), row);
+		/* The segments to the new point (along the surface, a spline: also the previous segment) */
+		boolean spline = false;
+		if (kind == POINT_LINE || kind == POINT_STRAIGHT) {
+			int n = pathIndices(linePath, kind).length;
+			spline = rebuildLine(linePath, kind, n - 2, n - 1);
+		}
+		double[] row;
+		String type;
+		int number;
+		synchronized (this) {
+			number = index + 1;
+			row = pointRow(index);
+			type = pointType(index);
+		}
+		if (spline) {
+			/* The previous row (the distance along the spline) has been changed */
+			refreshPointTable();
+		}
+		String[] text = pointText(number, row, type);
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.asyncExec(() -> {
 			if (pointGrid == null || pointGrid.isDisposed()) {
 				List<double[]> all = getPoints();
 				List<String[]> table = new ArrayList<>();
+				List<String> types = getPointTypes();
 				for (int i = 0; i < all.size(); i++) {
-					table.add(pointText(i + 1, all.get(i)));
+					table.add(pointText(i + 1, all.get(i), i < types.size() ? types.get(i) : ""));
 				}
 				pointGrid = showSheet("3D Points", pointHeader(), table, null);
 			} else {
@@ -2585,23 +4278,381 @@ public class Measurement3d {
 	}
 
 	/* The text of a point (the object number as an integer, empty if none) */
-	private static String[] pointText(int number, double[] row) {
-		String[] text = new String[row.length + 1];
+	private static String[] pointText(int number, double[] row, String type) {
+		String[] text = new String[row.length + 2];
 		text[0] = String.valueOf(number);
 		for (int k = 0; k < row.length; k++) {
-			text[k + 1] = k == 4 ? (row[k] > 0 ? String.valueOf((int) row[k]) : "") : format(row[k]);
+			text[k + 1] = k == 4 ? (row[k] > 0 ? String.valueOf((int) row[k]) : "")
+					: k >= 5 && Double.isNaN(row[k]) ? "" : format(row[k]);
 		}
+		text[row.length + 1] = type;
 		return text;
 	}
 
 	private String[] pointHeader() {
 		String unit = scale().unit;
-		String[] header = new String[POINT_COLUMNS.length + 1];
+		String[] header = new String[POINT_COLUMNS.length + 2];
 		header[0] = "Point";
 		for (int k = 0; k < POINT_COLUMNS.length; k++) {
-			header[k + 1] = POINT_COLUMNS[k] + (k == 3 || k == 4 ? "" : " [" + unit + "]");
+			header[k + 1] = POINT_COLUMNS[k] + (k == 3 || k == 4 ? "" : k == 7 ? " [°]" : " [" + unit + "]");
 		}
+		header[POINT_COLUMNS.length + 1] = "Type";
 		return header;
+	}
+
+	/* The type of a point for the table (a line which follows the surface: "(Surface)") */
+	private String pointType(int i) {
+		double[] r = points.get(i);
+		int kind = kindOf(r);
+		String type = kind >= 0 && kind < POINT_TYPES.length ? POINT_TYPES[kind] : "";
+		if (kind == POINT_LINE && r.length > 10 && r[10] > 0) {
+			type += " (Spline)";
+		}
+		if ((kind == POINT_LINE || kind == POINT_STRAIGHT) && r.length > 9 && r[9] > 0) {
+			type += " (Surface)";
+		}
+		return type;
+	}
+
+	/**
+	 * Returns the types of the picked points (like the column "Type" of the table
+	 * "3D Points": "Segmented Line", "Point", "Straight Line", "Angle", a line which
+	 * follows the surface with "(Surface)").
+	 */
+	public synchronized List<String> getPointTypes() {
+		List<String> list = new ArrayList<>();
+		for (int i = 0; i < points.size(); i++) {
+			list.add(pointType(i));
+		}
+		return list;
+	}
+
+	/** Returns true if the lines follow the surface (see setFollowSurface). */
+	public boolean isFollowSurface() {
+		return followSurface;
+	}
+
+	/**
+	 * Sets if the next segments of the segmented and the straight lines follow the
+	 * surface (the path on the visible surface along the screen line between the
+	 * points, measured along the surface) or are straight lines in 3D (the
+	 * default).
+	 */
+	public void setFollowSurface(boolean follow) {
+		followSurface = follow;
+	}
+
+	/** Returns true if the lines and areas are fitted with a spline (see setFitSpline). */
+	public boolean isFitSpline() {
+		return fitSpline;
+	}
+
+	/**
+	 * Sets if the next segmented lines, polygons and freehand areas are fitted
+	 * with a spline (a centripetal Catmull-Rom spline through the points, like
+	 * "Fit Spline" of ImageJ): the length, the perimeter and the areas are
+	 * measured along the spline. A selected line or area (see the handles of the
+	 * mouse tools) is changed and measured again.
+	 */
+	public void setFitSpline(boolean spline) {
+		fitSpline = spline;
+		int area, linePath, lineKind;
+		synchronized (this) {
+			area = selectedArea;
+			linePath = selectedPath;
+			lineKind = selectedKind;
+		}
+		if (area >= 0) {
+			Area a;
+			synchronized (this) {
+				a = area < areas.size() ? areas.get(area) : null;
+			}
+			if (a != null && (a.type == AREA_POLYGON || a.type == AREA_FREEHAND) && a.spline != spline) {
+				synchronized (this) {
+					a.spline = spline;
+				}
+				if (spline && a.type == AREA_FREEHAND) {
+					reduceControls(a);
+				}
+				if (measureArea(a, true)) {
+					refreshAreaRow(area);
+				}
+			}
+		} else if (linePath >= 0 && lineKind == POINT_LINE) {
+			synchronized (this) {
+				for (int i : pathIndices(linePath, lineKind)) {
+					points.get(i)[10] = spline ? 1 : 0;
+				}
+			}
+			rebuildLine(linePath, lineKind, 1, Integer.MAX_VALUE);
+			refreshPointTable();
+		}
+	}
+
+	/* The indices of the points of a line (path and kind) */
+	private synchronized int[] pathIndices(int pathId, int kind) {
+		int count = 0;
+		int[] list = new int[points.size()];
+		for (int i = 0; i < points.size(); i++) {
+			double[] q = points.get(i);
+			if (pathOf(q) == pathId && kindOf(q) == kind) {
+				list[count++] = i;
+			}
+		}
+		return java.util.Arrays.copyOf(list, count);
+	}
+
+	/*
+	 * Computes the segments from..to of a line again (segment k: from the point
+	 * k - 1 to the point k of the line): straight, along the surface and/or a
+	 * spline. Returns true if a segment is a spline.
+	 */
+	private boolean rebuildLine(int pathId, int kind, int from, int to) {
+		int[] idx;
+		List<double[]> pts = new ArrayList<>();
+		synchronized (this) {
+			idx = pathIndices(pathId, kind);
+			for (int i : idx) {
+				pts.add(points.get(i).clone());
+			}
+		}
+		int n = idx.length;
+		boolean anySpline = false;
+		List<double[][]> curves = new ArrayList<>();
+		List<Integer> where = new ArrayList<>();
+		for (int k = Math.max(1, from); k <= Math.min(n - 1, to); k++) {
+			double[] a = pts.get(k - 1), b = pts.get(k);
+			boolean follow = b.length > 9 && b[9] > 0;
+			boolean spline = kind == POINT_LINE && b.length > 10 && b[10] > 0 && n >= 3;
+			double[][] curve;
+			if (spline) {
+				anySpline = true;
+				double[] p0 = k >= 2 ? pts.get(k - 2) : null, p3 = k + 1 < n ? pts.get(k + 1) : null;
+				curve = follow ? splineOnSurface(p0, a, b, p3) : spline3d(p0, a, b, p3);
+			} else {
+				curve = follow ? drape(a, b) : null;
+			}
+			curves.add(curve);
+			where.add(idx[k]);
+		}
+		synchronized (this) {
+			for (int i = 0; i < where.size(); i++) {
+				int j = where.get(i);
+				if (j < pointDrapes.size()) {
+					pointDrapes.set(j, curves.get(i));
+				}
+			}
+		}
+		return anySpline;
+	}
+
+	/* A segment of a spline in 3D (calibrated) from a to b (p0, p3: the neighbors or null) in relative positions */
+	private double[][] spline3d(double[] p0, double[] a, double[] b, double[] p3) {
+		Scale s = scale();
+		double[] k = { s.sizeX, s.sizeY, s.sizeZ };
+		double[] ca = calibrated(a, k), cb = calibrated(b, k);
+		double[] c0 = p0 != null ? calibrated(p0, k) : mirror(ca, cb), c3 = p3 != null ? calibrated(p3, k) : mirror(cb, ca);
+		int m = 256;
+		double[][] curve = new double[m + 1][];
+		for (int i = 0; i <= m; i++) {
+			double[] q = catmullRom(c0, ca, cb, c3, i / (double) m);
+			curve[i] = new double[] { q[0] / k[0], q[1] / k[1], q[2] / k[2] };
+		}
+		curve[0] = new double[] { a[0], a[1], a[2] };
+		curve[m] = new double[] { b[0], b[1], b[2] };
+		return curve;
+	}
+
+	/*
+	 * A segment of a spline on the visible surface: the spline of the window
+	 * positions of the points, each position on the surface (the first surface
+	 * along the view ray)
+	 */
+	private double[][] splineOnSurface(double[] p0, double[] a, double[] b, double[] p3) {
+		Clipping.View view = clipping.view();
+		double[] wa = window2(view, a), wb = window2(view, b);
+		if (wa == null || wb == null) {
+			return spline3d(p0, a, b, p3);
+		}
+		double[] w0 = p0 != null ? window2(view, p0) : null, w3 = p3 != null ? window2(view, p3) : null;
+		if (w0 == null) {
+			w0 = mirror(wa, wb);
+		}
+		if (w3 == null) {
+			w3 = mirror(wb, wa);
+		}
+		double length = Math.hypot(wb[0] - wa[0], wb[1] - wa[1]);
+		int n = (int) Math.max(4, Math.min(2000, Math.ceil(length * 2)));
+		List<double[]> window = new ArrayList<>();
+		for (int i = 1; i < n; i++) {
+			window.add(catmullRom(w0, wa, wb, w3, i / (double) n));
+		}
+		SurfacePicker picker = new SurfacePicker(view, window);
+		List<double[]> curve = new ArrayList<>();
+		curve.add(new double[] { a[0], a[1], a[2] });
+		for (double[] w : window) {
+			double[] h = picker.pick(w[0], w[1]);
+			if (h != null) {
+				curve.add(new double[] { h[0], h[1], h[2] });
+			}
+		}
+		curve.add(new double[] { b[0], b[1], b[2] });
+		return curve.toArray(new double[0][]);
+	}
+
+	private static double[] calibrated(double[] r, double[] k) {
+		return new double[] { r[0] * k[0], r[1] * k[1], r[2] * k[2] };
+	}
+
+	/* The neighbor of an end point a of a spline (b is the other neighbor of a): 2 a - b */
+	private static double[] mirror(double[] a, double[] b) {
+		double[] r = new double[a.length];
+		for (int i = 0; i < a.length; i++) {
+			r[i] = 2 * a[i] - b[i];
+		}
+		return r;
+	}
+
+	/* The window position (x, y) of a relative position or null */
+	private static double[] window2(Clipping.View view, double[] r) {
+		double[] w = view == null ? null : view.window(r[0], r[1], r[2]);
+		return w == null ? null : new double[] { w[0], w[1] };
+	}
+
+	/*
+	 * A point of the centripetal Catmull-Rom spline between p1 and p2 (t = 0 - 1,
+	 * Barry and Goldman; no loops and cusps at uneven distances)
+	 */
+	static double[] catmullRom(double[] p0, double[] p1, double[] p2, double[] p3, double t) {
+		int d = Math.min(Math.min(p0.length, p1.length), Math.min(p2.length, p3.length));
+		double t0 = 0, t1 = t0 + knot(p0, p1, d), t2 = t1 + knot(p1, p2, d), t3 = t2 + knot(p2, p3, d);
+		double u = t1 + (t2 - t1) * t;
+		double[] r = new double[d];
+		for (int k = 0; k < d; k++) {
+			double a1 = lerp(p0[k], p1[k], t0, t1, u), a2 = lerp(p1[k], p2[k], t1, t2, u), a3 = lerp(p2[k], p3[k], t2, t3, u);
+			double b1 = lerp(a1, a2, t0, t2, u), b2 = lerp(a2, a3, t1, t3, u);
+			r[k] = lerp(b1, b2, t1, t2, u);
+		}
+		return r;
+	}
+
+	private static double knot(double[] a, double[] b, int d) {
+		double sum = 0;
+		for (int k = 0; k < d; k++) {
+			sum += (b[k] - a[k]) * (b[k] - a[k]);
+		}
+		return Math.max(1e-6, Math.pow(sum, 0.25));
+	}
+
+	private static double lerp(double a, double b, double ta, double tb, double u) {
+		return tb - ta < 1e-12 ? a : (a * (tb - u) + b * (u - ta)) / (tb - ta);
+	}
+
+	/* A closed spline through window positions (samples about every step pixels) */
+	private static List<double[]> closedSpline(List<double[]> w, double step) {
+		List<double[]> out = new ArrayList<>();
+		int n = w.size();
+		for (int i = 0; i < n; i++) {
+			double[] p0 = w.get((i - 1 + n) % n), p1 = w.get(i), p2 = w.get((i + 1) % n), p3 = w.get((i + 2) % n);
+			int m = (int) Math.max(1, Math.min(500, Math.ceil(Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) / step)));
+			for (int j = 0; j < m; j++) {
+				out.add(catmullRom(p0, p1, p2, p3, j / (double) m));
+			}
+		}
+		return out;
+	}
+
+	/*
+	 * Picks the visible surface (the measured surface, inside of the clipping
+	 * region) at window positions near the given positions: only the triangles in
+	 * the window region of the positions are tested (fast)
+	 */
+	private final class SurfacePicker {
+		private final IsoSurface.MeasureData m;
+		private final Clipping.Region region;
+		private final int[] subset;
+
+		SurfacePicker(Clipping.View view, List<double[]> window) {
+			IsoSurface.MeasureData display = iso.isDisplayed() ? iso.getMeasureData() : null;
+			IsoSurface.MeasureData full = display != null ? iso.getMeasurementData() : null;
+			IsoSurface.MeasureData mesh = full != null && full.vertices != null && full.triangles != null ? full : display;
+			double[] extent = displayedExtent();
+			if (mesh == null || mesh.vertices == null || mesh.triangles == null || view == null || extent == null) {
+				m = mesh;
+				region = null;
+				subset = null;
+				return;
+			}
+			m = mesh;
+			region = clipping.getRegion(extent, HeightMaps.isFlipVertically());
+			double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
+			for (double[] w : window) {
+				minX = Math.min(minX, w[0]);
+				minY = Math.min(minY, w[1]);
+				maxX = Math.max(maxX, w[0]);
+				maxY = Math.max(maxY, w[1]);
+			}
+			double margin = 4;
+			float[] v = m.vertices;
+			int nv = v.length / 3;
+			float[] px = new float[nv], py = new float[nv];
+			for (int i = 0; i < nv; i++) {
+				double[] w = view.window((v[i * 3] + 0.5) / m.nx, (v[i * 3 + 1] + 0.5) / m.ny, (v[i * 3 + 2] + 0.5) / m.nz);
+				px[i] = w == null ? Float.NaN : (float) w[0];
+				py[i] = w == null ? Float.NaN : (float) w[1];
+			}
+			int[] t = m.triangles;
+			int[] list = new int[t.length / 3];
+			int count = 0;
+			for (int i = 0; i < t.length; i += 3) {
+				float x0 = Float.MAX_VALUE, y0 = Float.MAX_VALUE, x1 = -Float.MAX_VALUE, y1 = -Float.MAX_VALUE;
+				boolean valid = true;
+				for (int k = 0; k < 3; k++) {
+					int a = t[i + k];
+					if (Float.isNaN(px[a])) {
+						valid = false;
+						break;
+					}
+					x0 = Math.min(x0, px[a]);
+					x1 = Math.max(x1, px[a]);
+					y0 = Math.min(y0, py[a]);
+					y1 = Math.max(y1, py[a]);
+				}
+				if (valid && x1 >= minX - margin && x0 <= maxX + margin && y1 >= minY - margin && y0 <= maxY + margin) {
+					list[count++] = i / 3;
+				}
+			}
+			subset = java.util.Arrays.copyOf(list, count);
+		}
+
+		/* The relative position and the triangle {x, y, z, triangle} at the window position or null */
+		double[] pick(double x, double y) {
+			double[][] ray = clipping.rayAt(x, y);
+			if (ray == null) {
+				return null;
+			}
+			if (region == null) {
+				/* No surface: the volume */
+				double[] h = m == null ? volumeHit(ray) : null;
+				return h == null ? null : new double[] { h[0], h[1], h[2], -1 };
+			}
+			double[] hit = intersect(m, ray, region, subset);
+			if (hit == null) {
+				return null;
+			}
+			double t = hit[1];
+			double ox = ray[0][0] * m.nx - 0.5, oy = ray[0][1] * m.ny - 0.5, oz = ray[0][2] * m.nz - 0.5;
+			double dx = (ray[1][0] - ray[0][0]) * m.nx, dy = (ray[1][1] - ray[0][1]) * m.ny, dz = (ray[1][2] - ray[0][2]) * m.nz;
+			return new double[] { (ox + dx * t + 0.5) / m.nx, (oy + dy * t + 0.5) / m.ny, (oz + dz * t + 0.5) / m.nz, hit[0] };
+		}
+	}
+
+	private static int kindOf(double[] p) {
+		return p.length > 7 ? (int) p[7] : 0;
+	}
+
+	private static int pathOf(double[] p) {
+		return p.length > 8 ? (int) p[8] : 0;
 	}
 
 	/* The calibrated values of a point: x, y, z, value, distance to the previous point, length */
@@ -2616,17 +4667,63 @@ public class Measurement3d {
 			y = md.origin[1] - y;
 			z = md.origin[2] + z;
 		}
-		double distance = 0, length = 0;
-		for (int j = 1; j <= i; j++) {
-			double[] p0 = points.get(j - 1), p1 = points.get(j);
-			double ddx = (p1[0] - p0[0]) * s.sizeX, ddy = (p1[1] - p0[1]) * s.sizeY, ddz = (p1[2] - p0[2]) * s.sizeZ;
-			distance = Math.sqrt(ddx * ddx + ddy * ddy + ddz * ddz);
-			length += distance;
+		/*
+		 * The distance and the length along the line of the point (none for a single
+		 * point): straight in 3D or along the surface (the path to the point), the
+		 * angle at the vertex with the third point of an angle
+		 */
+		double distance = Double.NaN, length = Double.NaN, angle = Double.NaN;
+		int kind = kindOf(r);
+		if (kind != POINT_SINGLE) {
+			distance = 0;
+			length = 0;
+			double[] previous = null;
+			List<double[]> corners = new ArrayList<>();
+			for (int j = 0; j <= i; j++) {
+				double[] q = points.get(j);
+				if (kindOf(q) != kind || pathOf(q) != pathOf(r)) {
+					continue;
+				}
+				if (previous != null) {
+					double[][] drape = pointDrapes.get(j);
+					distance = drape != null ? polylineLength(drape, s) : distance(previous, q, s);
+					length += distance;
+				}
+				corners.add(q);
+				previous = q;
+			}
+			if (kind == POINT_ANGLE && corners.size() == 3) {
+				angle = angle(corners.get(0), corners.get(1), corners.get(2), s);
+			}
 		}
 		/* The value of the data half a voxel inside of the surface */
 		double[] inside = r.length >= 6 ? new double[] { r[3], r[4], r[5] } : r;
 		double object = r.length >= 7 ? r[6] : 0;
-		return new double[] { x, y, z, valueAt(inside), object, distance, length };
+		return new double[] { x, y, z, valueAt(inside), object, distance, length, angle };
+	}
+
+	/* The calibrated distance of two relative positions */
+	private static double distance(double[] a, double[] b, Scale s) {
+		double dx = (b[0] - a[0]) * s.sizeX, dy = (b[1] - a[1]) * s.sizeY, dz = (b[2] - a[2]) * s.sizeZ;
+		return Math.sqrt(dx * dx + dy * dy + dz * dz);
+	}
+
+	/* The calibrated length of a path (relative positions) */
+	private static double polylineLength(double[][] path, Scale s) {
+		double length = 0;
+		for (int k = 1; k < path.length; k++) {
+			length += distance(path[k - 1], path[k], s);
+		}
+		return length;
+	}
+
+	/* The angle (degrees) at the vertex b between the directions to a and c (calibrated, in 3D) */
+	private static double angle(double[] a, double[] b, double[] c, Scale s) {
+		double ux = (a[0] - b[0]) * s.sizeX, uy = (a[1] - b[1]) * s.sizeY, uz = (a[2] - b[2]) * s.sizeZ;
+		double vx = (c[0] - b[0]) * s.sizeX, vy = (c[1] - b[1]) * s.sizeY, vz = (c[2] - b[2]) * s.sizeZ;
+		double cx = uy * vz - uz * vy, cy = uz * vx - ux * vz, cz = ux * vy - uy * vx;
+		/* atan2 of the cross and the dot product: exact also for small and large angles */
+		return Math.toDegrees(Math.atan2(Math.sqrt(cx * cx + cy * cy + cz * cz), ux * vx + uy * vy + uz * vz));
 	}
 
 	/* The value of the stack (full resolution) or of the data at a relative position */
@@ -2644,9 +4741,9 @@ public class Measurement3d {
 			}
 			return ip instanceof ij.process.ColorProcessor ? IsoSurface.luminance(ip.getPixel(x, y)) : ip.getPixelValue(x, y);
 		}
-		if (m != null && m.data != null) {
-			return IsoSurface.sampleDouble(m.data, m.nx, m.ny, m.nz, r[0] * m.nx - 0.5, r[1] * m.ny - 0.5,
-					r[2] * m.nz - 0.5) + m.valueOffset;
+		if (m != null && m.values != null) {
+			return IsoSurface.sampleDouble(m.values, m.nx, m.ny, m.nz, r[0] * m.nx - 0.5, r[1] * m.ny - 0.5,
+					r[2] * m.nz - 0.5) + m.valuesOffset;
 		}
 		return Double.NaN;
 	}
@@ -2692,14 +4789,25 @@ public class Measurement3d {
 		return list;
 	}
 
-	/** Removes the picked points (a new sheet is created for the next point). */
+	/**
+	 * Removes the picked points and the measured areas (new sheets are created for
+	 * the next measurements).
+	 */
 	public void clearPoints() {
 		synchronized (this) {
 			points.clear();
 			pointTriangles.clear();
+			pointDrapes.clear();
+			clearSelection();
+			areas.clear();
+			drawing = null;
+			path++;
 		}
 		Display display = PlatformUI.getWorkbench().getDisplay();
-		display.asyncExec(() -> pointGrid = null);
+		display.asyncExec(() -> {
+			pointGrid = null;
+			areaGrid = null;
+		});
 	}
 
 	/**
@@ -2712,7 +4820,11 @@ public class Measurement3d {
 		}
 		renderDistanceLines(gl, bounds, flip);
 		renderObjectLabels(gl, bounds, flip, pixelScale);
+		lastPixelScale = pixelScale > 0 ? pixelScale : 1;
+		renderAreas(gl, bounds, flip, cartesian, lastPixelScale);
 		if (points.isEmpty()) {
+			/* The handles of a selected area */
+			renderHandles(gl, bounds, flip, lastPixelScale);
 			return;
 		}
 		/* The triangles of the picked points */
@@ -2726,27 +4838,124 @@ public class Measurement3d {
 				iso.renderTriangles(gl, cartesian, highlight[0], highlight[1], OUTLINE_COLOR, false, 1);
 			}
 		}
-		gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT | GL2.GL_LINE_BIT | GL2.GL_POINT_BIT);
+		gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT | GL2.GL_LINE_BIT | GL2.GL_POINT_BIT | GL2.GL_COLOR_BUFFER_BIT);
 		gl.glDisable(GL2.GL_LIGHTING);
 		gl.glDisable(GL2.GL_TEXTURE_2D);
 		gl.glDisable(GL2.GL_TEXTURE_3D);
 		gl.glDisable(GL2.GL_DEPTH_TEST);
 		gl.glColor3f(1f, 0.25f, 0.6f);
 		gl.glLineWidth(2);
-		gl.glBegin(GL2.GL_LINE_STRIP);
-		for (double[] r : points) {
+		/* The lines (single points are not connected) */
+		boolean open = false;
+		int currentPath = 0;
+		for (int i = 0; i < points.size(); i++) {
+			double[] r = points.get(i);
+			if (kindOf(r) == POINT_SINGLE) {
+				continue;
+			}
+			if (!open || pathOf(r) != currentPath) {
+				if (open) {
+					gl.glEnd();
+				}
+				/* The selected line in the color of the selection */
+				if (pathOf(r) == selectedPath && kindOf(r) == selectedKind) {
+					gl.glColor3f(SELECTED_COLOR[0], SELECTED_COLOR[1], SELECTED_COLOR[2]);
+				} else {
+					gl.glColor3f(1f, 0.25f, 0.6f);
+				}
+				gl.glBegin(GL2.GL_LINE_STRIP);
+				open = true;
+				currentPath = pathOf(r);
+			}
+			/* A segment along the surface: the path from the previous point */
+			double[][] drape = pointDrapes.get(i);
+			if (drape != null) {
+				for (int k = 1; k < drape.length - 1; k++) {
+					vertex(gl, bounds, flip, drape[k]);
+				}
+			}
 			vertex(gl, bounds, flip, r);
 		}
-		gl.glEnd();
-		/* A marker only for the points without a triangle (volume) */
-		gl.glPointSize(6);
-		gl.glBegin(GL2.GL_POINTS);
-		for (int i = 0; i < points.size(); i++) {
-			if (pointTriangles.get(i) == null) {
-				vertex(gl, bounds, flip, points.get(i));
+		if (open) {
+			gl.glEnd();
+		}
+		/*
+		 * A marker for every point (also on the surface: the picked triangle alone is
+		 * hardly visible on a fine mesh, e.g., the first point before a line is drawn),
+		 * round with a dark outline
+		 */
+		float scale = pixelScale > 0 ? pixelScale : 1;
+		gl.glEnable(GL2.GL_POINT_SMOOTH);
+		gl.glEnable(GL2.GL_BLEND);
+		gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
+		for (int pass = 0; pass < 2; pass++) {
+			gl.glPointSize((pass == 0 ? 11 : 7) * scale);
+			if (pass == 0) {
+				gl.glColor3f(OUTLINE_COLOR[0], OUTLINE_COLOR[1], OUTLINE_COLOR[2]);
+			} else {
+				gl.glColor3f(1f, 0.25f, 0.6f);
+			}
+			gl.glBegin(GL2.GL_POINTS);
+			for (double[] r : points) {
+				vertex(gl, bounds, flip, r);
+			}
+			gl.glEnd();
+		}
+		gl.glPopAttrib();
+		renderHandles(gl, bounds, flip, scale);
+	}
+
+	/* The handles of the selected measurement (squares, like the handles of ImageJ) */
+	private void renderHandles(GL2 gl, double[] bounds, boolean flip, float scale) {
+		List<double[]> handles = new ArrayList<>();
+		if (selectedArea >= 0 && selectedArea < areas.size()) {
+			handles.addAll(areas.get(selectedArea).controls);
+		} else if (selectedPoint >= 0 && selectedPoint < points.size()) {
+			handles.add(points.get(selectedPoint));
+		} else if (selectedPath >= 0) {
+			for (double[] p : points) {
+				if (pathOf(p) == selectedPath && kindOf(p) == selectedKind) {
+					handles.add(p);
+				}
 			}
 		}
-		gl.glEnd();
+		if (handles.isEmpty()) {
+			return;
+		}
+		gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT | GL2.GL_POINT_BIT);
+		gl.glDisable(GL2.GL_LIGHTING);
+		gl.glDisable(GL2.GL_TEXTURE_2D);
+		gl.glDisable(GL2.GL_TEXTURE_3D);
+		gl.glDisable(GL2.GL_DEPTH_TEST);
+		gl.glDisable(GL2.GL_POINT_SMOOTH);
+		for (int pass = 0; pass < 2; pass++) {
+			gl.glPointSize((pass == 0 ? 10 : 7) * scale);
+			if (pass == 0) {
+				gl.glColor3f(OUTLINE_COLOR[0], OUTLINE_COLOR[1], OUTLINE_COLOR[2]);
+			} else {
+				gl.glColor3f(SELECTED_COLOR[0], SELECTED_COLOR[1], SELECTED_COLOR[2]);
+			}
+			gl.glBegin(GL2.GL_POINTS);
+			for (double[] r : handles) {
+				vertex(gl, bounds, flip, r);
+			}
+			gl.glEnd();
+		}
+		/* The active point (deleted with the Delete key) */
+		double[] active = null;
+		Handle h = activeHandle;
+		if (h != null && h.area >= 0 && h.area < areas.size() && h.control < areas.get(h.area).controls.size()) {
+			active = areas.get(h.area).controls.get(h.control);
+		} else if (h != null && h.point >= 0 && h.point < points.size()) {
+			active = points.get(h.point);
+		}
+		if (active != null) {
+			gl.glPointSize(7 * scale);
+			gl.glColor3f(ACTIVE_COLOR[0], ACTIVE_COLOR[1], ACTIVE_COLOR[2]);
+			gl.glBegin(GL2.GL_POINTS);
+			vertex(gl, bounds, flip, active);
+			gl.glEnd();
+		}
 		gl.glPopAttrib();
 	}
 

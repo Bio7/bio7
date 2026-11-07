@@ -71,6 +71,10 @@ public class VolumeRenderer {
 	private float zScale = 1.0f;
 	private int maxSize = 256;
 	private boolean lutColors = true;
+	/* The selected values (see setSelection), of the loaded stack and its voxels which are not selected */
+	private ValueSelection selection = ValueSelection.ALL;
+	private ValueSelection activeSelection = ValueSelection.ALL;
+	private java.util.BitSet hidden;
 
 	/**
 	 * Loads a stack (the current channel and frame of a hyperstack) as a volume.
@@ -109,6 +113,9 @@ public class VolumeRenderer {
 
 		byte[] values = new byte[tw * th * td];
 		int[] colors = null;
+		/* Only the selected values (e.g., the threshold of the image or labels) are displayed */
+		ValueSelection active = selection.resolve(imp);
+		java.util.BitSet notSelected = active.isAll() ? null : new java.util.BitSet(values.length);
 		int index = 0;
 		for (int z = 0; z < td; z++) {
 			int slice = Math.min(d, z * stepZ + 1);
@@ -119,6 +126,14 @@ public class VolumeRenderer {
 				for (int x = 0; x < tw; x++) {
 					int px = x * stepX;
 					int intensity;
+					if (notSelected != null) {
+						double raw = rgb ? IsoSurface.luminance(ip.getPixel(px, py))
+								: ip instanceof ij.process.DoubleProcessor ? ((ij.process.DoubleProcessor) ip).getd(px, py)
+										: ip.getf(px, py);
+						if (!active.contains(raw)) {
+							notSelected.set(index);
+						}
+					}
 					if (rgb) {
 						int color = ip.getPixel(px, py);
 						intensity = (int) Math.round(0.299 * ((color >> 16) & 0xff) + 0.587 * ((color >> 8) & 0xff)
@@ -145,6 +160,8 @@ public class VolumeRenderer {
 		}
 		intensities = values;
 		rgbColors = colors;
+		hidden = notSelected;
+		activeSelection = active;
 		valueMin = colors != null ? 0 : min;
 		valueMax = colors != null ? 255 : max;
 		lutTable = lut;
@@ -189,8 +206,14 @@ public class VolumeRenderer {
 		/* The removed voxels (transparent) */
 		Clipping.Mask mask = clipping != null ? clipping.getMask() : null;
 		bakedMask = mask;
+		java.util.BitSet notSelected = hidden;
 		int w = texWidth, h = texHeight, d = texDepth;
 		for (int i = 0; i < values.length; i++) {
+			/* Not a selected value (transparent) */
+			if (notSelected != null && notSelected.get(i)) {
+				buffer.putInt(0);
+				continue;
+			}
 			if (mask != null) {
 				int x = i % w, y = (i / w) % h, z = i / (w * h);
 				if (mask.isRemoved((x + 0.5) / w, (y + 0.5) / h, (z + 0.5) / d)) {
@@ -279,6 +302,40 @@ public class VolumeRenderer {
 		}
 	}
 
+	/**
+	 * Sets the values of the stack which are displayed (used by the next load, a
+	 * loaded stack is loaded again): ValueSelection.ALL (the default),
+	 * ValueSelection.IMAGE_THRESHOLD (the values in the threshold of the image in
+	 * ImageJ, e.g., only the particles), a range of values (ValueSelection.range)
+	 * or the labels of a segmentation (ValueSelection.labels). The other voxels
+	 * are transparent.
+	 *
+	 * @param selection the selection (null = all values)
+	 */
+	public void setSelection(ValueSelection selection) {
+		boolean loaded;
+		synchronized (this) {
+			this.selection = selection != null ? selection : ValueSelection.ALL;
+			loaded = image != null && intensities != null;
+		}
+		if (loaded) {
+			reload();
+		}
+	}
+
+	/** Returns the selection of the values (see setSelection). */
+	public synchronized ValueSelection getSelection() {
+		return selection;
+	}
+
+	/**
+	 * Returns the selection of the loaded stack (e.g., the range of the threshold
+	 * of the image) or ValueSelection.ALL.
+	 */
+	public synchronized ValueSelection getActiveSelection() {
+		return intensities != null ? activeSelection : ValueSelection.ALL;
+	}
+
 	/** Returns the loaded ImageJ image or null. */
 	public synchronized ImagePlus getImage() {
 		return intensities != null ? image : null;
@@ -365,6 +422,8 @@ public class VolumeRenderer {
 		voxels = null;
 		intensities = null;
 		rgbColors = null;
+		hidden = null;
+		activeSelection = ValueSelection.ALL;
 		image = null;
 		upload = true;
 	}
@@ -628,7 +687,8 @@ public class VolumeRenderer {
 		}
 		String title = image != null ? image.getTitle() : "";
 		return title + ": " + (int) width + " x " + (int) height + " x " + image.getNSlices() + " (Texture: "
-				+ texWidth + " x " + texHeight + " x " + texDepth + ")";
+				+ texWidth + " x " + texHeight + " x " + texDepth + ")"
+				+ (activeSelection.isAll() ? "" : ", " + activeSelection);
 	}
 
 	public synchronized float getWidth() {

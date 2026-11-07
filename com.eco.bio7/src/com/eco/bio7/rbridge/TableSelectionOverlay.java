@@ -33,8 +33,8 @@ import com.eco.bio7.themes.ThemeStore;
 /**
  * Draws the selection of a sheet of the Bio7 table like a spreadsheet (e.g.,
  * LibreOffice): a border around the selected cells (also several separate
- * ranges, selected with Ctrl/Cmd or Shift), a light fill and a handle at the
- * lower right corner of each range. The color is the accent color of the
+ * ranges, selected with Ctrl/Cmd or Shift) and a light fill (no fill handle:
+ * the table has no function to fill cells by dragging). The color is the accent color of the
  * active custom theme (the icon color), a blue for the light theme or a grey
  * for the dark theme.
  */
@@ -153,14 +153,6 @@ public final class TableSelectionOverlay {
 			}
 			if (!selected.contains(key(p.x + 1, p.y))) {
 				gc.drawLine(x1, y0, x1, y1);
-			}
-			/* The handle at the lower right corner of a range */
-			if (!selected.contains(key(p.x + 1, p.y)) && !selected.contains(key(p.x, p.y + 1)) && !selected.contains(key(p.x + 1, p.y + 1))) {
-				/* A square with a border of the background color */
-				gc.setBackground(grid.getBackground());
-				gc.fillRectangle(x1 - 4, y1 - 4, 9, 9);
-				gc.setBackground(c);
-				gc.fillRectangle(x1 - 3, y1 - 3, 7, 7);
 			}
 		}
 		gc.setAlpha(255);

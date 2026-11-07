@@ -2443,6 +2443,15 @@ public class Options3d extends ViewPart {
 			}
 		});
 
+		VolumeRenderer selectionVolume = volumeRenderer();
+		createSelectionControls(compositeVolume, selectionVolume != null ? selectionVolume.getSelection() : null, selection -> {
+			VolumeRenderer volume = volumeRenderer();
+			if (volume != null) {
+				volume.setSelection(selection);
+				infoLabel.setText(volume.getInfo());
+			}
+		}, infoLabel);
+
 		final Button showButton = new Button(compositeVolume, SWT.CHECK);
 		showButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		showButton.setText("Show Volume");
@@ -2683,6 +2692,29 @@ public class Options3d extends ViewPart {
 			}
 		});
 
+		/* With a selection of the values the iso value is not used */
+		final Runnable showIsoValue = () -> {
+			IsoSurface iso = isoSurface();
+			boolean all = iso == null || iso.getActiveSelection().isAll() && iso.getSelection().isAll();
+			isoValueScale.setEnabled(all);
+			if (!all) {
+				isoValueLabel.setText("Iso Value: (selected values)");
+			} else if (iso != null && iso.getImage() != null) {
+				isoValueLabel.setText("Iso Value: " + String.format("%.4g", iso.getIsoValue()));
+			}
+		};
+		for (org.eclipse.swt.widgets.Control c : createSelectionControls(compositeIso,
+				current != null ? current.getSelection() : null, selection -> {
+					IsoSurface iso = isoSurface();
+					if (iso != null) {
+						iso.setSelection(selection);
+						infoLabel.setText(iso.getInfo());
+						showIsoValue.run();
+					}
+				}, infoLabel)) {
+			c.moveAbove(isoValueLabel);
+		}
+
 		final Button showButton = new Button(compositeIso, SWT.CHECK);
 		showButton.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
 		showButton.setText("Show Surface");
@@ -2763,6 +2795,7 @@ public class Options3d extends ViewPart {
 					double range = max > min ? max - min : 1;
 					isoValueScale.setSelection((int) Math.round((iso.getIsoValue() - min) / range * 1000));
 					isoValueLabel.setText("Iso Value: " + String.format("%.4g", iso.getIsoValue()));
+					showIsoValue.run();
 				}
 			}
 		});
@@ -3089,6 +3122,268 @@ public class Options3d extends ViewPart {
 		Button plotView = plotViewCheck(compositeIso, "A 3D plot of the iso surface: the grids at the sides of the box behind the data (with the XY grid)\nand the axes with the numbers (in the calibrated units of the stack) at the front edges.\nThe grid planes can be selected in the Space tab. The setting is stored.", true);
 		plotView.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 		scrollIso.setMinSize(200, Math.max(600, compositeIso.computeSize(SWT.DEFAULT, SWT.DEFAULT).y));
+	}
+
+	/*
+	 * The selection of the values of a stack (volume, iso surface): all values,
+	 * the threshold of the image in ImageJ or a list of labels. Returns the
+	 * created controls (e.g., to move them).
+	 */
+	private static org.eclipse.swt.widgets.Control[] createSelectionControls(Composite parent, ValueSelection current,
+			java.util.function.Consumer<ValueSelection> apply, Label infoLabel) {
+		final Label label = new Label(parent, SWT.NONE);
+		label.setText("Values:");
+		label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		final Combo combo = new Combo(parent, SWT.READ_ONLY);
+		combo.setItems("All Values", "Threshold of the Image", "Labels (List)");
+		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		combo.setToolTipText("The values of the stack which are displayed:\nAll Values: the whole stack (default)."
+				+ "\nThreshold of the Image: only the values in the threshold of the image in ImageJ (Image > Adjust > Threshold),"
+				+ " e.g., only the particles; set the threshold, then load the stack."
+				+ "\nLabels (List): only the voxels with the listed values of a segmentation (label image).");
+		final Text labels = new Text(parent, SWT.BORDER | SWT.SINGLE);
+		labels.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		labels.setMessage("Labels, e.g., 1, 5, 10-20 (Enter applies)");
+		labels.setToolTipText("The labels (values) of a segmentation: values and ranges separated by commas, e.g., 1, 5, 10-20."
+				+ "\nEnter applies the labels.");
+		if (current != null && current.isLabels()) {
+			combo.select(2);
+			labels.setText(current.toString().replaceFirst("^Labels ", ""));
+		} else {
+			combo.select(current != null && current.isImageThreshold() ? 1 : 0);
+		}
+		labels.setEnabled(combo.getSelectionIndex() == 2);
+		final Runnable update = () -> {
+			int index = combo.getSelectionIndex();
+			labels.setEnabled(index == 2);
+			if (index == 0) {
+				apply.accept(ValueSelection.ALL);
+			} else if (index == 1) {
+				apply.accept(ValueSelection.IMAGE_THRESHOLD);
+			} else if (!labels.getText().trim().isEmpty()) {
+				try {
+					apply.accept(ValueSelection.labels(labels.getText()));
+				} catch (IllegalArgumentException ex) {
+					infoLabel.setText(ex.getMessage());
+				}
+			} else {
+				infoLabel.setText("Enter the labels, e.g., 1, 5, 10-20 (Enter applies)!");
+			}
+		};
+		combo.addListener(SWT.Selection, e -> update.run());
+		labels.addListener(SWT.DefaultSelection, e -> update.run());
+		return new org.eclipse.swt.widgets.Control[] { label, combo, labels };
+	}
+
+	/* The icon of the info button of the measurement tools */
+	private static final int INFO_ICON = -100;
+
+	/* The open info window of the measurement tools (only one) */
+	private Shell measureInfoShell;
+
+	/* The explanation of the mouse functions for the measurements */
+	private static final String[][] MEASURE_TOOLS_INFO = {
+			{ "Rotate", "The left mouse button rotates the view (no measurement)." },
+			{ "Straight Line", "Click the start and the end on the surface, or press at the start and drag to the end. "
+					+ "Measured: the length. Results: table \"3D Points\"." },
+			{ "Segmented Line", "Click points on the surface: each click adds a point to the line (the distance to the previous point "
+					+ "and the length of the line). A double-click ends the line, the next click starts a new line. "
+					+ "Results: table \"3D Points\"." },
+			{ "Lines Follow the Surface", "Off (the default): the lines are straight in 3D between the points, also through the air "
+					+ "or through an object. On: each new segment of a straight or a segmented line follows the visible surface between "
+					+ "its points (like a path on a terrain: the surface under the screen line from point to point) and is measured "
+					+ "along the surface. Rotate the view so that the path is visible; a gap or an edge is bridged by a straight "
+					+ "segment. The column \"Type\" shows \"(Surface)\" for these lines." },
+			{ "Fit Spline (Lines and Areas)", "The segmented lines, polygons and freehand areas are fitted with a smooth "
+					+ "spline through the points (like \"Fit Spline\" of ImageJ) and measured along the spline (on the surface if "
+					+ "\"Lines Follow the Surface\" is selected; polygons and freehand areas always on the surface). A freehand area "
+					+ "is reduced to control points (about every 15 pixels). The column \"Type\" shows \"(Spline)\"." },
+			{ "Editing (Handles)", "A finished line, angle, polygon or freehand area is selected (yellow, square handles): "
+					+ "drag a handle over the surface, the measurement is measured again and the row of the table is updated (an "
+					+ "area in the current view). With the Rotate tool, press on a point of any measurement (also a single point) "
+					+ "to select and move it (elsewhere the mouse rotates the view). Selecting \"Fit Spline\" changes the selected "
+					+ "line or area. A click elsewhere ends the selection." },
+			{ "Adding and Deleting Points", "Shift + click on the surface adds a point to the selected segmented line, polygon "
+					+ "or freehand area (between the two points of the nearest segment; drag it while the button is pressed). "
+					+ "Delete (or Backspace) deletes the active point (red: the last pressed or added point), Shift + Delete the "
+					+ "selected measurement. A line with fewer than 2 points, an area with fewer than 3 points, a straight line "
+					+ "or an angle is deleted as a whole. The measurement is measured again and the tables are updated." },
+			{ "Angle", "Click three points on the surface, the second point is the vertex. Measured: the angle in 3D between "
+					+ "the straight directions from the vertex to the other points (0 – 180°). Results: column \"Angle\" of the "
+					+ "table \"3D Points\" (in the row of the third point)." },
+			{ "Point", "Each click measures a single point on the surface: the position, the value and the object. "
+					+ "Results: table \"3D Points\"." },
+			{ "Polygon", "Click the corners on the surface. A double-click or a click on the first corner closes the polygon. "
+					+ "Measured: the perimeter, the polygon area (flat, in the plane of the view) and the area of the surface inside "
+					+ "of the polygon (marked in cyan). Results: table \"3D Areas\"." },
+			{ "Freehand", "Press the mouse button and drag around an area on the surface, releasing the button closes the outline. "
+					+ "Measured like the polygon." },
+			{ "Volume", "Click on an object: the volume of the object (the objects are measured if necessary; without its cavities). "
+					+ "Click on the inner wall of a closed cavity: the volume of the cavity (cut the object open with the clipping box "
+					+ "or plane so that the inner wall is visible; the column \"Object\" is the enclosing object). Drag an outline: "
+					+ "the volume inside of the outline through the whole depth of the stack (all voxels above the iso value, "
+					+ "within the clipping), marked in amber. Results: table \"3D Areas\"." },
+			{ "While a tool is selected", "Alt (Option) + drag or space + drag rotates the view, the measurement continues. "
+					+ "The middle mouse button moves and the right mouse button zooms the view as usual. Escape switches the tool off "
+					+ "(Rotate). An unfinished line or polygon is continued when its tool is selected again." },
+			{ "Notes", "The surface area is the area of the visible surface (facing the view): rotate the view so that the area "
+					+ "faces you. The values are in the units of the calibration of the stack. \"Clear Points and Areas\" removes "
+					+ "all points and areas, \"Decimals of the Tables\" sets the digits of the tables." } };
+
+	/* Shows (or brings to the front) the window with the explanation of the mouse functions */
+	private void showMeasureToolsInfo(org.eclipse.swt.widgets.Control near) {
+		if (measureInfoShell != null && !measureInfoShell.isDisposed()) {
+			measureInfoShell.setActive();
+			return;
+		}
+		Shell shell = new Shell(near.getShell(), SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MODELESS);
+		shell.setText("Measuring with the Mouse");
+		shell.setLayout(new GridLayout(1, false));
+		org.eclipse.swt.custom.StyledText text = new org.eclipse.swt.custom.StyledText(shell,
+				SWT.MULTI | SWT.WRAP | SWT.READ_ONLY | SWT.V_SCROLL);
+		text.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		text.setMargins(8, 8, 8, 8);
+		text.setLineSpacing(2);
+		StringBuilder content = new StringBuilder();
+		java.util.List<org.eclipse.swt.custom.StyleRange> bold = new java.util.ArrayList<>();
+		for (String[] entry : MEASURE_TOOLS_INFO) {
+			if (content.length() > 0) {
+				content.append("\n\n");
+			}
+			org.eclipse.swt.custom.StyleRange range = new org.eclipse.swt.custom.StyleRange();
+			range.start = content.length();
+			range.length = entry[0].length();
+			range.fontStyle = SWT.BOLD;
+			bold.add(range);
+			content.append(entry[0]).append("\n").append(entry[1]);
+		}
+		/* The colors of the theme (the colors of the Measure tab, also dark) */
+		text.setBackground(near.getParent().getBackground());
+		text.setForeground(near.getParent().getForeground());
+		shell.setBackground(near.getParent().getBackground());
+		text.setText(content.toString());
+		text.setStyleRanges(bold.toArray(new org.eclipse.swt.custom.StyleRange[0]));
+		Button close = new Button(shell, SWT.PUSH);
+		close.setText("Close");
+		close.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
+		close.addListener(SWT.Selection, e -> shell.close());
+		shell.setDefaultButton(close);
+		shell.setSize(460, 560);
+		/* Next to the tool bar (on the monitor of the tool bar) */
+		org.eclipse.swt.graphics.Point p = near.toDisplay(0, 0);
+		org.eclipse.swt.graphics.Rectangle area = near.getMonitor().getClientArea();
+		int x = p.x + near.getSize().x + 8;
+		if (x + 460 > area.x + area.width) {
+			x = Math.max(area.x, p.x - 460 - 8);
+		}
+		int y = Math.max(area.y, Math.min(p.y - 280, area.y + area.height - 560));
+		shell.setLocation(x, y);
+		measureInfoShell = shell;
+		shell.open();
+	}
+
+	/*
+	 * The icon of a measurement tool (20 x 20 points, every zoom of the display):
+	 * drawn black on white and used as the alpha of the color of the text (also for
+	 * the dark theme)!
+	 */
+	private static Image measureToolIcon(Display display, int tool, RGB color) {
+		return new Image(display, (org.eclipse.swt.graphics.ImageDataProvider) zoom -> {
+			int size = Math.max(20, Math.round(20 * zoom / 100f));
+			float k = size / 20f;
+			Image canvas = new Image(display, size, size);
+			org.eclipse.swt.graphics.GC gc = new org.eclipse.swt.graphics.GC(canvas);
+			gc.setAntialias(SWT.ON);
+			gc.setBackground(display.getSystemColor(SWT.COLOR_WHITE));
+			gc.fillRectangle(0, 0, size, size);
+			gc.setForeground(display.getSystemColor(SWT.COLOR_BLACK));
+			gc.setBackground(display.getSystemColor(SWT.COLOR_BLACK));
+			gc.setLineWidth(Math.max(1, Math.round(1.6f * k)));
+			gc.setLineCap(SWT.CAP_ROUND);
+			gc.setLineJoin(SWT.JOIN_ROUND);
+			switch (tool) {
+			case INFO_ICON:
+				/* Info: an "i" in a circle */
+				gc.drawOval(Math.round(2 * k), Math.round(2 * k), Math.round(16 * k), Math.round(16 * k));
+				gc.fillOval(Math.round(8.8f * k), Math.round(5 * k), Math.round(2.4f * k), Math.round(2.4f * k));
+				gc.setLineWidth(Math.max(1, Math.round(2.2f * k)));
+				gc.drawLine(Math.round(10 * k), Math.round(9.5f * k), Math.round(10 * k), Math.round(14.5f * k));
+				break;
+			case Clipping.TOOL_NONE: {
+				/* Rotate: a circular arrow */
+				gc.drawArc(Math.round(3 * k), Math.round(3 * k), Math.round(14 * k), Math.round(14 * k), 120, 270);
+				int tx = Math.round(5.2f * k), ty = Math.round(4.6f * k);
+				gc.fillPolygon(new int[] { tx - Math.round(3.5f * k), ty - Math.round(1.5f * k), tx + Math.round(2.5f * k),
+						ty - Math.round(2.5f * k), tx + Math.round(0.5f * k), ty + Math.round(3.5f * k) });
+				break;
+			}
+			case Clipping.TOOL_STRAIGHT:
+				gc.drawLine(Math.round(3 * k), Math.round(16 * k), Math.round(17 * k), Math.round(4 * k));
+				gc.fillOval(Math.round(1.5f * k), Math.round(14.5f * k), Math.round(3.5f * k), Math.round(3.5f * k));
+				gc.fillOval(Math.round(15.5f * k), Math.round(2.5f * k), Math.round(3.5f * k), Math.round(3.5f * k));
+				break;
+			case Clipping.TOOL_PICK: {
+				/* The segmented line: a polyline with the points */
+				int[] xy = { Math.round(3 * k), Math.round(15 * k), Math.round(8 * k), Math.round(6 * k), Math.round(12 * k),
+						Math.round(13 * k), Math.round(17 * k), Math.round(4 * k) };
+				gc.drawPolyline(xy);
+				for (int i = 0; i < xy.length; i += 2) {
+					gc.fillOval(xy[i] - Math.round(1.6f * k), xy[i + 1] - Math.round(1.6f * k), Math.round(3.2f * k),
+							Math.round(3.2f * k));
+				}
+				break;
+			}
+			case Clipping.TOOL_ANGLE:
+				/* The angle: two arms from the vertex and an arc */
+				gc.drawPolyline(new int[] { Math.round(17 * k), Math.round(4 * k), Math.round(3 * k), Math.round(16 * k),
+						Math.round(18 * k), Math.round(16 * k) });
+				gc.drawArc(Math.round(-4 * k), Math.round(9 * k), Math.round(14 * k), Math.round(14 * k), 0, 41);
+				break;
+			case Clipping.TOOL_POINT:
+				gc.drawLine(Math.round(10 * k), Math.round(2 * k), Math.round(10 * k), Math.round(7 * k));
+				gc.drawLine(Math.round(10 * k), Math.round(13 * k), Math.round(10 * k), Math.round(18 * k));
+				gc.drawLine(Math.round(2 * k), Math.round(10 * k), Math.round(7 * k), Math.round(10 * k));
+				gc.drawLine(Math.round(13 * k), Math.round(10 * k), Math.round(18 * k), Math.round(10 * k));
+				gc.fillOval(Math.round(8 * k), Math.round(8 * k), Math.round(4 * k), Math.round(4 * k));
+				break;
+			case Clipping.TOOL_POLYGON:
+				gc.drawPolygon(new int[] { Math.round(3 * k), Math.round(15 * k), Math.round(6 * k), Math.round(4 * k),
+						Math.round(16 * k), Math.round(5 * k), Math.round(17 * k), Math.round(14 * k), Math.round(9 * k),
+						Math.round(17 * k) });
+				break;
+			case Clipping.TOOL_FREEHAND: {
+				org.eclipse.swt.graphics.Path path = new org.eclipse.swt.graphics.Path(display);
+				path.moveTo(4 * k, 11 * k);
+				path.cubicTo(3 * k, 4 * k, 12 * k, 1 * k, 15 * k, 5 * k);
+				path.cubicTo(19 * k, 9 * k, 15 * k, 13 * k, 14 * k, 15 * k);
+				path.cubicTo(12 * k, 19 * k, 5 * k, 18 * k, 4 * k, 11 * k);
+				gc.drawPath(path);
+				path.dispose();
+				break;
+			}
+			default:
+				/* The volume: a cube */
+				int a = Math.round(3 * k), b = Math.round(13 * k), o = Math.round(4 * k), t = Math.round(7 * k);
+				gc.drawRectangle(a, t, b - a, b - a);
+				gc.drawPolyline(new int[] { a, t, a + o, t - o, b + o, t - o, b + o, t - o + (b - a), b, t + (b - a) });
+				gc.drawLine(b, t, b + o, t - o);
+				break;
+			}
+			gc.dispose();
+			org.eclipse.swt.graphics.ImageData drawn = canvas.getImageData();
+			canvas.dispose();
+			org.eclipse.swt.graphics.ImageData icon = new org.eclipse.swt.graphics.ImageData(size, size, 24,
+					new org.eclipse.swt.graphics.PaletteData(0xFF0000, 0xFF00, 0xFF));
+			int pixel = (color.red << 16) | (color.green << 8) | color.blue;
+			for (int y = 0; y < size; y++) {
+				for (int x = 0; x < size; x++) {
+					RGB rgb = drawn.palette.getRGB(drawn.getPixel(x, y));
+					icon.setPixel(x, y, pixel);
+					icon.setAlpha(x, y, 255 - (rgb.red + rgb.green + rgb.blue) / 3);
+				}
+			}
+			return icon;
+		});
 	}
 
 	private static IsoSurface isoSurface() {
@@ -3731,46 +4026,199 @@ public class Options3d extends ViewPart {
 			}
 		});
 
-		final Button pickButton = new Button(compositeMeasure, SWT.CHECK);
-		pickButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-		pickButton.setText("Pick Points with the Mouse (Ruler)");
-		pickButton.setToolTipText(
-				"A click on the iso surface or the volume adds a point (position, value and distance) to the table");
+		/* The measurement tools of the mouse (like the tools of ImageJ): line, point, polygon, freehand, volume */
+		Label toolsLabel = new Label(compositeMeasure, SWT.NONE);
+		toolsLabel.setText("Measure with the Mouse:");
+		toolsLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		final org.eclipse.swt.widgets.ToolBar toolBar = new org.eclipse.swt.widgets.ToolBar(compositeMeasure, SWT.FLAT | SWT.WRAP);
+		toolBar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		final int[] toolIds = { Clipping.TOOL_NONE, Clipping.TOOL_STRAIGHT, Clipping.TOOL_PICK, Clipping.TOOL_ANGLE,
+				Clipping.TOOL_POINT, Clipping.TOOL_POLYGON, Clipping.TOOL_FREEHAND, Clipping.TOOL_VOLUME };
+		final String[] toolTips = { "Rotate: the mouse rotates the view (no measurement). With a measurement tool: Alt (Option) or space + drag rotates, Escape switches the tool off",
+				"Straight line: click the start and the end on the surface (or drag) – the length (straight or along the surface)",
+				"Segmented line: click points on the surface – distances and length (a double-click ends the line; straight or along the surface)",
+				"Angle: click three points on the surface, the second point is the vertex – the angle in 3D",
+				"Point: click on the surface – position, value and object of each point",
+				"Polygon: click the corners on the surface, a double-click (or a click on the first corner) closes it – perimeter, polygon area and surface area",
+				"Freehand: drag around an area on the surface – perimeter, polygon area and surface area",
+				"Volume: click on an object – its volume; click on the inner wall of a cavity (cut open with the clipping) – the volume of the cavity; drag an outline – the volume inside of the outline (the whole depth)" };
+		final String rotateHint = " Alt (Option) or space + drag rotates the view, Escape switches the tool off.";
+		final String[] toolInfo = { "Rotate: the mouse rotates the view. An unfinished line, angle or polygon is continued when its tool is selected again.",
+				"Straight line: click the start and the end on the surface (or drag from the start to the end). The results are in the table \"3D Points\"." + rotateHint,
+				"Segmented line: click points on the surface (a double-click ends the line). The results are in the table \"3D Points\"." + rotateHint,
+				"Angle: click three points on the surface, the second point is the vertex. The angle is in the table \"3D Points\"." + rotateHint,
+				"Point: click on the surface. The results are in the table \"3D Points\"." + rotateHint,
+				"Polygon: click the corners on the surface; a double-click or a click on the first corner closes the polygon. The results are in the table \"3D Areas\"." + rotateHint,
+				"Freehand: drag around an area on the surface. The results are in the table \"3D Areas\"." + rotateHint,
+				"Volume: click on an object (its volume) or drag an outline (the volume inside of the outline, the whole depth). The results are in the table \"3D Areas\"." + rotateHint };
+		final org.eclipse.swt.widgets.ToolItem[] toolItems = new org.eclipse.swt.widgets.ToolItem[toolIds.length];
 		final Clipping[] observed = new Clipping[1];
 		final Runnable[] toolListener = new Runnable[1];
+		final int[] shownTool = { Integer.MIN_VALUE };
+		/* Shows the selected tool (also if it is changed in the 3D view, e.g., with Escape, or by a script) */
+		final Runnable showTool = () -> {
+			if (toolBar.isDisposed() || observed[0] == null) {
+				return;
+			}
+			int tool = observed[0].getTool();
+			for (int i = 0; i < toolItems.length; i++) {
+				toolItems[i].setSelection(tool == toolIds[i]);
+			}
+			/* The info only for a changed tool (the clipping also changes for other reasons, the results stay visible) */
+			if (tool != shownTool[0]) {
+				boolean first = shownTool[0] == Integer.MIN_VALUE;
+				shownTool[0] = tool;
+				for (int i = 0; i < toolIds.length && !first; i++) {
+					if (tool == toolIds[i]) {
+						infoLabel.setText(toolInfo[i]);
+						infoLabel.getParent().layout();
+					}
+				}
+			}
+		};
 		toolListener[0] = () -> {
-			if (pickButton.isDisposed()) {
+			if (toolBar.isDisposed()) {
 				if (observed[0] != null) {
 					observed[0].removeChangeListener(toolListener[0]);
 				}
 				return;
 			}
-			pickButton.getDisplay().asyncExec(() -> {
-				if (!pickButton.isDisposed() && observed[0] != null) {
-					pickButton.setSelection(observed[0].getTool() == Clipping.TOOL_PICK);
+			toolBar.getDisplay().asyncExec(showTool);
+		};
+		final Runnable observe = () -> {
+			Clipping clip = SpatialUtil.getClipping();
+			if (clip != null && observed[0] != clip) {
+				if (observed[0] != null) {
+					observed[0].removeChangeListener(toolListener[0]);
+				}
+				observed[0] = clip;
+				clip.addChangeListener(toolListener[0]);
+			}
+		};
+		for (int i = 0; i < toolIds.length; i++) {
+			final int index = i;
+			/* Radio items: one click switches between rotating (the first item) and measuring */
+			final org.eclipse.swt.widgets.ToolItem item = new org.eclipse.swt.widgets.ToolItem(toolBar, SWT.RADIO);
+			item.setToolTipText(toolTips[i]);
+			toolItems[i] = item;
+			item.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(final SelectionEvent e) {
+					if (!item.getSelection()) {
+						return;
+					}
+					observe.run();
+					Clipping clip = observed[0];
+					if (clip == null) {
+						item.setSelection(index == 0);
+						toolItems[0].setSelection(true);
+						return;
+					}
+					clip.setTool(toolIds[index]);
+					shownTool[0] = toolIds[index];
+					infoLabel.setText(toolInfo[index]);
+					infoLabel.getParent().layout();
+					if (toolIds[index] != Clipping.TOOL_NONE) {
+						/* The 3D view gets the focus: the first click is a measurement (not only the activation of the view) */
+						SpatialStructure view = SpatialStructure.getSpatialStructureInstance();
+						if (view != null) {
+							view.focusView();
+						}
+					}
 				}
 			});
-		};
-		pickButton.addSelectionListener(new SelectionAdapter() {
+		}
+		/* The info button: an explanation of the mouse functions (a window that can stay open while measuring) */
+		new org.eclipse.swt.widgets.ToolItem(toolBar, SWT.SEPARATOR);
+		final org.eclipse.swt.widgets.ToolItem infoItem = new org.eclipse.swt.widgets.ToolItem(toolBar, SWT.PUSH);
+		infoItem.setToolTipText("How to measure with the mouse");
+		infoItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				Clipping clip = SpatialUtil.getClipping();
-				if (clip == null) {
-					return;
+				showMeasureToolsInfo(toolBar);
+			}
+		});
+		observe.run();
+		if (observed[0] != null) {
+			showTool.run();
+		} else {
+			toolItems[0].setSelection(true);
+		}
+		/* A new 3D view (a new clipping): the selection is updated when the tool bar is shown again */
+		toolBar.addListener(SWT.Show, e -> {
+			observe.run();
+			showTool.run();
+		});
+		/* The icons in the color of the text of the theme (known when the tool bar is painted, also after a change of the theme) */
+		final RGB[] iconColor = new RGB[1];
+		final Image[] icons = new Image[toolIds.length + 1];
+		Runnable updateIcons = () -> {
+			RGB rgb = toolsLabel.getForeground().getRGB();
+			if (rgb.equals(iconColor[0])) {
+				return;
+			}
+			iconColor[0] = rgb;
+			for (int i = 0; i < icons.length; i++) {
+				Image old = icons[i];
+				if (i < toolIds.length) {
+					icons[i] = measureToolIcon(toolBar.getDisplay(), toolIds[i], rgb);
+					toolItems[i].setImage(icons[i]);
+				} else {
+					icons[i] = measureToolIcon(toolBar.getDisplay(), INFO_ICON, rgb);
+					infoItem.setImage(icons[i]);
 				}
-				if (observed[0] != clip) {
-					observed[0] = clip;
-					clip.addChangeListener(toolListener[0]);
+				if (old != null) {
+					old.dispose();
 				}
-				clip.setTool(pickButton.getSelection() ? Clipping.TOOL_PICK : Clipping.TOOL_NONE);
-				if (pickButton.getSelection()) {
-					infoLabel.setText("Click on the iso surface or the volume (the left mouse button).");
+			}
+			toolBar.getParent().layout(true, true);
+		};
+		updateIcons.run();
+		toolBar.addListener(SWT.Paint, e -> updateIcons.run());
+		toolBar.addDisposeListener(e -> {
+			for (Image icon : icons) {
+				if (icon != null) {
+					icon.dispose();
 				}
 			}
 		});
+		/* The lines (straight and segmented) follow the surface or are straight in 3D */
+		final Button followButton = new Button(compositeMeasure, SWT.CHECK);
+		followButton.setText("Lines Follow the Surface");
+		followButton.setToolTipText("The straight and the segmented lines follow the visible surface (like a path on a terrain), "
+				+ "the distances are measured along the surface. Off: straight lines in 3D (the default).");
+		followButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		Measurement3d followMeasurement = SpatialUtil.getMeasurement();
+		followButton.setSelection(followMeasurement != null && followMeasurement.isFollowSurface());
+		followButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Measurement3d measurement = SpatialUtil.getMeasurement();
+				if (measurement != null) {
+					measurement.setFollowSurface(followButton.getSelection());
+				}
+			}
+		});
+		/* The segmented lines, polygons and freehand areas are fitted with a spline */
+		final Button splineButton = new Button(compositeMeasure, SWT.CHECK);
+		splineButton.setText("Fit Spline (Lines and Areas)");
+		splineButton.setToolTipText("The segmented lines, polygons and freehand areas are fitted with a spline (like \"Fit Spline\" of ImageJ),"
+				+ "\nmeasured along the spline. A selected line or area is changed and measured again.");
+		splineButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		Measurement3d splineMeasurement = SpatialUtil.getMeasurement();
+		splineButton.setSelection(splineMeasurement != null && splineMeasurement.isFitSpline());
+		splineButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Measurement3d measurement = SpatialUtil.getMeasurement();
+				boolean on = splineButton.getSelection();
+				if (measurement != null) {
+					/* A selected area is measured again (in the background) */
+					new Thread(() -> measurement.setFitSpline(on), "Fit Spline").start();
+				}
+			}
+		});
+
 		final Button clearButton = new Button(compositeMeasure, SWT.PUSH);
 		clearButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-		clearButton.setText("Clear Points");
-		clearButton.setToolTipText("Removes the picked points (the next point starts a new sheet)");
+		clearButton.setText("Clear Points and Areas");
+		clearButton.setToolTipText("Removes the measured points and areas (the next measurements start new sheets)");
 		clearButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				Measurement3d measurement = SpatialUtil.getMeasurement();
