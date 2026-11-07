@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon: fit the column widths to the content (a column with a double arrow) -->
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="16" height="16" viewBox="0 0 16 16">
+  <rect x="1" y="1" width="2" height="14" rx="0.6" style="fill:#638d43;fill-opacity:1" />
+  <rect x="13" y="1" width="2" height="14" rx="0.6" style="fill:#638d43;fill-opacity:1" />
+  <path d="M 4,8 L 7,5 L 7,7 L 9,7 L 9,5 L 12,8 L 9,11 L 9,9 L 7,9 L 7,11 Z" style="fill:#638d43;fill-opacity:1" />
+</svg>
