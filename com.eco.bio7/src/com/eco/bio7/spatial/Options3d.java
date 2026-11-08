@@ -3472,7 +3472,8 @@ public class Options3d extends ViewPart {
 			{ "Editing (Handles)", "A finished line, angle, polygon or freehand area is selected (yellow, square handles): "
 					+ "drag a handle over the surface, the measurement is measured again and the row of the table is updated (an "
 					+ "area in the current view). With the Rotate tool, press on a point of any measurement (also a single point) "
-					+ "to select and move it (elsewhere the mouse rotates the view). Selecting \"Fit Spline\" changes the selected "
+					+ "to select and move it; a click inside an area or on a line selects the whole measurement (dragging rotates the view). "
+					+ "\"Show Numbers\" shows the rows of the tables at the measurements. Selecting \"Fit Spline\" changes the selected "
 					+ "line or area. A click elsewhere ends the selection." },
 			{ "Cutting the Surface Open", "The Surface Eraser (tool bar) removes the visible triangles under the brush while "
 					+ "dragging; \"Remove Surface of the Area\" removes the surface of the selected area (else of the last area: a "
@@ -4203,6 +4204,24 @@ public class Options3d extends ViewPart {
 			}
 		});
 
+		/* The sheets of the centroid and the surface distance matrices (optional) */
+		final Button matricesButton = new Button(compositeMeasure, SWT.CHECK);
+		matricesButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		matricesButton.setText("Show Distance Matrices (Centroid, Surface)");
+		matricesButton.setToolTipText("Measure Distances also opens the sheets of the centroid and the surface distance matrices\n"
+				+ "(for up to " + Measurement3d.MAX_CENTROID_MATRIX + " and " + Measurement3d.MAX_SURFACE_MATRIX
+				+ " objects). Off: only the sheet of the nearest neighbors.");
+		Measurement3d matricesMeasurement = SpatialUtil.getMeasurement();
+		matricesButton.setSelection(matricesMeasurement != null && matricesMeasurement.isShowDistanceMatrices());
+		matricesButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Measurement3d measurement = SpatialUtil.getMeasurement();
+				if (measurement != null) {
+					measurement.setShowDistanceMatrices(matricesButton.getSelection());
+				}
+			}
+		});
+
 		/* All matrices (any number of objects) as files: the tables show them for up to 500 and 150 objects */
 		final Button matrixFilesButton = new Button(compositeMeasure, SWT.CHECK);
 		matrixFilesButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
@@ -4217,7 +4236,7 @@ public class Options3d extends ViewPart {
 		distanceButton.setLayoutData(gd_distanceButton);
 		distanceButton.setText("Measure Distances (Nearest Neighbors)");
 		distanceButton.setToolTipText(
-				"Nearest neighbors of the objects (centroids and surfaces edge to edge), the distance matrices and the Clark-Evans index");
+				"Nearest neighbors of the objects (centroids and surfaces edge to edge) and the Clark-Evans index\n(the distance matrices with \"Show Distance Matrices\")");
 		distanceButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				Measurement3d measurement = SpatialUtil.getMeasurement();
@@ -4505,6 +4524,24 @@ public class Options3d extends ViewPart {
 				if (measurement != null) {
 					/* A selected area is measured again (in the background) */
 					new Thread(() -> measurement.setFitSpline(on), "Fit Spline").start();
+				}
+			}
+		});
+
+		/* The numbers of the measurements (the rows of the tables) */
+		final Button numbersButton = new Button(compositeMeasure, SWT.CHECK);
+		numbersButton.setText("Show Numbers");
+		numbersButton.setToolTipText("Shows the numbers of the measurements: the row of an area in the table \"3D Areas\" (green)"
+				+ "\nand the row of a point in the table \"3D Points\" (blue; a line or an angle: the row of its last point)."
+				+ "\nThe number of the selected measurement is yellow.");
+		numbersButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		Measurement3d numbersMeasurement = SpatialUtil.getMeasurement();
+		numbersButton.setSelection(numbersMeasurement != null && numbersMeasurement.isShowNumbers());
+		numbersButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				Measurement3d measurement = SpatialUtil.getMeasurement();
+				if (measurement != null) {
+					measurement.setShowNumbers(numbersButton.getSelection());
 				}
 			}
 		});

@@ -558,9 +558,25 @@ public class SpatialUtil {
 	}
 
 	/**
-	 * Returns if the split panel is drawn.
+	 * Returns true while the first view of a frame is drawn: the main view (false
+	 * for the small view of the split view and for the second eye of the stereo
+	 * view). Something which should be done once per frame (e.g., an overlay) can
+	 * be guarded with it. A step of a model is guarded already with canStep (true
+	 * only in the first view of a frame).
 	 * 
-	 * @return a boolean value.
+	 * @return true while the first view of a frame is drawn
+	 */
+	public static boolean isMainViewDrawing() {
+		SpatialStructure struc = SpatialStructure.getSpatialStructureInstance();
+		return struc == null || struc.isFirstViewPass();
+	}
+
+	/**
+	 * Returns true while the small view of the split view is drawn (false without
+	 * the split view). Something which should be drawn only in the main view
+	 * (e.g., an overlay) can be skipped with it.
+	 * 
+	 * @return true while the small view is drawn
 	 */
 	public static boolean isSplitPanelDrawing() {
 		boolean splitPanel = false;
@@ -958,7 +974,9 @@ public class SpatialUtil {
 
 	/**
 	 * This method returns a boolean which is triggered by the UI slider to adjust a
-	 * frame rate.
+	 * frame rate. It is true only in the first view of a frame (not again in the
+	 * small view of the split view or for the second eye of the stereo view), so a
+	 * step of a model guarded with it is computed once per frame.
 	 * 
 	 * @return a boolean value.
 	 */

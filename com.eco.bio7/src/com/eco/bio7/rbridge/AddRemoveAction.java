@@ -78,11 +78,11 @@ public class AddRemoveAction extends Action implements IMenuCreator {
 
 		MenuItem menuItem2 = new MenuItem(fMenu, SWT.PUSH);
 
-		menuItem2.setText("Remove Selected Row(s)");
+		menuItem2.setText("Delete Rows");
 
 		MenuItem menuItem3 = new MenuItem(fMenu, SWT.PUSH);
 
-		menuItem3.setText("Remove Selected Column(s)");
+		menuItem3.setText("Delete Columns");
 		new MenuItem(fMenu, SWT.SEPARATOR);
 
 		MenuItem menuItem4 = new MenuItem(fMenu, SWT.PUSH);
@@ -217,10 +217,7 @@ public class AddRemoveAction extends Action implements IMenuCreator {
 			}
 
 			public void widgetSelected(SelectionEvent e) {
-				Grid grid = RTable.getGrid();
-				if (grid != null) {
-					GridHistory.of(grid).recordGrid("Remove Rows", () -> grid.remove(grid.getSelectionIndices()));
-				}
+				deleteRows(RTable.getGrid());
 			}
 
 			public void widgetDefaultSelected(SelectionEvent e) {
@@ -234,35 +231,7 @@ public class AddRemoveAction extends Action implements IMenuCreator {
 			}
 
 			public void widgetSelected(SelectionEvent e) {
-				Grid grid = RTable.getGrid();
-
-				if (grid != null) {
-					if(grid.getCellSelection()!=null){
-					Point[] sel = grid.getCellSelection();
-                    if (sel.length>0){
-					/*
-					 * If the header is selected we must avoid to get all
-					 * selections in a column. We can calculate the selected x
-					 * coordinates (columns) from each unique y-coordinate (the
-					 * first available!)
-					 */
-					int colNrCurrent = sel[0].y;
-					/* The selected columns, removed from the right so that the indices stay valid! */
-					java.util.TreeSet<Integer> columns = new java.util.TreeSet<Integer>(java.util.Collections.reverseOrder());
-					for (int i = 0; i < sel.length; i++) {
-						if (colNrCurrent == sel[i].y) {
-							columns.add(sel[i].x);
-						}
-					}
-					GridHistory.of(grid).recordGrid("Remove Columns", () -> {
-						for (int column : columns) {
-							grid.getColumn(column).dispose();
-						}
-						renameColumnsSorted(grid);
-					});
-					}
-					}
-				}
+				deleteColumns(RTable.getGrid());
 			}
 
 			public void widgetDefaultSelected(SelectionEvent e) {
@@ -311,6 +280,67 @@ public class AddRemoveAction extends Action implements IMenuCreator {
 	public Menu getMenu(Menu parent) {
 
 		return null;
+	}
+
+	/**
+	 * Deletes the rows of the selected cells of a sheet (undoable). In a sheet of
+	 * measurements (e.g., "3D Points") the measurements of the rows are removed
+	 * (see RTable.ROWS_REMOVED).
+	 * 
+	 * @param grid the sheet
+	 */
+	public static void deleteRows(Grid grid) {
+		if (grid == null || grid.isDisposed()) {
+			return;
+		}
+		int[] rows = grid.getSelectionIndices();
+		if (rows == null || rows.length == 0) {
+			return;
+		}
+		/* A sheet of measurements: the measurements of the rows are removed (the sheet is updated) */
+		if (grid.getData(RTable.ROWS_REMOVED) instanceof java.util.function.Consumer<?> owner) {
+			@SuppressWarnings("unchecked")
+			java.util.function.Consumer<int[]> remove = (java.util.function.Consumer<int[]>) owner;
+			remove.accept(rows);
+			return;
+		}
+		GridHistory.of(grid).recordGrid("Delete Rows", () -> grid.remove(rows));
+	}
+
+	/**
+	 * Deletes the columns of the selected cells of a sheet (undoable). The columns
+	 * of a sheet of measurements are not deleted (the columns of the values).
+	 * 
+	 * @param grid the sheet
+	 */
+	public static void deleteColumns(Grid grid) {
+		if (grid == null || grid.isDisposed() || grid.getData(RTable.ROWS_REMOVED) != null) {
+			return;
+		}
+		Point[] sel = grid.getCellSelection();
+		if (sel == null || sel.length == 0) {
+			return;
+		}
+		/* The selected columns (all rows), removed from the right so that the indices stay valid! */
+		java.util.TreeSet<Integer> columns = new java.util.TreeSet<Integer>(java.util.Collections.reverseOrder());
+		for (Point p : sel) {
+			columns.add(p.x);
+		}
+		GridHistory.of(grid).recordGrid("Delete Columns", () -> {
+			for (int column : columns) {
+				if (column < grid.getColumnCount()) {
+					grid.getColumn(column).dispose();
+				}
+			}
+			renameColumns(grid);
+		});
+	}
+
+	/* The titles of the columns again (A, B, C, ...) */
+	private static void renameColumns(Grid grid) {
+		for (int i = 0; i < grid.getColumnCount(); i++) {
+			grid.getColumn(i).setText(Bio7Grid.columnName(i));
+		}
 	}
 
 	private void renameColumnsSorted(Grid grid) {

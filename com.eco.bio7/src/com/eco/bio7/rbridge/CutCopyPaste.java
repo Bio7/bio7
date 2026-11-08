@@ -198,6 +198,15 @@ public class CutCopyPaste {
 	private void delete(String label) {
 		Grid grid = RTable.getGrid();
 
+		/*
+		 * A sheet of measurements (e.g., "3D Points"): the texts show the
+		 * measurements, the measurements of the selected rows are removed
+		 */
+		if (grid != null && grid.getData(RTable.ROWS_REMOVED) != null) {
+			AddRemoveAction.deleteRows(grid);
+			return;
+		}
+
 		if (grid != null) {
 			Point[] sel = grid.getCellSelection();
 			if (sel == null || sel.length == 0) {

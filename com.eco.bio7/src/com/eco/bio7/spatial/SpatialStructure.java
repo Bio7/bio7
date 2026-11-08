@@ -289,6 +289,8 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	/* The vertical speed of the flythrough (see the Camera tab) */
 	public double heightSpeed = 0.1;
 	private boolean isSplitPanelDrawing;
+	/* False while the second view of a frame is drawn (the small split view or the second eye of the stereo view) */
+	private volatile boolean firstViewPass = true;
 	public double spatialExtent = 100000.0f;// The perspective variable
 	private static int renderImageTo = 500;
 	private static int multiplyDragCameraSpeed = 1;
@@ -839,13 +841,17 @@ public class SpatialStructure implements KeyListener, MouseListener {
 
 				gl.glLoadIdentity();
 				isSplitPanelDrawing = true;
+				/* The second view of the frame: no step of the model, no move of the walkthrough */
+				firstViewPass = false;
 				views(drawable, 2);
+				firstViewPass = true;
 				/* Render the results to an image or to images! */
 				// renderImages();
 
 			}
 
 			else {// The view - not splitted!
+				isSplitPanelDrawing = false;
 
 				if (stereo) {
 
@@ -859,7 +865,10 @@ public class SpatialStructure implements KeyListener, MouseListener {
 					gl.glViewport(0, 0, width, height);
 					gl.glScissor(0, 0, width, height);
 					gl.glLoadIdentity();
+					/* The second eye of the frame: no step of the model, no move of the walkthrough */
+					firstViewPass = false;
 					views(drawable, 0);
+					firstViewPass = true;
 
 				} else {
 					gl.glColorMask(true, true, true, true);
@@ -1023,8 +1032,8 @@ public class SpatialStructure implements KeyListener, MouseListener {
 
 			}
 
-			/* We enable a smooth movement! */
-			if (walkthrough) {
+			/* We enable a smooth movement! (once per frame, not again in the second view) */
+			if (walkthrough && firstViewPass) {
 				if (forward) {
 					xCameraPosition += xStep * SPEED;
 					zCameraPosition += zStep * SPEED;
@@ -2534,8 +2543,24 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		}
 	}
 
+	/*
+	 * True if a step is due: only in the first view of a frame (not again in the
+	 * small view of the split view or for the second eye of the stereo view)
+	 */
 	public boolean canStep() {
-		return step;
+		return step && firstViewPass;
+	}
+
+	/**
+	 * Returns true while the first view of a frame is drawn (the main view; false
+	 * for the small view of the split view and for the second eye of the stereo
+	 * view). Things which are done once per frame (e.g., an overlay) can be
+	 * guarded with it.
+	 * 
+	 * @return true for the first view of a frame
+	 */
+	public boolean isFirstViewPass() {
+		return firstViewPass;
 	}
 
 	public void setLightPos1(float x, float y, float z) {

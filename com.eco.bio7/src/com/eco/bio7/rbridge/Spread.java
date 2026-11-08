@@ -115,6 +115,8 @@ class Spread {
 		//grid.setRowHeaderRenderer(new CustomRowHeaderRenderer());
 		final Menu menu = new Menu(grid);
 		grid.setMenu(menu);
+		/* The sheet of this menu */
+		final Grid sheet = grid;
 		Listener sortListener = new Listener() {
 			public void handleEvent(Event e) {
 				GridColumn column = (GridColumn) e.widget;
@@ -209,8 +211,10 @@ class Spread {
 			}
 		});
 
+		new MenuItem(menu, SWT.SEPARATOR);
+		/* Like LibreOffice: Delete Contents (the texts of the cells, also the Delete key), Delete Rows, Delete Columns */
 		final MenuItem newItemMenuItem = new MenuItem(menu, SWT.NONE);
-		newItemMenuItem.setText("Delete");
+		newItemMenuItem.setText("Delete Contents");
 		newItemMenuItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 
@@ -218,6 +222,22 @@ class Spread {
 
 			}
 		});
+		final MenuItem deleteRowsItem = new MenuItem(menu, SWT.NONE);
+		deleteRowsItem.setText("Delete Rows");
+		deleteRowsItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				AddRemoveAction.deleteRows(sheet);
+			}
+		});
+		final MenuItem deleteColumnsItem = new MenuItem(menu, SWT.NONE);
+		deleteColumnsItem.setText("Delete Columns");
+		deleteColumnsItem.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				AddRemoveAction.deleteColumns(sheet);
+			}
+		});
+		/* The columns of a sheet of measurements (e.g., "3D Points") can't be deleted */
+		menu.addListener(SWT.Show, _ -> deleteColumnsItem.setEnabled(sheet.getData(RTable.ROWS_REMOVED) == null));
 
 		grid.setHeaderVisible(true);
 		// Show row header

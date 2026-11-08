@@ -62,6 +62,17 @@ public class RTable extends ViewPart {
 
 	private Action saveFileAction;
 	public static final String ID = "com.eco.bio7.rbridge.RTable"; //$NON-NLS-1$
+	/**
+	 * The data key of a sheet (Grid) for a Runnable which is called when the sheet
+	 * is closed (e.g., the 3D measurements of the sheet are removed).
+	 */
+	public static final String SHEET_CLOSED = "bio7.sheetClosed";
+	/**
+	 * The data key of a sheet (Grid) for a java.util.function.Consumer of int[]
+	 * which removes the selected rows (the indices) instead of the table, e.g.,
+	 * the 3D measurements of the rows (the owner of the sheet updates it).
+	 */
+	public static final String ROWS_REMOVED = "bio7.rowsRemoved";
 	private static Grid grid;
 	private Action getValues;
 	private FileAction fi = new FileAction();
@@ -179,6 +190,14 @@ public class RTable extends ViewPart {
 				item = (CTabItem) event.item;// tabFolder.getSelection();
 				/* Garbage collector can work!!!! */
 				grid = (Grid) event.item.getData();
+				/* The owner of the sheet removes its data (e.g., the 3D measurements) */
+				if (grid != null && grid.getData(SHEET_CLOSED) instanceof Runnable closed) {
+					try {
+						closed.run();
+					} catch (RuntimeException ex) {
+						ex.printStackTrace();
+					}
+				}
 
 				/* Dispose swt colors and images explicitly! */
 				for (int i = 0; i < grid.getItemCount(); i++) {

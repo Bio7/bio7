@@ -114,6 +114,8 @@ public class Measurement3d {
 	private int selectedObject;
 	private int objectCount;
 	private Grid objectGrid;
+	/* The sheet of the nearest neighbor distances of the current objects (see measureDistances) */
+	private Grid distanceGrid;
 	/* The rectangles of the displayed labels (window pixels from the bottom): x0, y0, x1, y1, number */
 	private final List<int[]> labelBounds = new ArrayList<>();
 	/* The lines between the nearest surface points (relative x, y, z of both points) */
@@ -384,8 +386,9 @@ public class Measurement3d {
 			objectColors = colors;
 			objectCount = result.length;
 			selectedObject = 0;
-			/* The sheet of a former measurement doesn't fit the new objects */
+			/* The sheets of a former measurement don't fit the new objects */
 			objectGrid = null;
+			distanceGrid = null;
 			if (highlightObjects) {
 				iso.setObjectColors(colors, display.triangles);
 			}
@@ -434,6 +437,24 @@ public class Measurement3d {
 					objectGrid = grid;
 				}
 				addObjectSelection(grid);
+				/* The sheet closed: the colors and the numbers of the objects are removed (in the UI thread) */
+				Runnable closed = () -> {
+					boolean current;
+					synchronized (this) {
+						current = objectGrid == grid;
+						if (current) {
+							objectGrid = null;
+						}
+					}
+					if (current) {
+						clearObjects();
+					}
+				};
+				Display.getDefault().syncExec(() -> {
+					if (!grid.isDisposed()) {
+						grid.setData(RTable.SHEET_CLOSED, closed);
+					}
+				});
 			}
 		}
 		return result;
@@ -513,7 +534,7 @@ public class Measurement3d {
 	private void selectObject(int number, boolean selectRow) {
 		float[] colors;
 		int[] mesh;
-		Grid grid;
+		Grid grid, distances;
 		synchronized (this) {
 			if (objectColors == null || vertexObject == null || number < 0 || number > objectCount) {
 				return;
@@ -521,6 +542,7 @@ public class Measurement3d {
 			selectedObject = number;
 			mesh = objectMesh;
 			grid = objectGrid;
+			distances = distanceGrid;
 			colors = objectColors;
 			if (number > 0) {
 				/* The other objects are dimmed (mixed with gray) */
@@ -538,39 +560,58 @@ public class Measurement3d {
 			}
 		}
 		iso.setObjectColors(colors, mesh);
-		if (selectRow && grid != null) {
-			Display.getDefault().asyncExec(() -> {
-				if (grid.isDisposed()) {
-					return;
-				}
-				if (number == 0) {
-					grid.deselectAll();
-					return;
-				}
-				int row = number - 1;
-				/* The sheet may have been changed (rows or columns removed) */
-				if (row >= grid.getItemCount() || grid.getColumnCount() == 0) {
-					grid.deselectAll();
-					return;
-				}
-				org.eclipse.swt.graphics.Point[] cells = new org.eclipse.swt.graphics.Point[grid.getColumnCount()];
-				for (int c = 0; c < cells.length; c++) {
-					cells[c] = new org.eclipse.swt.graphics.Point(c, row);
-				}
-				grid.setCellSelection(cells);
-				grid.showItem(grid.getItem(row));
-				/* The sheet of the objects in front */
-				CTabFolder folder = RTable.getTabFolder();
-				if (folder != null && !folder.isDisposed()) {
-					for (org.eclipse.swt.custom.CTabItem item : folder.getItems()) {
-						if (item.getControl() == grid.getParent()) {
-							folder.setSelection(item);
-							RTable.setGrid(grid);
-						}
+		if (selectRow) {
+			/* The row of the objects and of the distances (the distances in front) */
+			if (grid != null) {
+				selectTableRow(grid, number - 1);
+			}
+			if (distances != null) {
+				selectTableRow(distances, number - 1);
+			}
+		}
+	}
+
+	/*
+	 * Selects a row of a sheet of the Bio7 table (all columns, -1 = none), shows it
+	 * and brings the sheet in front (the selection of a measurement in the 3D view)
+	 */
+	private static void selectTableRow(Grid grid, int row) {
+		Display.getDefault().asyncExec(() -> {
+			if (grid == null || grid.isDisposed()) {
+				return;
+			}
+			/* The sheet may have been changed (rows or columns removed) */
+			if (row < 0 || row >= grid.getItemCount() || grid.getColumnCount() == 0) {
+				grid.deselectAll();
+				return;
+			}
+			org.eclipse.swt.graphics.Point[] cells = new org.eclipse.swt.graphics.Point[grid.getColumnCount()];
+			for (int c = 0; c < cells.length; c++) {
+				cells[c] = new org.eclipse.swt.graphics.Point(c, row);
+			}
+			grid.setCellSelection(cells);
+			grid.showItem(grid.getItem(row));
+			CTabFolder folder = RTable.getTabFolder();
+			if (folder != null && !folder.isDisposed()) {
+				for (org.eclipse.swt.custom.CTabItem item : folder.getItems()) {
+					if (item.getControl() == grid.getParent()) {
+						folder.setSelection(item);
+						RTable.setGrid(grid);
 					}
 				}
-			});
-		}
+			}
+			/* The Table view on top of its stack (not activated: the keys still go to the 3D view) */
+			try {
+				org.eclipse.ui.IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+				org.eclipse.ui.IWorkbenchPage page = window != null ? window.getActivePage() : null;
+				org.eclipse.ui.IViewPart table = page != null ? page.findView(RTable.ID) : null;
+				if (table != null && !page.isPartVisible(table)) {
+					page.bringToTop(table);
+				}
+			} catch (RuntimeException e) {
+				/* The workbench is closing */
+			}
+		});
 	}
 
 	/**
@@ -666,6 +707,25 @@ public class Measurement3d {
 	}
 
 	/* ----------------------------- Distances ----------------------------- */
+
+	/* The sheets of the centroid and the surface distance matrices are shown (see measureDistances) */
+	private volatile boolean showDistanceMatrices;
+
+	/**
+	 * Shows the centroid and the surface distance matrices in sheets of the table
+	 * (see measureDistances; off by default: only the sheet of the nearest
+	 * neighbors). The matrices are returned by measureDistances in any case.
+	 * 
+	 * @param show true to show the sheets of the matrices
+	 */
+	public void setShowDistanceMatrices(boolean show) {
+		showDistanceMatrices = show;
+	}
+
+	/** Returns true if the sheets of the distance matrices are shown (see setShowDistanceMatrices). */
+	public boolean isShowDistanceMatrices() {
+		return showDistanceMatrices;
+	}
 
 	/** The columns of the nearest neighbor distances (see measureDistances). */
 	public static final String[] DISTANCE_COLUMNS = { "Nearest (Centroid)", "Centroid Distance", "Nearest (Surface)",
@@ -909,8 +969,9 @@ public class Measurement3d {
 		for (int a = 0; a < n; a++) {
 			if (closest[a] != null && closest[a][0] != null && closest[a][1] != null) {
 				double[] c0 = closest[a][0], c1 = closest[a][1];
+				/* The last value: the object (its row; the line of the selected object is highlighted) */
 				lines.add(new double[] { c0[0] / sizeX, c0[1] / sizeY, c0[2] / sizeZ, c1[0] / sizeX, c1[1] / sizeY,
-						c1[2] / sizeZ });
+						c1[2] / sizeZ, a + 1 });
 			}
 		}
 		synchronized (this) {
@@ -1109,10 +1170,13 @@ public class Measurement3d {
 		table.add(ce);
 		/* The matrices are not created for many objects (the size of the table) */
 		List<String> notes = new ArrayList<>();
-		if (centroid == null) {
+		boolean matrices = showDistanceMatrices;
+		if (!matrices) {
+			/* Without the sheets of the matrices (see setShowDistanceMatrices) */
+		} else if (centroid == null) {
 			notes.add("Centroid distance matrix: only for up to " + MAX_CENTROID_MATRIX + " objects (" + n + " objects)");
 		}
-		if (surface == null) {
+		if (matrices && surface == null) {
 			notes.add("Surface distance matrix: only for up to " + MAX_SURFACE_MATRIX + " objects (" + n + " objects)");
 		}
 		for (String note : notes) {
@@ -1128,15 +1192,41 @@ public class Measurement3d {
 		}
 		Grid grid = showSheet("Distances " + title, header, table, colors);
 		if (grid != null) {
+			synchronized (this) {
+				distanceGrid = grid;
+			}
 			addObjectSelection(grid);
+			/*
+			 * The sheet closed: the distance lines are removed, also the numbers and the
+			 * colors of the objects if no sheet of the objects shows them (Measure
+			 * Distances measures the objects again without a sheet of the objects)
+			 */
+			Runnable closed = () -> {
+				boolean objects = false;
+				synchronized (this) {
+					if (distanceGrid == grid) {
+						distanceGrid = null;
+						distanceLines = null;
+						objects = objectGrid == null || objectGrid.isDisposed();
+					}
+				}
+				if (objects) {
+					clearObjects();
+				}
+			};
+			Display.getDefault().syncExec(() -> {
+				if (!grid.isDisposed()) {
+					grid.setData(RTable.SHEET_CLOSED, closed);
+				}
+			});
 		}
-		if (centroid != null) {
+		if (matrices && centroid != null) {
 			Grid g = showSheet("Centroid Distances " + title, matrixHeader(n), matrixRows(centroid), objectColors(n));
 			if (g != null) {
 				addObjectSelection(g);
 			}
 		}
-		if (surface != null) {
+		if (matrices && surface != null) {
 			Grid g = showSheet("Surface Distances " + title, matrixHeader(n), matrixRows(surface), objectColors(n));
 			if (g != null) {
 				addObjectSelection(g);
@@ -2858,12 +2948,27 @@ public class Measurement3d {
 					editMoved = false;
 					return true;
 				}
+				/*
+				 * A click inside an area or on a line selects the whole measurement (the
+				 * handles are shown); dragging still rotates the view
+				 */
+				Handle whole = findMeasurement(x, y);
 				synchronized (Measurement3d.this) {
 					clearSelection();
+					if (whole != null) {
+						select(whole);
+						/* No active point (Delete deletes the whole measurement) */
+						activeHandle = null;
+					}
 				}
+				if (whole != null) {
+					selectRowOfSelection();
+				}
+				editing = null;
 				return false;
 			}
 			select(handle);
+			selectRowOfSelection();
 			editing = handle;
 			editMoved = false;
 			return true;
@@ -3088,6 +3193,96 @@ public class Measurement3d {
 		}
 	}
 
+	/*
+	 * The measurement at a window position (not only at a handle): a polygon or
+	 * freehand area which contains the position (the smallest one if they overlap)
+	 * or a line or an angle near the position (within 6 points). Null if none.
+	 */
+	private Handle findMeasurement(double x, double y) {
+		Clipping.View view = clipping.view();
+		if (view == null) {
+			return null;
+		}
+		synchronized (this) {
+			if (drawing != null) {
+				return null;
+			}
+			/* A line or an angle near the position (the lines are thin, they have priority) */
+			double best = 6 * lastPixelScale;
+			Handle h = null;
+			for (int i = 1; i < points.size(); i++) {
+				double[] p = points.get(i - 1), q = points.get(i);
+				int kind = kindOf(q);
+				/* Two points of the same line (not the line which is drawn) */
+				if (kind == POINT_SINGLE || kindOf(p) != kind || pathOf(p) != pathOf(q) || pathOf(q) == path) {
+					continue;
+				}
+				double d = segmentDistance(x, y, window2(view, p), window2(view, q));
+				if (d <= best) {
+					best = d;
+					h = new Handle();
+					h.point = i;
+				}
+			}
+			if (h != null) {
+				return h;
+			}
+			/* An area which contains the position */
+			double smallest = Double.MAX_VALUE;
+			for (int i = 0; i < areas.size(); i++) {
+				Area a = areas.get(i);
+				if (a.type != AREA_POLYGON && a.type != AREA_FREEHAND) {
+					continue;
+				}
+				List<double[]> boundary = a.hits.size() >= 3 ? a.hits : a.controls;
+				if (boundary.size() < 3) {
+					continue;
+				}
+				double[] xs = new double[boundary.size()], ys = new double[boundary.size()];
+				boolean visible = true;
+				for (int k = 0; k < boundary.size() && visible; k++) {
+					double[] w = window2(view, boundary.get(k));
+					if (w == null) {
+						visible = false;
+					} else {
+						xs[k] = w[0];
+						ys[k] = w[1];
+					}
+				}
+				if (!visible || !containsPoint(xs, ys, x, y)) {
+					continue;
+				}
+				double size = Math.abs(polygonArea(xs, ys));
+				if (size < smallest) {
+					smallest = size;
+					h = new Handle();
+					h.area = i;
+				}
+			}
+			return h;
+		}
+	}
+
+	/* True if a polygon (window positions) contains the position (even-odd rule) */
+	private static boolean containsPoint(double[] xs, double[] ys, double x, double y) {
+		boolean inside = false;
+		for (int i = 0, j = xs.length - 1; i < xs.length; j = i++) {
+			if ((ys[i] > y) != (ys[j] > y) && x < (xs[j] - xs[i]) * (y - ys[i]) / (ys[j] - ys[i]) + xs[i]) {
+				inside = !inside;
+			}
+		}
+		return inside;
+	}
+
+	/* The signed area of a polygon (window positions) */
+	private static double polygonArea(double[] xs, double[] ys) {
+		double sum = 0;
+		for (int i = 0, j = xs.length - 1; i < xs.length; j = i++) {
+			sum += xs[j] * ys[i] - xs[i] * ys[j];
+		}
+		return sum / 2;
+	}
+
 	/* The distance of a window position to a segment of window positions */
 	private static double segmentDistance(double x, double y, double[] a, double[] b) {
 		if (a == null || b == null) {
@@ -3260,6 +3455,164 @@ public class Measurement3d {
 				pointTriangles.remove(k);
 				pointDrapes.remove(k);
 			}
+		}
+	}
+
+	/*
+	 * A selected row of the sheet "3D Areas" or "3D Points" selects the
+	 * measurement in the 3D view (like the rows of the objects)
+	 */
+	private void addMeasurementSelection(Grid grid, boolean areaSheet) {
+		if (grid == null) {
+			return;
+		}
+		/* The sheet closed: its measurements are removed; rows removed: their measurements */
+		grid.setData(RTable.SHEET_CLOSED, (Runnable) () -> closeSheet(grid, areaSheet));
+		grid.setData(RTable.ROWS_REMOVED, (java.util.function.Consumer<int[]>) rows -> deleteRows(areaSheet, rows));
+		grid.addListener(SWT.Selection, _ -> {
+			org.eclipse.swt.graphics.Point[] cells = grid.getCellSelection();
+			if (cells.length == 0) {
+				return;
+			}
+			int row = cells[0].y;
+			synchronized (Measurement3d.this) {
+				clearSelection();
+				if (areaSheet) {
+					if (row < areas.size()) {
+						selectedArea = row;
+					}
+				} else if (row < points.size()) {
+					double[] p = points.get(row);
+					if (kindOf(p) == POINT_SINGLE) {
+						selectedPoint = row;
+					} else {
+						selectedPath = pathOf(p);
+						selectedKind = kindOf(p);
+					}
+				}
+			}
+		});
+	}
+
+	/*
+	 * The sheet "3D Points" or "3D Areas" has been closed: its measurements are
+	 * removed (the next measurement creates the sheet again)
+	 */
+	private void closeSheet(Grid grid, boolean areaSheet) {
+		synchronized (this) {
+			if (areaSheet) {
+				if (areaGrid != grid) {
+					return;
+				}
+				areas.clear();
+				drawing = null;
+				areaGrid = null;
+			} else {
+				if (pointGrid != grid) {
+					return;
+				}
+				points.clear();
+				pointTriangles.clear();
+				pointDrapes.clear();
+				path++;
+				pointGrid = null;
+			}
+			clearSelection();
+		}
+	}
+
+	/*
+	 * Rows of the sheet "3D Points" or "3D Areas" have been removed (Edit - Remove
+	 * Rows): the measurements of the rows are removed and the sheet is shown again.
+	 * A point of a segmented line is removed from the line (a line with fewer
+	 * than 2 points as a whole), a point of a straight line or an angle removes the
+	 * straight line or the angle.
+	 */
+	private void deleteRows(boolean areaSheet, int[] rows) {
+		if (rows == null || rows.length == 0) {
+			return;
+		}
+		java.util.Set<Integer> rebuild = new java.util.TreeSet<>();
+		synchronized (this) {
+			clearSelection();
+			if (areaSheet) {
+				int[] sorted = rows.clone();
+				java.util.Arrays.sort(sorted);
+				for (int i = sorted.length - 1; i >= 0; i--) {
+					if (sorted[i] >= 0 && sorted[i] < areas.size() && (i == sorted.length - 1 || sorted[i] != sorted[i + 1])) {
+						areas.remove(sorted[i]);
+					}
+				}
+			} else {
+				java.util.Set<Integer> remove = new java.util.TreeSet<>();
+				for (int row : rows) {
+					if (row < 0 || row >= points.size()) {
+						continue;
+					}
+					double[] p = points.get(row);
+					int kind = kindOf(p);
+					if (kind == POINT_SINGLE || kind == POINT_LINE) {
+						remove.add(row);
+						if (kind == POINT_LINE) {
+							rebuild.add(pathOf(p));
+						}
+					} else {
+						for (int k : pathIndices(pathOf(p), kind)) {
+							remove.add(k);
+						}
+					}
+				}
+				/* A segmented line with fewer than 2 points is removed as a whole */
+				for (java.util.Iterator<Integer> it = rebuild.iterator(); it.hasNext();) {
+					int linePath = it.next();
+					int[] idx = pathIndices(linePath, POINT_LINE);
+					int left = 0;
+					for (int k : idx) {
+						if (!remove.contains(k)) {
+							left++;
+						}
+					}
+					if (left < 2) {
+						for (int k : idx) {
+							remove.add(k);
+						}
+						it.remove();
+					}
+				}
+				removePoints(remove.stream().mapToInt(Integer::intValue).toArray());
+			}
+		}
+		if (areaSheet) {
+			refreshAreaTable();
+		} else {
+			for (int linePath : rebuild) {
+				rebuildLine(linePath, POINT_LINE, 1, Integer.MAX_VALUE);
+			}
+			refreshPointTable();
+		}
+	}
+
+	/* The row of the selected measurement in its sheet (a line: the row of its last point) */
+	private void selectRowOfSelection() {
+		Grid grid;
+		int row = -1;
+		synchronized (this) {
+			if (selectedArea >= 0) {
+				grid = areaGrid;
+				row = selectedArea;
+			} else if (selectedPoint >= 0) {
+				grid = pointGrid;
+				row = selectedPoint;
+			} else if (selectedPath >= 0) {
+				grid = pointGrid;
+				int[] idx = pathIndices(selectedPath, selectedKind);
+				row = idx.length > 0 ? idx[idx.length - 1] : -1;
+			} else {
+				return;
+			}
+		}
+		if (grid != null && row >= 0) {
+			selectTableRow(grid, row);
 		}
 	}
 
@@ -4336,6 +4689,7 @@ public class Measurement3d {
 					}
 				}
 				areaGrid = showSheet("3D Areas", areaHeader(), table, null);
+				addMeasurementSelection(areaGrid, true);
 			} else {
 				GridItem item = new GridItem(areaGrid, SWT.NONE);
 				for (int k = 0; k < text.length; k++) {
@@ -4343,6 +4697,8 @@ public class Measurement3d {
 				}
 				areaGrid.showItem(item);
 			}
+			/* The sheet of the areas in front with the row of the new area */
+			selectTableRow(areaGrid, number - 1);
 		});
 	}
 
@@ -4495,6 +4851,7 @@ public class Measurement3d {
 					table.add(pointText(i + 1, all.get(i), i < types.size() ? types.get(i) : ""));
 				}
 				pointGrid = showSheet("3D Points", pointHeader(), table, null);
+				addMeasurementSelection(pointGrid, false);
 			} else {
 				GridItem item = new GridItem(pointGrid, SWT.NONE);
 				for (int k = 0; k < text.length; k++) {
@@ -4502,6 +4859,8 @@ public class Measurement3d {
 				}
 				pointGrid.showItem(item);
 			}
+			/* The sheet of the points in front with the row of the new point */
+			selectTableRow(pointGrid, number - 1);
 		});
 	}
 
@@ -5136,6 +5495,7 @@ public class Measurement3d {
 		renderObjectLabels(gl, bounds, flip, pixelScale);
 		lastPixelScale = pixelScale > 0 ? pixelScale : 1;
 		renderAreas(gl, bounds, flip, cartesian, lastPixelScale);
+		renderMeasurementNumbers(gl, bounds, flip, lastPixelScale);
 		if (points.isEmpty()) {
 			/* The handles of a selected area */
 			renderHandles(gl, bounds, flip, lastPixelScale);
@@ -5273,6 +5633,11 @@ public class Measurement3d {
 		gl.glPopAttrib();
 	}
 
+	/* True if a distance line is the line of the selected object */
+	private static boolean isLineOf(double[] line, int object) {
+		return object > 0 && line.length > 6 && (int) line[6] == object;
+	}
+
 	/* The lines between the nearest surface points of the objects */
 	private void renderDistanceLines(GL2 gl, double[] b, boolean flip) {
 		if (!highlightObjects || distanceLines == null || distanceLines.isEmpty() || !iso.isDisplayed()) {
@@ -5287,22 +5652,322 @@ public class Measurement3d {
 		gl.glDisable(GL2.GL_TEXTURE_2D);
 		gl.glDisable(GL2.GL_TEXTURE_3D);
 		gl.glDisable(GL2.GL_DEPTH_TEST);
-		gl.glColor3f(1f, 1f, 0.2f);
-		gl.glLineWidth(2);
-		gl.glBegin(GL2.GL_LINES);
-		for (double[] l : distanceLines) {
-			vertex(gl, b, flip, l);
-			vertex(gl, b, flip, new double[] { l[3], l[4], l[5] });
+		/* With a selected object: the other lines dimmed, the line of the object on top (wider) */
+		int selected = selectedObject;
+		for (int pass = 0; pass < 2; pass++) {
+			boolean top = pass == 1;
+			if (top && selected <= 0) {
+				break;
+			}
+			if (top) {
+				gl.glColor3f(1f, 0.55f, 0.1f);
+			} else if (selected > 0) {
+				gl.glColor3f(0.65f, 0.65f, 0.35f);
+			} else {
+				gl.glColor3f(1f, 1f, 0.2f);
+			}
+			gl.glLineWidth(top ? 4 : 2);
+			gl.glBegin(GL2.GL_LINES);
+			for (double[] l : distanceLines) {
+				if (top != isLineOf(l, selected)) {
+					continue;
+				}
+				vertex(gl, b, flip, l);
+				vertex(gl, b, flip, new double[] { l[3], l[4], l[5] });
+			}
+			gl.glEnd();
+			gl.glPointSize(top ? 9 : 6);
+			gl.glBegin(GL2.GL_POINTS);
+			for (double[] l : distanceLines) {
+				if (top != isLineOf(l, selected)) {
+					continue;
+				}
+				vertex(gl, b, flip, l);
+				vertex(gl, b, flip, new double[] { l[3], l[4], l[5] });
+			}
+			gl.glEnd();
 		}
-		gl.glEnd();
-		gl.glPointSize(6);
-		gl.glBegin(GL2.GL_POINTS);
-		for (double[] l : distanceLines) {
-			vertex(gl, b, flip, l);
-			vertex(gl, b, flip, new double[] { l[3], l[4], l[5] });
-		}
-		gl.glEnd();
 		gl.glPopAttrib();
+	}
+
+	/* The texture of the digits for the size of the display */
+	private void ensureAtlas(GL2 gl, float pixelScale) {
+		int size = Math.round(13 * Math.max(1, pixelScale));
+		GLContext context = GLContext.getCurrent();
+		if (atlas == null || atlasContext != context || atlas.size != size) {
+			if (atlas != null && atlasContext == context) {
+				atlas.dispose(gl);
+			}
+			atlas = new DigitAtlas(gl, size);
+			atlasContext = context;
+		}
+	}
+
+	/* The numbers of the lines, angles, points and areas (see setShowNumbers) */
+	private volatile boolean showNumbers;
+
+	/**
+	 * Shows the numbers of the measurements in the 3D view: the row of an area in
+	 * the table "3D Areas" (green) and the row of a point in the table "3D Points"
+	 * (blue; for a line or an angle the row of its last point with the length or
+	 * the angle). The number of the selected measurement is yellow.
+	 * 
+	 * @param show true to show the numbers
+	 */
+	public void setShowNumbers(boolean show) {
+		showNumbers = show;
+	}
+
+	/** Returns true if the numbers of the measurements are shown (see setShowNumbers). */
+	public boolean isShowNumbers() {
+		return showNumbers;
+	}
+
+	/*
+	 * The numbers of the measurements (in front of the scene, like the object
+	 * numbers): {relative x, y, z, number, kind (0 = point or line, 1 = area),
+	 * selected, area index}
+	 */
+	private void renderMeasurementNumbers(GL2 gl, double[] b, boolean flip, float pixelScale) {
+		if (!showNumbers || points.isEmpty() && areas.isEmpty()) {
+			return;
+		}
+		List<double[]> labels = new ArrayList<>();
+		for (int i = 0; i < points.size(); i++) {
+			double[] p = points.get(i);
+			int kind = kindOf(p);
+			/* A line or an angle: only at its last point */
+			if (kind != POINT_SINGLE && i + 1 < points.size() && kindOf(points.get(i + 1)) == kind
+					&& pathOf(points.get(i + 1)) == pathOf(p)) {
+				continue;
+			}
+			boolean selected = kind == POINT_SINGLE ? i == selectedPoint : pathOf(p) == selectedPath && kind == selectedKind;
+			labels.add(new double[] { p[0], p[1], p[2], i + 1, 0, selected ? 1 : 0 });
+		}
+		for (int i = 0; i < areas.size(); i++) {
+			Area a = areas.get(i);
+			List<double[]> boundary = a.hits.isEmpty() ? a.controls : a.hits;
+			if (boundary.isEmpty()) {
+				continue;
+			}
+			/* Above the highest point of the outline in the view (not over the area, its handles or an inner area) */
+			labels.add(new double[] { 0, 0, 0, i + 1, 1, i == selectedArea ? 1 : 0, i });
+		}
+		ensureAtlas(gl, pixelScale);
+		double[] mv = new double[16], pr = new double[16];
+		int[] vp = new int[4];
+		gl.glGetDoublev(GL2.GL_MODELVIEW_MATRIX, mv, 0);
+		gl.glGetDoublev(GL2.GL_PROJECTION_MATRIX, pr, 0);
+		gl.glGetIntegerv(GL2.GL_VIEWPORT, vp, 0);
+		double[] matrix = Clipping.multiply(pr, mv);
+		/* {x0, y0, x1, y1, number, kind, selected, the box with the mark x0, y0, x1, y1} in window pixels, the selected labels first */
+		List<int[]> placed = new ArrayList<>();
+		int pad = Math.max(1, Math.round(pixelScale));
+		for (int pass = 0; pass < 2; pass++) {
+			for (double[] l : labels) {
+				boolean selected = l[5] == 1;
+				if (selected != (pass == 0)) {
+					continue;
+				}
+				int number = (int) l[3];
+				int scale = selected ? 3 : 2;
+				int width = atlas.width(number) * scale / 2, height = atlas.cellHeight * scale / 2;
+				int offset = Math.round(6 * pixelScale);
+				/* The space of the mark (the circle, the underline) */
+				int mark = Math.max(2, Math.round(2 * pixelScale));
+				/* The places of the number (window pixels, centers): the first free one is used */
+				List<int[]> candidates = new ArrayList<>();
+				if (l[4] == 1) {
+					/* An area: above, below and right of its outline in the view (not over the area or an inner area) */
+					Area area = areas.get((int) l[6]);
+					List<double[]> boundary = area.hits.isEmpty() ? area.controls : area.hits;
+					double[] top = null, bottom = null, right = null;
+					for (double[] q : boundary) {
+						double[] w = normalized(matrix, b, flip, q);
+						if (w == null) {
+							continue;
+						}
+						if (top == null || w[1] > top[1]) {
+							top = w;
+						}
+						if (bottom == null || w[1] < bottom[1]) {
+							bottom = w;
+						}
+						if (right == null || w[0] > right[0]) {
+							right = w;
+						}
+					}
+					if (top == null) {
+						continue;
+					}
+					int ring = Math.max(width, height) / 2 + 2 * mark;
+					candidates.add(new int[] { wx(top, vp), wy(top, vp) + offset + ring });
+					candidates.add(new int[] { wx(bottom, vp), wy(bottom, vp) - offset - ring });
+					candidates.add(new int[] { wx(right, vp) + offset + ring, wy(right, vp) });
+				} else {
+					/* A point: up right, up left, down right and down left */
+					double[] w = normalized(matrix, b, flip, l);
+					if (w == null) {
+						continue;
+					}
+					int px = wx(w, vp), py = wy(w, vp);
+					candidates.add(new int[] { px + offset + width / 2, py + offset });
+					candidates.add(new int[] { px - offset - width / 2, py + offset });
+					candidates.add(new int[] { px + offset + width / 2, py - offset - height / 2 });
+					candidates.add(new int[] { px - offset - width / 2, py - offset - height / 2 });
+				}
+				int[] chosen = null;
+				for (int[] cand : candidates) {
+					if (cand[0] < -vp[2] / 10 || cand[0] > vp[2] * 11 / 10 || cand[1] < -vp[3] / 10 || cand[1] > vp[3] * 11 / 10) {
+						continue;
+					}
+					int x0 = cand[0] - width / 2, y0 = cand[1] - height / 2;
+					/*
+					 * The text and the space of its mark (7 - 10): the circle of an area number,
+					 * the underline of a point number
+					 */
+					int radius = Math.max(width, height) / 2 + 2 * mark;
+					int[] r = l[4] == 1
+							? new int[] { x0, y0, x0 + width, y0 + height, number, 1, selected ? 1 : 0, cand[0] - radius,
+									cand[1] - radius, cand[0] + radius, cand[1] + radius }
+							: new int[] { x0, y0, x0 + width, y0 + height, number, 0, selected ? 1 : 0, x0 - mark, y0 - 3 * mark,
+									x0 + width + mark, y0 + height };
+					boolean free = true;
+					for (int[] q : placed) {
+						if (r[7] < q[9] - pad && r[9] > q[7] + pad && r[8] < q[10] - pad && r[10] > q[8] + pad) {
+							free = false;
+							break;
+						}
+					}
+					if (free) {
+						chosen = r;
+						break;
+					}
+					if (selected && chosen == null) {
+						/* The selected number always (at its first place if no place is free) */
+						chosen = r;
+					}
+				}
+				if (chosen != null) {
+					placed.add(chosen);
+				}
+			}
+		}
+		gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT | GL2.GL_COLOR_BUFFER_BIT | GL2.GL_TEXTURE_BIT
+				| GL2.GL_DEPTH_BUFFER_BIT | GL2.GL_LINE_BIT);
+		gl.glMatrixMode(GL2.GL_PROJECTION);
+		gl.glPushMatrix();
+		gl.glLoadIdentity();
+		gl.glOrtho(0, vp[2], 0, vp[3], -1, 1);
+		gl.glMatrixMode(GL2.GL_MODELVIEW);
+		gl.glPushMatrix();
+		gl.glLoadIdentity();
+		gl.glDisable(GL2.GL_LIGHTING);
+		gl.glDisable(GL2.GL_DEPTH_TEST);
+		gl.glDisable(GL2.GL_CULL_FACE);
+		gl.glDisable(GL2.GL_TEXTURE_3D);
+		gl.glDisable(GL2.GL_CLIP_PLANE0);
+		gl.glEnable(GL2.GL_TEXTURE_2D);
+		gl.glEnable(GL2.GL_BLEND);
+		gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
+		gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_MODULATE);
+		gl.glBindTexture(GL2.GL_TEXTURE_2D, atlas.texture);
+		gl.glBegin(GL2.GL_QUADS);
+		for (int pass = 0; pass < 2; pass++) {
+			for (int[] r : placed) {
+				if ((r[6] == 1) != (pass == 1)) {
+					continue;
+				}
+				numberColor(gl, r);
+				String text = String.valueOf(r[4]);
+				float scale = r[6] == 1 ? 1.5f : 1f;
+				float x = r[0];
+				float h = atlas.cellHeight * scale;
+				for (int k = 0; k < text.length(); k++) {
+					int digit = text.charAt(k) - '0';
+					float w = atlas.cellWidth * scale;
+					float u0 = digit * atlas.u, u1 = (digit + 1) * atlas.u, v1 = atlas.v;
+					gl.glTexCoord2f(u0, v1);
+					gl.glVertex2f(x, r[1]);
+					gl.glTexCoord2f(u1, v1);
+					gl.glVertex2f(x + w, r[1]);
+					gl.glTexCoord2f(u1, 0);
+					gl.glVertex2f(x + w, r[1] + h);
+					gl.glTexCoord2f(u0, 0);
+					gl.glVertex2f(x, r[1] + h);
+					x += atlas.advance * scale;
+				}
+			}
+		}
+		gl.glEnd();
+		gl.glBindTexture(GL2.GL_TEXTURE_2D, 0);
+		/* The marks: a circle around an area number, an underline below a point number (dark outline, then the color) */
+		gl.glDisable(GL2.GL_TEXTURE_2D);
+		float scale = Math.max(1f, pixelScale);
+		for (int outline = 0; outline < 2; outline++) {
+			for (int[] r : placed) {
+				/* The half width of the mark (wider for the selected number), the outline 1 pixel more */
+				float half = (r[6] == 1 ? 1.1f : 0.8f) * scale + (outline == 0 ? scale : 0);
+				if (outline == 0) {
+					gl.glColor4f(0.05f, 0.05f, 0.1f, 0.85f);
+				} else {
+					numberColor(gl, r);
+				}
+				if (r[5] == 1) {
+					/* A ring (filled between two circles: no gaps of wide lines) */
+					float cx = (r[7] + r[9]) / 2f, cy = (r[8] + r[10]) / 2f, radius = (r[9] - r[7]) / 2f - 2 * scale;
+					gl.glBegin(GL2.GL_TRIANGLE_STRIP);
+					for (int k = 0; k <= 48; k++) {
+						double t = 2 * Math.PI * k / 48;
+						double cos = Math.cos(t), sin = Math.sin(t);
+						gl.glVertex2d(cx + (radius - half) * cos, cy + (radius - half) * sin);
+						gl.glVertex2d(cx + (radius + half) * cos, cy + (radius + half) * sin);
+					}
+					gl.glEnd();
+				} else {
+					/* An underline (a thin rectangle below the number) */
+					float y = r[1] - 2 * scale;
+					gl.glBegin(GL2.GL_QUADS);
+					gl.glVertex2f(r[0] - (outline == 0 ? scale : 0), y - half);
+					gl.glVertex2f(r[2] + (outline == 0 ? scale : 0), y - half);
+					gl.glVertex2f(r[2] + (outline == 0 ? scale : 0), y + half);
+					gl.glVertex2f(r[0] - (outline == 0 ? scale : 0), y + half);
+					gl.glEnd();
+				}
+			}
+		}
+		gl.glMatrixMode(GL2.GL_PROJECTION);
+		gl.glPopMatrix();
+		gl.glMatrixMode(GL2.GL_MODELVIEW);
+		gl.glPopMatrix();
+		gl.glPopAttrib();
+	}
+
+	/* The color of a measurement number: selected yellow, an area green, a point blue */
+	private static void numberColor(GL2 gl, int[] r) {
+		if (r[6] == 1) {
+			gl.glColor4f(1f, 0.9f, 0.1f, 1f);
+		} else if (r[5] == 1) {
+			gl.glColor4f(0.55f, 1f, 0.55f, 1f);
+		} else {
+			gl.glColor4f(0.55f, 0.85f, 1f, 1f);
+		}
+	}
+
+	/* The window pixels of normalized device coordinates */
+	private static int wx(double[] n, int[] vp) {
+		return (int) Math.round((n[0] + 1) / 2 * vp[2]);
+	}
+
+	private static int wy(double[] n, int[] vp) {
+		return (int) Math.round((n[1] + 1) / 2 * vp[3]);
+	}
+
+	/* The normalized device coordinates of a relative position (null if behind the camera) */
+	private static double[] normalized(double[] matrix, double[] b, boolean flip, double[] r) {
+		double y = flip ? b[2] + r[1] * (b[3] - b[2]) : b[3] - r[1] * (b[3] - b[2]);
+		double[] c = Clipping.transform(matrix, new double[] { b[0] + r[0] * (b[1] - b[0]), y, b[4] + r[2] * (b[5] - b[4]), 1 });
+		return c[3] <= 0 ? null : new double[] { c[0] / c[3], c[1] / c[3] };
 	}
 
 	/*
@@ -5319,15 +5984,7 @@ public class Measurement3d {
 		if (m == null || m.triangles != objectMesh || !iso.isDisplayed()) {
 			return;
 		}
-		int size = Math.round(13 * Math.max(1, pixelScale));
-		GLContext context = GLContext.getCurrent();
-		if (atlas == null || atlasContext != context || atlas.size != size) {
-			if (atlas != null && atlasContext == context) {
-				atlas.dispose(gl);
-			}
-			atlas = new DigitAtlas(gl, size);
-			atlasContext = context;
-		}
+		ensureAtlas(gl, pixelScale);
 		double[] mv = new double[16], pr = new double[16];
 		int[] vp = new int[4];
 		gl.glGetDoublev(GL2.GL_MODELVIEW_MATRIX, mv, 0);
