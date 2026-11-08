@@ -1,216 +1,144 @@
-
-/*
- * Original author of this class: Andrew Davison (Pro Java 6 3D Game Development). 
- * Adapted and slightly changed for Bio7.
- * 
- */
+/*******************************************************************************
+ * Copyright (c) 2007-2026 M. Austenfeld
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *     M. Austenfeld
+ *******************************************************************************/
 
 package com.eco.bio7.spatial;
 
-
 import java.nio.IntBuffer;
+
+import com.jogamp.common.nio.Buffers;
 import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.glu.GLU;
 
-
-import static com.jogamp.opengl.GL2.*; // GL2 constants
-
 /**
- * A custom class to enable 3d selection in the Spatial panel.
- * 
- * @author Bio7
- * 
+ * Picks the object under the mouse in the 3D view (the selection mode of
+ * OpenGL): the objects are drawn between startPicking and endPicking with a
+ * name (glPushName / glPopName), getSelection returns the name of the nearest
+ * object at the mouse position.
+ *
+ * <pre>
+ * pick.startPicking(gl, glu, getPressEvent());
+ * gl.glPushName(100);
+ * glut.glutSolidSphere(20, 10, 10);
+ * gl.glPopName();
+ * pick.endPicking(gl);
+ * int id = pick.getSelection(); // 100 or -1
+ * </pre>
  */
 public class SpatialPicking {
 
-	private int buffSize = 1000;
-	private int xCursor = 0;
-	private int yCursor = 0;
-	private IntBuffer selectBuffer;
-	private int selection;
-	private double mp = 5;// the picking matrix.
+	/* The number of values of the hit records (four values per hit with one name) */
+	private final int bufferSize;
+	/* The size of the picking area around the mouse (pixels) */
+	private final double pickSize;
+	private IntBuffer buffer;
+	private int selection = -1;
 
-	/**
-	 * The default constructor (Buffer size =1000, picking area=5).
-	 */
+	/** Creates a picking with a buffer of 1000 values and a picking area of 5 pixels. */
 	public SpatialPicking() {
-
+		this(1000, 5);
 	}
 
 	/**
-	 * Constructor with arguments of the buffer size and the picking area.
-	 * 
-	 * @param buffSize the size of the buffer as an integer value.
-	 * @param pickArea an integer value for the picking area.
+	 * Creates a picking.
+	 *
+	 * @param buffSize the size of the buffer of the hits (values, four for a hit
+	 *                 with one name)
+	 * @param pickArea the size of the picking area around the mouse (pixels)
 	 */
 	public SpatialPicking(int buffSize, int pickArea) {
-		this.buffSize = buffSize;
-		this.buffSize = pickArea;
+		this.bufferSize = Math.max(16, buffSize);
+		this.pickSize = Math.max(1, pickArea);
 	}
 
 	/**
-	 * A method to indicate the start of the picking.
-	 * 
-	 * @param gl
-	 *            the GL context.
-	 * @param glu
-	 *            the GLU context.
-	 * @param evt
-	 *            the mouse event.
+	 * Starts the picking at the position of a mouse event: the following objects
+	 * are not drawn but tested at the mouse position (until endPicking).
+	 *
+	 * @param gl  the GL context
+	 * @param glu the GLU context
+	 * @param evt the mouse event (pixels of the 3D view from the top left)
 	 */
-	public void startPicking(GL2 gl, GLU glu, MouseEvent evt)
-
-	{
-
-		xCursor = evt.getX();
-		yCursor = evt.getY();
-
-		/* The selection buffer. */
-		//int selectBuf[] = new int[buffSize];
-		//selectBuffer = BufferUtil.newIntBuffer(buffSize);
-		selectBuffer = com.jogamp.common.nio.Buffers.newDirectIntBuffer(buffSize);
-		gl.glSelectBuffer(buffSize, selectBuffer);
-
-		gl.glRenderMode(GL_SELECT); // switch to selection mode
-
-		gl.glInitNames(); // make an empty name stack
-
-		/*
-		 * Redefine the viewing volume so it only renders a small area around
-		 * the place where the mouse was clicked.
-		 */
-
-		// save the original projection matrix
-		gl.glMatrixMode(GL_PROJECTION);
-
+	public void startPicking(GL2 gl, GLU glu, MouseEvent evt) {
+		/* The projection and the viewport of the current view (the picking uses the same projection) */
+		double[] projection = new double[16];
+		gl.glGetDoublev(GLMatrixFunc.GL_PROJECTION_MATRIX, projection, 0);
+		int[] viewport = new int[4];
+		gl.glGetIntegerv(GL.GL_VIEWPORT, viewport, 0);
+		buffer = Buffers.newDirectIntBuffer(bufferSize);
+		gl.glSelectBuffer(bufferSize, buffer);
+		gl.glRenderMode(GL2.GL_SELECT);
+		gl.glInitNames();
+		/* Only a small area around the mouse (the window y axis points down, OpenGL up) */
+		gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
 		gl.glPushMatrix();
 		gl.glLoadIdentity();
-
-		// get the current viewport
-		int viewport[] = new int[4];
-		gl.glGetIntegerv(GL.GL_VIEWPORT, viewport, 0);
-
-		// Create a x*x pixel picking area near the cursor location.
-		glu.gluPickMatrix((double) xCursor, (double) (viewport[3] - yCursor), mp, mp, viewport, 0);
-
-		/*
-		 * The y-value uses an 'inverted' yCursor to transform the y-coordinates
-		 * origin from the upper left corner into the bottom left corner.
-		 */
-
-		/*
-		 * Set projection (perspective or orthogonal) exactly as it is in normal
-		 * rendering (i.e. duplicate the gluPerspective() call in resizeView()).
-		 */
-		glu.gluPerspective(45.0f, (float) SpatialStructure.getSpatialStructureInstance().getWidth() / (float) SpatialStructure.getSpatialStructureInstance().getHeight(), 1.0f, 100000.0f);
-
-		gl.glMatrixMode(GL_MODELVIEW); // restore model view
-	} // End of startPicking()
+		double x = evt.getX();
+		double y = viewport[1] + viewport[3] - evt.getY();
+		glu.gluPickMatrix(x, y, pickSize, pickSize, viewport, 0);
+		gl.glMultMatrixd(projection, 0);
+		gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
+	}
 
 	/**
-	 * A method to indicate the stop of the picking.
-	 * 
-	 * @param gl the GL context.
+	 * Ends the picking: the drawing is normal again, the name of the nearest
+	 * object at the mouse position is the selection (-1 if no object was hit).
+	 *
+	 * @param gl the GL context
 	 */
-	public void endPicking(GL2 gl)
-	/*
-	 * Switch back to normal rendering, and extract 'hit information generated
-	 * because of picking.
-	 */
-	{
-		// restore original projection matrix
-		gl.glMatrixMode(GL_PROJECTION);
+	public void endPicking(GL2 gl) {
+		gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
 		gl.glPopMatrix();
-		gl.glMatrixMode(GL_MODELVIEW);
-		gl.glFlush();
+		gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
+		int hits = gl.glRenderMode(GL2.GL_RENDER);
+		selection = nearest(hits);
+	}
 
-		// return to normal rendering mode, and process hits
-		int numHits = gl.glRenderMode(GL_RENDER);
-		processHits(numHits);
-
-	} // End of endPicking().
-
-	private void processHits(int numHits)
 	/*
-	 * Display all the hit records, and report the name of the 'thing' that was
-	 * picked closest to the viewport.
-	 * 
-	 * Each hit record contains: - the number of different names for the thing
-	 * hit (usually only 1) - minimum and maximum depths of the hit - the names
-	 * for the thing hit (stored on the name stack)
+	 * The name of the nearest hit (the top of its name stack): a hit record is
+	 * {count of names, min depth, max depth, names...}, the depths are unsigned
+	 * integers (0 - 2^32 - 1). A negative number of hits: the buffer was too small.
 	 */
-	{
-		if (numHits == 0)
-			return; // No hits to process.
-
-		// Storage for the name ID closest to the viewport.
-		int selectedNameID = -1; // Dummy initial values.
-		float smallestZ = -1.0f;
-
-		boolean isFirstLoop = true;
-		int offset = 0;
-
-		/*
-		 * Iterate through the hit records, saving the smallest z value.
-		 */
-		for (int i = 0; i < numHits; i++) {
-
-			int numNames = selectBuffer.get(offset);
-			offset++;
-
-			// MinZ and maxZ are taken from the Z buffer.
-			float minZ = getDepth(offset);
-			offset++;
-
-			// Store the smallest z value.
-			if (isFirstLoop) {
-				smallestZ = minZ;
-				isFirstLoop = false;
-			} else {
-				if (minZ < smallestZ)
-					smallestZ = minZ;
-			}
-
-			float maxZ = getDepth(offset);
-			offset++;
-
-			for (int j = 0; j < numNames; j++) {
-				selection = selectBuffer.get(offset);
-
-				if (j == (numNames - 1)) { // If the last one (the top element
-					// on the stack).
-					if (smallestZ == minZ) // Is this the smallest min z?
-						selectedNameID = selection; // Then store it's name ID.
-				}
-
-				offset++;
-			}
-
+	private int nearest(int hits) {
+		if (buffer == null || hits <= 0) {
+			return -1;
 		}
-
-	} // End of processHits()
-
-	private float getDepth(int offset)
-	/*
-	 * A depth is in the range 0 to 1, but is stored after being multiplied by
-	 * 2^32 -1 and rounded to the nearest integer. The number will be negative
-	 * due to the multiplication and being stored as an integer.
-	 */
-	{
-		long depth = (long) selectBuffer.get(offset); // Large -ve number
-		return (1.0f + ((float) depth / 0x7fffffff));
-		// Return as a float between 0 and 1.
-	} // End of getDepth().
+		int name = -1;
+		long nearest = Long.MAX_VALUE;
+		int offset = 0;
+		int limit = buffer.capacity();
+		for (int i = 0; i < hits && offset + 3 <= limit; i++) {
+			int names = buffer.get(offset);
+			long minDepth = buffer.get(offset + 1) & 0xFFFFFFFFL;
+			int first = offset + 3;
+			if (names > 0 && first + names <= limit && minDepth < nearest) {
+				nearest = minDepth;
+				name = buffer.get(first + names - 1);
+			}
+			offset = first + Math.max(0, names);
+		}
+		return name;
+	}
 
 	/**
-	 * A method which returns the selected id from the object.
-	 * 
-	 * @return an integer value representing the selection.
+	 * Returns the name of the nearest object at the mouse position of the last
+	 * picking.
+	 *
+	 * @return the name (see glPushName) or -1 if no object was hit
 	 */
 	public int getSelection() {
 		return selection;
 	}
-
 }

@@ -1,127 +1,103 @@
-
-// ModelDimensions.java
-// Andrew Davison, Novemeber 2006, ad@fivedots.coe.psu.ac.th
-
-/* This class calculates the 'edge' coordinates for the model
-   along its three dimensions. 
-
-   The edge coords are used to calculate the model's:
-      * width, height, depth
-      * its largest dimension (width, height, or depth)
-      * (x, y, z) center point
-*/
+/*******************************************************************************
+ * Copyright (c) 2007-2026 M. Austenfeld
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *     M. Austenfeld
+ *******************************************************************************/
 
 package com.eco.bio7.loader3d;
 
+/**
+ * The bounding box of a mesh model (the smallest and the largest coordinate of
+ * the vertices along x, y and z): the size, the largest side and the center.
+ */
+public class ModelDimensions {
 
-import java.text.DecimalFormat;
+	private final float[] min = new float[3];
+	private final float[] max = new float[3];
+	private boolean empty = true;
 
+	/** Creates empty dimensions (all sizes 0 until a vertex is added). */
+	public ModelDimensions() {
+	}
 
-public class ModelDimensions
-{
-  // edge coordinates
-  private float leftPt, rightPt;   // on x-axis
-  private float topPt, bottomPt;   // on y-axis
-  private float farPt, nearPt;     // on z-axis
+	/**
+	 * Starts the bounding box at a vertex (the former vertices are discarded).
+	 * 
+	 * @param vertex the first vertex
+	 */
+	public void set(Tuple3 vertex) {
+		empty = true;
+		update(vertex);
+	}
 
-  // for reporting
-  private DecimalFormat df = new DecimalFormat("0.##");  // 2 dp
+	/**
+	 * Extends the bounding box to contain a vertex.
+	 * 
+	 * @param vertex a vertex
+	 */
+	public void update(Tuple3 vertex) {
+		float[] v = { vertex.getX(), vertex.getY(), vertex.getZ() };
+		for (int i = 0; i < 3; i++) {
+			if (empty || v[i] < min[i]) {
+				min[i] = v[i];
+			}
+			if (empty || v[i] > max[i]) {
+				max[i] = v[i];
+			}
+		}
+		empty = false;
+	}
 
+	/** Returns the size along x. */
+	public float getWidth() {
+		return max[0] - min[0];
+	}
 
-  public ModelDimensions()
-  {
-    leftPt = 0.0f;  rightPt = 0.0f;
-    topPt = 0.0f;  bottomPt = 0.0f;
-    farPt = 0.0f;  nearPt = 0.0f;
-  }  // end of ModelDimensions()
+	/** Returns the size along y. */
+	public float getHeight() {
+		return max[1] - min[1];
+	}
 
+	/** Returns the size along z. */
+	public float getDepth() {
+		return max[2] - min[2];
+	}
 
-  public void set(Tuple3 vert)
-  // initialize the model's edge coordinates
-  {
-    rightPt = vert.getX();
-    leftPt = vert.getX();
+	/** Returns the largest of the width, the height and the depth. */
+	public float getLargest() {
+		return Math.max(getWidth(), Math.max(getHeight(), getDepth()));
+	}
 
-    topPt = vert.getY();
-    bottomPt = vert.getY();
+	/** Returns the center of the bounding box. */
+	public Tuple3 getCenter() {
+		return new Tuple3((min[0] + max[0]) / 2f, (min[1] + max[1]) / 2f, (min[2] + max[2]) / 2f);
+	}
 
-    nearPt = vert.getZ();
-    farPt = vert.getZ();
-  }  // end of set()
+	/** Returns the smallest coordinates {x, y, z}. */
+	public float[] getMin() {
+		return min.clone();
+	}
 
+	/** Returns the largest coordinates {x, y, z}. */
+	public float[] getMax() {
+		return max.clone();
+	}
 
-  public void update(Tuple3 vert)
-  // update the edge coordinates using vert
-  {
-    if (vert.getX() > rightPt)
-      rightPt = vert.getX();
-    if (vert.getX() < leftPt)
-      leftPt = vert.getX();
-            
-    if (vert.getY() > topPt)
-      topPt = vert.getY();
-    if (vert.getY() < bottomPt)
-      bottomPt = vert.getY();
-            
-    if (vert.getZ() > nearPt)
-      nearPt = vert.getZ();
-    if (vert.getZ() < farPt)
-      farPt = vert.getZ();
- }  // end of update()
-
-
-  // ------------- use the edge coordinates ----------------------------
-
-  public float getWidth()
-  { return (rightPt - leftPt); }
-
-  public float getHeight()
-  {  return (topPt - bottomPt); }
-
-  public float getDepth()
-  { return (nearPt - farPt); } 
-
-
-  public float getLargest()
-  {
-    float height = getHeight();
-    float depth = getDepth();
-
-    float largest = getWidth();
-    if (height > largest)
-      largest = height;
-    if (depth > largest)
-      largest = depth;
-
-    return largest;
-  }  // end of getLargest()
-
-
-  public Tuple3 getCenter()
-  { 
-    float xc = (rightPt + leftPt)/2.0f; 
-    float yc = (topPt + bottomPt)/2.0f;
-    float zc = (nearPt + farPt)/2.0f;
-    return new Tuple3(xc, yc, zc);
-  } // end of getCenter()
-
-
-  public void reportDimensions()
-  {
-    Tuple3 center = getCenter();
-
-    System.out.println("x Coords: " + df.format(leftPt) + " to " + df.format(rightPt));
-    System.out.println("  Mid: " + df.format(center.getX()) + 
-                       "; Width: " + df.format(getWidth()) );
-
-    System.out.println("y Coords: " + df.format(bottomPt) + " to " + df.format(topPt));
-    System.out.println("  Mid: " + df.format(center.getY()) + 
-                       "; Height: " + df.format(getHeight()) );
-
-    System.out.println("z Coords: " + df.format(nearPt) + " to " + df.format(farPt));
-    System.out.println("  Mid: " + df.format(center.getZ()) + 
-                       "; Depth: " + df.format(getDepth()) );
-  }  // end of reportDimensions()
-
-
-}  // end of ModelDimensions class
+	/** Prints the bounding box (the ranges, the centers and the sizes) to the console. */
+	public void reportDimensions() {
+		Tuple3 c = getCenter();
+		String[] axes = { "x", "y", "z" };
+		float[] center = { c.getX(), c.getY(), c.getZ() };
+		float[] size = { getWidth(), getHeight(), getDepth() };
+		for (int i = 0; i < 3; i++) {
+			System.out.println(String.format("%s: %.4g to %.4g, center %.4g, size %.4g", axes[i], min[i], max[i], center[i], size[i]));
+		}
+	}
+}

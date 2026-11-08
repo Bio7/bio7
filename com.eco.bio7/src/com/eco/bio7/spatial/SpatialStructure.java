@@ -11,12 +11,6 @@
  *     M. Austenfeld
  *******************************************************************************/
 
-/*
- *This class uses and also consists of slightly changed sources of Andrew Davison and his book "Pro Java 6 3D Game Development"
- *http://www.apress.com/book/view/1590598172.
- *
- */
-
 package com.eco.bio7.spatial;
 
 import static com.jogamp.opengl.GL.GL_GREATER;
@@ -144,19 +138,12 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	private static boolean reloadModel;// For the model reload!
 	private static boolean walkthrough = false;
 	private static long period = 1000000000L;
-	static double SPEED = 2.0; // For camera movement
-	private final static double lookAtDist = 100.0;
-	private final static double Z_POS = 9.0;
-	private final static double angleIncrement = 5.0;
-	private final static double heightStep = 1.0;
-	private double xCameraPosition, yCameraPosition, zCameraPosition;
-	private double xLookAt, yLookAt, zLookAt;
+	/* The horizontal speed of the walkthrough (see the Camera tab) */
+	static double SPEED = 2.0;
+	/* The camera of the walkthrough and the flythrough */
+	private final WalkCamera walkCamera = new WalkCamera();
 	public double xCamSplit = 0, yCamSplit = 0, zCamSplit = 0;
 	public double xSplitLookAt = 0, ySplitLookAt = 0, zSplitLookAt = 0;
-	private double xStep, zStep;
-	private double viewAngle;
-	private float viewAngleY;
-	private double yStep;
 	private boolean mousePressed;
 	private boolean forward;
 	private boolean backward;
@@ -386,7 +373,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		textures = new Textures(hMap);
 		textures.createNewTexture = true;
 
-		initViewerPosn();
+		walkCamera.reset();
 	}
 
 	/**
@@ -1030,36 +1017,16 @@ public class SpatialStructure implements KeyListener, MouseListener {
 
 			}
 
-			/* We enable a smooth movement! (once per frame, not again in the second view) */
+			/* The movement of the walkthrough keys (once per frame, not again in the second view) */
 			if (walkthrough && firstViewPass) {
 				if (forward) {
-					xCameraPosition += xStep * SPEED;
-					zCameraPosition += zStep * SPEED;
-					if (flythrough) {
-						yCameraPosition += heightSpeed * Math.sin(Math.toRadians(viewAngleY));
-						yLookAt += heightSpeed * Math.sin(Math.toRadians(viewAngleY));
-					}
-
-					verifyPosition();
+					walkCamera.move(SPEED, flythrough, heightSpeed);
 				} else if (backward) {
-					xCameraPosition -= xStep * SPEED;
-					zCameraPosition -= zStep * SPEED;
-					verifyPosition();
+					walkCamera.move(-SPEED, false, 0);
 				} else if (up) {
-
-					// stars
-					// ceiling
-					yCameraPosition += heightStep + heightSpeed;
-					yLookAt += heightStep + heightSpeed;
-
-					verifyPosition();
+					walkCamera.rise(WalkCamera.RISE_STEP + heightSpeed);
 				} else if (down) {
-					if ((yCameraPosition - heightStep) > 0) { // stay above
-						// floor
-						yCameraPosition -= heightStep + heightSpeed;
-						yLookAt -= heightStep + heightSpeed;
-					}
-					verifyPosition();
+					walkCamera.rise(-(WalkCamera.RISE_STEP + heightSpeed));
 				}
 			}
 
@@ -1131,9 +1098,11 @@ public class SpatialStructure implements KeyListener, MouseListener {
 				}
 			}
 			switch (cameraOf(view)) {
-			case CAMERA_WALK:
-				glu.gluLookAt(xCameraPosition, yCameraPosition, zCameraPosition, xLookAt, yLookAt, zLookAt, 0, 1, 0);
+			case CAMERA_WALK: {
+				double[] c = walkCamera.getCamera();
+				glu.gluLookAt(c[0], c[1], c[2], c[3], c[4], c[5], 0, 1, 0);
 				break;
+			}
 			case CAMERA_CUSTOM:
 				glu.gluLookAt(customCameraCoordinates[0], customCameraCoordinates[1], customCameraCoordinates[2],
 						customCameraCoordinates[3], customCameraCoordinates[4], customCameraCoordinates[5], 0, 1, 0);
@@ -1494,7 +1463,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		customCamera = false;
 		customCameraInMainView = false;
 		mainCamera = false;
-		initViewerPosn();
+		walkCamera.reset();
 		/* The camera distance fitted to the displayed data */
 		doz = getDefaultViewDistance();
 		/* The time: one step per second */
@@ -1560,82 +1529,37 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		}
 	}
 
-	private void initViewerPosn()
-	/*
-	 * Specify the camera (player) position, the x- and z- step distance, and the
-	 * position being looked at.
-	 */
-	{
-		xCameraPosition = 0;
-		yCameraPosition = 1;
-		zCameraPosition = Z_POS;
-
-		viewAngle = -90.0;
-		xStep = Math.cos(Math.toRadians(viewAngle));
-		zStep = Math.sin(Math.toRadians(viewAngle));
-
-		xLookAt = xCameraPosition + (lookAtDist * xStep);
-		yLookAt = 0;
-		zLookAt = zCameraPosition + (lookAtDist * zStep);
-	}
-
-	private void processKey(KeyEvent e)
-
-	{
+	/* The keys of the walkthrough: the arrow keys (Ctrl + Left/Right: sideways), Page Up/Down; Escape, fullscreen keys */
+	private void processKey(KeyEvent e) {
 		int keyCode = e.getKeyCode();
-
 		if (keyCode == KeyEvent.VK_LEFT) {
 			if (e.isControlDown()) {
-				xCameraPosition += zStep * SPEED;
-				zCameraPosition -= xStep * SPEED;
+				walkCamera.strafe(-SPEED);
 			} else {
-				viewAngle -= angleIncrement;
-				xStep = Math.cos(Math.toRadians(viewAngle));
-				zStep = Math.sin(Math.toRadians(viewAngle));
-
+				walkCamera.turn(-WalkCamera.TURN_STEP);
 			}
 		} else if (keyCode == KeyEvent.VK_RIGHT) {
 			if (e.isControlDown()) {
-				xCameraPosition -= zStep * SPEED;
-				zCameraPosition += xStep * SPEED;
+				walkCamera.strafe(SPEED);
 			} else {
-				viewAngle += angleIncrement;
-				xStep = Math.cos(Math.toRadians(viewAngle));
-				zStep = Math.sin(Math.toRadians(viewAngle));
-
+				walkCamera.turn(WalkCamera.TURN_STEP);
 			}
 		} else if (keyCode == KeyEvent.VK_UP) {
 			forward = true;
-
 		} else if (keyCode == KeyEvent.VK_DOWN) {
 			backward = true;
-
 		} else if (keyCode == KeyEvent.VK_PAGE_UP) {
-
 			up = true;
-
 		} else if (keyCode == KeyEvent.VK_PAGE_DOWN) {
 			down = true;
-
 		} else if (keyCode == KeyEvent.VK_ESCAPE) {
 			if (glWindow.isFullscreen()) {
 				view.recreateGLCanvas();
 			}
-
 		} else if (NewtFullscreen.functionKey((short) keyCode) > 0) {
 			/* The fullscreen keys of all Bio7 views (see NewtFullscreen)! */
 			view.fullscreenKey(NewtFullscreen.functionKey((short) keyCode));
-
 		}
-
-		verifyPosition();
-
-	}
-
-	private void verifyPosition() {
-
-		xLookAt = xCameraPosition + (xStep * lookAtDist);
-		zLookAt = zCameraPosition + (zStep * lookAtDist);
 	}
 
 	public void keyTyped(KeyEvent evt) {
@@ -1728,36 +1652,13 @@ public class SpatialStructure implements KeyListener, MouseListener {
 
 				}
 			} else {
-				/* Handle walkthrough! */
-
-				// Dimension size = e.getComponent().getSize();
-
-				float thetaWalkY = 360.0f * ((float) (x - prevMouseX) / (float) glWindow.getWidth());
-				float thetaWalkX = 360.0f * ((float) (prevMouseY - y) / (float) glWindow.getHeight());
+				/* The walkthrough: the mouse turns and tilts the view (a drag over the view: 360 degrees) */
+				double turn = 360.0 * (x - prevMouseX) / glWindow.getWidth();
+				double tilt = 360.0 * (prevMouseY - y) / glWindow.getHeight();
 				prevMouseX = x;
 				prevMouseY = y;
-
-				viewAngle += thetaWalkY;
-				viewAngleY += thetaWalkX;
-				xStep = Math.cos(Math.toRadians(viewAngle));
-				zStep = Math.sin(Math.toRadians(viewAngle));
-
-				yStep = Math.tan(Math.toRadians(viewAngleY));
-
-				xLookAt = xCameraPosition + (xStep * lookAtDist);
-				yLookAt = yCameraPosition + (yStep * lookAtDist);
-				zLookAt = zCameraPosition + (zStep * lookAtDist);
-				if (viewAngleY >= 90) {
-					viewAngleY = 90;
-					yStep = Math.tan(Math.toRadians(90));
-					yLookAt = yCameraPosition + (yStep * lookAtDist);
-
-				} else if (viewAngleY <= -90) {
-					viewAngleY = -90;
-					yStep = Math.tan(Math.toRadians(-90));
-					yLookAt = yCameraPosition + (yStep * lookAtDist);
-				}
-
+				walkCamera.turn(turn);
+				walkCamera.tilt(tilt);
 			}
 		}
 	}
@@ -2513,7 +2414,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	 * @return x, y, z of the position and of the look at
 	 */
 	public double[] getWalkthroughCamera() {
-		return new double[] { xCameraPosition, yCameraPosition, zCameraPosition, xLookAt, yLookAt, zLookAt };
+		return walkCamera.getCamera();
 	}
 
 	public void setCustomCameraEnabled(boolean enabled) {
@@ -2651,15 +2552,15 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	}
 
 	public double getXCamPos() {
-		return xCameraPosition;
+		return walkCamera.getX();
 	}
 
 	public double getYCamPos() {
-		return yCameraPosition;
+		return walkCamera.getY();
 	}
 
 	public double getZCamPos() {
-		return zCameraPosition;
+		return walkCamera.getZ();
 	}
 
 	public Quaternion getLastRot() {
