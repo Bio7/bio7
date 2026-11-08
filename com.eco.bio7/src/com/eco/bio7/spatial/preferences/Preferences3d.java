@@ -44,9 +44,88 @@ public class Preferences3d {
 		SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
 		if (grid != null) {
 			grid.setSplitCameraValues(p.x, p.y, p.z, p2.x, p2.y, p2.z);
-
+			/* The exact values (e.g., copied from the walkthrough) */
+			double[] split = getCamera("splitCamera");
+			if (split != null) {
+				grid.xCamSplit = split[0];
+				grid.yCamSplit = split[1];
+				grid.zCamSplit = split[2];
+				grid.xSplitLookAt = split[3];
+				grid.ySplitLookAt = split[4];
+				grid.zSplitLookAt = split[5];
+			}
+			grid.setSplitCameraWalkFrame(store.getBoolean("splitCameraWalkFrame"));
 		}
+		double[] custom = getCamera("customCamera");
+		if (custom != null) {
+			SpatialStructure.setCustomCamera(custom[0], custom[1], custom[2], custom[3], custom[4], custom[5]);
+		}
+		SpatialStructure.setCustomCameraWalkFrame(store.getBoolean("customCameraWalkFrame"));
+		double[] main = getCamera("mainCamera");
+		if (grid != null) {
+			if (main != null) {
+				grid.setMainCamera(main[0], main[1], main[2], main[3], main[4], main[5]);
+			}
+			grid.setMainCameraWalkFrame(store.getBoolean("mainCameraWalkFrame"));
+		}
+	}
 
+	/**
+	 * Stores the camera of the main view (position and look at) and if it shows
+	 * the scene like the walkthrough.
+	 */
+	public void storeMainCamera(double[] camera, boolean walkFrame) {
+		storeCamera("mainCamera", camera);
+		store.setValue("mainCameraWalkFrame", walkFrame);
+	}
+
+	/**
+	 * Stores the camera of the split view (position and look at) with the exact
+	 * values and if it shows the scene like the walkthrough.
+	 */
+	public void storeSplitViewCamera(double[] camera, boolean walkFrame) {
+		storeSplitViewCameraLocation(camera[0], camera[1], camera[2]);
+		storeSplitViewCameraLookAt(camera[3], camera[4], camera[5]);
+		storeCamera("splitCamera", camera);
+		store.setValue("splitCameraWalkFrame", walkFrame);
+	}
+
+	/**
+	 * Stores the custom camera (position and look at) and if it shows the scene
+	 * like the walkthrough.
+	 */
+	public void storeCustomCamera(double[] camera, boolean walkFrame) {
+		storeCamera("customCamera", camera);
+		store.setValue("customCameraWalkFrame", walkFrame);
+	}
+
+	/* The stored camera (x, y, z of the position and of the look at) or null */
+	public double[] getCamera(String key) {
+		String value = store.getString(key);
+		if (value == null || value.isBlank()) {
+			return null;
+		}
+		String[] parts = value.split(",");
+		if (parts.length != 6) {
+			return null;
+		}
+		double[] camera = new double[6];
+		try {
+			for (int i = 0; i < 6; i++) {
+				camera[i] = Double.parseDouble(parts[i].trim());
+			}
+		} catch (NumberFormatException e) {
+			return null;
+		}
+		return camera;
+	}
+
+	private void storeCamera(String key, double[] camera) {
+		StringBuilder b = new StringBuilder();
+		for (int i = 0; i < 6; i++) {
+			b.append(i > 0 ? "," : "").append(camera[i]);
+		}
+		store.setValue(key, b.toString());
 	}
 
 	public boolean isFixedFps() {

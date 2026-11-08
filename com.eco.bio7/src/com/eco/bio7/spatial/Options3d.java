@@ -89,6 +89,9 @@ public class Options3d extends ViewPart {
 	private LinearSlider scale_1;
 	private LinearSlider scale;
 	private Label errorLabelSplit;
+	/* The camera settings updated if a script changes them (see updateCameraModes) */
+	private static Button customMainRadioButton, customSplitRadioButton, customWalkFrameButton, splitWalkFrameButton;
+	private static Button mainCameraCheck, mainWalkFrameButton;
 	private DisplayMode[] d;
 	private Button showGridButton;
 	private Button showAxesButton;
@@ -962,7 +965,7 @@ public class Options3d extends ViewPart {
 		final Composite composite_4 = new Composite(scroll_4, SWT.NONE);
 		newItemExpandItem_5.setControl(scroll_4);
 		composite_4.setLayout(new GridLayout(2, true));
-		scroll_4.setMinSize(200, 560);
+		scroll_4.setMinSize(200, 1080);
 		scroll_4.setContent(composite_4);
 		scroll_4.setExpandVertical(true);
 		scroll_4.setExpandHorizontal(true);
@@ -1002,6 +1005,101 @@ public class Options3d extends ViewPart {
 			}
 		});
 
+		/* The camera of the main view: another perspective instead of the camera rotated with the mouse */
+		final SpatialStructure mainGrid = SpatialStructure.getSpatialStructureInstance();
+		final Group mainGroup = createGroup(composite_4, "Main View Camera", 4, true);
+		final Button mainCameraButton = check(mainGroup, "Main View Camera",
+				"Shows the main view with this position and look at instead of the camera rotated with the mouse\n(the custom camera has priority if it is shown \"In Main View\")");
+		((GridData) mainCameraButton.getLayoutData()).horizontalSpan = 4;
+		mainCameraButton.setSelection(mainGrid != null && mainGrid.isMainCameraEnabled());
+		mainCameraButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					grid.setMainCameraEnabled(mainCameraButton.getSelection());
+				}
+			}
+		});
+		coordinateHeaders(mainGroup);
+		double[] mainValues = mainGrid != null ? mainGrid.getMainCamera() : new double[] { 0, 0, 1000, 0, 0, 0 };
+		final Label errorLabelMain = new Label(mainGroup, SWT.NONE);
+		final Text[] mainFields = new Text[6];
+		for (int i = 0; i < 6; i++) {
+			if (i % 3 == 0) {
+				Label rowLabel = new Label(mainGroup, SWT.NONE);
+				rowLabel.setText(i == 0 ? "Position" : "Look At");
+			}
+			final int index = i;
+			mainFields[i] = coordinateText(mainGroup, mainValues[i], v -> {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				double[] c = grid.getMainCamera();
+				c[index] = v;
+				grid.setMainCamera(c[0], c[1], c[2], c[3], c[4], c[5]);
+			}, errorLabelMain);
+		}
+		final Button mainWalkFrame = check(mainGroup, "Walkthrough Coordinates",
+				"The coordinates are in the space of the walkthrough (the scene is shown like in the walkthrough,\nwithout the rotation of the mouse). Set by \"From Walk/Flythrough\".");
+		((GridData) mainWalkFrame.getLayoutData()).horizontalSpan = 4;
+		mainWalkFrame.setSelection(mainGrid != null && mainGrid.isMainCameraWalkFrame());
+		mainWalkFrame.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					grid.setMainCameraWalkFrame(mainWalkFrame.getSelection());
+				}
+			}
+		});
+		final Button mainFromViewButton = new Button(mainGroup, SWT.NONE);
+		mainFromViewButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		mainFromViewButton.setText("From Current View");
+		mainFromViewButton.setToolTipText("Copies the position and the look at of the camera rotated with the mouse (the same view)");
+		mainFromViewButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					setFields(mainFields, grid.getViewCamera());
+					grid.setMainCameraWalkFrame(false);
+					mainWalkFrame.setSelection(false);
+				}
+			}
+		});
+		final Button mainFromWalkButton = new Button(mainGroup, SWT.NONE);
+		mainFromWalkButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		mainFromWalkButton.setText("From Walk/Flythrough");
+		mainFromWalkButton.setToolTipText("Copies the position and the look at of the walkthrough (or flythrough) camera");
+		mainFromWalkButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					setFields(mainFields, grid.getWalkthroughCamera());
+					grid.setMainCameraWalkFrame(true);
+					mainWalkFrame.setSelection(true);
+				}
+			}
+		});
+		final Button mainStoreButton = new Button(mainGroup, SWT.NONE);
+		mainStoreButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		mainStoreButton.setText("Store");
+		mainStoreButton.setToolTipText("Stores the position and the look at of the main view camera");
+		mainStoreButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					double[] camera = parseFields(mainFields);
+					if (camera == null) {
+						errorLabelMain.setText("Number input incorrect!");
+					} else {
+						grid.getPref3d().storeMainCamera(camera, mainWalkFrame.getSelection());
+					}
+				}
+			}
+		});
+		errorLabelMain.moveBelow(mainStoreButton);
+		errorLabelMain.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		errorLabelMain.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+		mainCameraCheck = mainCameraButton;
+		mainWalkFrameButton = mainWalkFrame;
+
 		/* The split view: a second camera (position and look at) in a part of the view */
 		final Group splitGroup = createGroup(composite_4, "Split View", 4, true);
 		final Button splitViewButton = check(splitGroup, "Split View", "Shows a second camera in the bottom left corner of the view");
@@ -1015,43 +1113,157 @@ public class Options3d extends ViewPart {
 				}
 			}
 		});
-		new Label(splitGroup, SWT.NONE);
-		for (String axis : new String[] { "x", "y", "z" }) {
-			Label header = new Label(splitGroup, SWT.CENTER);
-			header.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-			header.setText(axis);
-		}
-		/* The stored camera of the split view */
+		coordinateHeaders(splitGroup);
+		/* The camera of the split view (the exact values of the 3D view, else the stored values) */
+		SpatialStructure currentGrid = SpatialStructure.getSpatialStructureInstance();
 		Point3d splitLocation = Bio7PrefConverterSpatial.getPoint(store, "splitCameraLoc");
 		Point3d splitLookAt = Bio7PrefConverterSpatial.getPoint(store, "splitCameraLookAt");
+		double[] split = currentGrid != null
+				? new double[] { currentGrid.xCamSplit, currentGrid.yCamSplit, currentGrid.zCamSplit, currentGrid.xSplitLookAt,
+						currentGrid.ySplitLookAt, currentGrid.zSplitLookAt }
+				: new double[] { splitLocation.x, splitLocation.y, splitLocation.z, splitLookAt.x, splitLookAt.y, splitLookAt.z };
+		errorLabelSplit = new Label(splitGroup, SWT.NONE);
 		Label positionLabel = new Label(splitGroup, SWT.NONE);
 		positionLabel.setText("Position");
-		splitCamX = coordinateText(splitGroup, splitLocation.x, v -> SpatialStructure.getSpatialStructureInstance().xCamSplit = v);
-		splitCamY = coordinateText(splitGroup, splitLocation.y, v -> SpatialStructure.getSpatialStructureInstance().yCamSplit = v);
-		splitCamZ = coordinateText(splitGroup, splitLocation.z, v -> SpatialStructure.getSpatialStructureInstance().zCamSplit = v);
+		splitCamX = coordinateText(splitGroup, split[0], v -> SpatialStructure.getSpatialStructureInstance().xCamSplit = v, errorLabelSplit);
+		splitCamY = coordinateText(splitGroup, split[1], v -> SpatialStructure.getSpatialStructureInstance().yCamSplit = v, errorLabelSplit);
+		splitCamZ = coordinateText(splitGroup, split[2], v -> SpatialStructure.getSpatialStructureInstance().zCamSplit = v, errorLabelSplit);
 		Label lookAtLabel = new Label(splitGroup, SWT.NONE);
 		lookAtLabel.setText("Look At");
-		lookAtX = coordinateText(splitGroup, splitLookAt.x, v -> SpatialStructure.getSpatialStructureInstance().xSplitLookAt = v);
-		lookAtY = coordinateText(splitGroup, splitLookAt.y, v -> SpatialStructure.getSpatialStructureInstance().ySplitLookAt = v);
-		lookAtZ = coordinateText(splitGroup, splitLookAt.z, v -> SpatialStructure.getSpatialStructureInstance().zSplitLookAt = v);
-		errorLabelSplit = new Label(splitGroup, SWT.NONE);
-		errorLabelSplit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+		lookAtX = coordinateText(splitGroup, split[3], v -> SpatialStructure.getSpatialStructureInstance().xSplitLookAt = v, errorLabelSplit);
+		lookAtY = coordinateText(splitGroup, split[4], v -> SpatialStructure.getSpatialStructureInstance().ySplitLookAt = v, errorLabelSplit);
+		lookAtZ = coordinateText(splitGroup, split[5], v -> SpatialStructure.getSpatialStructureInstance().zSplitLookAt = v, errorLabelSplit);
+		final Text[] splitFields = { splitCamX, splitCamY, splitCamZ, lookAtX, lookAtY, lookAtZ };
+		final Button splitWalkFrame = check(splitGroup, "Walkthrough Coordinates",
+				"The coordinates are in the space of the walkthrough (the scene is shown like in the walkthrough,\nwithout the rotation of the mouse). Set by \"From Walk/Flythrough\".");
+		((GridData) splitWalkFrame.getLayoutData()).horizontalSpan = 4;
+		splitWalkFrame.setSelection(currentGrid != null ? currentGrid.isSplitCameraWalkFrame() : store.getBoolean("splitCameraWalkFrame"));
+		splitWalkFrame.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					grid.setSplitCameraWalkFrame(splitWalkFrame.getSelection());
+				}
+			}
+		});
+		errorLabelSplit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1));
 		errorLabelSplit.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+		splitWalkFrameButton = splitWalkFrame;
+		final Button splitFromWalkButton = new Button(splitGroup, SWT.NONE);
+		splitFromWalkButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		splitFromWalkButton.setText("From Walk/Flythrough");
+		splitFromWalkButton.setToolTipText("Copies the position and the look at of the walkthrough (or flythrough) camera");
+		splitFromWalkButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					/* The fields set the camera */
+					setFields(splitFields, grid.getWalkthroughCamera());
+					grid.setSplitCameraWalkFrame(true);
+					splitWalkFrame.setSelection(true);
+				}
+			}
+		});
 		final Button storeButton = new Button(splitGroup, SWT.NONE);
-		storeButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		storeButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 		storeButton.setText("Store");
 		storeButton.setToolTipText("Stores the position and the look at of the split view camera");
+		errorLabelSplit.moveBelow(storeButton);
 		storeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
 				if (grid != null) {
-					try {
-						grid.getPref3d().storeSplitViewCameraLocation(Double.parseDouble(splitCamX.getText()),
-								Double.parseDouble(splitCamY.getText()), Double.parseDouble(splitCamZ.getText()));
-						grid.getPref3d().storeSplitViewCameraLookAt(Double.parseDouble(lookAtX.getText()),
-								Double.parseDouble(lookAtY.getText()), Double.parseDouble(lookAtZ.getText()));
-					} catch (NumberFormatException ex) {
+					double[] camera = parseFields(splitFields);
+					if (camera == null) {
 						errorLabelSplit.setText("Number input incorrect!");
+					} else {
+						grid.getPref3d().storeSplitViewCamera(camera, splitWalkFrame.getSelection());
+					}
+				}
+			}
+		});
+
+		/* The custom camera (position and look at) in the main view or in the small view of the split view */
+		final Group customGroup = createGroup(composite_4, "Custom Camera", 4, true);
+		final Button customMainRadio = new Button(customGroup, SWT.RADIO);
+		customMainRadio.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		customMainRadio.setText("In Main View");
+		customMainRadio.setToolTipText("The custom camera is shown in the main view (with the split view the small view shows the normal camera)");
+		final Button customSplitRadio = new Button(customGroup, SWT.RADIO);
+		customSplitRadio.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		customSplitRadio.setText("In Split View");
+		customSplitRadio.setToolTipText("With the split view the custom camera is shown in the small view");
+		boolean inMain = currentGrid != null && currentGrid.isCustomCameraInMainView();
+		customMainRadio.setSelection(inMain);
+		customSplitRadio.setSelection(!inMain);
+		customMainRadio.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					grid.setCustomCameraInMainView(customMainRadio.getSelection());
+				}
+			}
+		});
+		coordinateHeaders(customGroup);
+		double[] custom = SpatialStructure.getCustomCamera();
+		final Label errorLabelCustom = new Label(customGroup, SWT.NONE);
+		Label customPositionLabel = new Label(customGroup, SWT.NONE);
+		customPositionLabel.setText("Position");
+		final Text[] customFields = new Text[6];
+		for (int i = 0; i < 6; i++) {
+			if (i == 3) {
+				Label customLookAtLabel = new Label(customGroup, SWT.NONE);
+				customLookAtLabel.setText("Look At");
+			}
+			final int index = i;
+			customFields[i] = coordinateText(customGroup, custom[i], v -> {
+				double[] c = SpatialStructure.getCustomCamera();
+				c[index] = v;
+				SpatialStructure.setCustomCamera(c[0], c[1], c[2], c[3], c[4], c[5]);
+			}, errorLabelCustom);
+		}
+		final Button customWalkFrame = check(customGroup, "Walkthrough Coordinates",
+				"The coordinates are in the space of the walkthrough (the scene is shown like in the walkthrough,\nwithout the rotation of the mouse). Set by \"From Walk/Flythrough\".");
+		((GridData) customWalkFrame.getLayoutData()).horizontalSpan = 4;
+		customWalkFrame.setSelection(SpatialStructure.isCustomCameraWalkFrame());
+		customWalkFrame.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure.setCustomCameraWalkFrame(customWalkFrame.getSelection());
+			}
+		});
+		errorLabelCustom.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1));
+		errorLabelCustom.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+		customWalkFrameButton = customWalkFrame;
+		customMainRadioButton = customMainRadio;
+		customSplitRadioButton = customSplitRadio;
+		final Button customFromWalkButton = new Button(customGroup, SWT.NONE);
+		customFromWalkButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		customFromWalkButton.setText("From Walk/Flythrough");
+		customFromWalkButton.setToolTipText("Copies the position and the look at of the walkthrough (or flythrough) camera");
+		customFromWalkButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					setFields(customFields, grid.getWalkthroughCamera());
+					SpatialStructure.setCustomCameraWalkFrame(true);
+					customWalkFrame.setSelection(true);
+				}
+			}
+		});
+		final Button customStoreButton = new Button(customGroup, SWT.NONE);
+		customStoreButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		customStoreButton.setText("Store");
+		customStoreButton.setToolTipText("Stores the position and the look at of the custom camera");
+		errorLabelCustom.moveBelow(customStoreButton);
+		customStoreButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				if (grid != null) {
+					double[] camera = parseFields(customFields);
+					if (camera == null) {
+						errorLabelCustom.setText("Number input incorrect!");
+					} else {
+						grid.getPref3d().storeCustomCamera(camera, customWalkFrame.getSelection());
 					}
 				}
 			}
@@ -2204,10 +2416,52 @@ public class Options3d extends ViewPart {
 	}
 
 	/* A text field for a coordinate of the split view camera (red if it is not a number)! */
+	/* The headers of the coordinate columns (x, y, z) */
+	private static void coordinateHeaders(Composite parent) {
+		new Label(parent, SWT.NONE);
+		for (String axis : new String[] { "x", "y", "z" }) {
+			Label header = new Label(parent, SWT.CENTER);
+			header.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+			header.setText(axis);
+		}
+	}
+
+	/* Sets the fields of a camera (the listeners of the fields set the camera) */
+	private static void setFields(Text[] fields, double[] values) {
+		for (int i = 0; i < fields.length; i++) {
+			fields[i].setText(formatCoordinate(values[i]));
+		}
+	}
+
+	/* The values of the fields of a camera or null if a value is not a number */
+	private static double[] parseFields(Text[] fields) {
+		double[] values = new double[fields.length];
+		try {
+			for (int i = 0; i < fields.length; i++) {
+				values[i] = Double.parseDouble(fields[i].getText().trim());
+			}
+		} catch (NumberFormatException e) {
+			return null;
+		}
+		return values;
+	}
+
+	/* A coordinate with up to 4 decimals (integers without decimals) */
+	private static String formatCoordinate(double value) {
+		if (value == Math.rint(value) && Math.abs(value) < 1e15) {
+			return String.valueOf((long) value);
+		}
+		return new java.math.BigDecimal(value).setScale(4, java.math.RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
+	}
+
 	private Text coordinateText(Composite parent, double value, java.util.function.DoubleConsumer apply) {
+		return coordinateText(parent, value, apply, errorLabelSplit);
+	}
+
+	private Text coordinateText(Composite parent, double value, java.util.function.DoubleConsumer apply, Label errorLabel) {
 		final Text text = new Text(parent, SWT.BORDER);
 		text.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		text.setText("" + value);
+		text.setText(formatCoordinate(value));
 		text.addListener(SWT.Modify, _ -> {
 			try {
 				double v = Double.parseDouble(text.getText());
@@ -2215,10 +2469,14 @@ public class Options3d extends ViewPart {
 					apply.accept(v);
 				}
 				text.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
-				errorLabelSplit.setText("");
+				if (errorLabel != null && !errorLabel.isDisposed()) {
+					errorLabel.setText("");
+				}
 			} catch (NumberFormatException e) {
 				text.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
-				errorLabelSplit.setText("Number input incorrect!");
+				if (errorLabel != null && !errorLabel.isDisposed()) {
+					errorLabel.setText("Number input incorrect!");
+				}
 			}
 		});
 		return text;
@@ -2245,6 +2503,17 @@ public class Options3d extends ViewPart {
 			for (int i = 0; i < buttons.length; i++) {
 				if (buttons[i] != null && !buttons[i].isDisposed()) {
 					buttons[i].setSelection(states[i]);
+				}
+			}
+			/* The settings of the custom camera and of the split view camera */
+			Button[] settings = { customMainRadioButton, customSplitRadioButton, customWalkFrameButton, splitWalkFrameButton,
+					mainCameraCheck, mainWalkFrameButton };
+			boolean[] values = { grid.isCustomCameraInMainView(), !grid.isCustomCameraInMainView(),
+					SpatialStructure.isCustomCameraWalkFrame(), grid.isSplitCameraWalkFrame(), grid.isMainCameraEnabled(),
+					grid.isMainCameraWalkFrame() };
+			for (int i = 0; i < settings.length; i++) {
+				if (settings[i] != null && !settings[i].isDisposed()) {
+					settings[i].setSelection(values[i]);
 				}
 			}
 		});

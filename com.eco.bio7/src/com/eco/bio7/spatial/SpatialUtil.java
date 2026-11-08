@@ -603,6 +603,28 @@ public class SpatialUtil {
 	}
 
 	/**
+	 * Displays the custom camera in the main view: with the split view the small
+	 * view shows the normal camera (see SpatialCamera for the other camera
+	 * settings, e.g., SpatialCamera.copyWalkthroughToCustomCamera).
+	 * 
+	 * @param mainView true for the main view, false for the small view of the
+	 *                 split view (the default)
+	 */
+	public static void setCustomCameraInMainView(boolean mainView) {
+		SpatialCamera.setCustomCameraInMainView(mainView);
+	}
+
+	/**
+	 * Uses the camera of the main view (see SpatialCamera.setMainCamera) instead
+	 * of the camera rotated with the mouse.
+	 * 
+	 * @param enabled true to use the main view camera
+	 */
+	public static void setMainCamera(boolean enabled) {
+		SpatialCamera.setMainCameraEnabled(enabled);
+	}
+
+	/**
 	 * Returns true if the custom camera is used.
 	 * 
 	 * @return true if the custom camera is enabled

@@ -262,14 +262,45 @@ public class SpatialView extends ViewPart {
 		clear.setImageDescriptor(Bio7Plugin.getImageDescriptor("/icons/views/deleteaction.svg"));
 		toolBar.add(clear);
 
-		Action reset = new Action("Reset View") {
+		/* Reset View (the settings) and in the menu of the button Remove All Data */
+		Action reset = new Action("Reset View", org.eclipse.jface.action.IAction.AS_DROP_DOWN_MENU) {
 			public void run() {
 				resetView();
 			}
 		};
 		reset.setToolTipText(
-				"Resets the 3D view to the default settings like at the first start (camera, grids, axes,\nlights, colors, step rate, height map). The loaded data is kept.");
+				"Resets the 3D view to the default settings like at the first start (camera, grids, axes, lights,\ncolors, step rate, height map, clipping). The loaded data is kept.\nThe menu of the button: Remove All Data.");
 		reset.setImageDescriptor(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/counter_reset.svg"));
+		reset.setMenuCreator(new org.eclipse.jface.action.IMenuCreator() {
+			private org.eclipse.swt.widgets.Menu menu;
+
+			@Override
+			public org.eclipse.swt.widgets.Menu getMenu(org.eclipse.swt.widgets.Control parent) {
+				dispose();
+				menu = new org.eclipse.swt.widgets.Menu(parent);
+				org.eclipse.swt.widgets.MenuItem resetItem = new org.eclipse.swt.widgets.MenuItem(menu, SWT.PUSH);
+				resetItem.setText("Reset View");
+				resetItem.addListener(SWT.Selection, _ -> resetView());
+				new org.eclipse.swt.widgets.MenuItem(menu, SWT.SEPARATOR);
+				org.eclipse.swt.widgets.MenuItem removeItem = new org.eclipse.swt.widgets.MenuItem(menu, SWT.PUSH);
+				removeItem.setText("Remove All Data...");
+				removeItem.addListener(SWT.Selection, _ -> removeAllData());
+				return menu;
+			}
+
+			@Override
+			public org.eclipse.swt.widgets.Menu getMenu(org.eclipse.swt.widgets.Menu parent) {
+				return null;
+			}
+
+			@Override
+			public void dispose() {
+				if (menu != null && !menu.isDisposed()) {
+					menu.dispose();
+				}
+				menu = null;
+			}
+		});
 		toolBar.add(reset);
 
 		/* Exports the plot of the plot API to HTML (visible with Plot3D.setExportAction) */
@@ -376,6 +407,11 @@ public class SpatialView extends ViewPart {
 		/* The compiled model of the 3D view is removed (it doesn't run again), play/pause is off */
 		grid.setFromOpenGl(false);
 		removeOpenGLModel();
+		/* The clipping (box, plane, slice) and the cuts */
+		Clipping clip = grid.getClipping();
+		if (clip != null) {
+			clip.reset();
+		}
 		org.eclipse.jface.preference.IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		for (String key : new String[] { "plotView", "showAxisGizmo", "textureFlipVertically", "axisImageCoordinates",
 				"spatialX", "spatialY", "spatialZ" }) {
@@ -383,6 +419,56 @@ public class SpatialView extends ViewPart {
 		}
 		AxisLabelsRenderer.setImageCoordinates(store.getBoolean("axisImageCoordinates"));
 		/* The controls of the options view show the defaults */
+		recreateOptions();
+	}
+
+	/*
+	 * Removes all data of the 3D view after a question: the iso surface, the
+	 * volume, the texture and the height map, the model (mesh file), the plot, the
+	 * compiled OpenGL model and the measurements. The settings are kept (see Reset
+	 * View).
+	 */
+	private void removeAllData() {
+		SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+		if (grid == null) {
+			return;
+		}
+		if (!org.eclipse.jface.dialogs.MessageDialog.openQuestion(getSite().getShell(), "Remove All Data",
+				"Remove all data of the 3D view?\n\nThe iso surface (with its edits), the volume, the texture and the height map,\n"
+						+ "the model (mesh file), the plot, the compiled OpenGL model and the measurements are removed.\n"
+						+ "The settings of the view are kept (see Reset View).")) {
+			return;
+		}
+		Measurement3d measurement = grid.getMeasurement();
+		if (measurement != null) {
+			measurement.clear();
+		}
+		Clipping clip = grid.getClipping();
+		if (clip != null) {
+			clip.reset();
+		}
+		IsoSurface iso = grid.getIsoSurface();
+		if (iso != null) {
+			iso.clear();
+		}
+		VolumeRenderer volume = grid.getVolumeRenderer();
+		if (volume != null) {
+			volume.clear();
+		}
+		if (grid.textures != null) {
+			grid.textures.setShowTexture(false);
+		}
+		grid.heightMap = false;
+		grid.setLoadModel(false);
+		grid.model = null;
+		grid.setFromOpenGl(false);
+		removeOpenGLModel();
+		Plot3D.clear();
+		recreateOptions();
+	}
+
+	/* The controls of the options view show the current state (the view is created again) */
+	private void recreateOptions() {
 		org.eclipse.ui.IWorkbenchPage page = getSite().getPage();
 		org.eclipse.ui.IViewPart options = page.findView(Options3d.ID);
 		if (options != null) {

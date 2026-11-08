@@ -935,27 +935,37 @@ public class SpatialStructure implements KeyListener, MouseListener {
 			viewPerspective(view);// According to selected view mode change
 			// the camera!
 
-			gl.glTranslatef(transx, transy, transz);
-			gl.glPushMatrix();
-			gl.glMultMatrixf(matrix, 0);
+			/*
+			 * A camera copied from the walkthrough (or the flythrough) shows the scene
+			 * like in the walkthrough (without the rotation of the mouse)
+			 */
+			final boolean walkFrame = isWalkFrame(view);
+			if (walkFrame && !walkthrough) {
+				gl.glPushMatrix();
+				gl.glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+			} else {
+				gl.glTranslatef(transx, transy, transz);
+				gl.glPushMatrix();
+				gl.glMultMatrixf(matrix, 0);
 
-			gl.glRotatef(rotatx, 1.0f, 0.0f, 0.0f);
+				gl.glRotatef(rotatx, 1.0f, 0.0f, 0.0f);
 
-			gl.glRotatef(rotaty, 0.0f, 1.0f, 0.0f);
+				gl.glRotatef(rotaty, 0.0f, 1.0f, 0.0f);
 
-			gl.glRotatef(rotatz, 0.0f, 0.0f, 1.0f);
+				gl.glRotatef(rotatz, 0.0f, 0.0f, 1.0f);
+			}
 			gl.glScalef(scaleValue, scaleValue, scaleValue);// here you can
 			/*
 			 * In octant mode rotate around the center of the grid axes (with a texture
 			 * around the center of the image)!
 			 */
 			double[] data = getTextureExtent() == null ? dataBounds : null;
-			if (!walkthrough && data != null) {
+			if (!walkFrame && data != null) {
 				/* The data of a model (e.g., a script) in the center of the view, scaled to the default size */
 				double scale = getDataScale();
 				gl.glScaled(scale, scale, scale);
 				gl.glTranslated(-(data[0] + data[1]) / 2, -(data[2] + data[3]) / 2, -(data[4] + data[5]) / 2);
-			} else if (!walkthrough && !HeightMaps.isCartesian()) {
+			} else if (!walkFrame && !HeightMaps.isCartesian()) {
 				float centerZ;
 				float[] stack = getStackExtent();
 				if (stack != null) {
@@ -1112,56 +1122,25 @@ public class SpatialStructure implements KeyListener, MouseListener {
 
 					switchLight(gl);
 				}
-				/* Two viewports */
-				if (view == 0) {
-					glu.gluLookAt(xCameraPosition, yCameraPosition, zCameraPosition, xLookAt, yLookAt, zLookAt, 0, 1,
-							0);
-				} else if (view == 1) {
-					glu.gluLookAt(xCameraPosition, yCameraPosition, zCameraPosition, xLookAt, yLookAt, zLookAt, 0, 1,
-							0);
-				}
-				/* One viewport */
-				else {// The overview!
-					if (customCamera) {
-
-						glu.gluLookAt(customCameraCoordinates[0], customCameraCoordinates[1],
-								customCameraCoordinates[2], customCameraCoordinates[3], customCameraCoordinates[4],
-								customCameraCoordinates[5], 0, 1, 0);
-					} else {
-
-						glu.gluLookAt(xCamSplit, yCamSplit, zCamSplit, xSplitLookAt, ySplitLookAt, zSplitLookAt, 0, 1,
-								0);
-					}
-				}
-
-			} else {// If it is not walk-through.
-
-				if (view == 1) {
-					glu.gluLookAt(dox, doy, doz, 0, 0, 0, 0, 1, 0);
-
-				} else if (view == 2) {
-					if (customCamera) {
-
-						glu.gluLookAt(customCameraCoordinates[0], customCameraCoordinates[1],
-								customCameraCoordinates[2], customCameraCoordinates[3], customCameraCoordinates[4],
-								customCameraCoordinates[5], 0, 1, 0);
-					} else {
-						glu.gluLookAt(xCamSplit, yCamSplit, zCamSplit, xSplitLookAt, ySplitLookAt, zSplitLookAt, 0, 1,
-								0);
-					}
-
-				} else {// Normal mode!
-
-					if (customCamera == false) {// Normal camera without any
-						// mode!
-						glu.gluLookAt(dox, doy, doz, 0, 0, 0, 0, 1, 0);
-					} else {
-						// Custom camera without split!
-						glu.gluLookAt(customCameraCoordinates[0], customCameraCoordinates[1],
-								customCameraCoordinates[2], customCameraCoordinates[3], customCameraCoordinates[4],
-								customCameraCoordinates[5], 0, 1, 0);
-					}
-				}
+			}
+			switch (cameraOf(view)) {
+			case CAMERA_WALK:
+				glu.gluLookAt(xCameraPosition, yCameraPosition, zCameraPosition, xLookAt, yLookAt, zLookAt, 0, 1, 0);
+				break;
+			case CAMERA_CUSTOM:
+				glu.gluLookAt(customCameraCoordinates[0], customCameraCoordinates[1], customCameraCoordinates[2],
+						customCameraCoordinates[3], customCameraCoordinates[4], customCameraCoordinates[5], 0, 1, 0);
+				break;
+			case CAMERA_SPLIT:
+				glu.gluLookAt(xCamSplit, yCamSplit, zCamSplit, xSplitLookAt, ySplitLookAt, zSplitLookAt, 0, 1, 0);
+				break;
+			case CAMERA_MAIN:
+				glu.gluLookAt(mainCameraCoordinates[0], mainCameraCoordinates[1], mainCameraCoordinates[2],
+						mainCameraCoordinates[3], mainCameraCoordinates[4], mainCameraCoordinates[5], 0, 1, 0);
+				break;
+			default:
+				/* The camera rotated with the mouse */
+				glu.gluLookAt(dox, doy, doz, 0, 0, 0, 0, 1, 0);
 			}
 		}
 
@@ -1506,6 +1485,8 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		splitView = false;
 		stereo = false;
 		customCamera = false;
+		customCameraInMainView = false;
+		mainCamera = false;
 		initViewerPosn();
 		/* The camera distance fitted to the displayed data */
 		doz = getDefaultViewDistance();
@@ -1799,12 +1780,22 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	private final com.jogamp.newt.event.WindowAdapter activation = new com.jogamp.newt.event.WindowAdapter() {
 		@Override
 		public void windowGainedFocus(com.jogamp.newt.event.WindowEvent e) {
-			activateView();
+			activateView(true);
 		}
 	};
 
 	/* Activates the 3D view in the workbench (if another part is active) */
 	private void activateView() {
+		activateView(false);
+	}
+
+	/*
+	 * Activates the 3D view in the workbench. If the OpenGL window reported the
+	 * focus (not a click): only if it still has the focus and no other control
+	 * (e.g., an opened editor) has the keyboard. Else an opened editor was not the
+	 * active part (e.g., the Compile action of the toolbar was not shown).
+	 */
+	private void activateView(boolean fromFocus) {
 		SpatialView part = view;
 		if (part == null) {
 			return;
@@ -1812,6 +1803,9 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		org.eclipse.swt.widgets.Display display = PlatformUI.getWorkbench().getDisplay();
 		display.asyncExec(() -> {
 			try {
+				if (fromFocus && !hasKeyboard(display)) {
+					return;
+				}
 				org.eclipse.ui.IWorkbenchPage page = part.getSite() != null ? part.getSite().getPage() : null;
 				if (page != null && page.getActivePart() != part) {
 					page.activate(part);
@@ -1820,6 +1814,21 @@ public class SpatialStructure implements KeyListener, MouseListener {
 				/* The view is closed */
 			}
 		});
+	}
+
+	/* True if the OpenGL window has the keyboard (no other control of the workbench) */
+	private boolean hasKeyboard(org.eclipse.swt.widgets.Display display) {
+		GLWindow window = glWindow;
+		if (window == null || !window.isNativeValid() || !window.hasFocus()) {
+			return false;
+		}
+		org.eclipse.swt.widgets.Control focus = display.getFocusControl();
+		for (org.eclipse.swt.widgets.Control c = focus; c != null; c = c.getParent()) {
+			if (c == canvas) {
+				return true;
+			}
+		}
+		return focus == null;
 	}
 
 	public void focusView() {
@@ -2310,6 +2319,196 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	 * 
 	 * @param enabled true to use the custom camera
 	 */
+	/* The cameras of a viewport (see cameraOf) */
+	private static final int CAMERA_ORBIT = 0, CAMERA_WALK = 1, CAMERA_CUSTOM = 2, CAMERA_SPLIT = 3, CAMERA_MAIN = 4;
+
+	/*
+	 * The camera of the main view (position and look at): another perspective
+	 * instead of the camera rotated with the mouse (e.g., with the custom camera
+	 * in the small view of the split view)
+	 */
+	private boolean mainCamera = false;
+	private boolean mainCameraWalkFrame = false;
+	private final double[] mainCameraCoordinates = { 0, 0, 1000, 0, 0, 0 };
+
+	/* The custom camera is displayed in the main view (with the split view the small view shows the normal camera) */
+	private boolean customCameraInMainView = false;
+	/* The custom camera and the split view camera show the scene like the walkthrough (e.g., copied from it) */
+	private static boolean customCameraWalkFrame = false;
+	private boolean splitCameraWalkFrame = false;
+
+	/*
+	 * The camera of a viewport: 0 = the view without the split view, 1 = the main
+	 * view and 2 = the small view of the split view
+	 */
+	private int cameraOf(int view) {
+		if (walkthrough) {
+			return view == 2 ? (customCamera ? CAMERA_CUSTOM : CAMERA_SPLIT) : CAMERA_WALK;
+		}
+		boolean customInMain = customCamera && customCameraInMainView;
+		int main = mainCamera ? CAMERA_MAIN : CAMERA_ORBIT;
+		if (view == 1) {
+			return customInMain ? CAMERA_CUSTOM : main;
+		}
+		if (view == 2) {
+			return customInMain ? CAMERA_ORBIT : customCamera ? CAMERA_CUSTOM : CAMERA_SPLIT;
+		}
+		return customCamera ? CAMERA_CUSTOM : main;
+	}
+
+	/* True if the scene of a viewport is transformed like in the walkthrough */
+	private boolean isWalkFrame(int view) {
+		if (walkthrough) {
+			return true;
+		}
+		int camera = cameraOf(view);
+		return camera == CAMERA_CUSTOM && customCameraWalkFrame || camera == CAMERA_SPLIT && splitCameraWalkFrame
+				|| camera == CAMERA_MAIN && mainCameraWalkFrame;
+	}
+
+	/**
+	 * Uses the camera of the main view (see setMainCamera) instead of the camera
+	 * rotated with the mouse (the custom camera has priority if it is displayed in
+	 * the main view).
+	 * 
+	 * @param enabled true to use the main view camera
+	 */
+	public void setMainCameraEnabled(boolean enabled) {
+		boolean changed = mainCamera != enabled;
+		mainCamera = enabled;
+		if (changed) {
+			Options3d.updateCameraModes();
+		}
+	}
+
+	public boolean isMainCameraEnabled() {
+		return mainCamera;
+	}
+
+	/**
+	 * Sets the position and the look at of the main view camera.
+	 */
+	public void setMainCamera(double xpos, double ypos, double zpos, double xlook, double ylook, double zlook) {
+		mainCameraCoordinates[0] = xpos;
+		mainCameraCoordinates[1] = ypos;
+		mainCameraCoordinates[2] = zpos;
+		mainCameraCoordinates[3] = xlook;
+		mainCameraCoordinates[4] = ylook;
+		mainCameraCoordinates[5] = zlook;
+	}
+
+	/**
+	 * Returns the position and the look at of the main view camera.
+	 * 
+	 * @return x, y, z of the position and of the look at
+	 */
+	public double[] getMainCamera() {
+		return mainCameraCoordinates.clone();
+	}
+
+	/**
+	 * Shows the scene of the main view camera like the walkthrough (see
+	 * setCustomCameraWalkFrame).
+	 * 
+	 * @param walkFrame true for the coordinates of the walkthrough
+	 */
+	public void setMainCameraWalkFrame(boolean walkFrame) {
+		boolean changed = mainCameraWalkFrame != walkFrame;
+		mainCameraWalkFrame = walkFrame;
+		if (changed) {
+			Options3d.updateCameraModes();
+		}
+	}
+
+	public boolean isMainCameraWalkFrame() {
+		return mainCameraWalkFrame;
+	}
+
+	/**
+	 * Returns the position and the look at of the camera rotated with the mouse
+	 * (the normal camera of the view, looking at the center).
+	 * 
+	 * @return x, y, z of the position and of the look at
+	 */
+	public double[] getViewCamera() {
+		return new double[] { dox, doy, doz, 0, 0, 0 };
+	}
+
+	/**
+	 * Displays the custom camera in the main view: with the split view the small
+	 * view shows the normal camera (rotated with the mouse). Else the custom
+	 * camera is displayed in the small view of the split view.
+	 * 
+	 * @param mainView true for the main view
+	 */
+	public void setCustomCameraInMainView(boolean mainView) {
+		boolean changed = customCameraInMainView != mainView;
+		customCameraInMainView = mainView;
+		if (changed) {
+			Options3d.updateCameraModes();
+		}
+	}
+
+	public boolean isCustomCameraInMainView() {
+		return customCameraInMainView;
+	}
+
+	/**
+	 * Shows the scene of the custom camera like the walkthrough (the coordinates
+	 * of the walkthrough, e.g., copied with "From Walk/Flythrough"), without the
+	 * rotation of the mouse.
+	 * 
+	 * @param walkFrame true for the coordinates of the walkthrough
+	 */
+	public static void setCustomCameraWalkFrame(boolean walkFrame) {
+		boolean changed = customCameraWalkFrame != walkFrame;
+		customCameraWalkFrame = walkFrame;
+		if (changed) {
+			Options3d.updateCameraModes();
+		}
+	}
+
+	public static boolean isCustomCameraWalkFrame() {
+		return customCameraWalkFrame;
+	}
+
+	/**
+	 * Shows the scene of the split view camera like the walkthrough (see
+	 * setCustomCameraWalkFrame).
+	 * 
+	 * @param walkFrame true for the coordinates of the walkthrough
+	 */
+	public void setSplitCameraWalkFrame(boolean walkFrame) {
+		boolean changed = splitCameraWalkFrame != walkFrame;
+		splitCameraWalkFrame = walkFrame;
+		if (changed) {
+			Options3d.updateCameraModes();
+		}
+	}
+
+	public boolean isSplitCameraWalkFrame() {
+		return splitCameraWalkFrame;
+	}
+
+	/**
+	 * Returns the position and the look at of the custom camera.
+	 * 
+	 * @return x, y, z of the position and of the look at
+	 */
+	public static double[] getCustomCamera() {
+		return customCameraCoordinates.clone();
+	}
+
+	/**
+	 * Returns the position and the look at of the walkthrough (and flythrough)
+	 * camera.
+	 * 
+	 * @return x, y, z of the position and of the look at
+	 */
+	public double[] getWalkthroughCamera() {
+		return new double[] { xCameraPosition, yCameraPosition, zCameraPosition, xLookAt, yLookAt, zLookAt };
+	}
+
 	public void setCustomCameraEnabled(boolean enabled) {
 		boolean changed = customCamera != enabled;
 		customCamera = enabled;
@@ -2506,8 +2705,10 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	}
 
 	private void drawSpace(GL2 gl, GLAutoDrawable drawable) {
-		/* The rotation of the scene for the axis orientation overlay */
-		axisGizmo.capture(gl);
+		/* The rotation of the scene for the axis orientation overlay (of the main view, not of the small split view) */
+		if (!isSplitPanelDrawing) {
+			axisGizmo.capture(gl);
+		}
 		if (textures.isRenderImage() == false) {
 
 			if (hMap.cartesian == true) {
