@@ -15,8 +15,6 @@
  *This class uses and also consists of slightly changed sources of Andrew Davison and his book "Pro Java 6 3D Game Development"
  *http://www.apress.com/book/view/1590598172.
  *
- *The Arcball rotation interface sources were created by 
- *Pepijn Van Eeckhoudt.
  */
 
 package com.eco.bio7.spatial;
