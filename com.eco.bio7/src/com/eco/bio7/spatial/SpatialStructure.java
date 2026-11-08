@@ -179,8 +179,9 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	private long fpsTimeCounter;
 	private long fpsTimeBefore;
 	public static boolean step;
-	private Matrix4f LastRot = new Matrix4f();
-	public Matrix4f ThisRot = new Matrix4f();
+	/* The rotation of the view with the mouse: before the drag and the current rotation */
+	private Quaternion LastRot = new Quaternion();
+	public Quaternion ThisRot = new Quaternion();
 	private final Object matrixLock = new Object();
 	private float[] matrix = new float[16];
 	private ArcBall arcBall;
@@ -779,14 +780,13 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		}
 
 		void drag(Point MousePt) {
-			Quat4f ThisQuat = new Quat4f();
+			Quaternion ThisQuat = new Quaternion();
 
 			arcBall.drag(MousePt, ThisQuat);
 			// Rotation as quaternion
 			synchronized (matrixLock) {
-				ThisRot.setRotation(ThisQuat);
-
-				ThisRot.mul(ThisRot, LastRot);
+				/* The rotation of the drag after the rotation before the drag */
+				ThisRot.mul(ThisQuat, LastRot);
 
 			}
 		}
@@ -2664,19 +2664,19 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		return zCameraPosition;
 	}
 
-	public Matrix4f getLastRot() {
+	public Quaternion getLastRot() {
 		return LastRot;
 	}
 
-	public void setLastRot(Matrix4f lastRot) {
+	public void setLastRot(Quaternion lastRot) {
 		LastRot = lastRot;
 	}
 
-	public Matrix4f getThisRot() {
+	public Quaternion getThisRot() {
 		return ThisRot;
 	}
 
-	public void setThisRot(Matrix4f thisRot) {
+	public void setThisRot(Quaternion thisRot) {
 		ThisRot = thisRot;
 	}
 

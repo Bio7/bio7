@@ -1,95 +1,123 @@
+/*******************************************************************************
+ * Copyright (c) 2007-2026 M. Austenfeld
+ *
+ * This program and the accompanying materials are made
+ * available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *     M. Austenfeld
+ *******************************************************************************/
+
 package com.eco.bio7.spatial;
 
 import com.jogamp.nativewindow.util.Point;
 
 /**
- * Created by Pepijn Van Eeckhoudt.
+ * The rotation of the 3D view with the mouse (a virtual trackball, after K.
+ * Shoemake's arcball): a drag rotates the scene like a ball under the mouse.
+ * <ul>
+ * <li>The ball is round (the radius is half of the smaller side of the view),
+ * a drag rotates the same in every direction (also in a wide view).</li>
+ * <li>Outside of the ball the points are on a hyperbolic sheet (T. Holroyd,
+ * "Virtual Trackballs Revisited"): the rotation continues smoothly without a
+ * jump at the edge of the ball (near the edge it turns around the view
+ * axis).</li>
+ * <li>The rotation is the angle between the points on the ball (a drag of
+ * half the radius from the center rotates by 30 degrees, like the former
+ * arcball vertically), a unit quaternion.</li>
+ * </ul>
+ * The positions are window pixels from the top left (the units of the mouse
+ * events and of setBounds).
  */
 class ArcBall {
-    private static final float Epsilon = 1.0e-5f;
 
-    Vector3f StVec;          //Saved click vector
-    Vector3f EnVec;          //Saved drag vector
-    float adjustWidth;       //Mouse bounds width
-    float adjustHeight;      //Mouse bounds height
+	private static final double EPSILON = 1.0e-9;
 
-    public ArcBall(float NewWidth, float NewHeight) {
-        StVec = new Vector3f();
-        EnVec = new Vector3f();
-        setBounds(NewWidth, NewHeight);
-    }
+	/* The point of the start of the drag on the ball (unit vector) */
+	private final double[] start = new double[3];
+	/* The center and the radius of the ball (window pixels) */
+	private double centerX, centerY, radius;
 
-    public void mapToSphere(Point point, Vector3f vector) {
-        //Copy paramter into temp point
-        Point2f tempPoint = new Point2f(point.getX(), point.getY());
+	/**
+	 * Creates the arcball of a view.
+	 *
+	 * @param width  the width of the view (pixels)
+	 * @param height the height of the view (pixels)
+	 */
+	public ArcBall(float width, float height) {
+		setBounds(width, height);
+		start[2] = 1;
+	}
 
-        //Adjust point coords and scale down to range of [-1 ... 1]
-        tempPoint.x = (tempPoint.x * this.adjustWidth) - 1.0f;
-        tempPoint.y = 1.0f - (tempPoint.y * this.adjustHeight);
+	/**
+	 * Sets the size of the view (the center and the radius of the ball).
+	 *
+	 * @param width  the width of the view (pixels)
+	 * @param height the height of the view (pixels)
+	 */
+	public void setBounds(float width, float height) {
+		double w = Math.max(2, width), h = Math.max(2, height);
+		centerX = w / 2.0;
+		centerY = h / 2.0;
+		radius = Math.min(w, h) / 2.0;
+	}
 
-        //Compute the square of the length of the vector to the point from the center
-        float length = (tempPoint.x * tempPoint.x) + (tempPoint.y * tempPoint.y);
+	/**
+	 * Maps a window position to a unit vector: on the ball inside of the radius /
+	 * sqrt(2), else on the hyperbolic sheet (Holroyd), normalized.
+	 */
+	void mapToSphere(double px, double py, double[] v) {
+		double x = (px - centerX) / radius;
+		double y = (centerY - py) / radius;
+		double d2 = x * x + y * y;
+		double z;
+		if (d2 <= 0.5) {
+			/* The sphere */
+			z = Math.sqrt(1.0 - d2);
+		} else {
+			/* The hyperbola z = 1 / (2 d) (the same height and slope at d = 1 / sqrt(2)) */
+			z = 0.5 / Math.sqrt(d2);
+		}
+		double length = Math.sqrt(d2 + z * z);
+		v[0] = x / length;
+		v[1] = y / length;
+		v[2] = z / length;
+	}
 
-        //If the point is mapped outside of the sphere... (length > radius squared)
-        if (length > 1.0f) {
-            //Compute a normalizing factor (radius / sqrt(length))
-            float norm = (float) (1.0 / Math.sqrt(length));
+	/** Mouse down: the start of a drag. */
+	public void click(Point point) {
+		mapToSphere(point.getX(), point.getY(), start);
+	}
 
-            //Return the "normalized" vector, a point on the sphere
-            vector.x = tempPoint.x * norm;
-            vector.y = tempPoint.y * norm;
-            vector.z = 0.0f;
-        } else    //Else it's on the inside
-        {
-            //Return a vector to a point mapped inside the sphere sqrt(radius squared - length)
-            vector.x = tempPoint.x;
-            vector.y = tempPoint.y;
-            vector.z = (float) Math.sqrt(1.0f - length);
-        }
-
-    }
-
-    public void setBounds(float NewWidth, float NewHeight) {
-        assert((NewWidth > 1.0f) && (NewHeight > 1.0f));
-
-        //Set adjustment factor for width/height
-        adjustWidth = 1.0f / ((NewWidth - 1.0f) * 0.5f);
-        adjustHeight = 1.0f / ((NewHeight - 1.0f) * 0.5f);
-    }
-
-    //Mouse down
-    public void click(Point NewPt) {
-        mapToSphere(NewPt, this.StVec);
-
-    }
-
-    //Mouse drag, calculate rotation
-    public void drag(Point NewPt, Quat4f NewRot) {
-        //Map the point to the sphere
-        this.mapToSphere(NewPt, EnVec);
-
-        //Return the quaternion equivalent to the rotation
-        if (NewRot != null) {
-            Vector3f Perp = new Vector3f();
-
-            //Compute the vector perpendicular to the begin and end vectors
-            Vector3f.cross(Perp, StVec, EnVec);
-
-            //Compute the length of the perpendicular vector
-            if (Perp.length() > Epsilon)    //if its non-zero
-            {
-                //We're ok, so return the perpendicular vector as the transform after all
-                NewRot.x = Perp.x;
-                NewRot.y = Perp.y;
-                NewRot.z = Perp.z;
-                //In the quaternion values, w is cosine (theta / 2), where theta is rotation angle
-                NewRot.w = Vector3f.dot(StVec, EnVec);
-            } else                                    //if its zero
-            {
-                //The begin and end vectors coincide, so return an identity transform
-                NewRot.x = NewRot.y = NewRot.z = NewRot.w = 0.0f;
-            }
-        }
-    }
-
+	/**
+	 * Mouse drag: the rotation from the start of the drag to the point as a unit
+	 * quaternion (the identity if the point didn't move).
+	 *
+	 * @param point    the window position
+	 * @param rotation the rotation or null
+	 */
+	public void drag(Point point, Quaternion rotation) {
+		if (rotation == null) {
+			return;
+		}
+		double[] end = new double[3];
+		mapToSphere(point.getX(), point.getY(), end);
+		/* The axis (perpendicular to both points) and the angle between the points */
+		double ax = start[1] * end[2] - start[2] * end[1];
+		double ay = start[2] * end[0] - start[0] * end[2];
+		double az = start[0] * end[1] - start[1] * end[0];
+		double sin = Math.sqrt(ax * ax + ay * ay + az * az);
+		double cos = start[0] * end[0] + start[1] * end[1] + start[2] * end[2];
+		if (sin < EPSILON) {
+			/* The same point: no rotation */
+			rotation.setIdentity();
+			return;
+		}
+		double angle = Math.atan2(sin, cos);
+		double s = Math.sin(angle / 2.0) / sin;
+		rotation.set(ax * s, ay * s, az * s, Math.cos(angle / 2.0));
+	}
 }
