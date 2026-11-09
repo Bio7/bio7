@@ -48,6 +48,8 @@ final class ViewColors {
 	static void install() {
 		/* Windows: the separators with a grey line in a dark theme (the native line is white) */
 		SeparatorColors.install();
+		/* Windows: the selected items of the lists in grey in a dark theme (the native selection is white) */
+		ListSelectionColors.install();
 		if (installed || !PlatformUI.isWorkbenchRunning()) {
 			return;
 		}

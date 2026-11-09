@@ -498,10 +498,10 @@ public class Options3d extends ViewPart {
 				try {
 					double extent = Double.parseDouble(worldExtent.getText());
 					store.setValue("spatialExtent", extent);
-					worldExtent.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
+					markInputError(worldExtent, false);
 					worldExtentError.setText("");
 				} catch (Exception e) {
-					worldExtent.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+					markInputError(worldExtent, true);
 					worldExtentError.setText("Number input incorrect!");
 				}
 			}
@@ -1750,11 +1750,11 @@ public class Options3d extends ViewPart {
 				if (grid != null) {
 					try {
 						stackSizeCount = Integer.parseInt(text_11.getText());
-						text_11.setForeground(new Color(Display.getCurrent(), 0, 0, 0));
+						markInputError(text_11, false);
 						grid.setRenderImageTo(stackSizeCount);
 						numberLabel.setText("");
 					} catch (Exception e) {
-						text_11.setForeground(new Color(Display.getCurrent(), 255, 0, 0));
+						markInputError(text_11, true);
 						numberLabel.setText("Number input incorrect!");
 					}
 				}
@@ -2454,6 +2454,26 @@ public class Options3d extends ViewPart {
 		return new java.math.BigDecimal(value).setScale(4, java.math.RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
 	}
 
+	/* The text color of a field before an input error (see markInputError) */
+	private static final String FIELD_COLOR = "bio7.options3d.fieldColor";
+
+	/*
+	 * An incorrect number in red, else the color of the field again (the color of
+	 * the theme: not the system color of the lists, which is black also in a dark
+	 * theme on Windows)
+	 */
+	private static void markInputError(Text text, boolean error) {
+		if (error) {
+			if (text.getData(FIELD_COLOR) == null) {
+				text.setData(FIELD_COLOR, text.getForeground());
+			}
+			text.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+		} else if (text.getData(FIELD_COLOR) instanceof Color color) {
+			text.setData(FIELD_COLOR, null);
+			text.setForeground(color.isDisposed() ? null : color);
+		}
+	}
+
 	private Text coordinateText(Composite parent, double value, java.util.function.DoubleConsumer apply) {
 		return coordinateText(parent, value, apply, errorLabelSplit);
 	}
@@ -2468,12 +2488,12 @@ public class Options3d extends ViewPart {
 				if (SpatialStructure.getSpatialStructureInstance() != null) {
 					apply.accept(v);
 				}
-				text.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
+				markInputError(text, false);
 				if (errorLabel != null && !errorLabel.isDisposed()) {
 					errorLabel.setText("");
 				}
 			} catch (NumberFormatException e) {
-				text.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+				markInputError(text, true);
 				if (errorLabel != null && !errorLabel.isDisposed()) {
 					errorLabel.setText("Number input incorrect!");
 				}

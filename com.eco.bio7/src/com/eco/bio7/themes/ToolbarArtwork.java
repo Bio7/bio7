@@ -53,6 +53,8 @@ public final class ToolbarArtwork {
 	/* The part of the picture of a control and its bounds in the toolbar! */
 	private static final String PART = "bio7.themes.part";
 	private static final String PART_BOUNDS = "bio7.themes.partBounds";
+	/* A toolbar with the color of the toolbar of the theme (Windows, see toolBarColor) */
+	private static final String COLORED = "bio7.themes.toolBarColored";
 
 	private static final Color TRANSPARENT = new Color(0, 0, 0, 0);
 	private static final boolean WINDOWS = "win32".equals(SWT.getPlatform());
@@ -210,6 +212,9 @@ public final class ToolbarArtwork {
 				if (size.x > 0 && size.y > 0) {
 					setPart(bar, child, new Rectangle(origin.x, origin.y, size.x, size.y));
 				}
+				if (child instanceof ToolBar) {
+					toolBarColor(child);
+				}
 			}
 			if (child instanceof Composite) {
 				applyChildren(bar, (Composite) child);
@@ -236,6 +241,24 @@ public final class ToolbarArtwork {
 			/* The CSS engine has set another background! */
 			control.setBackgroundImage(part);
 		}
+	}
+
+	/*
+	 * Windows: the background color of a toolbar (below its background image) is the
+	 * color of the toolbar of the theme: the checked items (e.g., the active
+	 * perspective of the perspective switcher) are filled with a color derived from
+	 * it, else from the light system color (a light grey below a light text)
+	 */
+	private static void toolBarColor(Control toolBar) {
+		RGB rgb = theme.getColor("toolbarBottom");
+		if (rgb == null) {
+			return;
+		}
+		Color color = toolBar.getBackground();
+		if (color == null || !rgb.equals(color.getRGB())) {
+			toolBar.setBackground(new Color(toolBar.getDisplay(), rgb));
+		}
+		toolBar.setData(COLORED, Boolean.TRUE);
 	}
 
 	private static void transparent(Control control) {
@@ -462,7 +485,9 @@ public final class ToolbarArtwork {
 	private static void resetToolBars(Composite parent) {
 		for (Control child : parent.getChildren()) {
 			if (child instanceof ToolBar) {
-				if (child.getBackground() != null && child.getBackground().getAlpha() == 0) {
+				/* The transparent color (macOS, Linux) or the color of the toolbar of the theme (Windows, see toolBarColor) */
+				if ((child.getBackground() != null && child.getBackground().getAlpha() == 0) || child.getData(COLORED) != null) {
+					child.setData(COLORED, null);
 					child.setBackground(null);
 				}
 				for (ToolItem item : ((ToolBar) child).getItems()) {
