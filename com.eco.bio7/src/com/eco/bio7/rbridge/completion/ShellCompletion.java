@@ -931,7 +931,7 @@ public class ShellCompletion implements UpdateCompletion {
 				});
 				RState.setBusy(false);
 			} else {
-				System.out.println("Rserve is busy!");
+				System.out.println("R is busy!");
 			}
 		}
 		return propo;
@@ -993,7 +993,7 @@ public class ShellCompletion implements UpdateCompletion {
 				RState.setBusy(false);
 
 			} else {
-				System.out.println("Rserve is busy!");
+				System.out.println("R is busy!");
 			}
 		}
 		return propo;
@@ -1062,7 +1062,7 @@ public class ShellCompletion implements UpdateCompletion {
 				});
 				RState.setBusy(false);
 			} else {
-				System.out.println("Rserve is busy!");
+				System.out.println("R is busy!");
 			}
 			list.clear();
 		}
@@ -1132,7 +1132,7 @@ public class ShellCompletion implements UpdateCompletion {
 				});
 				RState.setBusy(false);
 			} else {
-				System.out.println("Rserve is busy!");
+				System.out.println("R is busy!");
 			}
 
 		}
@@ -1200,7 +1200,7 @@ public class ShellCompletion implements UpdateCompletion {
 				});
 				RState.setBusy(false);
 			} else {
-				System.out.println("Rserve is busy!");
+				System.out.println("R is busy!");
 			}
 		}
 

@@ -68,7 +68,7 @@ public class RServeUtil {
 					e.printStackTrace();
 				}
 			} else {
-				System.out.println("Rserve is busy. Can't execute the R script!");
+				System.out.println("R is busy. Can't execute the R script!");
 			}
 		}
 
@@ -123,7 +123,7 @@ public class RServeUtil {
 					e.printStackTrace();
 				}
 			} else {
-				System.out.println("Rserve is busy. Can't execute the R script!");
+				System.out.println("R is busy. Can't execute the R script!");
 			}
 		}
 		return rexp;
@@ -222,7 +222,7 @@ public class RServeUtil {
 
 				RState.setBusy(false);
 			} else {
-				System.out.println("Rserve is busy. Can't execute the R script!");
+				System.out.println("R is busy. Can't execute the R script!");
 			}
 
 		}
@@ -260,7 +260,7 @@ public class RServeUtil {
 				Do.schedule();
 
 			} else {
-				System.out.println("Rserve is busy. Can't execute the R script!");
+				System.out.println("R is busy. Can't execute the R script!");
 			}
 		}
 
@@ -304,7 +304,7 @@ public class RServeUtil {
 					e.printStackTrace();
 				}
 			} else {
-				System.out.println("Rserve is busy. Can't execute the R script!");
+				System.out.println("R is busy. Can't execute the R script!");
 			}
 		}
 

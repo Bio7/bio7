@@ -98,7 +98,7 @@ public class ProfileSelectionAction implements IObjectActionDelegate, IEditorAct
 							Do.schedule();
 						} else {
 
-							Bio7Dialog.message("Rserve is busy!");
+							Bio7Dialog.message("R is busy!");
 						}
 
 					}

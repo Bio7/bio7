@@ -285,7 +285,7 @@ public class PackageInstallView extends ViewPart {
 
 				} else {
 
-					Bio7Dialog.message("Rserve is busy!");
+					Bio7Dialog.message("R is busy!");
 
 				}
 
@@ -317,7 +317,7 @@ public class PackageInstallView extends ViewPart {
 
 				} else {
 
-					Bio7Dialog.message("Rserve is busy!");
+					Bio7Dialog.message("R is busy!");
 
 				}
 			}
@@ -346,7 +346,7 @@ public class PackageInstallView extends ViewPart {
 
 				} else {
 
-					Bio7Dialog.message("Rserve is busy!");
+					Bio7Dialog.message("R is busy!");
 
 				}
 
@@ -434,7 +434,7 @@ public class PackageInstallView extends ViewPart {
 
 					} else {
 
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 
 					}
 
@@ -474,7 +474,7 @@ public class PackageInstallView extends ViewPart {
 						Do.schedule();
 					} else {
 
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 
 					}
 				} else {
@@ -552,7 +552,7 @@ public class PackageInstallView extends ViewPart {
 						Do.schedule();
 					} else {
 
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 
 					}
 				} else {
@@ -685,7 +685,7 @@ public class PackageInstallView extends ViewPart {
 
 						} else {
 
-							Bio7Dialog.message("Rserve is busy!");
+							Bio7Dialog.message("R is busy!");
 
 						}
 
@@ -715,7 +715,7 @@ public class PackageInstallView extends ViewPart {
 
 						} else {
 
-							Bio7Dialog.message("Rserve is busy!");
+							Bio7Dialog.message("R is busy!");
 
 						}
 
@@ -967,7 +967,7 @@ public class PackageInstallView extends ViewPart {
 				// job.setSystem(true);
 				job.schedule();
 			} else {
-				Bio7Dialog.message("Rserve is busy!");
+				Bio7Dialog.message("R is busy!");
 			}
 		}
 	}

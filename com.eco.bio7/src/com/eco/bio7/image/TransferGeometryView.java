@@ -188,7 +188,7 @@ public class TransferGeometryView extends ViewPart {
 							}
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 
 					}
 
@@ -320,7 +320,7 @@ public class TransferGeometryView extends ViewPart {
 						job.schedule();
 					} else {
 
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 
 					}
 					/*

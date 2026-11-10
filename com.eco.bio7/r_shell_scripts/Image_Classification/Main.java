@@ -127,7 +127,7 @@ public class Main extends com.eco.bio7.compile.Model {
 							RState.setBusy(true);
 							action(choice, monitor);
 						} else {
-							System.out.println("RServer is busy. Can't execute the R script!");
+							System.out.println("R is busy. Can't execute the R script!");
 						}
 
 					}

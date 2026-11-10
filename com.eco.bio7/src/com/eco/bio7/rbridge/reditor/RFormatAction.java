@@ -149,7 +149,7 @@ public class RFormatAction  implements IObjectActionDelegate, IEditorActionDeleg
 							}
 
 						} else {
-							System.out.println("Rserve is busy!");
+							System.out.println("R is busy!");
 						}
 					}
 					

@@ -257,7 +257,7 @@ public class ExecuteRTextSelection extends Action {
 					e.printStackTrace();
 				}
 			} else {
-				System.out.println("Rserve is busy. Can't execute the R script!");
+				System.out.println("R is busy. Can't execute the R script!");
 			}
 		}
 

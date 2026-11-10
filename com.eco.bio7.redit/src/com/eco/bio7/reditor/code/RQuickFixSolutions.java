@@ -350,7 +350,7 @@ public class RQuickFixSolutions {
 				}
 
 			} else {
-				System.out.println("Rserve is busy!");
+				System.out.println("R is busy!");
 			}
 			RState.setBusy(false);
 		}
@@ -372,7 +372,7 @@ public class RQuickFixSolutions {
 		 * 
 		 * }
 		 * 
-		 * }); RState.setBusy(false); } else { System.out.println("Rserve is busy!"); }
+		 * }); RState.setBusy(false); } else { System.out.println("R is busy!"); }
 		 */
 
 		// else {

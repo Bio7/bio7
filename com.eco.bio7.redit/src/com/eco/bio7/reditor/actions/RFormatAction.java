@@ -168,7 +168,7 @@ public class RFormatAction implements IObjectActionDelegate, IEditorActionDelega
 							}
 
 						} else {
-							message("Rserve is busy!");
+							message("R is busy!");
 						}
 					}
 

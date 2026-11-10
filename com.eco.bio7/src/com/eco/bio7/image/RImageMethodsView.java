@@ -206,7 +206,7 @@ public class RImageMethodsView extends ViewPart {
 						// job.setSystem(true);
 						job.schedule();
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 				}
 
@@ -261,7 +261,7 @@ public class RImageMethodsView extends ViewPart {
 						job.schedule();
 
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 
 				} else {
@@ -321,7 +321,7 @@ public class RImageMethodsView extends ViewPart {
 						// job.setSystem(true);
 						job.schedule();
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 				}
 
@@ -373,7 +373,7 @@ public class RImageMethodsView extends ViewPart {
 						// job.setSystem(true);
 						job.schedule();
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 				}
 
@@ -410,7 +410,7 @@ public class RImageMethodsView extends ViewPart {
 							job.schedule();
 						} else {
 
-							Bio7Dialog.message("Rserve is busy!");
+							Bio7Dialog.message("R is busy!");
 
 						}
 					} else {
@@ -587,7 +587,7 @@ public class RImageMethodsView extends ViewPart {
 
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 
 					}
 				} else {
@@ -647,7 +647,7 @@ public class RImageMethodsView extends ViewPart {
 
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 
 					}
 				} else {
@@ -748,7 +748,7 @@ public class RImageMethodsView extends ViewPart {
 							// clusterjob.setSystem(true);
 							clusterjob.schedule();
 						} else {
-							Bio7Dialog.message("Rserve is busy!");
+							Bio7Dialog.message("R is busy!");
 						}
 					} else {
 						Bio7Dialog.message("No image available!");
@@ -797,7 +797,7 @@ public class RImageMethodsView extends ViewPart {
 							// pcaJob.setSystem(true);
 							pcaJob.schedule();
 						} else {
-							Bio7Dialog.message("Rserve is busy!");
+							Bio7Dialog.message("R is busy!");
 						}
 					} else {
 						Bio7Dialog.message("No image available!");

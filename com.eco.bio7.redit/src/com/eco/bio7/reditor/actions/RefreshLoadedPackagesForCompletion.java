@@ -120,7 +120,7 @@ public class RefreshLoadedPackagesForCompletion extends Action implements IObjec
 				// job.setSystem(true);
 				job.schedule();
 			} else {
-				System.out.println("Rserve is busy!");
+				System.out.println("R is busy!");
 			}
 		} else {
 			message("Rserve is not alive!");

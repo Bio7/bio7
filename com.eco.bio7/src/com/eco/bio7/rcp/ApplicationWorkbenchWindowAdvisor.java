@@ -803,7 +803,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 							}
 						}
 					} else {
-						// System.out.println("Couldn't change R preferences-> Rserve is busy!");
+						// System.out.println("Couldn't change R preferences-> R is busy!");
 					}
 				} else if (event.getProperty() == "USE_CUSTOM_DEVICE") {
 					String val = event.getNewValue().toString();
@@ -829,7 +829,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 							}
 						}
 					} else {
-						// System.out.println("Couldn't change R preferences-> Rserve is busy!");
+						// System.out.println("Couldn't change R preferences-> R is busy!");
 					}
 
 				}
@@ -1581,7 +1581,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			Do.schedule();
 		} else {
 
-			Bio7Dialog.message("Rserve is busy!");
+			Bio7Dialog.message("R is busy!");
 
 		}
 

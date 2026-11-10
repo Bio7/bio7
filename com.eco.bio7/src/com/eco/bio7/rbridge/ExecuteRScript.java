@@ -57,7 +57,7 @@ public class ExecuteRScript {
 				RState.setBusy(true);
 				executeRScript();
 			} else {
-				System.out.println("RServer is busy. Can't execute the R script!");
+				System.out.println("R is busy. Can't execute the R script!");
 			}
 
 		}
@@ -83,7 +83,7 @@ public class ExecuteRScript {
 				RState.setBusy(true);
 				executeRScript();
 			} else {
-				System.out.println("RServer is busy. Can't execute the R script!");
+				System.out.println("R is busy. Can't execute the R script!");
 			}
 
 		}

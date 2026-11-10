@@ -93,7 +93,7 @@ public class ClearRWorkspace extends Action {
 						Do.schedule();
 					} else {
 
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 				}
 

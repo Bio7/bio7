@@ -84,7 +84,7 @@ public class OpenHelpBrowserAction extends Action {
 								}
 							});
 						} else {
-							System.out.println("Rserve is busy!");
+							System.out.println("R is busy!");
 						}
 					}
 

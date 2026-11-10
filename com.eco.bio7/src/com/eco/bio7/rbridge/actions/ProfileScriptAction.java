@@ -72,7 +72,7 @@ public class ProfileScriptAction implements IObjectActionDelegate, IEditorAction
 			 * 
 			 * } } }); Do.setUser(true); Do.schedule(); } else {
 			 * 
-			 * Bio7Dialog.message("Rserve is busy!"); }
+			 * Bio7Dialog.message("R is busy!"); }
 			 * 
 			 * }
 			 * 

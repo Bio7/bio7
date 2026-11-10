@@ -182,7 +182,7 @@ public class RSkeletonInputDialog extends Dialog {
 
 				}
 			} else {
-				Bio7Dialog.message("Rserve is busy!");
+				Bio7Dialog.message("R is busy!");
 
 			}
 

@@ -154,7 +154,7 @@ public class RPackageSkeleton implements IObjectActionDelegate {
 							// job.setSystem(true);
 							job.schedule();
 						} else {
-							Bio7Dialog.message("Rserve is busy!");
+							Bio7Dialog.message("R is busy!");
 						}
 					}
 				}

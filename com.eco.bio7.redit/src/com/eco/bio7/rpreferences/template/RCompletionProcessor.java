@@ -610,7 +610,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 				});
 				RState.setBusy(false);
 			} else {
-				System.out.println("Rserve is busy!");
+				System.out.println("R is busy!");
 			}
 		} else {
 			// System.out.println("No Rserve connection available!");
@@ -677,7 +677,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 				});
 				RState.setBusy(false);
 			} else {
-				System.out.println("Rserve is busy!");
+				System.out.println("R is busy!");
 			}
 		}
 
@@ -737,7 +737,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 				});
 				RState.setBusy(false);
 			} else {
-				System.out.println("Rserve is busy!");
+				System.out.println("R is busy!");
 			}
 		}
 
@@ -807,7 +807,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 				});
 				RState.setBusy(false);
 			} else {
-				System.out.println("Rserve is busy!");
+				System.out.println("R is busy!");
 			}
 		}
 
@@ -875,7 +875,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 				});
 				RState.setBusy(false);
 			} else {
-				System.out.println("Rserve is busy!");
+				System.out.println("R is busy!");
 			}
 		}
 
@@ -951,7 +951,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 						});
 						RState.setBusy(false);
 					} else {
-						System.out.println("Rserve is busy!");
+						System.out.println("R is busy!");
 					}
 				}
 
@@ -1016,7 +1016,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 						});
 						RState.setBusy(false);
 					} else {
-						System.out.println("Rserve is busy!");
+						System.out.println("R is busy!");
 					}
 				}
 
@@ -1255,7 +1255,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 
 				RState.setBusy(false);
 			} else {
-				System.out.println("Rserve is busy!");
+				System.out.println("R is busy!");
 			}
 		}
 

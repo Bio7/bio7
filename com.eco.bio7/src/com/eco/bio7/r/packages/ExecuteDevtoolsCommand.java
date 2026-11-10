@@ -140,7 +140,7 @@ public class ExecuteDevtoolsCommand {
 							// job.setSystem(true);
 							job.schedule();
 						} else {
-							Bio7Dialog.message("Rserve is busy!");
+							Bio7Dialog.message("R is busy!");
 						}
 					}
 				} else if (RServe.isAlive() == false) {

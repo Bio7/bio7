@@ -49,7 +49,7 @@ public class OfficeValueToRAction extends Action {
 				job.schedule();
 			} else {
 
-				Bio7Dialog.message("Rserve is busy!");
+				Bio7Dialog.message("R is busy!");
 
 			}
 

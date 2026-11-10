@@ -118,7 +118,7 @@ public class RPlotView extends ViewPart {
 							Bio7Dialog.message("No data selected!");
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 				}
 			}
@@ -192,7 +192,7 @@ public class RPlotView extends ViewPart {
 
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 				}
 			}
@@ -230,7 +230,7 @@ public class RPlotView extends ViewPart {
 							Bio7Dialog.message("No data selected!");
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 				}
 			}
@@ -292,7 +292,7 @@ public class RPlotView extends ViewPart {
 							Bio7Dialog.message("Voronoi plot needs two arguments (x,y)!");
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 				}
 			}
@@ -330,7 +330,7 @@ public class RPlotView extends ViewPart {
 							Bio7Dialog.message("No data selected!");
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 				}
 			}
@@ -369,7 +369,7 @@ public class RPlotView extends ViewPart {
 						}
 
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 				}
 			}
@@ -408,7 +408,7 @@ public class RPlotView extends ViewPart {
 							Bio7Dialog.message("No data selected!");
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 				}
 			}
@@ -447,7 +447,7 @@ public class RPlotView extends ViewPart {
 							Bio7Dialog.message("No data selected!");
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 				}
 
@@ -510,7 +510,7 @@ public class RPlotView extends ViewPart {
 
 					}
 				} else {
-					Bio7Dialog.message("Rserve is busy!");
+					Bio7Dialog.message("R is busy!");
 				}
 			}
 		});

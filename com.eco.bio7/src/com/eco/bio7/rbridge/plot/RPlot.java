@@ -111,7 +111,7 @@ public class RPlot extends Composite {
 							Bio7Dialog.message("No data selected!");
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 				}
 			}
@@ -189,7 +189,7 @@ public class RPlot extends Composite {
 
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 				}
 			}
@@ -229,7 +229,7 @@ public class RPlot extends Composite {
 							Bio7Dialog.message("No data selected!");
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 				}
 			}
@@ -296,7 +296,7 @@ public class RPlot extends Composite {
 							Bio7Dialog.message("Voronoi plot needs two arguments (x,y)!");
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 				}
 			}
@@ -336,7 +336,7 @@ public class RPlot extends Composite {
 							Bio7Dialog.message("No data selected!");
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 				}
 			}
@@ -375,7 +375,7 @@ public class RPlot extends Composite {
 						}
 
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 				}
 			}
@@ -414,7 +414,7 @@ public class RPlot extends Composite {
 							Bio7Dialog.message("No data selected!");
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 				}
 			}
@@ -454,7 +454,7 @@ public class RPlot extends Composite {
 							Bio7Dialog.message("No data selected!");
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 				}
 
@@ -517,7 +517,7 @@ public class RPlot extends Composite {
 
 					}
 				} else {
-					Bio7Dialog.message("Rserve is busy!");
+					Bio7Dialog.message("R is busy!");
 				}
 			}
 		});

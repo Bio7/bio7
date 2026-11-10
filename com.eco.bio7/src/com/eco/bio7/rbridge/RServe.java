@@ -115,7 +115,7 @@ public class RServe {
 				RState.setBusy(false);
 
 			} else {
-				System.out.println("Rserve is busy!");
+				System.out.println("R is busy!");
 			}
 		} else {
 			System.out.println("No connection to Rserve available!");
@@ -189,7 +189,7 @@ public class RServe {
 
 			}
 
-			// Bio7Dialog.message("Rserve is busy!");
+			// Bio7Dialog.message("R is busy!");
 
 		}
 
@@ -269,7 +269,7 @@ public class RServe {
 
 			}
 
-			// Bio7Dialog.message("Rserve is busy!");
+			// Bio7Dialog.message("R is busy!");
 
 		}
 
@@ -310,7 +310,7 @@ public class RServe {
 			job.schedule();
 		} else {
 
-			Bio7Dialog.message("Rserve is busy!");
+			Bio7Dialog.message("R is busy!");
 
 		}
 

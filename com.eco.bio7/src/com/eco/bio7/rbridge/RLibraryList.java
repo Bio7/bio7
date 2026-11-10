@@ -83,7 +83,7 @@ public class RLibraryList extends Shell {
 						Do.schedule();
 					} else {
 
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 
 					}
 				} else {
@@ -122,7 +122,7 @@ public class RLibraryList extends Shell {
 						Do.schedule();
 					} else {
 
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 
 					}
 				} else {
@@ -188,7 +188,7 @@ public class RLibraryList extends Shell {
 				});
 				RState.setBusy(false);
 			} else {
-				System.out.println("Rserve is busy!");
+				System.out.println("R is busy!");
 			}
 		}
 

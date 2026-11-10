@@ -756,7 +756,7 @@ public class RShellView extends ViewPart {
 						// job.setSystem(true);
 						job.schedule();
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 				}
 
@@ -893,7 +893,7 @@ public class RShellView extends ViewPart {
 						// job.setSystem(true);
 						job.schedule();
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 				}
 
@@ -1051,7 +1051,7 @@ public class RShellView extends ViewPart {
 						RServe.printJob("gc()");
 
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 					}
 				}
 
@@ -1242,7 +1242,7 @@ public class RShellView extends ViewPart {
 				 * 
 				 * }
 				 * 
-				 * } } else { Bio7Dialog.message("Rserve is busy!"); }
+				 * } } else { Bio7Dialog.message("R is busy!"); }
 				 */
 			}
 		});
@@ -1337,7 +1337,7 @@ public class RShellView extends ViewPart {
 				}
 
 				else {
-					Bio7Dialog.message("Rserve is busy!");
+					Bio7Dialog.message("R is busy!");
 
 				}
 			}
@@ -1435,7 +1435,7 @@ public class RShellView extends ViewPart {
 					}
 
 				} else {
-					Bio7Dialog.message("Rserve is busy!");
+					Bio7Dialog.message("R is busy!");
 				}
 
 			}
@@ -1472,7 +1472,7 @@ public class RShellView extends ViewPart {
 						}
 					}
 				} else {
-					Bio7Dialog.message("Rserve is busy!");
+					Bio7Dialog.message("R is busy!");
 
 				}
 
@@ -1526,7 +1526,7 @@ public class RShellView extends ViewPart {
 							}
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 
 					}
 
@@ -1576,7 +1576,7 @@ public class RShellView extends ViewPart {
 							}
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 
 					}
 
@@ -1625,7 +1625,7 @@ public class RShellView extends ViewPart {
 							}
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 
 					}
 
@@ -1674,7 +1674,7 @@ public class RShellView extends ViewPart {
 							}
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 
 					}
 
@@ -1723,7 +1723,7 @@ public class RShellView extends ViewPart {
 							}
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 
 					}
 
@@ -1813,7 +1813,7 @@ public class RShellView extends ViewPart {
 
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 
 					}
 				}
@@ -1896,7 +1896,7 @@ public class RShellView extends ViewPart {
 
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 
 					}
 				}
@@ -1988,7 +1988,7 @@ public class RShellView extends ViewPart {
 
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 
 					}
 				}
@@ -2035,7 +2035,7 @@ public class RShellView extends ViewPart {
 							Bio7Dialog.message("Please select only one Variable!");
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 
 					}
 				}
@@ -2081,7 +2081,7 @@ public class RShellView extends ViewPart {
 
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 
 					}
 				}
@@ -2128,7 +2128,7 @@ public class RShellView extends ViewPart {
 
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 
 					}
 				}
@@ -2175,7 +2175,7 @@ public class RShellView extends ViewPart {
 
 						}
 					} else {
-						Bio7Dialog.message("Rserve is busy!");
+						Bio7Dialog.message("R is busy!");
 
 					}
 				}
@@ -2230,7 +2230,7 @@ public class RShellView extends ViewPart {
 
 									job.schedule();
 								} else {
-									Bio7Dialog.message("Rserve is busy!");
+									Bio7Dialog.message("R is busy!");
 								}
 
 							} else {
@@ -2285,7 +2285,7 @@ public class RShellView extends ViewPart {
 
 									job.schedule();
 								} else {
-									Bio7Dialog.message("Rserve is busy!");
+									Bio7Dialog.message("R is busy!");
 								}
 
 							} else {
@@ -2342,7 +2342,7 @@ public class RShellView extends ViewPart {
 									// job.setSystem(true);
 									job.schedule();
 								} else {
-									Bio7Dialog.message("Rserve is busy!");
+									Bio7Dialog.message("R is busy!");
 								}
 
 							} else {
@@ -2398,7 +2398,7 @@ public class RShellView extends ViewPart {
 									// job.setSystem(true);
 									job.schedule();
 								} else {
-									Bio7Dialog.message("Rserve is busy!");
+									Bio7Dialog.message("R is busy!");
 								}
 
 							} else {
@@ -2453,7 +2453,7 @@ public class RShellView extends ViewPart {
 									// job.setSystem(true);
 									job.schedule();
 								} else {
-									Bio7Dialog.message("Rserve is busy!");
+									Bio7Dialog.message("R is busy!");
 								}
 
 							} else {
@@ -2607,7 +2607,7 @@ public class RShellView extends ViewPart {
 							Do.schedule();
 						} else {
 
-							Bio7Dialog.message("Rserve is busy!");
+							Bio7Dialog.message("R is busy!");
 						}
 
 					}
@@ -3014,7 +3014,7 @@ public class RShellView extends ViewPart {
 					Do.schedule();
 
 				} else {
-					Bio7Dialog.message("Rserve is busy!");
+					Bio7Dialog.message("R is busy!");
 				}
 			}
 		} else {
@@ -3108,7 +3108,7 @@ public class RShellView extends ViewPart {
 			// job.setSystem(true);
 			job.schedule();
 		} else {
-			Bio7Dialog.message("Rserve is busy!");
+			Bio7Dialog.message("R is busy!");
 		}
 
 	}
@@ -3171,7 +3171,7 @@ public class RShellView extends ViewPart {
 
 				}
 			} else {
-				Bio7Dialog.message("Rserve is busy!");
+				Bio7Dialog.message("R is busy!");
 			}
 		}
 	}

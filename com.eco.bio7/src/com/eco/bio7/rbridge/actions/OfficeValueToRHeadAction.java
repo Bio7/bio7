@@ -51,7 +51,7 @@ public class OfficeValueToRHeadAction extends Action {
 
 			} else {
 
-				Bio7Dialog.message("Rserve is busy!");
+				Bio7Dialog.message("R is busy!");
 			}
 		} else {
 

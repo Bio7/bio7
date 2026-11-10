@@ -259,7 +259,7 @@ public class RFormatSelectionAction implements IObjectActionDelegate, IEditorAct
 							}
 
 						} else {
-							message("Rserve is busy!");
+							message("R is busy!");
 						}
 					}
 
