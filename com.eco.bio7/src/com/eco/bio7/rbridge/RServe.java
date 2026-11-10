@@ -915,7 +915,7 @@ public class RServe {
 			REXP devList = null;
 			try {
 				/* The plot canvas device of embedded R stays open (it shows the plots itself) */
-				devList = RBridge.getBackend().eval("sum(names(dev.list()) != 'bio7PlotCanvas')");
+				devList = RBridge.getBackend().eval("sum(!(names(dev.list()) %in% c('bio7PlotCanvas', 'bio7PlotVector')))");
 			} catch (RserveException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -930,7 +930,7 @@ public class RServe {
 			}
 
 			try {
-				RBridge.getBackend().eval("if (length(dev.list()) > 0 && names(dev.cur()) != 'bio7PlotCanvas') dev.off()");
+				RBridge.getBackend().eval("if (length(dev.list()) > 0 && !(names(dev.cur()) %in% c('bio7PlotCanvas', 'bio7PlotVector'))) dev.off()");
 			} catch (RserveException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

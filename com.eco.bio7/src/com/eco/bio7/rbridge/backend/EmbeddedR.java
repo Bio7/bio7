@@ -43,6 +43,7 @@ public final class EmbeddedR {
 
 	/** The R function of the plot canvas device (options(device = ...)). */
 	public static final String CANVAS_DEVICE = "bio7PlotCanvas";
+	public static final String VECTOR_DEVICE = "bio7PlotVector";
 
 	private static IOConsoleOutputStream out;
 	/* The messages of R (the error stream of R: e.g., loading packages) */
@@ -111,8 +112,9 @@ public final class EmbeddedR {
 		com.eco.bio7.worldwind.WorldWindView.setEvaluatorSupplier(com.eco.bio7.rbridge.RBridge::getBackend);
 		try {
 			session.registerDevice(CANVAS_DEVICE, RPlotCanvasDevice.factory(session));
+			session.registerDevice(VECTOR_DEVICE, com.eco.bio7.rbridge.plot.RPlotVectorDevice.factory(session));
 		} catch (RException | LinkageError e) {
-			print("The plot canvas device could not be registered: " + e.getMessage() + "\n", true);
+			print("The plot devices could not be registered: " + e.getMessage() + "\n", true);
 		}
 		RServe.setRrunning(true);
 		RConfig.config(backend);

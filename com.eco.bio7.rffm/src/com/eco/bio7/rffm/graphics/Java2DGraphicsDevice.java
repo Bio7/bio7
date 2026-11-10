@@ -39,7 +39,7 @@ import java.util.function.Consumer;
  * The device size is in logical pixels; the image has the size times the
  * scale (e.g., 2 for a HiDPI display) for a crisp display.
  */
-public class Java2DGraphicsDevice implements RGraphicsDevice {
+public class Java2DGraphicsDevice implements ResizableGraphicsDevice {
 
 	/**
 	 * A drawn frame (a copy).

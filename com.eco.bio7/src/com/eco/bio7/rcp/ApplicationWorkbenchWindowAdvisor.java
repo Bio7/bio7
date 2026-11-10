@@ -962,6 +962,15 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 							Bio7Dialog.message("The ImageJ Plot Canvas device needs embedded R (experimental):\n"
 									+ "R preferences > R connection > Embedded R (restart Bio7), and 'Use Custom Device'.");
 						}
+					} else if (sel.equals("PLOT_SWT_VECTOR")) {
+						/* The device of embedded R (experimental): SWT vector graphics in a custom view, resizable */
+						prefsPlotRserve.mult.setStringValue("options(device = \"bio7PlotVector\")");
+						prefsPlotRserve.deviceFilename.setStringValue("");
+						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
+						if (!"EMBEDDED".equals(store2.getString("R_BACKEND"))) {
+							Bio7Dialog.message("The SWT Vector Plot device needs embedded R (experimental):\n"
+									+ "R preferences > R connection > Embedded R (restart Bio7), and 'Use Custom Device'.");
+						}
 					} else if (sel.equals("PLOT_IMAGEJ_DISPLAYSIZE")) {
 
 						CanvasView view = CanvasView.getCanvas_view();

@@ -1088,10 +1088,11 @@ public final class RSession implements AutoCloseable {
 	}
 
 	/**
-	 * Resizes a Java2D device and draws the plot again in the new size
-	 * (asynchronous: returns at once, R replays when it is idle).
+	 * Resizes a device (e.g., a Java2D or a recording device) and draws the plot
+	 * again in the new size (asynchronous: returns at once, R replays when it is
+	 * idle).
 	 */
-	public void resizeDevice(Java2DGraphicsDevice device, int width, int height) {
+	public void resizeDevice(com.eco.bio7.rffm.graphics.ResizableGraphicsDevice device, int width, int height) {
 		if (!alive) {
 			return;
 		}
@@ -1109,14 +1110,14 @@ public final class RSession implements AutoCloseable {
 	/** The time without a size change before a resized device is drawn again (milliseconds). */
 	public static final long RESIZE_DELAY_MS = 250;
 
-	private final Map<Java2DGraphicsDevice, java.util.concurrent.ScheduledFuture<?>> resizeTimers = new java.util.concurrent.ConcurrentHashMap<>();
+	private final Map<com.eco.bio7.rffm.graphics.ResizableGraphicsDevice, java.util.concurrent.ScheduledFuture<?>> resizeTimers = new java.util.concurrent.ConcurrentHashMap<>();
 	private final java.util.concurrent.ScheduledExecutorService resizeTimer = java.util.concurrent.Executors.newSingleThreadScheduledExecutor(r -> {
 		Thread t = new Thread(r, "R device resize");
 		t.setDaemon(true);
 		return t;
 	});
 
-	private void queueReplay(Java2DGraphicsDevice device) {
+	private void queueReplay(com.eco.bio7.rffm.graphics.ResizableGraphicsDevice device) {
 		resizeTimers.remove(device);
 		if (!alive) {
 			return;
@@ -1143,7 +1144,7 @@ public final class RSession implements AutoCloseable {
 		});
 	}
 
-	private final Map<Java2DGraphicsDevice, int[]> pendingResize = new java.util.concurrent.ConcurrentHashMap<>();
+	private final Map<com.eco.bio7.rffm.graphics.ResizableGraphicsDevice, int[]> pendingResize = new java.util.concurrent.ConcurrentHashMap<>();
 
 	/** Draws the plot of a device again (e.g., after its size changed), asynchronously. */
 	public void replayDevice(RGraphicsDevice device) {
