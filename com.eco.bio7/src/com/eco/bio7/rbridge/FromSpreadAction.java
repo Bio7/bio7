@@ -40,7 +40,7 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REngineException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.Bio7Plugin;
@@ -446,7 +446,7 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 			}
 
 			if (RServe.isRrunning()) {
-				RConnection connection = RServe.getConnection();
+				RBackend connection = RBridge.getBackend();
 
 				try {
 					connection.eval("try(" + text + "<-data.frame(1:" + sheetdata[0].length + "))");// construct
@@ -569,7 +569,7 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 				String stringBuild = "." + generateRandomString();
 				String stringRowNames = "." + generateRandomString();
 
-				RConnection connection = RServe.getConnection();
+				RBackend connection = RBridge.getBackend();
 				try {
 					connection.eval("try(" + text + "<-data.frame(1:" + sheetdata[0].length + "))");
 
@@ -678,7 +678,7 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 					}
 				});
 
-				RConnection c = RServe.getConnection();
+				RBackend c = RBridge.getBackend();
 				try {
 					/* Numbers as doubles (full precision), else R converts the texts */
 					if (!RNumbers.assign(c, input, dataVector)) {
@@ -734,7 +734,7 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 						}
 					}
 				});
-				RConnection c = RServe.getConnection();
+				RBackend c = RBridge.getBackend();
 				try {
 					c.assign(input, dataVector);
 					try {
@@ -786,7 +786,7 @@ public class FromSpreadAction extends Action implements IMenuCreator {
 					}
 				});
 
-				RConnection c = RServe.getConnection();
+				RBackend c = RBridge.getBackend();
 				try {
 					c.assign(input, dataVector);
 

@@ -23,7 +23,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 
@@ -39,7 +39,7 @@ public class UpdateRPackagesJob extends WorkspaceJob {
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
 		monitor.beginTask("Update Packages..", IProgressMonitor.UNKNOWN);
 		if (RServe.isAlive()) {
-			RConnection c = RServe.getConnection();
+			RBackend c = RBridge.getBackend();
 
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 			// String destdir = store.getString("InstallLocation");
@@ -131,7 +131,7 @@ public class UpdateRPackagesJob extends WorkspaceJob {
 		writeToConsole();
 
 		try {
-			RServe.getConnection().voidEval("try(readLines(con = stdin()))");
+			RBridge.getBackend().voidEval("try(readLines(con = stdin()))");
 		} catch (RserveException e) {
 
 			e.printStackTrace();

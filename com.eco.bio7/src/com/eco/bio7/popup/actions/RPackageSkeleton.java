@@ -24,11 +24,12 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REngineException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RState;
 
 
@@ -82,7 +83,7 @@ public class RPackageSkeleton implements IObjectActionDelegate {
 				}
 				String[] stringsToR = v.toArray(new String[v.size()]);
 				if (RServe.isAliveDialog()) {
-					RConnection c = RServe.getConnection();
+					RBackend c = RBridge.getBackend();
 					try {
 						c.assign(".tempPackageFiles", stringsToR);
 
@@ -102,7 +103,7 @@ public class RPackageSkeleton implements IObjectActionDelegate {
 								protected IStatus run(IProgressMonitor monitor) {
 									monitor.beginTask("Create R Package Skeleton ...", IProgressMonitor.UNKNOWN);
 
-									RConnection c = RServe.getConnection();
+									RBackend c = RBridge.getBackend();
 									try {
 										c.assign(".listOfVariables", includeRVariables);
 									} catch (REngineException e1) {

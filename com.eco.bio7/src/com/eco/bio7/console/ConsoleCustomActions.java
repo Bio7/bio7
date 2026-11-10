@@ -42,11 +42,12 @@ import org.eclipse.swt.widgets.FontDialog;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.TerminateRserve;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.scriptengines.ScriptEngineConnection;
@@ -234,10 +235,12 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 							}
 						} else if (selectionConsole.equals("R")) {
 
-							if (cpp.getRProcess() != null) {
+							if (cpp.getRProcess() == null && com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning()) {
+								com.eco.bio7.batch.Bio7Dialog.message(com.eco.bio7.rbridge.backend.Backends.CANNOT_TERMINATE);
+							} else if (cpp.getRProcess() != null) {
 								try {
 									cpp.getRProcess().destroy();
-									RConnection con = RServe.getConnection();
+									RBackend con = RBridge.getBackend();
 									if (con != null) {
 										con.close();
 										RServe.setConnection(null);
@@ -306,10 +309,12 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 					if (selectionConsole.equals("R")) {
 
-						if (cpp.getRProcess() != null) {
+						if (cpp.getRProcess() == null && com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning()) {
+							com.eco.bio7.batch.Bio7Dialog.message(com.eco.bio7.rbridge.backend.Backends.CANNOT_TERMINATE);
+						} else if (cpp.getRProcess() != null) {
 							try {
 								cpp.getRProcess().destroy();
-								RConnection con = RServe.getConnection();
+								RBackend con = RBridge.getBackend();
 								if (con != null) {
 									con.close();
 									RServe.setConnection(null);

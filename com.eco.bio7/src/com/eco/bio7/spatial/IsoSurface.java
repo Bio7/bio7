@@ -1860,6 +1860,22 @@ public class IsoSurface {
 	 * Renders the iso surface (Cartesian: centered at the origin, octant: from the
 	 * origin).
 	 */
+	/* The surface itself is not drawn (e.g., only the measured volumes are shown) */
+	private volatile boolean surfaceHidden;
+
+	/**
+	 * Hides only the drawing of the surface (the data, the measurements and their
+	 * display stay), e.g., to show only the measured volumes.
+	 */
+	public void setSurfaceHidden(boolean hidden) {
+		surfaceHidden = hidden;
+	}
+
+	/** Returns true if the drawing of the surface is hidden (see setSurfaceHidden). */
+	public boolean isSurfaceHidden() {
+		return surfaceHidden;
+	}
+
 	public synchronized void render(GL2 gl, boolean cartesian) {
 		if (positions != null && bakedFlip != HeightMaps.isFlipVertically()) {
 			bake(HeightMaps.isFlipVertically());
@@ -1875,7 +1891,7 @@ public class IsoSurface {
 		if (upload) {
 			uploadBuffers(gl);
 		}
-		if (!show || !hasBuffers || indexCount == 0) {
+		if (!show || !hasBuffers || indexCount == 0 || surfaceHidden) {
 			return;
 		}
 		float d = depth * zScale;
@@ -2932,6 +2948,16 @@ public class IsoSurface {
 	/* The same, translucent (alpha < 1, e.g., a measured area on the surface)! */
 	synchronized void renderTriangles(GL2 gl, boolean cartesian, int[] mesh, int[] triangles, float[] rgb,
 			boolean fill, float lineWidth, float alpha) {
+		renderTriangles(gl, cartesian, mesh, triangles, rgb, fill, lineWidth, alpha, false, false);
+	}
+
+	/*
+	 * The same; throughSurface: without the depth test (visible through the
+	 * surface, e.g., a measured cavity inside of the object); withRemoved: also the
+	 * triangles removed by the eraser (a measured volume complete)
+	 */
+	synchronized void renderTriangles(GL2 gl, boolean cartesian, int[] mesh, int[] triangles, float[] rgb,
+			boolean fill, float lineWidth, float alpha, boolean throughSurface, boolean withRemoved) {
 		if (!show || positions == null || indices == null || mesh != meshTriangles || triangles == null) {
 			return;
 		}
@@ -2963,9 +2989,12 @@ public class IsoSurface {
 			gl.glPolygonOffset(-3, -8);
 			gl.glLineWidth(lineWidth);
 		}
+		if (throughSurface) {
+			gl.glDisable(GL.GL_DEPTH_TEST);
+		}
 		gl.glColor4f(rgb[0], rgb[1], rgb[2], alpha);
 		gl.glBegin(GL.GL_TRIANGLES);
-		java.util.BitSet hidden = hiddenTriangles;
+		java.util.BitSet hidden = withRemoved ? null : hiddenTriangles;
 		for (int t : triangles) {
 			if (hidden != null && hidden.get(t)) {
 				continue;

@@ -4567,6 +4567,37 @@ public class Options3d extends ViewPart {
 		});
 
 		/* The surface cut open: the surface of an area removed, the eraser size, undo, redo and restore */
+		/* The measured volumes: through the surface (transparent) or only the volumes (the surface hidden) */
+		final Button throughButton = new Button(compositeMeasure, SWT.CHECK);
+		throughButton.setText("Show Measured Volumes Through the Surface");
+		throughButton.setToolTipText("Shows the measured volumes (objects, cavities, outlines) as transparent bodies through the iso surface,"
+				+ "\ne.g., a cavity inside of the object (also the parts removed with the eraser).");
+		throughButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		Measurement3d throughMeasurement = SpatialUtil.getMeasurement();
+		throughButton.setSelection(throughMeasurement != null && throughMeasurement.isShowVolumesThrough());
+		throughButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				Measurement3d measurement = SpatialUtil.getMeasurement();
+				if (measurement != null) {
+					measurement.setShowVolumesThrough(throughButton.getSelection());
+				}
+			}
+		});
+		final Button onlyVolumesButton = new Button(compositeMeasure, SWT.CHECK);
+		onlyVolumesButton.setText("Show Only the Measured Volumes (Hide the Iso Surface)");
+		onlyVolumesButton.setToolTipText("Hides the iso surface: only the measured volumes are visible (complete, also the parts removed with the eraser)."
+				+ "\nThe surface and its measurements stay; switch it off to see the surface again.");
+		onlyVolumesButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		onlyVolumesButton.setSelection(throughMeasurement != null && throughMeasurement.isShowOnlyVolumes());
+		onlyVolumesButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				Measurement3d measurement = SpatialUtil.getMeasurement();
+				if (measurement != null) {
+					measurement.setShowOnlyVolumes(onlyVolumesButton.getSelection());
+				}
+			}
+		});
+
 		Label cutLabel = new Label(compositeMeasure, SWT.NONE);
 		cutLabel.setText("Cut the Surface Open:");
 		cutLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));

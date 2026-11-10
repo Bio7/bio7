@@ -8,11 +8,11 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 
@@ -32,7 +32,7 @@ public class SaveRWorkspace extends Action {
 	public void run() {
 
 		//IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		RConnection con = RServe.getConnection();
+		RBackend con = RBridge.getBackend();
 		//boolean rPipe = store.getBoolean("r_pipe");
 		if (con==null) {
 			

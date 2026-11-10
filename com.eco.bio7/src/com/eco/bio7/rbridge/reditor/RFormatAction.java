@@ -39,13 +39,13 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.REXPLogical;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditors.REditor;
 
@@ -107,7 +107,7 @@ public class RFormatAction  implements IObjectActionDelegate, IEditorActionDeleg
 
 		
 
-		if (RServe.getConnection() != null) {
+		if (RBridge.getBackend() != null) {
 			Job job = new Job("formatR") {
 				private String url;
 				REXPLogical bol = null;
@@ -116,7 +116,7 @@ public class RFormatAction  implements IObjectActionDelegate, IEditorActionDeleg
 				protected IStatus run(IProgressMonitor monitor) {
 					monitor.beginTask("Format R source ...", IProgressMonitor.UNKNOWN);
 
-					RConnection c = REditor.getRserveConnection();
+					RBackend c = RBridge.getBackend();
 					if (c != null) {
 						if (RState.isBusy() == false) {
 							RState.setBusy(true);

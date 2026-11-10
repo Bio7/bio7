@@ -32,7 +32,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.REXPLogical;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.Bio7Plugin;
@@ -41,6 +41,7 @@ import com.eco.bio7.collection.BrowserUtil;
 import com.eco.bio7.markdownedit.Activator;
 import com.eco.bio7.markdownedit.editors.MarkdownEditor;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
@@ -193,7 +194,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 						monitor.beginTask("Markdown file...", IProgressMonitor.UNKNOWN);
 						canOperate = false;
 
-						RConnection c = RServe.getConnection();
+						RBackend c = RBridge.getBackend();
 
 						try {
 							REXPLogical rl = (REXPLogical) c.eval("require(rmarkdown)");

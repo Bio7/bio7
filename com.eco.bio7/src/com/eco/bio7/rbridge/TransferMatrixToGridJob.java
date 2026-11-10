@@ -23,7 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.ui.progress.UIJob;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.batch.Bio7Dialog;
 
@@ -55,7 +55,7 @@ public class TransferMatrixToGridJob extends UIJob {
 	}
 
 	private void transferMatrixToGrid() {
-		RConnection c = RServe.getConnection();
+		RBackend c = RBridge.getBackend();
 		try {
 			isNumeric = (REXPLogical) c.eval("try(is.numeric(" + name + "))");
 		} catch (RserveException e) {

@@ -1,5 +1,7 @@
 package com.eco.bio7.rpreferences.template;
 
+import com.eco.bio7.rbridge.REvaluator;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -29,7 +31,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
@@ -557,7 +558,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 		propo = null;
 
 		// int length = prefix.length();
-		RConnection c = REditor.getRserveConnection();
+		REvaluator c = REditor.getEvaluator();
 		if (c != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
@@ -631,7 +632,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 		final int offSet = offset;
 		String afterLastIndex = prefix.substring(prefix.lastIndexOf(":") + 1, prefix.length());
 		int length = afterLastIndex.length();
-		RConnection c = REditor.getRserveConnection();
+		REvaluator c = REditor.getEvaluator();
 		if (c != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
@@ -694,7 +695,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 		String afterLastIndex = prefix.substring(prefix.lastIndexOf(":") + 1, prefix.length());
 		int length = afterLastIndex.length();
 		ArrayList<CompletionProposal> list = new ArrayList<CompletionProposal>();
-		RConnection c = REditor.getRserveConnection();
+		REvaluator c = REditor.getEvaluator();
 		if (c != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
@@ -754,7 +755,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 		String afterLastIndex = prefix.substring(prefix.lastIndexOf("@") + 1, prefix.length());
 		int length = afterLastIndex.length();
 		ArrayList<CompletionProposal> list = new ArrayList<CompletionProposal>();
-		RConnection c = REditor.getRserveConnection();
+		REvaluator c = REditor.getEvaluator();
 		if (c != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
@@ -824,7 +825,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 		String afterLastIndex = prefix.substring(prefix.lastIndexOf("$") + 1, prefix.length());
 		int length = afterLastIndex.length();
 		ArrayList<CompletionProposal> list = new ArrayList<CompletionProposal>();
-		RConnection c = REditor.getRserveConnection();
+		REvaluator c = REditor.getEvaluator();
 		if (c != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
@@ -896,7 +897,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 
 			if (funcNameFromProposals.equals("library") || funcNameFromProposals.equals("require")) {
 
-				RConnection c = REditor.getRserveConnection();
+				REvaluator c = REditor.getEvaluator();
 				if (c != null) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
@@ -962,7 +963,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 
 			else if (funcNameFromProposals.equals("data")) {
 
-				RConnection c = REditor.getRserveConnection();
+				REvaluator c = REditor.getEvaluator();
 				if (c != null) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
@@ -1034,7 +1035,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 		int length = prefix.length();
 		/* The current workspace variables! */
 		getWorkSpaceVars();
-		RConnection con = REditor.getRserveConnection();
+		REvaluator con = REditor.getEvaluator();
 		if (con != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);

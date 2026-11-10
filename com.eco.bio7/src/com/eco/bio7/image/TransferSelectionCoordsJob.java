@@ -15,10 +15,11 @@ import org.gdal.gdalconst.gdalconst;
 import org.gdal.osr.SpatialReference;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.REngineException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.Roi;
@@ -29,7 +30,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 
 	protected int selection;
 
-	private RConnection c;
+	private RBackend c;
 
 	private boolean transferAsList;
 
@@ -157,7 +158,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 	 * was read, else the reason for the dialog (e.g., the missing R packages).
 	 */
 	private String readGeoreferenceWithR(File f) {
-		RConnection con = RServe.getConnection();
+		RBackend con = RBridge.getBackend();
 		if (con == null) {
 			return "There is no connection to R (Rserve).";
 		}
@@ -202,7 +203,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 
 	/* Returns the message for the dialog if the R package sp is not installed, else null */
 	private String missingSpPackage() {
-		RConnection con = RServe.getConnection();
+		RBackend con = RBridge.getBackend();
 		if (con == null) {
 			return "There is no connection to R (Rserve).";
 		}
@@ -216,7 +217,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 		return null;
 	}
 
-	private static boolean installed(RConnection con, String pkg) throws RserveException, org.rosuda.REngine.REXPMismatchException {
+	private static boolean installed(RBackend con, String pkg) throws RserveException, org.rosuda.REngine.REXPMismatchException {
 		return ((REXPLogical) con.eval("requireNamespace('" + pkg + "', quietly=TRUE)")).isTRUE()[0];
 	}
 
@@ -290,7 +291,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 			if (RoiManager.getInstance() != null) {
 				 /*Only transfer selected ROI's from the ROI Manager or all if no ROI is selected!*/
 				Roi[] r = RoiManager.getInstance().getSelectedRoisAsArray();
-				c = RServe.getConnection();
+				c = RBridge.getBackend();
 				if (RServe.isAlive()) {
 
 					/* Get the image processor of the image ! */
@@ -358,13 +359,13 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 	/* The export methods for Polygons, Lines and Points! */
 	public void exportShapeGeometry(int selection) {
 
-		RConnection c;
+		RBackend c;
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp != null) {
 			if (RoiManager.getInstance() != null) {
 				/*Only transfer selected ROI's from the ROI Manager or all if no ROI is selected!*/
 				Roi[] r = RoiManager.getInstance().getSelectedRoisAsArray();
-				c = RServe.getConnection();
+				c = RBridge.getBackend();
 				if (RServe.isAlive()) {
 
 					/* Get the image processor of the image ! */
@@ -703,8 +704,8 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 
 	public void startExport(int selection) {
 
-		if (RServe.getConnection() != null) {
-			c = RServe.getConnection();
+		if (RBridge.getBackend() != null) {
+			c = RBridge.getBackend();
 			REXPLogical bolExists = null;
 			try {
 				bolExists = (REXPLogical) c.eval("require(sp)");

@@ -19,12 +19,13 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Button;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.image.ui.CanvasView;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RState;
 
 import org.eclipse.swt.layout.GridLayout;
@@ -154,7 +155,7 @@ public class RSkeletonInputDialog extends Dialog {
 
 				try {
 
-					RConnection c = RServe.getConnection();
+					RBackend c = RBridge.getBackend();
 					
 					/*Create a custom environment for temporary files!*/
 					c.eval("try(.bio7TempEnvPackage<- new.env())");

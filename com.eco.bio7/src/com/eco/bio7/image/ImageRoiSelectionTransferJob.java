@@ -26,12 +26,13 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REngineException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.util.Util;
 
 public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobChangeListener {
@@ -109,7 +110,7 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 			return;
 		}
 
-		RConnection connection = RServe.getConnection();
+		RBackend connection = RBridge.getBackend();
 
 		if (RoiManager.getInstance() != null) {
 			Roi[] r = RoiManager.getInstance().getSelectedRoisAsArray();

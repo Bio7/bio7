@@ -17,7 +17,7 @@ import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.util.Util;
@@ -37,7 +37,7 @@ public class RClipboardValuesJob extends WorkspaceJob {
 		 */
 
 		if (RServe.isAliveDialog()) {
-			RConnection con = RServe.getConnection();
+			RBackend con = RBridge.getBackend();
 			try {
 
 				if (Util.getOS().equals("Mac")) {

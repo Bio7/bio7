@@ -21,6 +21,7 @@ import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import org.eclipse.swt.widgets.Label;
@@ -163,9 +164,9 @@ public class TransferGeometryView extends ViewPart {
 						// List all variables in the R workspace!
 
 						try {
-							RServe.getConnection()
+							RBridge.getBackend()
 									.eval("try(varWorkspaceType<-NULL);try(for(i in 1:length(ls())){if(is.data.frame(get(ls()[i]))==TRUE){varWorkspaceType<-append(varWorkspaceType,ls()[i])}})");
-							x = RServe.getConnection().eval("try(varWorkspaceType)");
+							x = RBridge.getBackend().eval("try(varWorkspaceType)");
 							if (x.isNull() == false) {
 								try {
 									v = x.asStrings();
@@ -174,7 +175,7 @@ public class TransferGeometryView extends ViewPart {
 									e1.printStackTrace();
 								}
 							}
-							RServe.getConnection().eval("try(remove(varWorkspaceType))");
+							RBridge.getBackend().eval("try(remove(varWorkspaceType))");
 						} catch (RserveException e1) {
 
 							e1.printStackTrace();

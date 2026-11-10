@@ -11,6 +11,7 @@
 
 package com.eco.bio7.libreoffice;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.preferences.PreferenceConstants;
-import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.sun.star.beans.XPropertySet;
 import com.sun.star.bridge.XUnoUrlResolver;
 import com.sun.star.lang.XMultiComponentFactory;
@@ -52,38 +52,18 @@ public class LibreOfficeConnectionJob extends WorkspaceJob {
 		store = Bio7Plugin.getDefault().getPreferenceStore();
 
 		try {
-			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-
-				List<String> args = new ArrayList<String>();
-				args.add(store.getString(PreferenceConstants.PATH_LIBREOFFICE) + "\\soffice");
-				args.add("-nologo");
-				args.add("-nodefault");
-				args.add("-accept=socket,host=localhost,port=8100;urp;");
-				ProcessBuilder pb = new ProcessBuilder(args);
-				pb.start();
-				// String
-				// []lo={store.getString(PreferenceConstants.PATH_LIBREOFFICE) +
-				// "\\soffice" ,"-nologo" ,"-nodefault"
-				// ,"-accept=socket,host=0,port=2002;urp;"};
-				// Runtime.getRuntime().exec(lo);
-				// Runtime.getRuntime().exec(store.getString(PreferenceConstants.PATH_LIBREOFFICE)
-				// + "\\soffice -nologo -nodefault
-				// -accept=socket,host=0,port=2002;urp;");
-			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
-				String path = store.getString(PreferenceConstants.PATH_LIBREOFFICE);
-				if (path.isEmpty() == false) {
-					Runtime.getRuntime().exec(path + "/soffice -nologo -nodefault -accept=socket,host=localhost,port=8100;urp;");
-				} else {
-					Runtime.getRuntime().exec("soffice -nologo -nodefault -accept=socket,host=localhost,port=8100;urp;");
-				}
-			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
-				String path = store.getString(PreferenceConstants.PATH_LIBREOFFICE);
-				if (path.isEmpty() == false) {
-					Runtime.getRuntime().exec(path + "/soffice -nologo -nodefault -accept=socket,host=localhost,port=8100;urp;");
-				} else {
-					Runtime.getRuntime().exec("soffice -nologo -nodefault -accept=socket,host=localhost,port=8100;urp;");
-				}
-			}
+			/*
+			 * The executable and each argument separately (not one command string, which
+			 * is split at the spaces, e.g., of a path with spaces)!
+			 */
+			String path = store.getString(PreferenceConstants.PATH_LIBREOFFICE);
+			List<String> args = new ArrayList<String>();
+			args.add(path == null || path.isBlank() ? "soffice" : new File(path.trim(), "soffice").getPath());
+			args.add("-nologo");
+			args.add("-nodefault");
+			args.add("-accept=socket,host=localhost,port=8100;urp;");
+			ProcessBuilder pb = new ProcessBuilder(args);
+			pb.start();
 		} catch (IOException e1) {
 			Display display = PlatformUI.getWorkbench().getDisplay();
 			display.syncExec(new Runnable() {

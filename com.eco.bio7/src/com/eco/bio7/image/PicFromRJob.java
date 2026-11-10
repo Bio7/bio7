@@ -24,11 +24,12 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 
 class PicFromRJob extends WorkspaceJob {
 
@@ -43,7 +44,7 @@ class PicFromRJob extends WorkspaceJob {
 	private REXPLogical bolYExists;
 	private REXPLogical bolRawExists;
 	private REXPLogical bolDoubleExists;
-	private RConnection c;
+	private RBackend c;
 	private REXPLogical isNumeric;
 
 	public PicFromRJob(int type, String matrixName, int tranferDoubleType) {
@@ -56,7 +57,7 @@ class PicFromRJob extends WorkspaceJob {
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
 
 		monitor.beginTask("Transfer image from R", IProgressMonitor.UNKNOWN);
-		c = RServe.getConnection();
+		c = RBridge.getBackend();
 		picFromR();
 
 		return Status.OK_STATUS;

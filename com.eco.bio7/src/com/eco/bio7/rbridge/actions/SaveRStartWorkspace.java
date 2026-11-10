@@ -6,10 +6,10 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 
 import com.eco.bio7.compile.RInterpreterJob;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 
 public class SaveRStartWorkspace extends Action {
 
@@ -24,7 +24,7 @@ public class SaveRStartWorkspace extends Action {
 	}
 
 	public void run() {
-		RConnection d = RServe.getConnection();
+		RBackend d = RBridge.getBackend();
 
 		if (d != null) {
 
@@ -43,7 +43,7 @@ public class SaveRStartWorkspace extends Action {
 
 	}
 
-	public void saver(RConnection d) {
+	public void saver(RBackend d) {
 		String selected;
 
 		Shell s = new Shell();

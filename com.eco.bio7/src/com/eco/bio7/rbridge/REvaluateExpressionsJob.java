@@ -52,10 +52,10 @@ public class REvaluateExpressionsJob extends WorkspaceJob {
 
 		String out = null;
 		try {
-			// out = RServe.getConnection().eval("paste(capture.output(print(" + trybegin +
+			// out = RBridge.getBackend().eval("paste(capture.output(print(" + trybegin +
 			// trybegin + "(" + expressionArray[i] + ")" + tryend + tryend +
 			// ")),collapse=\"\\n\")").asString();
-			out = RServe.getConnection().eval("paste(capture.output(print(" + trybegin + "(" + expressionArray[i] + ")" + tryend + ")),collapse=\"\\n\")").asString();
+			out = RBridge.getBackend().eval("paste(capture.output(print(" + trybegin + "(" + expressionArray[i] + ")" + tryend + ")),collapse=\"\\n\")").asString();
 		} catch (REXPMismatchException e) {
 
 			e.printStackTrace();

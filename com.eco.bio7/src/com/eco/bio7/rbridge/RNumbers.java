@@ -18,6 +18,7 @@ import java.util.Locale;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPDouble;
 import org.rosuda.REngine.REngineException;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RConnection;
 
 /**
@@ -71,7 +72,17 @@ public final class RNumbers {
 	 *
 	 * @return false if the column is not numeric (nothing assigned)
 	 */
+	/** For an Rserve connection (compatibility). */
 	public static boolean assign(RConnection connection, String name, String[] texts) {
+		return assign(RBackend.of(connection), name, texts);
+	}
+
+	/** For an Rserve connection (compatibility). */
+	public static String[] texts(RConnection connection, String expression) {
+		return texts(RBackend.of(connection), expression);
+	}
+
+	public static boolean assign(RBackend connection, String name, String[] texts) {
 		double[] d = parse(texts);
 		if (d == null) {
 			return false;
@@ -91,7 +102,7 @@ public final class RNumbers {
 	 * @param connection the connection
 	 * @param expression the vector in R (e.g., "df[,2]")
 	 */
-	public static String[] texts(RConnection connection, String expression) {
+	public static String[] texts(RBackend connection, String expression) {
 		try {
 			REXP plain = connection.eval("try(is.double(" + expression + ") && is.null(oldClass(" + expression + ")))");
 			if (plain == null || !plain.isLogical() || ((org.rosuda.REngine.REXPLogical) plain).isTRUE().length == 0

@@ -14,6 +14,7 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.osgi.framework.Bundle;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
@@ -21,7 +22,7 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJobStartGui;
 import com.eco.bio7.preferences.PreferenceConstants;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 
@@ -37,7 +38,7 @@ public class SaveRWorkspaceAndStart extends Action {
 	}
 
 	public void run() {
-		RConnection d = RServe.getConnection();
+		RBackend d = RBridge.getBackend();
 
 		if (d != null) {
 			if (RState.isBusy() == false) {
@@ -59,7 +60,12 @@ public class SaveRWorkspaceAndStart extends Action {
 
 	}
 
+	/** For an Rserve connection (compatibility). */
 	public void saver(RConnection d) {
+		saver(RBackend.of(d));
+	}
+
+	public void saver(RBackend d) {
 		Bundle bundle = Platform.getBundle("com.eco.bio7");
 
 		// String path = bundle.getLocation().split(":")[2];

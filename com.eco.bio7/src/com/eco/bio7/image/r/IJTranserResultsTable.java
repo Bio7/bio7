@@ -6,6 +6,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.rosuda.REngine.REngineException;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
@@ -13,7 +14,7 @@ import com.eco.bio7.batch.Bio7Dialog;
 //import com.eco.bio7.image.PointPanel;
 //import com.eco.bio7.image.PointPanelImageMethodsView;
 //import com.eco.bio7.image.PointPanelView;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -30,7 +31,22 @@ import ij.text.TextWindow;
  */
 public class IJTranserResultsTable {
 
+	/** For an Rserve connection (compatibility). */
 	public void transferResultsTable(RConnection con, boolean dialog) {
+		transferResultsTable(RBackend.of(con), dialog);
+	}
+
+	/** For an Rserve connection (compatibility). */
+	public void pointsToR(RConnection d) {
+		pointsToR(RBackend.of(d));
+	}
+
+	/** For an Rserve connection (compatibility). */
+	public static void runParticleAnalysis(RConnection con, String macro) {
+		runParticleAnalysis(RBackend.of(con), macro);
+	}
+
+	public void transferResultsTable(RBackend con, boolean dialog) {
 		ResultsTable rt = Analyzer.getResultsTable();
 		if (rt == null || ResultsTable.getResultsWindow() == null) {
 			String mess = "No ImageJ Results Table";
@@ -100,7 +116,7 @@ public class IJTranserResultsTable {
 		}
 	}
 
-	public void pointsToR(RConnection d) {
+	public void pointsToR(RBackend d) {
 		Roi roi = null;
 
 		if (d != null) {
@@ -254,7 +270,7 @@ public class IJTranserResultsTable {
 
 	public void particledescriptors() {
 		Roi roi = null;
-		RConnection d = RServe.getConnection();
+		RBackend d = RBridge.getBackend();
 		ImagePlus currentImage = WindowManager.getCurrentImage();
 		if (currentImage != null) {
 			if (d != null) {
@@ -301,7 +317,7 @@ public class IJTranserResultsTable {
 	 * @param con   a Rserve connection.
 	 * @param macro an optional macro.
 	 */
-	public static void runParticleAnalysis(RConnection con, String macro) {
+	public static void runParticleAnalysis(RBackend con, String macro) {
 		if (macro == null) {
 			IJ.runMacro("run(\"Analyze Particles...\")");
 		} else {

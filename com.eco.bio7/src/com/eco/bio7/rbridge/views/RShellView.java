@@ -113,7 +113,7 @@ import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.REngineException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
@@ -132,6 +132,7 @@ import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RCompletionShell;
 import com.eco.bio7.rbridge.RFunctions;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.RTable;
@@ -728,7 +729,7 @@ public class RShellView extends ViewPart {
 								monitor.beginTask("Help ...", IProgressMonitor.UNKNOWN);
 
 								try {
-									RServe.getConnection()
+									RBridge.getBackend()
 											.eval("try(help.start(remote=paste(\"file://\", R.home(), sep=\"\")))");
 
 								} catch (RserveException e1) {
@@ -783,7 +784,7 @@ public class RShellView extends ViewPart {
 							protected IStatus run(IProgressMonitor monitor) {
 								monitor.beginTask("Help ...", IProgressMonitor.UNKNOWN);
 
-								RConnection c = RServe.getConnection();
+								RBackend c = RBridge.getBackend();
 
 								Display display = PlatformUI.getWorkbench().getDisplay();
 
@@ -914,6 +915,11 @@ public class RShellView extends ViewPart {
 
 				String interpreterSelection = ConsolePageParticipant.getInterpreterSelection();
 				Process RProcess = ConsolePageParticipant.getConsolePageParticipantInstance().getRProcess();
+				/* Embedded R: interrupt the evaluation in the process of Bio7 */
+				if (RProcess == null && com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning()) {
+					com.eco.bio7.rbridge.backend.EmbeddedR.interrupt();
+					return;
+				}
 				if (Bio7Dialog.getOS().equals("Windows")) {
 					Bundle bundle = Platform.getBundle("com.eco.bio7.os");
 
@@ -1203,8 +1209,8 @@ public class RShellView extends ViewPart {
 				 * if (RState.isBusy() == false) { boolean[] bolExists = null; String selected =
 				 * list_8.getItem(list_8.getSelectionIndex());
 				 * 
-				 * if (e.button != 3) { if (RServe.isAliveDialog()) { RConnection c =
-				 * RServe.getConnection();
+				 * if (e.button != 3) { if (RServe.isAliveDialog()) { RBackend c =
+				 * RBridge.getBackend();
 				 * 
 				 * try { REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected
 				 * + "\")"); bolExists = bolDataExists.isTrue(); } catch (RserveException e2) {
@@ -1221,7 +1227,7 @@ public class RShellView extends ViewPart {
 				 * 
 				 * } else {
 				 * 
-				 * if (RServe.isAliveDialog()) { RConnection c = RServe.getConnection();
+				 * if (RServe.isAliveDialog()) { RBackend c = RBridge.getBackend();
 				 * 
 				 * try { REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected
 				 * + "\")"); bolExists = bolDataExists.isTrue(); } catch (RserveException e2) {
@@ -1249,7 +1255,7 @@ public class RShellView extends ViewPart {
 					int in = listShell.getSelectionIndex();
 					if (in >= 0) {
 						String selected = listShell.getItem(listShell.getSelectionIndex());
-						RConnection c = RServe.getConnection();
+						RBackend c = RBridge.getBackend();
 						if (RServe.isAliveDialog()) {
 
 							try {
@@ -1407,7 +1413,7 @@ public class RShellView extends ViewPart {
 						String selected = listShell.getItem(selIndex);
 
 						if (RServe.isAliveDialog()) {
-							RConnection c = RServe.getConnection();
+							RBackend c = RBridge.getBackend();
 
 							try {
 								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected + "\")");
@@ -1440,7 +1446,7 @@ public class RShellView extends ViewPart {
 		newItemMenuItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				if (RServe.isAliveDialog()) {
-					RConnection c = RServe.getConnection();
+					RBackend c = RBridge.getBackend();
 
 					if (RState.isBusy() == false) {
 						boolean[] bolExists = null;
@@ -1492,13 +1498,13 @@ public class RShellView extends ViewPart {
 
 						try {
 
-							RConnection con = RServe.getConnection();
+							RBackend con = RBridge.getBackend();
 
 							con.eval(".bio7TempVarEnvironment <- new.env()");
 
 							con.eval(
 									".bio7TempVarEnvironment$workspVar<-NULL;try(for(i in 1:length(ls())){if(is.matrix(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}})");
-							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
+							x = RBridge.getBackend().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
 									v = x.asStrings();
@@ -1542,12 +1548,12 @@ public class RShellView extends ViewPart {
 						// List all variables in the R workspace!
 
 						try {
-							RConnection con = RServe.getConnection();
+							RBackend con = RBridge.getBackend();
 
 							con.eval(".bio7TempVarEnvironment <- new.env()");
 							con.eval(
 									".bio7TempVarEnvironment$workspVar<-NULL;try(for(i in 1:length(ls())){if(is.vector(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}})");
-							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
+							x = RBridge.getBackend().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
 									v = x.asStrings();
@@ -1592,12 +1598,12 @@ public class RShellView extends ViewPart {
 						// List all variables in the R workspace!
 
 						try {
-							RConnection con = RServe.getConnection();
+							RBackend con = RBridge.getBackend();
 
 							con.eval(".bio7TempVarEnvironment <- new.env()");
 							con.eval(
 									".bio7TempVarEnvironment$workspVar<-NULL;try(for(i in 1:length(ls())){if(is.function(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}})");
-							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
+							x = RBridge.getBackend().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
 									v = x.asStrings();
@@ -1641,12 +1647,12 @@ public class RShellView extends ViewPart {
 						// List all variables in the R workspace!
 
 						try {
-							RConnection con = RServe.getConnection();
+							RBackend con = RBridge.getBackend();
 
 							con.eval(".bio7TempVarEnvironment <- new.env()");
 							con.eval(
 									".bio7TempVarEnvironment$workspVar<-NULL;try(for(i in 1:length(ls())){if(is.factor(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}})");
-							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
+							x = RBridge.getBackend().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
 									v = x.asStrings();
@@ -1690,12 +1696,12 @@ public class RShellView extends ViewPart {
 						// List all variables in the R workspace!
 
 						try {
-							RConnection con = RServe.getConnection();
+							RBackend con = RBridge.getBackend();
 
 							con.eval(".bio7TempVarEnvironment <- new.env()");
 							con.eval(
 									".bio7TempVarEnvironment$workspVar<-NULL;try(for(i in 1:length(ls())){if(is.data.frame(get(ls()[i]))==TRUE){.bio7TempVarEnvironment$workspVar<-append(.bio7TempVarEnvironment$workspVar,ls()[i])}})");
-							x = RServe.getConnection().eval(".bio7TempVarEnvironment$workspVar");
+							x = RBridge.getBackend().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
 									v = x.asStrings();
@@ -1737,7 +1743,7 @@ public class RShellView extends ViewPart {
 		newItemMenuItem_1.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				if (RServe.isAliveDialog()) {
-					RConnection c = RServe.getConnection();
+					RBackend c = RBridge.getBackend();
 
 					if (RState.isBusy() == false) {
 						boolean[] bolExists = null;
@@ -1819,7 +1825,7 @@ public class RShellView extends ViewPart {
 		newItemMenuItem_2.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				if (RServe.isAliveDialog()) {
-					RConnection c = RServe.getConnection();
+					RBackend c = RBridge.getBackend();
 
 					if (RState.isBusy() == false) {
 						boolean[] bolExists = null;
@@ -1904,7 +1910,7 @@ public class RShellView extends ViewPart {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				if (RServe.isAliveDialog()) {
-					RConnection c = RServe.getConnection();
+					RBackend c = RBridge.getBackend();
 
 					if (RState.isBusy() == false) {
 						boolean[] bolExists = null;
@@ -1995,7 +2001,7 @@ public class RShellView extends ViewPart {
 		newItemMenuItem_3.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				if (RServe.isAliveDialog()) {
-					RConnection c = RServe.getConnection();
+					RBackend c = RBridge.getBackend();
 
 					if (RState.isBusy() == false) {
 						boolean[] bolExists = null;
@@ -2041,7 +2047,7 @@ public class RShellView extends ViewPart {
 		newItemMenuItem_19.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				if (RServe.isAliveDialog()) {
-					RConnection c = RServe.getConnection();
+					RBackend c = RBridge.getBackend();
 
 					if (RState.isBusy() == false) {
 						boolean[] bolExists = null;
@@ -2088,7 +2094,7 @@ public class RShellView extends ViewPart {
 		menuItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				if (RServe.isAliveDialog()) {
-					RConnection c = RServe.getConnection();
+					RBackend c = RBridge.getBackend();
 
 					if (RState.isBusy() == false) {
 						boolean[] bolExists = null;
@@ -2135,7 +2141,7 @@ public class RShellView extends ViewPart {
 		newItemMenuItem_13.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				if (RServe.isAliveDialog()) {
-					RConnection c = RServe.getConnection();
+					RBackend c = RBridge.getBackend();
 
 					if (RState.isBusy() == false) {
 						boolean[] bolExists = null;
@@ -2195,7 +2201,7 @@ public class RShellView extends ViewPart {
 
 						if (name.length >= 1) {
 							try {
-								isDataframe = (REXPLogical) RServe.getConnection()
+								isDataframe = (REXPLogical) RBridge.getBackend()
 										.eval("try(is.data.frame(" + name[0] + "))");
 
 							} catch (RserveException e1) {
@@ -2251,7 +2257,7 @@ public class RShellView extends ViewPart {
 						// for (int i = 0; i < name.length; i++) {
 						if (name.length >= 1) {
 							try {
-								isDataframe = (REXPLogical) RServe.getConnection()
+								isDataframe = (REXPLogical) RBridge.getBackend()
 										.eval("try(is.data.frame(" + name[0] + "))");
 
 							} catch (RserveException e1) {
@@ -2309,7 +2315,7 @@ public class RShellView extends ViewPart {
 						if (name.length >= 1) {
 							// for (int i = 0; i < name.length; i++) {
 							try {
-								isMatrix = (REXPLogical) RServe.getConnection().eval("try(is.matrix(" + name[0] + "))");
+								isMatrix = (REXPLogical) RBridge.getBackend().eval("try(is.matrix(" + name[0] + "))");
 
 							} catch (RserveException e1) {
 
@@ -2365,7 +2371,7 @@ public class RShellView extends ViewPart {
 						if (name.length >= 1) {
 							// for (int i = 0; i < name.length; i++) {
 							try {
-								isVector = (REXPLogical) RServe.getConnection().eval("try(is.vector(" + name[0] + "))");
+								isVector = (REXPLogical) RBridge.getBackend().eval("try(is.vector(" + name[0] + "))");
 
 							} catch (RserveException e1) {
 
@@ -2420,7 +2426,7 @@ public class RShellView extends ViewPart {
 						if (name.length >= 1) {
 							// for (int i = 0; i < name.length; i++) {
 							try {
-								isVector = (REXPLogical) RServe.getConnection().eval("try(is.vector(" + name[0] + "))");
+								isVector = (REXPLogical) RBridge.getBackend().eval("try(is.vector(" + name[0] + "))");
 
 							} catch (RserveException e1) {
 
@@ -3049,12 +3055,12 @@ public class RShellView extends ViewPart {
 					// List all variables in the R workspace!
 
 					try {
-						RConnection con = RServe.getConnection();
+						RBackend con = RBridge.getBackend();
 
 						con.eval(".bio7TempVarEnvironment <- new.env()");
 						con.eval(".bio7TempVarEnvironment$workspVar <-ls()");
 
-						// RServe.getConnection().eval("try(.varRWorkspaceObjects<-ls())");
+						// RBridge.getBackend().eval("try(.varRWorkspaceObjects<-ls())");
 						x = con.eval("try(.bio7TempVarEnvironment$workspVar)");
 						try {
 							listObjectsArray = x.asStrings();
@@ -3122,7 +3128,7 @@ public class RShellView extends ViewPart {
 					try {
 						for (int i = 0; i < data.length; i++) {
 							if (data[i].equals(".bio7Device") == false) {
-								RServe.getConnection().eval("try(remove(" + data[i] + "))");
+								RBridge.getBackend().eval("try(remove(" + data[i] + "))");
 							} else {
 								System.out.println(
 										"Variable .bio7Device wasn't deleted\nNecessary function definition (defined in the Rserve preferences) for the default plot device in Bio7!");
@@ -3139,12 +3145,12 @@ public class RShellView extends ViewPart {
 					// List all variables in the R workspace!
 
 					try {
-						RConnection con = RServe.getConnection();
+						RBackend con = RBridge.getBackend();
 
 						con.eval(".bio7TempVarEnvironment <- new.env()");
 						con.eval(".bio7TempVarEnvironment$workspVar <-ls()");
-						// RServe.getConnection().eval(".varRWorkspaceObject<-ls()");
-						x = RServe.getConnection().eval("try(.bio7TempVarEnvironment$workspVar)");
+						// RBridge.getBackend().eval(".varRWorkspaceObject<-ls()");
+						x = RBridge.getBackend().eval("try(.bio7TempVarEnvironment$workspVar)");
 						try {
 							v = x.asStrings();
 						} catch (REXPMismatchException e1) {

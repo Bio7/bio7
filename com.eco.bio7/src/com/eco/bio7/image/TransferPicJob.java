@@ -26,10 +26,11 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REngineException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 
 class TransferPicJob extends WorkspaceJob {
 
@@ -66,7 +67,7 @@ class TransferPicJob extends WorkspaceJob {
 		int y = 0;
 		int x = 0;
 		if (RServe.isAliveDialog()) {
-			RConnection c = RServe.getConnection();
+			RBackend c = RBridge.getBackend();
 			/* Get the active image ! */
 			ImagePlus imp = WindowManager.getCurrentImage();
 			if (imp != null) {

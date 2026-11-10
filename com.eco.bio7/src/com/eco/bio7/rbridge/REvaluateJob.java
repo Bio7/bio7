@@ -41,7 +41,7 @@ public class REvaluateJob extends WorkspaceJob {
 
 		String out = null;
 		try {
-			out = RServe.getConnection().eval("paste(capture.output(print(" + trybegin  + "(" + toprint + ")"  + tryend + ")),collapse=\"\\n\")").asString();
+			out = RBridge.getBackend().eval("paste(capture.output(print(" + trybegin  + "(" + toprint + ")"  + tryend + ")),collapse=\"\\n\")").asString();
 
 		} catch (REXPMismatchException e) {
 

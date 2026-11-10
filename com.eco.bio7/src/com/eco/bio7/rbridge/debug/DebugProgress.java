@@ -95,6 +95,10 @@ public class DebugProgress {
 	/* Stores the debug stepping line containing .R#linenum: */
 	private String debugStepLine = null;
 
+	/* Embedded R: R is still in Browse mode after the step, and it stopped at browser() again */
+	private volatile boolean stillBrowsing;
+	private volatile boolean calledFrom;
+
 	/* Session state flags — static so they are shared across all action instances */
 	private static boolean debugSessionActive = false;
 	private static boolean stepping = false;
@@ -135,6 +139,8 @@ public class DebugProgress {
 		final String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 		final IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		final int port = store.getInt("R_DEBUG_PORT");
+		/* The name of the debugged script (for the console instead of the temporary file) */
+		final String fileName = activeEditorName();
 
 		if (selectionConsole.equals("R")) {
 
@@ -147,6 +153,8 @@ public class DebugProgress {
 
 						/* Reset the debug step line */
 						debugStepLine = null;
+						stillBrowsing = false;
+						calledFrom = false;
 
 						/*
 						 * Command order:
@@ -157,47 +165,70 @@ public class DebugProgress {
 						 * 5. Close sink + socket
 						 */
 
-						/* 1. Create socket */
-						con.pipeToRConsole(".b7sc <- socketConnection(port=" + port + ",server=TRUE,timeout=10)");
+						if (com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning()) {
+							/*
+							 * Embedded R: the output of R comes directly from its console (no socket,
+							 * no sink): the step (shown in the console), then the variables
+							 */
+							String stepOutput = com.eco.bio7.rbridge.backend.EmbeddedR.consoleCapture(command, 120000, true,
+									text -> shortenDebugLines(text, fileName));
+							String variables = com.eco.bio7.rbridge.backend.EmbeddedR.isBrowsing()
+									? com.eco.bio7.rbridge.backend.EmbeddedR.consoleCapture("print(ls.str(), max.level = 0)", 20000, false)
+									: "";
+							deleteSpreadSheet();
+							stillBrowsing = com.eco.bio7.rbridge.backend.EmbeddedR.isBrowsing();
+							calledFrom = stepOutput != null && stepOutput.contains("Called from:");
+							processDebugOutput(new BufferedReader(new java.io.StringReader(
+									(stepOutput == null ? "" : stepOutput) + "\nBio7...Debug...Start...\n" + (variables == null ? "" : variables))));
+						} else {
+							/* 1. Create socket */
+							con.pipeToRConsole(".b7sc <- socketConnection(port=" + port + ",server=TRUE,timeout=10)");
 
-						/* 2. Sink */
-						con.pipeToRConsole("sink(.b7sc)");
+							/* 2. Sink */
+							con.pipeToRConsole("sink(.b7sc)");
 
-						/* 3. Debug command */
-						con.pipeToRConsole(command);
+							/* 3. Debug command */
+							con.pipeToRConsole(command);
 
-						/* 4. Separator */
-						con.pipeToRConsole("writeLines(\"Bio7...Debug...Start...\")");
+							/* 4. Separator */
+							con.pipeToRConsole("writeLines(\"Bio7...Debug...Start...\")");
 
-						/* 5. Variables */
-						con.pipeToRConsole("print(ls.str(), max.level = 0)");
+							/* 5. Variables */
+							con.pipeToRConsole("print(ls.str(), max.level = 0)");
 
-						/* 6. Close sink */
-						con.pipeToRConsole("sink()");
+							/* 6. Close sink */
+							con.pipeToRConsole("sink()");
 
-						/* 7. Close socket */
-						con.pipeToRConsole("close(.b7sc)");
+							/* 7. Close socket */
+							con.pipeToRConsole("close(.b7sc)");
 
-						/* 8. Newline */
-						con.pipeToRConsole("writeLines(\"\")");
+							/* 8. Newline */
+							con.pipeToRConsole("writeLines(\"\")");
 
-						try {
-							Thread.sleep(200);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
+							try {
+								Thread.sleep(200);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+
+							/* Clear the debug spreadsheet! */
+							deleteSpreadSheet();
+
+							/* Read the R socket data with Java! */
+							javaReadFromRSocket(port, command);
 						}
-
-						/* Clear the debug spreadsheet! */
-						deleteSpreadSheet();
-
-						/* Read the R socket data with Java! */
-						javaReadFromRSocket(port, command);
 
 						/* Update editor on UI thread */
 						Display.getDefault().asyncExec(new Runnable() {
 							public void run() {
 								if (debugStepLine != null) {
 									updateEditor(debugStepLine);
+								} else if (stillBrowsing) {
+									/*
+									 * Embedded R stopped again at a breakpoint (browser(): "Called from:", e.g., the
+									 * next round of a loop) or waits for input: the session continues
+									 */
+									printToDebugTextView(calledFrom ? "\u25B6 Breakpoint reached again" : "\u25B6 R waits in Browse mode");
 								} else {
 									/*
 									 * No debug stepping line received.
@@ -321,86 +352,7 @@ public class DebugProgress {
 				e1.printStackTrace();
 			}
 
-			String line;
-			int count = 0;
-			boolean capture = false;
-			boolean printConsole = false;
-			deleteDebugTextView();
-
-			/* Pattern to find the debug stepping line: .R#linenum: */
-			Pattern debugLinePattern = Pattern.compile(".R#\\d+:");
-
-			/*
-			 * Pattern to extract a clean description from the debug line.
-			 * e.g. "debug bei /path/file.R#6: cat(A)" -> "Line 4: cat(A)"
-			 */
-			Pattern codePattern = Pattern.compile(".R#(\\d+):\\s*(.*)");
-
-			try {
-
-				while ((line = input.readLine()) != null) {
-
-					/* Find the debug stepping line */
-					Matcher dm = debugLinePattern.matcher(line);
-					if (dm.find() && debugStepLine == null) {
-						debugStepLine = line;
-
-						/* Print a clean line to the debug text view */
-						Matcher cm = codePattern.matcher(line);
-						if (cm.find()) {
-							try {
-								int rawLine = Integer.parseInt(cm.group(1));
-								int adjustedLine = (rawLine > 2) ? rawLine - 2 : rawLine;
-								String code = cm.group(2).trim();
-								printToDebugTextView("\u25B6 Line " + adjustedLine + ": " + code);
-							} catch (NumberFormatException e) {
-								/* Ignore */
-							}
-						}
-					}
-
-					if (line.startsWith("Bio7...Debug...Start...")) {
-						capture = true;
-						printConsole = false;
-						/* Clear the debug spreadsheet! */
-						deleteSpreadSheet();
-					}
-
-					if (line.startsWith("debug:") || line.startsWith("debug bei") || line.startsWith("debug at") || line.startsWith("debugging in")) {
-						printConsole = true;
-					}
-
-					if (capture) {
-						/* find ':' at first occurrence! */
-						final String sp[] = line.split(":", 2);
-
-						if (sp.length == 2) {
-							/* Find whitespace at 4th position! */
-							final String sp2[] = sp[1].split("\\s", 4);
-							final int idx = count;
-							if (debugGrid != null) {
-								Display.getDefault().syncExec(new Runnable() {
-									public void run() {
-										if (debugGrid != null && debugGrid.isDisposed() == false) {
-											GridItem it = new GridItem(debugGrid, SWT.NONE, idx);
-											it.setText(0, sp[0]);
-											if (sp2.length > 3) {
-												it.setText(1, sp2[2]);
-												it.setText(2, sp2[3]);
-											}
-										}
-									}
-								});
-							}
-						}
-					}
-
-					count++;
-
-				}
-			} catch (IOException e) {
-				/* Socket timeout — normal, means R closed the connection */
-			}
+			processDebugOutput(input);
 
 			input.close();
 			debugSocket.close();
@@ -408,6 +360,123 @@ public class DebugProgress {
 		} catch (IOException e) {
 			/* Connection failed — R may have exited Browse mode */
 		}
+	}
+
+	/*
+	 * The output of a debug step: the "debug at file.R#n" line (the position in the
+	 * editor), after the line Bio7...Debug...Start... the variables (ls.str()).
+	 */
+	private void processDebugOutput(BufferedReader input) {
+		String line;
+		int count = 0;
+		boolean capture = false;
+		boolean printConsole = false;
+		deleteDebugTextView();
+
+		/* Pattern to find the debug stepping line: .R#linenum: */
+		Pattern debugLinePattern = Pattern.compile(".R#\\d+:");
+
+		/*
+		 * Pattern to extract a clean description from the debug line.
+		 * e.g. "debug bei /path/file.R#6: cat(A)" -> "Line 4: cat(A)"
+		 */
+		Pattern codePattern = Pattern.compile(".R#(\\d+):\\s*(.*)");
+
+		try {
+
+			while ((line = input.readLine()) != null) {
+
+				/* Find the debug stepping line */
+				Matcher dm = debugLinePattern.matcher(line);
+				if (dm.find() && debugStepLine == null) {
+					debugStepLine = line;
+
+					/* Print a clean line to the debug text view */
+					Matcher cm = codePattern.matcher(line);
+					if (cm.find()) {
+						try {
+							int rawLine = Integer.parseInt(cm.group(1));
+							int adjustedLine = (rawLine > 2) ? rawLine - 2 : rawLine;
+							String code = cm.group(2).trim();
+							printToDebugTextView("\u25B6 Line " + adjustedLine + ": " + code);
+						} catch (NumberFormatException e) {
+							/* Ignore */
+						}
+					}
+				}
+
+				if (line.startsWith("Bio7...Debug...Start...")) {
+					capture = true;
+					printConsole = false;
+					/* Clear the debug spreadsheet! */
+					deleteSpreadSheet();
+				}
+
+				if (line.startsWith("debug:") || line.startsWith("debug bei") || line.startsWith("debug at") || line.startsWith("debugging in")) {
+					printConsole = true;
+				}
+
+				if (capture) {
+					/* find ':' at first occurrence! */
+					final String sp[] = line.split(":", 2);
+
+					if (sp.length == 2) {
+						/* Find whitespace at 4th position! */
+						final String sp2[] = sp[1].split("\\s", 4);
+						final int idx = count;
+						if (debugGrid != null) {
+							Display.getDefault().syncExec(new Runnable() {
+								public void run() {
+									if (debugGrid != null && debugGrid.isDisposed() == false) {
+										GridItem it = new GridItem(debugGrid, SWT.NONE, idx);
+										it.setText(0, sp[0]);
+										if (sp2.length > 3) {
+											it.setText(1, sp2[2]);
+											it.setText(2, sp2[3]);
+										}
+									}
+								}
+							});
+						}
+					}
+				}
+
+				count++;
+
+			}
+		} catch (IOException e) {
+			/* Socket timeout — normal, means R closed the connection */
+		}
+	}
+
+	/*
+	 * "debug at /tmp/.../file123.R#11: code" -> "debug at Script.R line 9: code": the
+	 * script of the editor and its line (as the marker in the editor: the debugged
+	 * copy has two more lines, the function wrapper and the browser() call)
+	 */
+	static String shortenDebugLines(String text, String fileName) {
+		Matcher m = Pattern.compile("(debug(?: at| bei)?) \\S+?\\.R#(\\d+):").matcher(text);
+		StringBuilder sb = new StringBuilder();
+		while (m.find()) {
+			int raw = Integer.parseInt(m.group(2));
+			int line = raw > 2 ? raw - 2 : raw;
+			m.appendReplacement(sb, Matcher.quoteReplacement(m.group(1) + " " + fileName + " line " + line + ":"));
+		}
+		m.appendTail(sb);
+		return sb.toString();
+	}
+
+	/* The name of the file of the active editor (UI thread) or "script" */
+	private static String activeEditorName() {
+		try {
+			IEditorPart edit = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+			if (edit != null) {
+				return edit.getEditorInput().getName();
+			}
+		} catch (RuntimeException e) {
+			/* No editor */
+		}
+		return "script";
 	}
 
 	private void printToDebugTextView(String line) {

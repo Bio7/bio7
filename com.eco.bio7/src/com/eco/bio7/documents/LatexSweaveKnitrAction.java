@@ -38,7 +38,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.rosuda.REngine.REXPLogical;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.BatchModel;
@@ -46,6 +46,7 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.collection.BrowserUtil;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.views.RShellView;
@@ -173,7 +174,7 @@ public class LatexSweaveKnitrAction extends Action {
 
 						else if (extension.equals("rnw") || extension.equals("Rnw")) {
 
-							RConnection c = RServe.getConnection();
+							RBackend c = RBridge.getBackend();
 
 							try {
 								c.eval("try(.tempCurrentWd<-getwd());");
@@ -194,7 +195,7 @@ public class LatexSweaveKnitrAction extends Action {
 						else {
 							monitor.beginTask("LaTeX file...", IProgressMonitor.UNKNOWN);
 
-							RConnection c = RServe.getConnection();
+							RBackend c = RBridge.getBackend();
 
 							try {
 								REXPLogical rl = (REXPLogical) c.eval("require(knitr)");

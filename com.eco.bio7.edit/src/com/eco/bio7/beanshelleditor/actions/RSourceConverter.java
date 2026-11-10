@@ -44,7 +44,8 @@ public class RSourceConverter extends Action {
 		String back2="\\\\";
         String code2=code.replace(quote, quote2);
 		String code3=code2.replace(back, back2);
-        String eval="RServe.getConnection().eval("+quote+code3+quote+");";
+        /* Rserve or embedded R */
+        String eval="com.eco.bio7.rbridge.RBridge.getBackend().eval("+quote+code3+quote+");";
 
 
 		

@@ -6,14 +6,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
 public class RStrObjectInformation {
 	public static String ERROR_CHECK = "Error";//// Used in code completion popup infos and tryCatch error function below!
 	public static String PACKAGE_LABEL = "see list!";// Used in code completion popup infos!
 
-	public String getRHelpInfo(String htmlHelpText, RConnection con, String packageLabel) {
+	public String getRHelpInfo(String htmlHelpText, REvaluator con, String packageLabel) {
 		if (htmlHelpText.contains(" ")) {
 			htmlHelpText = htmlHelpText.substring(0, htmlHelpText.indexOf(" "));
 		}
@@ -54,7 +53,7 @@ public class RStrObjectInformation {
 	 *            the R connection
 	 * @return a string of the the str() function in R
 	 */
-	public String getRStrObjectInfo(String matDfName, RConnection con) {
+	public String getRStrObjectInfo(String matDfName, REvaluator con) {
 		String resultStr = null;
 
 		try {
@@ -74,7 +73,7 @@ public class RStrObjectInformation {
 		return resultStr;
 	}
 
-	public String getRHelpInfo2(String htmlHelpText, RConnection con, String packageLabel) {
+	public String getRHelpInfo2(String htmlHelpText, REvaluator con, String packageLabel) {
 
 		String informationControlText = null;
 		try {
@@ -126,7 +125,7 @@ public class RStrObjectInformation {
 	 *            the R connection
 	 * @return a string of the the str() function in R
 	 */
-	public String getRStrObjectInfo2(String matDfName, RConnection con) {
+	public String getRStrObjectInfo2(String matDfName, REvaluator con) {
 		String out = null;
 
 		try {

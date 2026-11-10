@@ -35,7 +35,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.REngineException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.Bio7Plugin;
@@ -43,6 +43,7 @@ import com.eco.bio7.batch.BatchModel;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.PlotJob;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.views.RShellView;
@@ -169,7 +170,7 @@ public class RScript {
 		String script_draft = a;
 		script = script_draft.replace('\r', ' ');// replace LineFeed!
 
-		final RConnection cscript = RServe.getConnection();
+		final RBackend cscript = RBridge.getBackend();
 
 		if (RServe.isRrunning()) {
 			if (cscript != null) {
@@ -247,15 +248,15 @@ public class RScript {
 				// List all variables in the R workspace!
 
 				try {
-					RServe.getConnection().eval("try(var<-ls())");
-					x = RServe.getConnection().eval("try(var)");
+					RBridge.getBackend().eval("try(var<-ls())");
+					x = RBridge.getBackend().eval("try(var)");
 					try {
 						v = x.asStrings();
 					} catch (REXPMismatchException e1) {
 
 						e1.printStackTrace();
 					}
-					RServe.getConnection().eval("try(remove(var))");
+					RBridge.getBackend().eval("try(remove(var))");
 				} catch (RserveException e1) {
 
 					e1.printStackTrace();
@@ -289,7 +290,7 @@ public class RScript {
 					protected IStatus run(IProgressMonitor monitor) {
 						monitor.beginTask("Transfer Data ...", IProgressMonitor.UNKNOWN);
 						try {
-							rexp = RServe.getConnection().eval(eval);
+							rexp = RBridge.getBackend().eval(eval);
 						} catch (RserveException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -333,33 +334,33 @@ public class RScript {
 
 				try {
 					if (assign[0] instanceof String) {
-						RServe.getConnection().assign(name, (String) assign[0]);
+						RBridge.getBackend().assign(name, (String) assign[0]);
 					} else if (assign[0] instanceof String[]) {
 						try {
-							RServe.getConnection().assign(name, (String[]) assign[0]);
+							RBridge.getBackend().assign(name, (String[]) assign[0]);
 						} catch (REngineException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					} else if (assign[0] instanceof REXP) {
-						RServe.getConnection().assign(name, (REXP) assign[0]);
+						RBridge.getBackend().assign(name, (REXP) assign[0]);
 					} else if (assign[0] instanceof double[]) {
 						try {
-							RServe.getConnection().assign(name, (double[]) assign[0]);
+							RBridge.getBackend().assign(name, (double[]) assign[0]);
 						} catch (REngineException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					} else if (assign[0] instanceof int[]) {
 						try {
-							RServe.getConnection().assign(name, (int[]) assign[0]);
+							RBridge.getBackend().assign(name, (int[]) assign[0]);
 						} catch (REngineException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					} else if (assign[0] instanceof byte[]) {
 						try {
-							RServe.getConnection().assign(name, (byte[]) assign[0]);
+							RBridge.getBackend().assign(name, (byte[]) assign[0]);
 						} catch (REngineException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -368,7 +369,7 @@ public class RScript {
 
 					else if (assign[0] instanceof REXP && assign[1] instanceof REXP) {
 						try {
-							RServe.getConnection().assign(name, (REXP) assign[0], (REXP) assign[1]);
+							RBridge.getBackend().assign(name, (REXP) assign[0], (REXP) assign[1]);
 						} catch (REngineException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();

@@ -1,5 +1,7 @@
 package com.eco.bio7.reditor.actions;
 
+import com.eco.bio7.rbridge.REvaluator;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -10,7 +12,6 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.widgets.Display;
 import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
@@ -40,7 +41,7 @@ public class OpenHelpBrowserAction extends Action {
 				monitor.beginTask("Help ...", IProgressMonitor.UNKNOWN);
 
 				try {
-					RConnection c = REditor.getRserveConnection();
+					REvaluator c = REditor.getEvaluator();
 					if (c != null) {
 						if (RState.isBusy() == false) {
 							RState.setBusy(true);

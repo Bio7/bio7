@@ -18,11 +18,12 @@ import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.rbridge.RConnectionJob;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.TerminateRserve;
 import com.eco.bio7.util.Util;
@@ -134,6 +135,10 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			}
 
 			terminate_rserve();
+			/* Embedded R (experimental): the finalizers of R run, the devices close */
+			if (com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning()) {
+				com.eco.bio7.rbridge.backend.EmbeddedR.close();
+			}
 
 			/* Save the ImageJ preferences! */
 			try {
@@ -221,7 +226,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			TerminateRserve.killProcessWindows();
 
 		} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
-			RConnection con = RServe.getConnection();
+			RBackend con = RBridge.getBackend();
 			if (con != null) {
 				con.close();
 				RServe.setConnection(null);
@@ -236,7 +241,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			 */
 
 		} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
-			RConnection con = RServe.getConnection();
+			RBackend con = RBridge.getBackend();
 			if (con != null) {
 				con.close();
 				RServe.setConnection(null);

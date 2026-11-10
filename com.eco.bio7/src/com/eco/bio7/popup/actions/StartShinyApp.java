@@ -25,6 +25,7 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.collection.BrowserUtil;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 
 public class StartShinyApp extends Action implements IObjectActionDelegate {
 
@@ -81,7 +82,7 @@ public class StartShinyApp extends Action implements IObjectActionDelegate {
 
 							// if (RState.isBusy() == false) {
 
-							// RConnection con = RServe.getConnection();
+							// RBackend con = RBridge.getBackend();
 							// try {
 
 							// con.eval("try(setwd(\"" + cleanedPath + "\"))");

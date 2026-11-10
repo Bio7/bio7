@@ -15,12 +15,13 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Text;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RScript;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RShellView;
 import com.eco.bio7.rbridge.RState;
 import org.eclipse.swt.layout.GridLayout;
@@ -248,7 +249,7 @@ public class RPlot extends Composite {
 
 				if (RServe.isAliveDialog()) {
 					if (RState.isBusy() == false) {
-						RConnection c = RServe.getConnection();
+						RBackend c = RBridge.getBackend();
 						try {
 							c.eval("try(library(tripack))");
 						} catch (RserveException e1) {

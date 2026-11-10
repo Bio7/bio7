@@ -115,7 +115,7 @@ import org.eclipse.ui.part.ResourceTransfer;
 import org.gdal.gdal.gdal;
 import org.gdal.ogr.ogr;
 import org.osgi.framework.Bundle;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.Bio7Plugin;
@@ -136,6 +136,7 @@ import com.eco.bio7.preferences.RServePlotPrefs;
 import com.eco.bio7.preferences.Reg;
 import com.eco.bio7.rbridge.RConfig;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.actions.StartRServe;
@@ -682,6 +683,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("DETECT_R_PROCESS", true);
 		store.setDefault("R_DEBUG_PORT", 21555);
 		store.setDefault("RSERVE_CLIENT_CONNECTION_PORT", 6311);
+		store.setDefault("RSERVE_CONNECT_TIMEOUT", 20);
+		/* Rserve (default) or embedded R (experimental) */
+		store.setDefault("R_BACKEND", "RSERVE");
 		store.setDefault("SHINY_PORT", 5559);
 		store.setDefault("LATEX_ENGINE", "pdflatex");
 		store.setDefault("BIBTEX_ENGINE", "bibtex");
@@ -788,7 +792,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 						value = value.replace("\\", "/");
 					}
 					if (RState.isBusy() == false) {
-						RConnection con = RServe.getConnection();
+						RBackend con = RBridge.getBackend();
 						if (con != null) {
 							try {
 								con.eval(value);
@@ -804,7 +808,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				} else if (event.getProperty() == "USE_CUSTOM_DEVICE") {
 					String val = event.getNewValue().toString();
 					if (RState.isBusy() == false) {
-						RConnection con = RServe.getConnection();
+						RBackend con = RBridge.getBackend();
 						if (con != null) {
 							try {
 								if (val.equals("false")) {
@@ -949,6 +953,15 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 							}
 						}
 
+					} else if (sel.equals("PLOT_IMAGEJ_CANVAS")) {
+						/* The device of embedded R (experimental): live in the ImageJ plot canvas, resizable */
+						prefsPlotRserve.mult.setStringValue("options(device = \"bio7PlotCanvas\")");
+						prefsPlotRserve.deviceFilename.setStringValue("");
+						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
+						if (!"EMBEDDED".equals(store2.getString("R_BACKEND"))) {
+							Bio7Dialog.message("The ImageJ Plot Canvas device needs embedded R (experimental):\n"
+									+ "R preferences > R connection > Embedded R (restart Bio7), and 'Use Custom Device'.");
+						}
 					} else if (sel.equals("PLOT_IMAGEJ_DISPLAYSIZE")) {
 
 						CanvasView view = CanvasView.getCanvas_view();
@@ -1508,7 +1521,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 								Bio7Action.callRserve();
 
 							} else {
-								RConnection con = RServe.getConnection();
+								RBackend con = RBridge.getBackend();
 								loadFile(fileListR, con);
 
 							}
@@ -1530,7 +1543,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 	}
 
-	private void loadFile(String[] fileList, RConnection con) {
+	private void loadFile(String[] fileList, RBackend con) {
 		String file;
 
 		if (Bio7Dialog.getOS().equals("Windows")) {

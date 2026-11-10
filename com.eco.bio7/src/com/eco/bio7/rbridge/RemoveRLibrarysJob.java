@@ -20,7 +20,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.PlatformUI;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.rbridge.views.PackageInstallView;
@@ -45,7 +45,7 @@ public class RemoveRLibrarysJob extends WorkspaceJob {
 					tableItems = PackageInstallView.getAllInstalledPackagesList().getSelection();
 
 					for (int i = 0; i < tableItems.length; i++) {
-						RConnection c = RServe.getConnection();
+						RBackend c = RBridge.getBackend();
 
 						try {
 							c.eval("try(remove.packages(\"" + tableItems[i].getText(0) + "\"))");

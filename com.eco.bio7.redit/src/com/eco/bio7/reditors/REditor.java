@@ -84,6 +84,7 @@ import org.eclipse.ui.texteditor.TextOperationAction;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.REvaluator;
 import com.eco.bio7.rbridge.UpdateCompletion;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.actions.OpenDirDialog;
@@ -985,6 +986,25 @@ public class REditor extends TextEditor implements IPropertyChangeListener, Upda
 
 	public static RConnection getRserveConnection() {
 		return rserveConnection;
+	}
+
+	/* The evaluator of Bio7 (Rserve or embedded R), set by Bio7 */
+	private static java.util.function.Supplier<REvaluator> evaluatorSupplier;
+
+	/** Sets the evaluator of Bio7 (e.g., RBridge::getBackend: Rserve or embedded R). */
+	public static void setEvaluatorSupplier(java.util.function.Supplier<REvaluator> supplier) {
+		evaluatorSupplier = supplier;
+	}
+
+	/**
+	 * The evaluation in R (Rserve or embedded R) or null if R is not connected.
+	 */
+	public static REvaluator getEvaluator() {
+		java.util.function.Supplier<REvaluator> s = evaluatorSupplier;
+		if (s != null) {
+			return s.get();
+		}
+		return REvaluator.of(rserveConnection);
 	}
 
 	public IMarker[] findMyMarkers(IResource target) {

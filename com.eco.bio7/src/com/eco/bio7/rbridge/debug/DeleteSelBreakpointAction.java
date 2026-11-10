@@ -87,10 +87,7 @@ public class DeleteSelBreakpointAction extends AbstractRulerActionDelegate imple
 
 						if (line + 1 == markersfind[i].getAttribute(IMarker.LINE_NUMBER, -1)) {
 							try {
-								String func = (String) markersfind[i].getAttribute(IMarker.TEXT);
-								System.out.println(func);
-								System.out.println("untrace(" + func + ")");
-								ConsolePageParticipant.pipeInputToConsole("untrace(" + func + ")", true, false);
+								/* The breakpoints are browser() calls in a copy of the script (DebugRScript): only the marker is removed (no trace()) */
 								markersfind[i].delete();
 
 							} catch (CoreException e) {

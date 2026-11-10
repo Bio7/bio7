@@ -25,7 +25,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
@@ -45,7 +45,7 @@ public class InstallRPackagesJob extends WorkspaceJob {
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
 		monitor.beginTask("Retrieve package list..", IProgressMonitor.UNKNOWN);
 		if (RServe.isAlive()) {
-			RConnection c = RServe.getConnection();
+			RBackend c = RBridge.getBackend();
 			Display display = PlatformUI.getWorkbench().getDisplay();
 			display.syncExec(new Runnable() {
 
@@ -159,7 +159,7 @@ public class InstallRPackagesJob extends WorkspaceJob {
 		writeToConsole();
 
 		try {
-			RServe.getConnection().voidEval("try(readLines(con = stdin()))");
+			RBridge.getBackend().voidEval("try(readLines(con = stdin()))");
 		} catch (RserveException e) {
 
 			e.printStackTrace();

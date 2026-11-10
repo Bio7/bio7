@@ -8,6 +8,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.osgi.framework.Bundle;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
@@ -17,7 +18,12 @@ import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 /*A class for the configuration of some variables and configurations needed for R embedded in Bio7!*/
 public class RConfig {
 
+	/** The configuration for an Rserve connection (see config(RBackend)). */
 	public static void config(RConnection con) {
+		config(RBackend.of(con));
+	}
+
+	public static void config(RBackend con) {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		
 		try {

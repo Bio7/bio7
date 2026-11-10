@@ -23,7 +23,7 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 
 public class UpdateREnvironmentTableJob extends WorkspaceJob {
@@ -52,7 +52,7 @@ public class UpdateREnvironmentTableJob extends WorkspaceJob {
 			return Status.OK_STATUS;
 		}
 		if (RServe.isAlive()) {
-			RConnection c = RServe.getConnection();
+			RBackend c = RBridge.getBackend();
 
 			try {
 				if (func) {

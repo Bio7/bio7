@@ -22,12 +22,13 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.views.RShellView;
@@ -61,7 +62,7 @@ public class InterpretR extends Action {
 		}
 
 		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
-		RConnection con = RServe.getConnection();
+		RBackend con = RBridge.getBackend();
 		IEditorInput editorInput = editor.getEditorInput();
 		IFile aFile = null;
 

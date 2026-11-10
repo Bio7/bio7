@@ -12,7 +12,7 @@ import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.REngineException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.Bio7Plugin;
@@ -92,7 +92,7 @@ public class RServeUtil {
 					protected IStatus run(IProgressMonitor monitor) {
 						monitor.beginTask("Transfer Data ...", IProgressMonitor.UNKNOWN);
 						try {
-							rexp = RServe.getConnection().eval(eval);
+							rexp = RBridge.getBackend().eval(eval);
 
 						} catch (RserveException e) {
 							// TODO Auto-generated catch block
@@ -147,33 +147,33 @@ public class RServeUtil {
 						monitor.beginTask("Transfer Data ...", IProgressMonitor.UNKNOWN);
 						try {
 							if (assign[0] instanceof String) {
-								RServe.getConnection().assign(name, (String) assign[0]);
+								RBridge.getBackend().assign(name, (String) assign[0]);
 							} else if (assign[0] instanceof String[]) {
 								try {
-									RServe.getConnection().assign(name, (String[]) assign[0]);
+									RBridge.getBackend().assign(name, (String[]) assign[0]);
 								} catch (REngineException e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
 							} else if (assign[0] instanceof REXP) {
-								RServe.getConnection().assign(name, (REXP) assign[0]);
+								RBridge.getBackend().assign(name, (REXP) assign[0]);
 							} else if (assign[0] instanceof double[]) {
 								try {
-									RServe.getConnection().assign(name, (double[]) assign[0]);
+									RBridge.getBackend().assign(name, (double[]) assign[0]);
 								} catch (REngineException e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
 							} else if (assign[0] instanceof int[]) {
 								try {
-									RServe.getConnection().assign(name, (int[]) assign[0]);
+									RBridge.getBackend().assign(name, (int[]) assign[0]);
 								} catch (REngineException e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
 							} else if (assign[0] instanceof byte[]) {
 								try {
-									RServe.getConnection().assign(name, (byte[]) assign[0]);
+									RBridge.getBackend().assign(name, (byte[]) assign[0]);
 								} catch (REngineException e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
@@ -182,7 +182,7 @@ public class RServeUtil {
 
 							else if (assign[0] instanceof REXP && assign[1] instanceof REXP) {
 								try {
-									RServe.getConnection().assign(name, (REXP) assign[0], (REXP) assign[1]);
+									RBridge.getBackend().assign(name, (REXP) assign[0], (REXP) assign[1]);
 								} catch (REngineException e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
@@ -379,7 +379,7 @@ public class RServeUtil {
 	 */
 	public static void evalRScript(String loc, boolean printCommand) {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		final RConnection cscript = RServe.getConnection();
+		final RBackend cscript = RBridge.getBackend();
 
 		if (RServe.isRrunning()) {
 			if (cscript != null) {

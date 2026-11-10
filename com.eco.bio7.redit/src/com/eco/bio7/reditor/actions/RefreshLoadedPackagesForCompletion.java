@@ -12,6 +12,8 @@
  *******************************************************************************/
 package com.eco.bio7.reditor.actions;
 
+import com.eco.bio7.rbridge.REvaluator;
+
 import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -29,7 +31,6 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
-import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.antlr.Parse;
@@ -51,7 +52,7 @@ public class RefreshLoadedPackagesForCompletion extends Action implements IObjec
 
 	public void run() {
 
-		RConnection con = REditor.getRserveConnection();
+		REvaluator con = REditor.getEvaluator();
 		if (con != null) {
 			if (RState.isBusy() == false) {
 
@@ -62,7 +63,7 @@ public class RefreshLoadedPackagesForCompletion extends Action implements IObjec
 					protected IStatus run(IProgressMonitor monitor) {
 						monitor.beginTask("Reload package information...", IProgressMonitor.UNKNOWN);
 
-						RConnection c = REditor.getRserveConnection();
+						REvaluator c = REditor.getEvaluator();
 						if (c != null) {
 
 							Map<String, String> map = rEditor.getParser().getCurrentPackageImports();

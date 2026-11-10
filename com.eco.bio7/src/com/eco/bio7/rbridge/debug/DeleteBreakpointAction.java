@@ -55,10 +55,7 @@ public class DeleteBreakpointAction extends AbstractRulerActionDelegate implemen
 			IMarker[] markersfind = findMyMarkers(resource);
 			for (int i = 0; i < markersfind.length; i++) {
 				try {
-					String func = (String) markersfind[i].getAttribute(IMarker.TEXT);
-					System.out.println(func);
-					System.out.println("untrace(" + func + ")");
-					ConsolePageParticipant.pipeInputToConsole("untrace(" + func + ")", true, false);
+					/* The breakpoints are browser() calls in a copy of the script (DebugRScript): only the marker is removed (no trace()) */
 					markersfind[i].delete();
 
 				} catch (CoreException e) {

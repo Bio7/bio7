@@ -36,7 +36,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
@@ -157,7 +157,7 @@ public class RLibraryList extends Shell {
 		btnAddLibraryDeclaration.setLayoutData(gd_btnAddLibraryDeclaration);
 		btnAddLibraryDeclaration.setText("Add selected to R editor");
 
-		RConnection c = REditor.getRserveConnection();
+		RBackend c = RBridge.getBackend();
 		if (c != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);

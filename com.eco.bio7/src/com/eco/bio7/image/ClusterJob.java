@@ -26,10 +26,10 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.REngineException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rcp.ApplicationActionBarAdvisor;
 import com.eco.bio7.time.Time;
 
@@ -78,7 +78,7 @@ class ClusterJob extends WorkspaceJob {
 			}
 		});
 
-		RConnection c = RServe.getConnection();
+		RBackend c = RBridge.getBackend();
 		if (c != null) {
 			long time = System.currentTimeMillis();
 			ImagePlus imp = null;

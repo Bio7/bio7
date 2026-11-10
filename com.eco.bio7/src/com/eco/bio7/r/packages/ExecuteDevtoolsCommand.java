@@ -16,12 +16,13 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REXPLogical;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 
@@ -74,7 +75,7 @@ public class ExecuteDevtoolsCommand {
 								protected IStatus run(IProgressMonitor monitor) {
 									monitor.beginTask("Create Roxygen ...", IProgressMonitor.UNKNOWN);
 
-									RConnection c = RServe.getConnection();
+									RBackend c = RBridge.getBackend();
 
 									try {
 										bol = (REXPLogical) c.eval("require(devtools)");

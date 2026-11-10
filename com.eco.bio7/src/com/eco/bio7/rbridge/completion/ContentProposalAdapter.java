@@ -50,6 +50,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.PlatformUI;
+import com.eco.bio7.rbridge.backend.RBackend;
+import com.eco.bio7.rbridge.RBridge;
 import org.rosuda.REngine.Rserve.RConnection;
 
 import com.eco.bio7.Bio7Plugin;
@@ -518,7 +520,7 @@ public class ContentProposalAdapter {
 			private String getRApiInformation(String finalContent, String label) {
 				IPreferenceStore store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 
-				RConnection c = REditor.getRserveConnection();
+				RBackend c = RBridge.getBackend();
 				if (c != null) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);

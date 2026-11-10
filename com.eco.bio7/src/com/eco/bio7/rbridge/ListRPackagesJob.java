@@ -20,7 +20,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.preferences.PreferenceConstants;
@@ -47,7 +47,7 @@ public class ListRPackagesJob extends WorkspaceJob {
 					PackageInstallView.getAllList().removeAll();
 				}
 			});
-			RConnection c = RServe.getConnection();
+			RBackend c = RBridge.getBackend();
 
 			try {
 				c.eval("try(.bio7ListOfWebPackages<-available.packages(contriburl=contrib.url(\"" + server + "\")))");

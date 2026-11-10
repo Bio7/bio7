@@ -27,10 +27,10 @@ import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.REngineException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.ApplicationActionBarAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
@@ -79,7 +79,7 @@ class PcaJob extends WorkspaceJob {
 			}
 		});
 
-		RConnection c = RServe.getConnection();
+		RBackend c = RBridge.getBackend();
 		if (c != null) {
 			long time = System.currentTimeMillis();
 			ImagePlus imp = null;
@@ -190,7 +190,7 @@ class PcaJob extends WorkspaceJob {
 	private void printInR(String expression) {
 		String rout = null;
 		try {
-			rout = RServe.getConnection().eval("try(paste(capture.output(print(" + expression + ")),collapse=\"\\n\"))").asString();
+			rout = RBridge.getBackend().eval("try(paste(capture.output(print(" + expression + ")),collapse=\"\\n\"))").asString();
 		} catch (REXPMismatchException e) {
 
 			e.printStackTrace();

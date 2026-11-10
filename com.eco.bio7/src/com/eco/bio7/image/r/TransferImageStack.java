@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REXPLogical;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
@@ -21,12 +22,17 @@ import com.eco.bio7.image.RImageMethodsView;
 public class TransferImageStack extends WorkspaceJob {
 
 	protected int type = 0;
-	private RConnection c;
+	private RBackend c;
 	private boolean convert;
 	private REXPLogical bolExists;
 	private boolean[] bolE;
 
+	/** For an Rserve connection (compatibility). */
 	public TransferImageStack(String name, RConnection c, boolean convert) {
+		this(name, RBackend.of(c), convert);
+	}
+
+	public TransferImageStack(String name, RBackend c, boolean convert) {
 		super(name);
 		this.c = c;
 		this.convert = convert;

@@ -21,11 +21,12 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.antlr.Parse;
@@ -71,7 +72,7 @@ public class ExecuteRTextSelection extends Action {
 			IEditorPart rEditor = (IEditorPart) window.getActivePage().getActiveEditor();
 			// IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 			// boolean rPipe = store.getBoolean("r_pipe");
-			RConnection con = RServe.getConnection();
+			RBackend con = RBridge.getBackend();
 			if (con == null) {
 				if (rEditor instanceof REditor) {
 					String selectionConsole = ConsolePageParticipant.getInterpreterSelection();

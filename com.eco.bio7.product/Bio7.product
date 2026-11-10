@@ -40,6 +40,7 @@ jdk/bin/javaw.exe
 -Xmx8096m
 --add-modules=ALL-SYSTEM 
 --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED
+--enable-native-access=ALL-UNNAMED
       </vmArgs>
       <vmArgsLin>--module-path=jdk/nashorn
 -Dpython.console.encoding=UTF-8 
@@ -203,6 +204,7 @@ jdk/bin/javaw.exe
       <feature id="com.eco.bio7.r.feature" installMode="root"/>
       <feature id="com.eco.bio7.libs.feature" installMode="root"/>
       <feature id="com.eco.bio7.redit.feature" installMode="root"/>
+      <feature id="com.eco.bio7.rffm.feature" installMode="root"/>
       <feature id="com.eco.bio7.util.feature"/>
       <feature id="com.eco.bio7.worldwind.feature" installMode="root"/>
       <feature id="com.eco.bio7.pythonedit.feature" installMode="root"/>

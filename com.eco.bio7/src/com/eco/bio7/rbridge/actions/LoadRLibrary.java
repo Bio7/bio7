@@ -6,11 +6,11 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.RLibraryList;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 
@@ -27,7 +27,7 @@ public class LoadRLibrary extends Action {
 
 	public void run() {
 
-		RConnection d = RServe.getConnection();
+		RBackend d = RBridge.getBackend();
 		if (d != null) {
 			if (RState.isBusy() == false) {
 

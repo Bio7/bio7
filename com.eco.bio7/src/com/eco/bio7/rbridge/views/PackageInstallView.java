@@ -59,7 +59,7 @@ import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.REngineException;
 import org.rosuda.REngine.RList;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.Bio7Plugin;
@@ -70,6 +70,7 @@ import com.eco.bio7.rbridge.InstallRPackagesJob;
 import com.eco.bio7.rbridge.ListRPackagesJob;
 import com.eco.bio7.rbridge.LoadRLibrarysJob;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.RemoveRLibrarysJob;
@@ -973,7 +974,7 @@ public class PackageInstallView extends ViewPart {
 
 	public void packageInstallUpdate() {
 
-		RConnection c = REditor.getRserveConnection();
+		RBackend c = RBridge.getBackend();
 		if (c != null) {
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 			String server = store.getString("R_PACKAGE_SERVER");

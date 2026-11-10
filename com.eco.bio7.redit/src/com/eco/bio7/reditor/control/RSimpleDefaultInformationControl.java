@@ -1,5 +1,7 @@
 package com.eco.bio7.reditor.control;
 
+import com.eco.bio7.rbridge.REvaluator;
+
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.JFaceResources;
@@ -27,7 +29,6 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
-import org.rosuda.REngine.Rserve.RConnection;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.RStrObjectInformation;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
@@ -485,7 +486,7 @@ public class RSimpleDefaultInformationControl extends AbstractInformationControl
 	}
 
 	private void getRApiInformation(final String finalContent) {
-		RConnection c = REditor.getRserveConnection();
+		REvaluator c = REditor.getEvaluator();
 		if (c != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);

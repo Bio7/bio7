@@ -45,13 +45,14 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 
 /*
  * DebugRScript sets up an R debugging session from within Bio7.
@@ -131,7 +132,7 @@ public class DebugRScript extends Action {
 
 		final IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
 
-		RConnection d = RServe.getConnection();
+		RBackend d = RBridge.getBackend();
 		IEditorInput editorInput = editor.getEditorInput();
 		IFile aFile = null;
 
@@ -140,7 +141,8 @@ public class DebugRScript extends Action {
 		}
 		final String loc = aFile.getLocation().toString();
 
-		if (d == null) {
+		/* The debugger works in the console: without Rserve (stopped above) or with embedded R (its console) */
+		if (d == null || d.isEmbedded()) {
 
 			final String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 

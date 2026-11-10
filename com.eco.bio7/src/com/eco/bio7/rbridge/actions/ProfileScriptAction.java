@@ -7,10 +7,11 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.reditors.REditor;
 
 public class ProfileScriptAction implements IObjectActionDelegate, IEditorActionDelegate {
@@ -27,7 +28,7 @@ public class ProfileScriptAction implements IObjectActionDelegate, IEditorAction
 
 	public void run(IAction action) {
 		if (canEvaluate) {
-			RConnection con = RServe.getConnection();
+			RBackend con = RBridge.getBackend();
 			if (con != null) {
 				Bio7Dialog.message(
 						"Please start the native R mode in the shell (or leave the Rserve connection  - toolbar 'Start Rserve' action) in the Bio7 console\nto profile the script!\n\nResults will be displayed in an external browser!");

@@ -692,6 +692,7 @@ Export-Package: Lib,
  py4j.model,
  py4j.reflection
 Require-Bundle: org.eclipse.ui,
+ com.eco.bio7.rffm;resolution:=optional,
  org.eclipse.help,
  org.eclipse.ui.console,
  org.eclipse.help.base,

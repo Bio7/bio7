@@ -45,10 +45,11 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Text;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.RStrObjectInformation;
@@ -267,7 +268,7 @@ public class ShellCompletion implements UpdateCompletion {
 	/* Here we update the code templates by calling the R function! */
 	public void update() {
 
-		RConnection con = REditor.getRserveConnection();
+		RBackend con = RBridge.getBackend();
 		if (con != null) {
 			Job job = new Job("Reload") {
 
@@ -275,7 +276,7 @@ public class ShellCompletion implements UpdateCompletion {
 				protected IStatus run(IProgressMonitor monitor) {
 					monitor.beginTask("Reload package information...", IProgressMonitor.UNKNOWN);
 
-					RConnection c = REditor.getRserveConnection();
+					RBackend c = RBridge.getBackend();
 					if (c != null) {
 						if (RState.isBusy() == false) {
 							RState.setBusy(true);
@@ -678,7 +679,7 @@ public class ShellCompletion implements UpdateCompletion {
 		IContentProposal[] array = null;
 		ImageContentProposal[] proposalsMatDFVec = null;
 		int length = contentLastCorr.length();
-		RConnection c = RServe.getConnection();
+		RBackend c = RBridge.getBackend();
 		if (c != null) {
 			// propo = null;
 
@@ -854,7 +855,7 @@ public class ShellCompletion implements UpdateCompletion {
 	private ImageContentProposal[] getWorkSpaceVars(int offset, Parse parse) {
 		propo = null;
 
-		RConnection c = RServe.getConnection();
+		RBackend c = RBridge.getBackend();
 		if (c != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
@@ -946,7 +947,7 @@ public class ShellCompletion implements UpdateCompletion {
 		// String lastIndex = prefix.substring(0, prefix.lastIndexOf(":"));
 		String afterLastIndex = prefix.substring(prefix.lastIndexOf(":") + 1, prefix.length());
 		int length = afterLastIndex.length();
-		RConnection c = RServe.getConnection();
+		RBackend c = RBridge.getBackend();
 		if (c != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
@@ -1006,7 +1007,7 @@ public class ShellCompletion implements UpdateCompletion {
 		propo = null;
 		String afterLastIndex = prefix.substring(prefix.lastIndexOf(":") + 1, prefix.length());
 		int length = afterLastIndex.length();
-		RConnection c = RServe.getConnection();
+		RBackend c = RBridge.getBackend();
 		if (c != null) {
 			ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
 			if (RState.isBusy() == false) {
@@ -1074,7 +1075,7 @@ public class ShellCompletion implements UpdateCompletion {
 		String afterLastIndex = prefix.substring(prefix.lastIndexOf("@") + 1, prefix.length());
 		int length = afterLastIndex.length();
 		ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
-		RConnection c = RServe.getConnection();
+		RBackend c = RBridge.getBackend();
 		if (c != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
@@ -1149,7 +1150,7 @@ public class ShellCompletion implements UpdateCompletion {
 		String afterLastIndex = prefix.substring(prefix.lastIndexOf("$") + 1, prefix.length());
 		int length = afterLastIndex.length();
 		ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
-		RConnection c = RServe.getConnection();
+		RBackend c = RBridge.getBackend();
 		if (c != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
@@ -1217,7 +1218,7 @@ public class ShellCompletion implements UpdateCompletion {
 	private ImageContentProposal[] dataActivation(int offset, String contentLastCorr) {
 		// IContentProposal[] array = null;
 		int length = contentLastCorr.length();
-		RConnection c = RServe.getConnection();
+		RBackend c = RBridge.getBackend();
 		if (c != null) {
 			propo = null;
 			ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
@@ -1277,7 +1278,7 @@ public class ShellCompletion implements UpdateCompletion {
 
 	/* Here we calculate available libraries and create ImageContentProposals! */
 	private ImageContentProposal[] libraryActivation(int offset, String contentLastCorr) {
-		RConnection c = RServe.getConnection();
+		RBackend c = RBridge.getBackend();
 		int length = contentLastCorr.length();
 		if (c != null) {
 			propo = null;

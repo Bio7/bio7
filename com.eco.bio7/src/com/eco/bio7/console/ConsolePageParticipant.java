@@ -84,7 +84,7 @@ import org.eclipse.ui.console.TextConsoleViewer;
 import org.eclipse.ui.part.IPageBookViewPage;
 import org.eclipse.ui.part.IPageSite;
 import org.osgi.framework.Bundle;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
@@ -92,6 +92,13 @@ import com.eco.bio7.os.pid.UnixProcessManager;
 import com.eco.bio7.popup.actions.RunJavaClassFile;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
+import com.eco.bio7.rbridge.backend.Backends;
+import com.eco.bio7.rbridge.backend.EmbeddedR;
+import org.eclipse.jface.dialogs.MessageDialog;
+import com.eco.bio7.rbridge.RLocator;
+import com.eco.bio7.rbridge.RSetupDialog;
+import com.eco.bio7.util.Util;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.actions.ExecuteRTextSelection;
 import com.eco.bio7.rbridge.debug.DebugContinueAction;
@@ -150,6 +157,30 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	public Object getAdapter(Class adapter) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	/* The output of the R process is also collected here while it is not null */
+	private static volatile StringBuffer rOutputCapture;
+	/* The maximum length of the collected output */
+	private static final int MAX_R_OUTPUT_CAPTURE = 64 * 1024;
+
+	/**
+	 * Starts to collect the output of the R process of the console (e.g., to
+	 * detect the messages of a command). Stop it with stopROutputCapture.
+	 */
+	public static void startROutputCapture() {
+		rOutputCapture = new StringBuffer();
+	}
+
+	/** Returns the output of the R process collected since startROutputCapture (empty if not started). */
+	public static String getROutputCapture() {
+		StringBuffer capture = rOutputCapture;
+		return capture != null ? capture.toString() : "";
+	}
+
+	/** Stops to collect the output of the R process. */
+	public static void stopROutputCapture() {
+		rOutputCapture = null;
 	}
 
 	public static void pipeInputToConsole(String input, boolean lineSeperator, boolean addToHistory) {
@@ -274,6 +305,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 				else if (event.keyCode == SWT.F1) {
 
+					/* Rserve only: embedded R and the console share one workspace */
 					if (interpreterSelection.equals("R") && RServe.getConnection() != null) {
 						fastSaveAndReloadRWorkspace();
 						System.out.print("Rserve workspace data transferred to native R workspace!");
@@ -298,6 +330,11 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					/* Break the evaluate line selection action! */
 					ExecuteRTextSelection lineSelection = ExecuteRTextSelection.getInstance();
 					lineSelection.stopEvaluation();
+					/* Embedded R (experimental): interrupt the evaluation in the process of Bio7 */
+					if (interpreterSelection.equals("R") && RProcess == null && Backends.isEmbeddedRunning()) {
+						EmbeddedR.interrupt();
+						return;
+					}
 
 					// Send OS signal
 					if (Bio7Dialog.getOS().equals("Windows")) {
@@ -350,7 +387,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 							// Runtime.getRuntime().exec("kill -INT " +
 							// rPid.getPidUnix(RProcess));
 							/*
-							 * if (RServe.getConnection() == null) {
+							 * if (RBridge.getBackend() == null) {
 							 * UnixProcessManager.sendSigIntToProcessTree(RProcess); } else { System.out.
 							 * print("Please change to the native connection to interrupt a running R script!"
 							 * ); }
@@ -711,92 +748,55 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		consoleEncoding = store.getString("Console_Encoding");
+		/* Embedded R (experimental, preference): R in the process of Bio7, else Rserve as before */
+		if (Backends.isEmbeddedSelected()) {
+			if (Backends.isEmbeddedRunning()) {
+				return;
+			}
+			String error = Backends.startEmbedded();
+			if (error == null) {
+				return;
+			}
+			String message = "Embedded R (experimental) could not be started:\n" + error + "\n\nR is started as a separate process (Rserve).";
+			System.err.println(message.replace("\n\n", " "));
+			Display.getDefault().asyncExec(() -> MessageDialog.openWarning(Util.getShell(), "Embedded R", message));
+		}
+		String rPath = store.getString(PreferenceConstants.PATH_R);
+		/* The R of the preferences, else the first R found (the PATH, the usual folders) */
+		String home = RLocator.resolveHome(rPath);
+		String executable = home == null ? null : RLocator.consoleExecutableOf(home);
+		if (executable == null) {
+			Display.getDefault().asyncExec(() -> {
+				MessageDialog dialog = new MessageDialog(Util.getShell(), "R", null,
+						"R was not found" + (rPath.isEmpty() ? "" : " in " + rPath) + " (also not in the PATH and the usual folders).\n\n"
+								+ "Please install R or select the path of R in 'R and Rserve Setup'.",
+						MessageDialog.WARNING, 0, "R and Rserve Setup...", "Close");
+				if (dialog.open() == 0) {
+					RSetupDialog.openSetup();
+				}
+			});
+			return;
+		}
+		if (!rPath.isEmpty() && !home.equals(rPath)) {
+			System.out.println("R was not found in the path of the preferences (" + rPath + "), started R of "
+					+ (home.isEmpty() ? "the PATH" : home) + ". The path can be selected in 'R and Rserve Setup' (R preferences).");
+		}
 		try {
-
+			List<String> args = new ArrayList<String>();
+			args.add(executable);
 			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-				// process = Runtime.getRuntime().exec("cmd");
-				/*
-				 * ProcessBuilder can redirect the error stream! No second thread needed!
-				 */
-
-				String rPath = store.getString(PreferenceConstants.PATH_R);
-
-				List<String> args = new ArrayList<String>();
-
-				args.add(rPath + "/bin/x64/rterm");
-
 				args.add("--ess");
-				/*
-				 * args.add("--no-restore"); args.add("--no-save");
-				 */
-				ProcessBuilder builder = new ProcessBuilder(args);
-				builder.redirectErrorStream(true);
-				RProcess = builder.start();
-				RprocessThread = new Thread(new RProcessGrabber());
-				RprocessThread.start();
-
-				// System.out.println("Process Id is: " +
-				// rPid.getPidWindows(RProcess));
-				rOptions();
-
-			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
-
-				String rPath = store.getString(PreferenceConstants.PATH_R);
-
-				List<String> args = new ArrayList<String>();
-				if (rPath.isEmpty() == false) {
-					args.add(rPath + "/bin/R");
-
-				}
-
-				else {
-					args.add("R");
-				}
-
+			} else {
 				args.add("--interactive");
-
-				ProcessBuilder builder = new ProcessBuilder(args);
-				builder.redirectErrorStream(true);
-				RProcess = builder.start();
-				RprocessThread = new Thread(new RProcessGrabber());
-				RprocessThread.start();
-
-				// System.out.println("Process Id is: " +
-				// rPid.getPidUnix(RProcess));
-				rOptions();
 			}
+			ProcessBuilder builder = new ProcessBuilder(args);
+			builder.redirectErrorStream(true);
+			RProcess = builder.start();
+			RprocessThread = new Thread(new RProcessGrabber());
+			RprocessThread.start();
 
-			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
-				String rPath = store.getString(PreferenceConstants.PATH_R);
-
-				List<String> args = new ArrayList<String>();
-				if (rPath.isEmpty() == false) {
-					args.add(rPath + "/bin/R");
-				} else {
-					args.add("R");// open /usr/local/bin/r --args --interactive
-
-				}
-				/* On Mac arch the option interactive crashes! */
-				if (ApplicationWorkbenchWindowAdvisor.isArch()) {
-					args.add("--interactive");
-					// args.add("--no-save");
-				} else {
-					args.add("--interactive");
-				}
-
-				ProcessBuilder builder = new ProcessBuilder(args);
-				builder.redirectErrorStream(true);
-
-				RProcess = builder.start();
-				RprocessThread = new Thread(new RProcessGrabber());
-				RprocessThread.start();
-
-				// System.out.println("Process Id is: " +
-				// rPid.getPidUnix(RProcess));
-				rOptions();
-			}
+			rOptions();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -884,6 +884,15 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 					int ch;
 					while ((ch = inr.read()) != -1) {
+						/* The output for a listener (e.g., the start of Rserve, see RConnectionJob) */
+						StringBuffer capture = rOutputCapture;
+						if (capture != null) {
+							capture.append((char) ch);
+							/* Only the recent output (if the capture is not stopped) */
+							if (capture.length() > MAX_R_OUTPUT_CAPTURE) {
+								capture.delete(0, capture.length() - MAX_R_OUTPUT_CAPTURE / 2);
+							}
+						}
 
 						if (Bio7Dialog.getOS().equals("Windows")) {
 
@@ -1366,7 +1375,10 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 						}
 					}
-					if (RProcess != null) {
+					if (RProcess == null && Backends.isEmbeddedRunning()) {
+						/* Embedded R (experimental): the line is evaluated by R in the process of Bio7 */
+						EmbeddedR.console(input);
+					} else if (RProcess != null) {
 						final OutputStream os = RProcess.getOutputStream();
 						final OutputStreamWriter osw = new OutputStreamWriter(os);
 						final BufferedWriter bw = new BufferedWriter(osw, 100);
@@ -1525,7 +1537,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 						@Override
 						protected IStatus run(IProgressMonitor monitor) {
 							monitor.beginTask("Transfer data to native started R ...", IProgressMonitor.UNKNOWN);
-							RConnection con = RServe.getConnection();
+							RBackend con = RBridge.getBackend();
 							try {
 								con.voidEval(save);
 							} catch (RserveException e) {
@@ -1662,7 +1674,9 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		if (selectionConsole.equals("R")) {
 			ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
 			Process rProcess = con.getRProcess();
-			if (rProcess != null) {
+			if (rProcess == null && Backends.isEmbeddedRunning()) {
+				EmbeddedR.console(command);
+			} else if (rProcess != null) {
 				final OutputStream os = rProcess.getOutputStream();
 				final OutputStreamWriter osw = new OutputStreamWriter(os);
 				final BufferedWriter bw = new BufferedWriter(osw, 100);

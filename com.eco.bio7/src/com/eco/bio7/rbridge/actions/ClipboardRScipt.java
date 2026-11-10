@@ -16,6 +16,7 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.util.Util;
@@ -36,7 +37,7 @@ public class ClipboardRScipt extends Action {
 		// IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		// boolean rPipe = store.getBoolean("r_pipe");
 
-		if (RServe.getConnection() == null) {
+		if (RBridge.getBackend() == null) {
 			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 			if (selectionConsole.equals("R")) {
 				ConsolePageParticipant.pipeInputToConsole("fileClipboardTemp<-file(\"clipboard\", open=\"r\");source(fileClipboardTemp,echo=T);close(fileClipboardTemp);remove(fileClipboardTemp)", true, true);

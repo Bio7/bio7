@@ -17,11 +17,12 @@ import java.util.ArrayList;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.REngineException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.Roi;
@@ -68,7 +69,8 @@ public class ImageToRTransfer {
 			return;
 		}
 
-		RConnection connection = RServe.getConnection();
+		/* Rserve or embedded R (the backend of Bio7) */
+		RBackend connection = RBridge.getBackend();
 
 		if (RoiManager.getInstance() != null) {
 			Roi[] r = RoiManager.getInstance().getSelectedRoisAsArray();
@@ -348,7 +350,7 @@ public class ImageToRTransfer {
 		REXPLogical isNumeric = null;
 		REXPLogical isImageMatrixNull = null;
 		ImageProcessor ip;
-		RConnection c = RServe.getConnection();
+		RBackend c = RBridge.getBackend();
 		if (RServe.isAlive()) {
 			/* Test if the imageMatrix R object is null! */
 			try {

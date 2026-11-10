@@ -19,7 +19,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.actions.Bio7Action;
@@ -27,6 +27,7 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.Console;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.StartBio7Utils;
 
@@ -73,7 +74,7 @@ public class RInterpreterJob extends WorkspaceJob {
 	public void interpretRJob(String thesource, String loc) {
 		String temp = thesource;
 
-		final RConnection cscript = RServe.getConnection();
+		final RBackend cscript = RBridge.getBackend();
 
 		if (RServe.isRrunning()) {
 			if (cscript != null) {

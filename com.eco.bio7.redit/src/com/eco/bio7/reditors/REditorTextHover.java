@@ -1,5 +1,7 @@
 package com.eco.bio7.reditors;
 
+import com.eco.bio7.rbridge.REvaluator;
+
 import java.awt.Color;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -33,7 +35,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 import org.eclipse.ui.texteditor.spelling.SpellingAnnotation;
-import org.rosuda.REngine.Rserve.RConnection;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.RStrObjectInformation;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
@@ -187,7 +188,7 @@ public class REditorTextHover implements ITextHover, ITextHoverExtension, ITextH
 					return htmlHelpText + "," + wordOffset + "," + resultedLength;
 				}
 
-				RConnection c = REditor.getRserveConnection();
+				REvaluator c = REditor.getEvaluator();
 				if (c != null) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);

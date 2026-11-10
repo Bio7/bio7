@@ -10,7 +10,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RClipboardValuesJob;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 
@@ -29,7 +29,7 @@ public class ClipboardRValues extends Action {
 		//IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		//boolean rPipe = store.getBoolean("r_pipe");
 
-		if (RServe.getConnection()==null) {
+		if (RBridge.getBackend()==null) {
 			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 			if (selectionConsole.equals("R")) {
 

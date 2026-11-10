@@ -38,13 +38,14 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.image.r.IJTranserResultsTable;
 import com.eco.bio7.image.r.TransferImageStack;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.util.Util;
@@ -183,7 +184,7 @@ public class RImageMethodsView extends ViewPart {
 							protected IStatus run(IProgressMonitor monitor) {
 								monitor.beginTask("Transfer Data ...", IProgressMonitor.UNKNOWN);
 
-								new IJTranserResultsTable().transferResultsTable(RServe.getConnection(), true);
+								new IJTranserResultsTable().transferResultsTable(RBridge.getBackend(), true);
 
 								monitor.done();
 								return Status.OK_STATUS;
@@ -225,7 +226,7 @@ public class RImageMethodsView extends ViewPart {
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				RConnection con = RServe.getConnection();
+				RBackend con = RBridge.getBackend();
 
 				if (con != null) {
 					if (RState.isBusy() == false) {
@@ -297,7 +298,7 @@ public class RImageMethodsView extends ViewPart {
 							protected IStatus run(IProgressMonitor monitor) {
 								monitor.beginTask("Transfer Data ...", IProgressMonitor.UNKNOWN);
 
-								new IJTranserResultsTable().pointsToR(RServe.getConnection());
+								new IJTranserResultsTable().pointsToR(RBridge.getBackend());
 
 								monitor.done();
 								return Status.OK_STATUS;
@@ -724,7 +725,7 @@ public class RImageMethodsView extends ViewPart {
 		clusterImageButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 
-				if (RServe.getConnection() != null) {
+				if (RBridge.getBackend() != null) {
 					CTabItem[] items = CanvasView.getCanvas_view().tabFolder.getItems();
 					if (items.length > 0) {
 						if (RState.isBusy() == false) {
@@ -773,7 +774,7 @@ public class RImageMethodsView extends ViewPart {
 		// pcaButton.setFont(SWTResourceManager.getFont("", 9, SWT.BOLD));
 		pcaButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (RServe.getConnection() != null) {
+				if (RBridge.getBackend() != null) {
 					CTabItem[] items = CanvasView.getCanvas_view().tabFolder.getItems();
 					if (items.length > 0) {
 						if (RState.isBusy() == false) {

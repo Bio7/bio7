@@ -35,7 +35,7 @@ import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Shell;
 import org.osgi.framework.Bundle;
 import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.Console;
@@ -90,7 +90,7 @@ public class PlotJob extends WorkspaceJob {
 	 *            an integer value as the suffix for the name of the plot.
 	 */
 	public void plot(String toplot, int number) {
-		RConnection c = RServe.getConnection();
+		RBackend c = RBridge.getBackend();
 		String finalpath = null;
 		String plot = null;
 		String ploter = null;
@@ -376,12 +376,12 @@ public class PlotJob extends WorkspaceJob {
 
 		try {
 			/* Transfer path to R ! */
-			RServe.getConnection().assign("fileroot", f);
+			RBridge.getBackend().assign("fileroot", f);
 
 			/* Call the custom Rscript ! */
 			String rout = null;
 			try {
-				rout = RServe.getConnection().eval("" + "try(paste(capture.output(source(fileroot,echo=T)),collapse=\"\\n\"))").asString();
+				rout = RBridge.getBackend().eval("" + "try(paste(capture.output(source(fileroot,echo=T)),collapse=\"\\n\"))").asString();
 			} catch (REXPMismatchException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

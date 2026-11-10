@@ -1,5 +1,7 @@
 package com.eco.bio7.reditor.database.view;
 
+import com.eco.bio7.rbridge.REvaluator;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -8,7 +10,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditors.REditor;
@@ -19,7 +20,7 @@ public class DatabaseMethods {
 
 	public String[] rOdbcdrivers() {
 
-		RConnection c = REditor.getRserveConnection();
+		REvaluator c = REditor.getEvaluator();
 		String[] res = null;
 		if (c != null) {
 			if (RState.isBusy() == false) {
@@ -57,13 +58,13 @@ public class DatabaseMethods {
 		}
 
 		/*
-		 * RConnection con = REditor.getRserveConnection(); if (con != null) { Job job =
+		 * REvaluator con = REditor.getEvaluator(); if (con != null) { Job job =
 		 * new Job("Evaluate") {
 		 * 
 		 * @Override protected IStatus run(IProgressMonitor monitor) {
 		 * monitor.beginTask("Evaluate R code...", IProgressMonitor.UNKNOWN);
 		 * 
-		 * RConnection c = REditor.getRserveConnection(); if (c != null) { if
+		 * REvaluator c = REditor.getEvaluator(); if (c != null) { if
 		 * (RState.isBusy() == false) { RState.setBusy(true);
 		 * 
 		 * try { con.eval("library(odbc);.odbc_driver_name <- odbcListDrivers()$name;" +
@@ -97,7 +98,7 @@ public class DatabaseMethods {
 	 */
 	public void evaluateInMultiplePrintJobs(String expression) {
 
-		RConnection con = REditor.getRserveConnection();
+		REvaluator con = REditor.getEvaluator();
 		if (con != null) {
 			Job job = new Job("Reload") {
 
@@ -105,7 +106,7 @@ public class DatabaseMethods {
 				protected IStatus run(IProgressMonitor monitor) {
 					monitor.beginTask("Reload package information...", IProgressMonitor.UNKNOWN);
 
-					RConnection c = REditor.getRserveConnection();
+					REvaluator c = REditor.getEvaluator();
 					if (c != null) {
 						if (RState.isBusy() == false) {
 							RState.setBusy(true);
@@ -196,7 +197,7 @@ public class DatabaseMethods {
 	 */
 	public void evaluateInPrintJob(String expression) {
 
-		RConnection con = REditor.getRserveConnection();
+		REvaluator con = REditor.getEvaluator();
 		if (con != null) {
 			Job job = new Job("Reload") {
 
@@ -204,7 +205,7 @@ public class DatabaseMethods {
 				protected IStatus run(IProgressMonitor monitor) {
 					monitor.beginTask("Reload package information...", IProgressMonitor.UNKNOWN);
 
-					RConnection c = REditor.getRserveConnection();
+					REvaluator c = REditor.getEvaluator();
 					if (c != null) {
 						if (RState.isBusy() == false) {
 							RState.setBusy(true);

@@ -13,10 +13,11 @@ import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.swt.widgets.Display;
 import org.rosuda.REngine.REngineException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.util.Util;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -106,7 +107,7 @@ public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements I
 			return;
 		}
 
-		RConnection connection = RServe.getConnection();
+		RBackend connection = RBridge.getBackend();
 
 		if (RoiManager.getInstance() != null) {
 			Roi[] r = RoiManager.getInstance().getSelectedRoisAsArray();

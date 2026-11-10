@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Embedded R (Foreign Function and Memory API)
+Bundle-SymbolicName: com.eco.bio7.rffm
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Bio7
+Bundle-RequiredExecutionEnvironment: JavaSE-25
+Automatic-Module-Name: com.eco.bio7.rffm
+Export-Package: com.eco.bio7.rffm,
+ com.eco.bio7.rffm.graphics

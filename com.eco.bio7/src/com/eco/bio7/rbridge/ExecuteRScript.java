@@ -15,7 +15,27 @@ public class ExecuteRScript {
 
 	private RScriptExecuterInterface executer;
 	private int progressSteps;
-	private RConnection con;
+	/* Rserve or embedded R */
+	private com.eco.bio7.rbridge.backend.RBackend backend;
+
+	/**
+	 * Executes a script with the connection of Bio7 (Rserve or embedded R) in a job,
+	 * e.g., a lambda (RBackend r, IProgressMonitor monitor) -&gt; { r.eval("..."); }.
+	 *
+	 * @param progressSteps steps as integer or 'IProgressMonitor.UNKNOWN' (-1)
+	 */
+	public static ExecuteRScript run(RBackendScript script, int progressSteps) {
+		return new ExecuteRScript(new RScriptExecuter() {
+			@Override
+			public void evaluate(com.eco.bio7.rbridge.backend.RBackend r, org.eclipse.core.runtime.IProgressMonitor monitor) {
+				try {
+					script.evaluate(r, monitor);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}, progressSteps);
+	}
 	private boolean listRObjects;
 
 	/**
@@ -31,7 +51,7 @@ public class ExecuteRScript {
 		this.progressSteps = progressSteps;
 		this.listRObjects = true;
 		if (RServe.isAlive()) {
-			con = RServe.getConnection();
+			backend = RBridge.getBackend();
 			if (RState.isBusy() == false) {
 				/* Notify that R is busy! */
 				RState.setBusy(true);
@@ -57,7 +77,7 @@ public class ExecuteRScript {
 		this.progressSteps = progressSteps;
 		this.listRObjects = listRObjects;
 		if (RServe.isAlive()) {
-			con = RServe.getConnection();
+			backend = RBridge.getBackend();
 			if (RState.isBusy() == false) {
 				/* Notify that R is busy! */
 				RState.setBusy(true);
@@ -78,7 +98,7 @@ public class ExecuteRScript {
 				monitor.beginTask("Started execution ...", progressSteps);
 				/* We create a feature stack. R connection not necessary! */
 
-				executer.evaluate(con, monitor);
+				executer.evaluate(backend, monitor);
 
 				monitor.done();
 				return Status.OK_STATUS;

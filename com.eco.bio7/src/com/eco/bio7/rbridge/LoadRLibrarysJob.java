@@ -21,7 +21,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.rbridge.views.PackageInstallView;
@@ -51,7 +51,7 @@ public class LoadRLibrarysJob extends WorkspaceJob {
 					tableItems = PackageInstallView.getAllInstalledPackagesList().getSelection();
 
 					for (int i = 0; i < tableItems.length; i++) {
-						RConnection c = RServe.getConnection();
+						RBackend c = RBridge.getBackend();
 
 						try {
 							c.eval("try(library(" + tableItems[i].getText(0) + "))");

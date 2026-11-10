@@ -19,12 +19,13 @@ import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RConnectionJob;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 
 public class LineSelectionJob extends WorkspaceJob {
 
@@ -36,8 +37,8 @@ public class LineSelectionJob extends WorkspaceJob {
 
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
 		monitor.beginTask("Evaluate Line Selection", IProgressMonitor.UNKNOWN);
-		if (RServe.getConnection() != null) {
-			final RConnection cscript = RServe.getConnection();
+		if (RBridge.getBackend() != null) {
+			final RBackend cscript = RBridge.getBackend();
 			/* If the R expression is evaluated with the line selection! */
 			/*if (Bio7Plugin.getDefault().getPreferenceStore().getBoolean(PreferenceConstants.R_START_SHELL)) {
 				
@@ -84,7 +85,7 @@ public class LineSelectionJob extends WorkspaceJob {
 		writeToConsole();
 		
 			try {
-				RServe.getConnection().voidEval("try(readLines(con = stdin()))");
+				RBridge.getBackend().voidEval("try(readLines(con = stdin()))");
 			} catch (RserveException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

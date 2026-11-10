@@ -41,7 +41,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.rosuda.REngine.REXPLogical;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.collection.BrowserUtil;
@@ -58,6 +58,7 @@ import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 import com.eco.bio7.jobs.ImageFlowMacroWorkspaceJob;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RState;
 
 public class ExecuteBatchFile {
@@ -478,7 +479,7 @@ public class ExecuteBatchFile {
 			if (RServe.isAlive()) {
 				if (RState.isBusy() == false) {
 
-					RConnection c = RServe.getConnection();
+					RBackend c = RBridge.getBackend();
 
 					try {
 						REXPLogical rl = (REXPLogical) c.eval("require(knitr)");
@@ -606,7 +607,7 @@ public class ExecuteBatchFile {
 			if (RServe.isAlive()) {
 				if (RState.isBusy() == false) {
 
-					RConnection c = RServe.getConnection();
+					RBackend c = RBridge.getBackend();
 
 					try {
 						REXPLogical rl = (REXPLogical) c.eval("require(knitr)");

@@ -9,11 +9,12 @@ import org.eclipse.swt.widgets.Display;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.REngineException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.util.Util;
 
 import ij.ImagePlus;
@@ -64,7 +65,7 @@ public class ImageMethods {
 		int x = 0;
 		ImagePlus imp = null;
 		if (RServe.isAlive()) {
-			RConnection c = RServe.getConnection();
+			RBackend c = RBridge.getBackend();
 			/* Get the active image ! */
 
 			if (impPlus == null) {
@@ -322,7 +323,7 @@ public class ImageMethods {
 		REXPLogical bolRawExists = null;
 		REXPLogical isNumeric = null;
 		ImageProcessor ip;
-		RConnection c = RServe.getConnection();
+		RBackend c = RBridge.getBackend();
 		if (RServe.isAliveDialog()) {
 			if (name.isEmpty() == false && name != null) {
 
@@ -799,7 +800,7 @@ public class ImageMethods {
 		int y = 0;
 		int x = 0;
 		if (RServe.isAlive()) {
-			RConnection c = RServe.getConnection();
+			RBackend c = RBridge.getBackend();
 			/* Get the active image ! */
 
 			if (imp != null) {
@@ -955,8 +956,8 @@ public class ImageMethods {
 		int imagesSizeX = 0;
 
 		try {
-			imagesSizeY = (int) RServe.getConnection().eval("try(imageSizeY)").asDouble();
-			imagesSizeX = (int) RServe.getConnection().eval("try(imageSizeX)").asDouble();
+			imagesSizeY = (int) RBridge.getBackend().eval("try(imageSizeY)").asDouble();
+			imagesSizeX = (int) RBridge.getBackend().eval("try(imageSizeX)").asDouble();
 		} catch (REXPMismatchException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -977,7 +978,7 @@ public class ImageMethods {
 
 				try {
 
-					imageData = RServe.getConnection().eval("try(" + dataName + ")").asBytes();
+					imageData = RBridge.getBackend().eval("try(" + dataName + ")").asBytes();
 
 				} catch (REXPMismatchException e) {
 					// TODO Auto-generated catch block
@@ -1005,7 +1006,7 @@ public class ImageMethods {
 				if (ip.getWidth() == imagesSizeX && ip.getHeight() == imagesSizeY) {
 
 					try {
-						imageData = RServe.getConnection().eval("try(" + dataName + ")").asBytes();
+						imageData = RBridge.getBackend().eval("try(" + dataName + ")").asBytes();
 					} catch (REXPMismatchException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -1040,7 +1041,7 @@ public class ImageMethods {
 
 				try {
 
-					imageDataFloat = RServe.getConnection().eval("try(" + dataName + ")").asDoubles();
+					imageDataFloat = RBridge.getBackend().eval("try(" + dataName + ")").asDoubles();
 
 				} catch (REXPMismatchException e) {
 					// TODO Auto-generated catch block
@@ -1068,7 +1069,7 @@ public class ImageMethods {
 				if (ipFloat.getWidth() == imagesSizeX && ipFloat.getHeight() == imagesSizeY) {
 
 					try {
-						imageDataFloat = RServe.getConnection().eval("try(" + dataName + ")").asDoubles();
+						imageDataFloat = RBridge.getBackend().eval("try(" + dataName + ")").asDoubles();
 					} catch (REXPMismatchException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -1112,8 +1113,8 @@ public class ImageMethods {
 		int imagesSizeX = 0;
 
 		try {
-			imagesSizeY = (int) RServe.getConnection().eval("try(imageSizeY)").asDouble();
-			imagesSizeX = (int) RServe.getConnection().eval("try(imageSizeX)").asDouble();
+			imagesSizeY = (int) RBridge.getBackend().eval("try(imageSizeY)").asDouble();
+			imagesSizeX = (int) RBridge.getBackend().eval("try(imageSizeX)").asDouble();
 		} catch (REXPMismatchException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -1134,7 +1135,7 @@ public class ImageMethods {
 
 			try {
 
-				imageData = RServe.getConnection().eval("try(" + dataName + ")").asBytes();
+				imageData = RBridge.getBackend().eval("try(" + dataName + ")").asBytes();
 
 			} catch (REXPMismatchException e) {
 				// TODO Auto-generated catch block
@@ -1169,7 +1170,7 @@ public class ImageMethods {
 			if (ip.getWidth() == imagesSizeX && ip.getHeight() == imagesSizeY) {
 
 				try {
-					imageData = RServe.getConnection().eval("try(" + dataName + ")").asBytes();
+					imageData = RBridge.getBackend().eval("try(" + dataName + ")").asBytes();
 				} catch (REXPMismatchException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -1217,7 +1218,7 @@ public class ImageMethods {
 		int slice = 1;
 		ImagePlus imp = null;
 		if (RServe.isAlive()) {
-			RConnection c = RServe.getConnection();
+			RBackend c = RBridge.getBackend();
 			/* Get the active image ! */
 
 			if (impPlus == null) {
@@ -1426,7 +1427,7 @@ public class ImageMethods {
 			return;
 		}
 
-		RConnection connection = RServe.getConnection();
+		RBackend connection = RBridge.getBackend();
 
 		if (RoiManager.getInstance() != null) {
 			Roi[] r = RoiManager.getInstance().getSelectedRoisAsArray();

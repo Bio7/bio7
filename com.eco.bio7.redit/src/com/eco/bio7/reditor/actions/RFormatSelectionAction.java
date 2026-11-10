@@ -12,6 +12,8 @@
  *******************************************************************************/
 package com.eco.bio7.reditor.actions;
 
+import com.eco.bio7.rbridge.REvaluator;
+
 import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
@@ -45,7 +47,6 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
@@ -135,7 +136,7 @@ public class RFormatSelectionAction implements IObjectActionDelegate, IEditorAct
 		 * (BadLocationException e1) { e1.printStackTrace(); }
 		 */
 
-		RConnection con = REditor.getRserveConnection();
+		REvaluator con = REditor.getEvaluator();
 		if (con != null) {
 			Job job = new Job("formatR") {
 

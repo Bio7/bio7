@@ -94,6 +94,13 @@ public class StartRServe extends Action implements IMenuCreator {
 			ConsoleInterpreterAction inst = ConsoleInterpreterAction.getInstance();
 			/* Start the native R process! */
 			inst.startR();
+			/*
+			 * R could not be started (e.g., R was not found): the console already shows a
+			 * dialog with the setup, no connection job (its dialog would cover it)!
+			 */
+			if (consInst.getRProcess() == null || !consInst.getRProcess().isAlive()) {
+				return;
+			}
 
 			// RConnection con = c;
 
@@ -110,6 +117,22 @@ public class StartRServe extends Action implements IMenuCreator {
 				RServe.setConnection(null);
 				REditor.setConnection(null);
 				WorldWindView.setRConnection(null);
+			}
+			/*
+			 * The device options first: R blocks in run.Rserve (cooperative mode) and would
+			 * evaluate later input only after Rserve has stopped!
+			 */
+			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
+
+				ConsolePageParticipant.pipeInputToConsole("options(device='windows')", true, true);
+
+			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
+
+				ConsolePageParticipant.pipeInputToConsole("options(device='x11')", true, true);
+
+			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
+
+				ConsolePageParticipant.pipeInputToConsole("options(device='quartz')", true, true);
 			}
 			/* Start a new Rserve connection! */
 			if (RServe.isRrunning() == false) {
@@ -131,6 +154,8 @@ public class StartRServe extends Action implements IMenuCreator {
 					}
 				});
 
+				/* Running from now on: a second click stops the connection instead of starting a second job */
+				RServe.setRrunning(true);
 				job.setUser(true);
 				job.schedule();
 
@@ -146,21 +171,7 @@ public class StartRServe extends Action implements IMenuCreator {
 				REditor.setConnection(null);
 
 			}
-
-			RServe.setRrunning(false);
-			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-
-				ConsolePageParticipant.pipeInputToConsole("options(device='windows')", true, true);
-
-			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
-
-				ConsolePageParticipant.pipeInputToConsole("options(device='x11')", true, true);
-
-			} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
-
-				ConsolePageParticipant.pipeInputToConsole("options(device='quartz')", true, true);
-			}
-			// options(device='windows')
+			/* Not after the start of the job: the job sets the state (a second click would start a second job)! */
 		}
 		// }
 
@@ -250,6 +261,12 @@ public class StartRServe extends Action implements IMenuCreator {
 		}
 	}
 
+	private static org.eclipse.swt.graphics.Image menuImage(java.util.List<org.eclipse.swt.graphics.Image> images, String path) {
+		org.eclipse.swt.graphics.Image image = Bio7Plugin.getImageDescriptor(path).createImage();
+		images.add(image);
+		return image;
+	}
+
 	private void loadFile() {
 		String file;
 
@@ -324,13 +341,16 @@ public class StartRServe extends Action implements IMenuCreator {
 			fMenu.dispose();
 		}
 		fMenu = new Menu(parent);
+		/* The images of the menu items are disposed with the menu (a new menu is created each time) */
+		java.util.List<org.eclipse.swt.graphics.Image> images = new java.util.ArrayList<>();
+		fMenu.addDisposeListener(e -> images.forEach(org.eclipse.swt.graphics.Image::dispose));
 
 		MenuItem menuItem = new MenuItem(fMenu, SWT.PUSH);
 		menuItem.setText("Start Rserve/Stop Rserve (within R)");
 		// Image image =
 		// PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
 
-		menuItem.setImage(Bio7Plugin.getImageDescriptor("/icons/views/raction.svg").createImage());
+		menuItem.setImage(menuImage(images, "/icons/views/raction.svg"));
 		menuItem.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
@@ -346,7 +366,7 @@ public class StartRServe extends Action implements IMenuCreator {
 		MenuItem terminateRProcessMenuItem = new MenuItem(fMenu, SWT.PUSH);
 		terminateRProcessMenuItem.setText("Terminate R");
 		// terminateRProcessMenuItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
-		terminateRProcessMenuItem.setImage(Bio7Plugin.getImageDescriptor("/icons/views/stopraction.svg").createImage());
+		terminateRProcessMenuItem.setImage(menuImage(images, "/icons/views/stopraction.svg"));
 		terminateRProcessMenuItem.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
@@ -359,7 +379,9 @@ public class StartRServe extends Action implements IMenuCreator {
 
 						if (selectionConsole.equals("R")) {
 
-							if (cpp.getRProcess() != null) {
+							if (cpp.getRProcess() == null && com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning()) {
+								com.eco.bio7.batch.Bio7Dialog.message(com.eco.bio7.rbridge.backend.Backends.CANNOT_TERMINATE);
+							} else if (cpp.getRProcess() != null) {
 								try {
 									cpp.getRProcess().destroy();
 									RConnection con = RServe.getConnection();
@@ -392,7 +414,7 @@ public class StartRServe extends Action implements IMenuCreator {
 		MenuItem menuItemFractal = new MenuItem(fMenu, SWT.PUSH);
 		menuItemFractal.setText("Kill All R Processes");
 		// menuItemFractal.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
-		menuItemFractal.setImage(Bio7Plugin.getImageDescriptor("/icons/views/stopraction.svg").createImage());
+		menuItemFractal.setImage(menuImage(images, "/icons/views/stopraction.svg"));
 		menuItemFractal.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
@@ -513,7 +535,9 @@ public class StartRServe extends Action implements IMenuCreator {
 
 		if (selectionConsole.equals("R")) {
 
-			if (cpp.getRProcess() != null) {
+			if (cpp.getRProcess() == null && com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning()) {
+				com.eco.bio7.batch.Bio7Dialog.message(com.eco.bio7.rbridge.backend.Backends.CANNOT_TERMINATE);
+			} else if (cpp.getRProcess() != null) {
 				try {
 					cpp.getRProcess().destroy();
 					RConnection con = RServe.getConnection();

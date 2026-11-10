@@ -1,5 +1,7 @@
 package com.eco.bio7.reditor.actions;
 
+import com.eco.bio7.rbridge.REvaluator;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -27,7 +29,6 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.rosuda.REngine.REXPLogical;
-import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
@@ -89,7 +90,7 @@ public class RFormatAction implements IObjectActionDelegate, IEditorActionDelega
 		}
 		String loc = aFile.getLocation().toString();
 
-		RConnection con = REditor.getRserveConnection();
+		REvaluator con = REditor.getEvaluator();
 		if (con != null) {
 			Job job = new Job("formatR") {
 

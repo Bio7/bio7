@@ -25,12 +25,13 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REngineException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.util.Util;
 
 public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChangeListener {
@@ -91,7 +92,7 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 			return;
 		}
 
-		// RConnection connection = RServe.getConnection();
+		// RBackend connection = RBridge.getBackend();
 
 		/*
 		 * Standard procedure for single layer selections or multiple layer
@@ -122,7 +123,7 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 		// if (response == SWT.YES) {
 
 		items = CanvasView.getCanvas_view().tabFolder.getItems();
-		RConnection con = RServe.getConnection();
+		RBackend con = RBridge.getBackend();
 
 		if (RServe.isAliveDialog()) {
 

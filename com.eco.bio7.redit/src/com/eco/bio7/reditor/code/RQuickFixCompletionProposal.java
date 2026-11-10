@@ -1,5 +1,7 @@
 package com.eco.bio7.reditor.code;
 
+import com.eco.bio7.rbridge.REvaluator;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -16,7 +18,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.actions.RefreshLoadedPackagesForCompletion;
@@ -89,7 +90,7 @@ public class RQuickFixCompletionProposal implements ICompletionProposal {
 	 */
 	private void libraryImportAndPackageReload() {
 		/* Here we load the library! */
-		RConnection con = REditor.getRserveConnection();
+		REvaluator con = REditor.getEvaluator();
 		if (con != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
@@ -146,7 +147,7 @@ public class RQuickFixCompletionProposal implements ICompletionProposal {
 
 	private void installPackage(String packageName) {
 		/* Here we load the library! */
-		RConnection con = REditor.getRserveConnection();
+		REvaluator con = REditor.getEvaluator();
 		if (con != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);

@@ -41,6 +41,9 @@ import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.Backends;
+import com.eco.bio7.rbridge.backend.RBackend;
+import com.eco.bio7.rbridge.backend.RserveBackend;
 import org.rosuda.REngine.Rserve.RSession;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
@@ -97,7 +100,7 @@ public class RServe {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
 				try {
-					RServe.getConnection().eval(expression);
+					RBridge.getBackend().eval(expression);
 
 					int countDev = RServe.getDisplayNumber();
 					if (countDev > 0) {
@@ -345,7 +348,7 @@ public class RServe {
 		String tryend = "},error = function(e) {message(paste(\"Error: \",e$message))})";
 
 		try {
-			RServe.rout = RServe.getConnection().eval(
+			RServe.rout = RBridge.getBackend().eval(
 					"paste(capture.output(print(" + trybegin + "(" + expression + ")" + tryend + ")),collapse=\"\\n\")")
 					.asString();
 
@@ -379,13 +382,19 @@ public class RServe {
 		return connection;
 	}
 
+	static {
+		/* The R editor (other bundle) evaluates with the connection of RBridge (Rserve or embedded R) */
+		REditor.setEvaluatorSupplier(RBridge::getBackend);
+		WorldWindView.setEvaluatorSupplier(RBridge::getBackend);
+	}
+
 	/**
 	 * Returns if the connection to Rserve is alive visible by means of a dialog.
 	 * 
 	 * @return a boolean value.
 	 */
 	public static boolean isAliveDialog() {
-		if (RServe.connection == null) {
+		if (RBridge.getBackend() == null) {
 			Display display = PlatformUI.getWorkbench().getDisplay();
 			display.syncExec(new Runnable() {
 				public void run() {
@@ -495,7 +504,7 @@ public class RServe {
 	 */
 	public static boolean isConnected() {
 		boolean connected;
-		if (RServe.getConnection() != null) {
+		if (RBridge.getBackend() != null) {
 			connected = true;
 		} else {
 			connected = false;
@@ -538,12 +547,12 @@ public class RServe {
 		}
 		try {
 			/* Transfer path to R ! */
-			RServe.getConnection().assign("fileroot", f);
+			RBridge.getBackend().assign("fileroot", f);
 
 			/* Call the custom Rscript ! */
 			String rout = null;
 			/*
-			 * try { rout = RServe.getConnection().eval("" +
+			 * try { rout = RBridge.getBackend().eval("" +
 			 * "try(paste(capture.output(source(fileroot,echo=T)),collapse=\"\\n\"))").
 			 * asString(); } catch (REXPMismatchException e) {
 			 * 
@@ -552,12 +561,12 @@ public class RServe {
 
 			/* First write a message which file is sourced! */
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-			RServe.getConnection().eval("message(paste0(\"> source('\",fileroot),\"')\",sep=\"\")");
+			RBridge.getBackend().eval("message(paste0(\"> source('\",fileroot),\"')\",sep=\"\")");
 			String options = store.getString("R_SOURCE_OPTIONS");
 			String rCommand = "" + "paste(capture.output(tryCatch(source(fileroot," + options
 					+ "),error = function(e) {message(paste0(\"\n\",e))})),collapse=\"\\n\")";
 			try {
-				rout = RServe.getConnection().eval(rCommand).asString();
+				rout = RBridge.getBackend().eval(rCommand).asString();
 			} catch (REXPMismatchException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -596,11 +605,11 @@ public class RServe {
 		}
 		try {
 			/* Transfer path to R ! */
-			RServe.getConnection().assign("fileroot", f);
+			RBridge.getBackend().assign("fileroot", f);
 
 			/* Call the custom Rscript ! */
 
-			RServe.getConnection()
+			RBridge.getBackend()
 					.eval("tryCatch(source(fileroot,echo=F),error = function(e) {message(paste0(\"\n\",e))})");
 
 		} catch (RserveException e) {
@@ -905,7 +914,8 @@ public class RServe {
 		if (customDevice) {
 			REXP devList = null;
 			try {
-				devList = RServe.getConnection().eval("length(dev.list())");
+				/* The plot canvas device of embedded R stays open (it shows the plots itself) */
+				devList = RBridge.getBackend().eval("sum(names(dev.list()) != 'bio7PlotCanvas')");
 			} catch (RserveException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -920,7 +930,7 @@ public class RServe {
 			}
 
 			try {
-				RServe.getConnection().eval("if(length(dev.list())>0) dev.off()");
+				RBridge.getBackend().eval("if (length(dev.list()) > 0 && names(dev.cur()) != 'bio7PlotCanvas') dev.off()");
 			} catch (RserveException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

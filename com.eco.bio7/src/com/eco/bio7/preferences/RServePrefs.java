@@ -66,7 +66,19 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("General:", getFieldEditorParent()));
+		addField(new RadioGroupFieldEditor("R_BACKEND", "R connection (restart Bio7 to apply):", 1,
+				new String[][] { { "Rserve: R as a separate process (default)", "RSERVE" },
+						{ "Embedded R: R in the process of Bio7 via the Foreign Function and Memory API (experimental)", "EMBEDDED" } },
+				getFieldEditorParent(), true));
+		addField(new LabelFieldEditor("Embedded R: a crash of R (e.g., of a package) ends Bio7 (save your work); R can't be terminated or restarted\n"
+				+ "without restarting Bio7; mclapply() runs sequentially (mc.cores = 1); some features still need Rserve (see the documentation).",
+				getFieldEditorParent()));
 		addField(new DirectoryFieldEditor(PreferenceConstants.PATH_R, "&Path to R:", getFieldEditorParent()));
+		addField(new ActionButtonFieldEditor("Find R, install R or Rserve:", "R and Rserve Setup...", () -> {
+			/* The setup can change the path of R: apply the edited values first */
+			performApply();
+			com.eco.bio7.rbridge.RSetupDialog.openSetup();
+		}, getFieldEditorParent()));
 		addField(new DirectoryFieldEditor("InstallLocation", "Package install location", getFieldEditorParent()));
 		addField(new DirectoryFieldEditor(PreferenceConstants.P_TEMP_R, "Path to temporary R folder", getFieldEditorParent()));
 
@@ -77,6 +89,9 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 		addField(new StringFieldEditor("RSERVE_ARGS", "Rserve startup arguments", getFieldEditorParent()));
 		addField(new MultiLineTextFieldEditor("R_STARTUP_ARGS", "R startup commands", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 		addField(new IntegerFieldEditor("RSERVE_CLIENT_CONNECTION_PORT", "Rserve TCP client port", getFieldEditorParent()));
+		IntegerFieldEditor timeout = new IntegerFieldEditor("RSERVE_CONNECT_TIMEOUT", "Rserve connection timeout (seconds)", getFieldEditorParent());
+		timeout.setValidRange(5, 600);
+		addField(timeout);
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 
 		addField(new LabelFieldEditor("Packages:", getFieldEditorParent()));

@@ -10,9 +10,9 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchPage;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 
 public class PrintR implements IEditorActionDelegate {
 
@@ -26,7 +26,7 @@ public class PrintR implements IEditorActionDelegate {
 
 	public void run(IAction action) {
 
-		RConnection d = RServe.getConnection();
+		RBackend d = RBridge.getBackend();
 
 		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 		try {

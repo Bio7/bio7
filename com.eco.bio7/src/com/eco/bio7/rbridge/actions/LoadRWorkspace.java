@@ -8,13 +8,14 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
+import com.eco.bio7.rbridge.backend.RBackend;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RConfig;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.views.RShellView;
@@ -37,7 +38,7 @@ public class LoadRWorkspace extends Action {
 	public void run() {
 		//IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		// boolean rPipe = store.getBoolean("r_pipe");
-		RConnection con = RServe.getConnection();
+		RBackend con = RBridge.getBackend();
 		if (con == null) {
 
 			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
@@ -88,7 +89,12 @@ public class LoadRWorkspace extends Action {
 
 	}
 
+	/** For an Rserve connection (compatibility). */
 	public void load(RConnection con) {
+		load(RBackend.of(con));
+	}
+
+	public void load(RBackend con) {
 		String selected;
 
 		Shell s = new Shell();

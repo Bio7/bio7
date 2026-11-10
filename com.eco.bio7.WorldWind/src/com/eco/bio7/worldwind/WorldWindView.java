@@ -678,6 +678,20 @@ public class WorldWindView extends ViewPart {
 
 	}
 
+	/* The evaluator of Bio7 (Rserve or embedded R), set by Bio7 */
+	private static java.util.function.Supplier<com.eco.bio7.rbridge.REvaluator> evaluatorSupplier;
+
+	/** Sets the evaluator of Bio7 (Rserve or embedded R). */
+	public static void setEvaluatorSupplier(java.util.function.Supplier<com.eco.bio7.rbridge.REvaluator> supplier) {
+		evaluatorSupplier = supplier;
+	}
+
+	/** The evaluation in R (Rserve or embedded R) or null if R is not connected. */
+	public static com.eco.bio7.rbridge.REvaluator getEvaluator() {
+		var s = evaluatorSupplier;
+		return s != null ? s.get() : com.eco.bio7.rbridge.REvaluator.of(rConnection);
+	}
+
 	public Panel getPanel() {
 		return panel;
 	}

@@ -142,7 +142,7 @@ import org.eclipse.ui.part.ViewPart;
 import org.rosuda.REngine.REXPLogical;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.REngineException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.REvaluator;
 import org.rosuda.REngine.Rserve.RserveException;
 
 import worldw.Activator;
@@ -871,7 +871,7 @@ public class WorldWindOptionsView extends ViewPart {
 			private REXPLogical bolExistsMinLat;
 
 			public void widgetSelected(final SelectionEvent e) {
-				RConnection c = WorldWindView.getRConnection();
+				REvaluator c = WorldWindView.getEvaluator();
 				if (c != null) {
 					try {
 						bolExistsMaxLon = (REXPLogical) c.eval("try(exists(\"maxLon\"))");
@@ -1602,7 +1602,7 @@ public class WorldWindOptionsView extends ViewPart {
 		toSpreadButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 
-				RConnection con = WorldWindView.getRConnection();
+				REvaluator con = WorldWindView.getEvaluator();
 				if (con != null) {
 
 					String val1 = table.getItem(0).getText(0);

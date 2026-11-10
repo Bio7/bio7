@@ -4737,10 +4737,21 @@ public class Measurement3d {
 
 	/* Draws the measured areas (translucent on the surface) and the area which is drawn */
 	private void renderAreas(GL2 gl, double[] bounds, boolean flip, boolean cartesian, float scale) {
+		boolean through = showVolumesThrough;
+		boolean onlyVolumes = iso.isSurfaceHidden();
 		for (Area a : areas) {
 			if (a.displayTriangles != null && a.displayTriangles.length > 0) {
-				iso.renderTriangles(gl, cartesian, a.displayMesh, a.displayTriangles,
-						a.type == AREA_OUTLINE || a.type == AREA_OBJECT || a.type == AREA_CAVITY ? VOLUME_COLOR : AREA_COLOR, true, 0, 0.45f);
+				boolean isVolume = a.type == AREA_OUTLINE || a.type == AREA_OBJECT || a.type == AREA_CAVITY;
+				if (isVolume && (through || onlyVolumes)) {
+					/*
+					 * The measured volume as a transparent body: through the surface (e.g., a cavity
+					 * inside of the object) and complete (also the parts removed by the eraser)
+					 */
+					iso.renderTriangles(gl, cartesian, a.displayMesh, a.displayTriangles, VOLUME_COLOR, true, 0, onlyVolumes && !through ? 0.6f : 0.35f,
+							through, true);
+				} else {
+					iso.renderTriangles(gl, cartesian, a.displayMesh, a.displayTriangles, isVolume ? VOLUME_COLOR : AREA_COLOR, true, 0, 0.45f);
+				}
 			}
 		}
 		gl.glPushAttrib(GL2.GL_ENABLE_BIT | GL2.GL_CURRENT_BIT | GL2.GL_LINE_BIT | GL2.GL_POINT_BIT | GL2.GL_COLOR_BUFFER_BIT);
@@ -5716,6 +5727,35 @@ public class Measurement3d {
 	 */
 	public void setShowNumbers(boolean show) {
 		showNumbers = show;
+	}
+
+	/* The measured volumes are drawn through the surface (transparent, inside of the object) */
+	private volatile boolean showVolumesThrough;
+
+	/**
+	 * Shows the measured volumes (objects, cavities, outlines) as transparent
+	 * bodies through the surface, e.g., a cavity inside of the object.
+	 */
+	public void setShowVolumesThrough(boolean show) {
+		showVolumesThrough = show;
+	}
+
+	/** Returns true if the measured volumes are shown through the surface. */
+	public boolean isShowVolumesThrough() {
+		return showVolumesThrough;
+	}
+
+	/**
+	 * Shows only the measured volumes: the iso surface is hidden (its data and the
+	 * measurements stay; the mouse tools still measure on it).
+	 */
+	public void setShowOnlyVolumes(boolean only) {
+		iso.setSurfaceHidden(only);
+	}
+
+	/** Returns true if only the measured volumes are shown (the iso surface is hidden). */
+	public boolean isShowOnlyVolumes() {
+		return iso.isSurfaceHidden();
 	}
 
 	/** Returns true if the numbers of the measurements are shown (see setShowNumbers). */

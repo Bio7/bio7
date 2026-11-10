@@ -1,5 +1,7 @@
 package com.eco.bio7.reditor.code;
 
+import com.eco.bio7.rbridge.REvaluator;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -9,7 +11,6 @@ import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.antlr.Parse;
@@ -329,7 +330,7 @@ public class RQuickFixSolutions {
 	}
 
 	public String[] searchForPackageFunction(String funcName) {
-		RConnection c = REditor.getRserveConnection();
+		REvaluator c = REditor.getEvaluator();
 
 		if (c != null) {
 			if (RState.isBusy() == false) {
@@ -355,7 +356,7 @@ public class RQuickFixSolutions {
 		}
 
 		/*
-		 * RConnection c = REditor.getRserveConnection(); if (c != null) { if
+		 * REvaluator c = REditor.getEvaluator(); if (c != null) { if
 		 * (RState.isBusy() == false) { RState.setBusy(true); Display display =
 		 * Util.getDisplay(); display.syncExec(() -> {
 		 * 

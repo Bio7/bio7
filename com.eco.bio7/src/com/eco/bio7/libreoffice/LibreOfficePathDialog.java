@@ -48,6 +48,7 @@ public class LibreOfficePathDialog extends MessageDialog {
 	public static final String PREFERENCE_PAGE = "com.eco.bio7.preferences.Bio7PreferencePage";
 
 	private Text paths;
+	private Label hint;
 
 	private LibreOfficePathDialog(Shell parent, String message) {
 		super(parent, "LibreOffice", null, message, MessageDialog.WARNING, 0, "Open LibreOffice Preferences...", IDialogConstants.CLOSE_LABEL);
@@ -93,26 +94,60 @@ public class LibreOfficePathDialog extends MessageDialog {
 		for (String p : other) {
 			text.append(p).append('\n');
 		}
-		paths = new Text(area, SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.H_SCROLL);
+		/* Not SWT.READ_ONLY: a read-only multi-line text gets no theme color on macOS (black in the dark theme) */
+		paths = new Text(area, SWT.BORDER | SWT.MULTI | SWT.H_SCROLL);
+		paths.setEditable(false);
 		paths.setText(text.toString().trim());
 		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
 		gd.widthHint = 420;
-		gd.heightHint = paths.getLineHeight() * Math.min(6, found.size() + other.size()) + 8;
+		/* At least two lines and the horizontal scrollbar */
+		int lines = Math.max(2, Math.min(6, found.size() + other.size()));
+		gd.heightHint = paths.getLineHeight() * lines + 8 + (paths.getHorizontalBar() != null ? paths.getHorizontalBar().getSize().y : 0);
 		paths.setLayoutData(gd);
 
-		Button copy = new Button(area, SWT.PUSH);
+		Composite buttons = new Composite(area, SWT.NONE);
+		GridLayout buttonLayout = new GridLayout(1, true);
+		buttonLayout.marginWidth = 0;
+		buttonLayout.marginHeight = 0;
+		buttons.setLayout(buttonLayout);
+		buttons.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+		Button use = new Button(buttons, SWT.PUSH);
+		use.setText("Use Path");
+		use.setToolTipText("Set the path of the line with the cursor (else the first path found) as the LibreOffice path of the preferences");
+		use.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+		use.addListener(SWT.Selection, e -> usePath(found));
+		Button copy = new Button(buttons, SWT.PUSH);
 		copy.setText("Copy");
 		copy.setToolTipText("Copy the selected path (or all paths) to the clipboard");
-		copy.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
+		copy.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
 		copy.addListener(SWT.Selection, e -> copy());
 
-		Label hint = new Label(area, SWT.WRAP);
-		hint.setText(found.isEmpty() ? "None of these folders exists on this computer, LibreOffice might be installed elsewhere."
+		hint = new Label(area, SWT.WRAP);
+		hint.setText(found.isEmpty() ? "LibreOffice was not found in these folders on this computer. It might be installed elsewhere (select its folder in the preferences)."
 				: "Found on this computer: " + String.join(", ", found));
 		GridData hd = new GridData(SWT.FILL, SWT.TOP, true, false, 2, 1);
 		hd.widthHint = 420;
 		hint.setLayoutData(hd);
 		return area;
+	}
+
+	/* Sets the path of the line with the cursor (else the first path found) in the preferences */
+	private void usePath(List<String> found) {
+		String[] lines = paths.getText().split("\\R");
+		int line = paths.getCaretLineNumber();
+		/* The cursor stays on its line when the button gets the focus (the first line is a path found, if any) */
+		String path = line >= 0 && line < lines.length ? lines[line].trim() : (found.isEmpty() ? "" : found.get(0));
+		if (path.isEmpty()) {
+			hint.setText("Please click into the line of a path first.");
+			return;
+		}
+		if (!new File(path, executable()).exists()) {
+			hint.setText("'" + executable() + "' does not exist in " + path + ".");
+			return;
+		}
+		Bio7Plugin.getDefault().getPreferenceStore().setValue(PreferenceConstants.PATH_LIBREOFFICE, path);
+		hint.setText("The LibreOffice path is now " + path + ". Please connect to LibreOffice again.");
+		hint.getParent().layout(true);
 	}
 
 	/* Copies the selection or, without a selection, all paths! */
@@ -153,11 +188,14 @@ public class LibreOfficePathDialog extends MessageDialog {
 			}
 		} else if ("Mac".equals(os)) {
 			list.add("/Applications/LibreOffice.app/Contents/MacOS");
+			list.add(System.getProperty("user.home") + "/Applications/LibreOffice.app/Contents/MacOS");
 		} else {
 			list.add("/usr/lib/libreoffice/program");
 			list.add("/usr/lib64/libreoffice/program");
 			list.add("/opt/libreoffice/program");
 			list.add("/snap/libreoffice/current/lib/libreoffice/program");
+			list.add("/var/lib/flatpak/app/org.libreoffice.LibreOffice/current/active/files/libreoffice/program");
+			list.add(System.getProperty("user.home") + "/.local/share/flatpak/app/org.libreoffice.LibreOffice/current/active/files/libreoffice/program");
 			list.add("/usr/bin");
 		}
 		return list;

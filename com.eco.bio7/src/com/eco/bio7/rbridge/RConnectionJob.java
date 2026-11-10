@@ -1,22 +1,18 @@
 /*******************************************************************************
- * Copyright (c) 2007-2025 M. Austenfeld
- * 
+ * Copyright (c) 2007-2026 M. Austenfeld
+ *
  * This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License 2.0
  * which is available at https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
+ *
  * Contributors:
  *     M. Austenfeld
  *******************************************************************************/
 
 package com.eco.bio7.rbridge;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -28,25 +24,16 @@ import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
-import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.preferences.PreferenceConstants;
-import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
-import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.util.Util;
 import com.eco.bio7.worldwind.WorldWindView;
 
 public class RConnectionJob extends WorkspaceJob {
 
-	private static Runtime rt;
-
 	private static Process proc = null;
 
 	private static IPreferenceStore store;
 
-	private static boolean canceled = false;
-
-	private BufferedReader input;
+	private static volatile boolean canceled = false;
 
 	public RConnectionJob() {
 		super("Connecting To RServer");
@@ -55,157 +42,99 @@ public class RConnectionJob extends WorkspaceJob {
 	}
 
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
-		monitor.beginTask("Connecting To RServer", 10);
+		monitor.beginTask("Connecting To RServer", IProgressMonitor.UNKNOWN);
 		canceled = false;
 		RServe.setRrunning(true);
-		// If remote!
 		boolean remote = store.getBoolean("REMOTE");
-		String rserveArgs = store.getString("RSERVE_ARGS");
-		/*
-		 * R started in the ConsolePageParticipants class as a native
-		 * application. Here we call now Rserve!
-		 */
 		if (remote == false) {
-			/* Start up the process of R and Rserve! */
-
-			//if (store.getBoolean("RSERVE_NATIVE_START")) {
-				String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
-
-				if (selectionConsole.equals("R")) {
-
-					ConsolePageParticipant.pipeInputToConsole("library(Rserve)", true, false);
-					ConsolePageParticipant.pipeInputToConsole("run.Rserve(" + rserveArgs + ")", true, false);
-
-				} else {
-					Bio7Dialog.message("Please start the native R connection in the Bio7 Console!");
-				}
-
-			/*} else {
-				 Start Rserve without shell (deprecated)! 
-				startExec();
-			}*/
-
-		} // Remote connection!
-		for (int i = 0; i < 11; i++) {
-			if (monitor.isCanceled())
-				try {
-					throw new InterruptedException();
-				} catch (InterruptedException e) {
-					canceled = true;
-					RServe.setRrunning(false);
-
-				}
-			if (canceled == false) {
-				if (RServe.getConnection() == null) {
-
-					if (remote == false) {
-
-						doConnectLocal();
-
-					} else {
-
-						doConnectRemote();
-
-					}
-
-					monitor.setTaskName("Connect to Rserver: " + (i) + " from 10");
-
-					try {
-						Thread.sleep(500);
-					} catch (InterruptedException e) {
-
-					}
-					if (i == 10) {
-						RServe.setRrunning(false);
-
-						monitor.worked(10);
-						Display display = PlatformUI.getWorkbench().getDisplay();
-						display.syncExec(new Runnable() {
-
-							public void run() {
-
-								MessageDialog.openWarning(Util.getShell(), "R", "R-Server connection could not be established" + "\n" + "probably the firewall is active->Please try again !");
-								RServe.setConnection(null);
-							}
-						});
-
-					}
-
-				}
-
-				else {
-					if (RServe.getConnection().isConnected()) {
-
-						configureRAfterSuccess(monitor);
-
-					} else {
-						RServe.setRrunning(false);
-						monitor.worked(10);
-						Display display = PlatformUI.getWorkbench().getDisplay();
-						display.syncExec(new Runnable() {
-
-							public void run() {
-								MessageDialog.openWarning(Util.getShell(), "R", "R-Server connection could not be established" + "->Please try again !");
-								RServe.setConnection(null);
-
-							}
-						});
-					}
-
-					i = 11;
-				}
-
-			}
-			monitor.worked(1);
-
+			connectLocal(monitor);
+		} else {
+			connectRemote(monitor);
 		}
-
+		monitor.done();
 		return Status.OK_STATUS;
+	}
+
+	/*
+	 * R is started in the ConsolePageParticipant class as a native application.
+	 * Here Rserve is started in this R process and the connection is established.
+	 */
+	private void connectLocal(IProgressMonitor monitor) {
+		int timeout = store.getInt("RSERVE_CONNECT_TIMEOUT");
+		RserveLauncher.Result result = RserveLauncher.start(monitor, store.getString("RSERVE_ARGS"), store.getInt("RSERVE_CLIENT_CONNECTION_PORT"),
+				timeout > 0 ? timeout : 20);
+		if (!result.notes().isEmpty()) {
+			System.out.print(result.notes());
+		}
+		if (result.isConnected()) {
+			/* Setup all used Bio7 R connections (also for WorldWind and the REditor class)! */
+			RServe.setConnection(result.connection());
+			configureRAfterSuccess(monitor);
+			return;
+		}
+		RServe.setRrunning(false);
+		RServe.setConnection(null);
+		if (result.status() == RserveLauncher.Status.CANCELED) {
+			canceled = true;
+			return;
+		}
+		showFailure(result.message(), result.offersSetup());
+	}
+
+	/* A warning, with a button for the setup of R and Rserve if it can help */
+	private static void showFailure(String message, boolean offerSetup) {
+		Display display = PlatformUI.getWorkbench().getDisplay();
+		display.asyncExec(() -> {
+			if (!offerSetup) {
+				MessageDialog.openWarning(Util.getShell(), "Rserve", message);
+				return;
+			}
+			MessageDialog dialog = new MessageDialog(Util.getShell(), "Rserve", null, message, MessageDialog.WARNING, 0, "R and Rserve Setup...", "Close");
+			if (dialog.open() == 0) {
+				RSetupDialog.openSetup();
+			}
+		});
+	}
+
+	private void connectRemote(IProgressMonitor monitor) {
+		String lastError = null;
+		for (int i = 0; i < 10; i++) {
+			if (monitor.isCanceled() || canceled) {
+				canceled = true;
+				RServe.setRrunning(false);
+				return;
+			}
+			monitor.subTask("Connect to Rserve: " + (i + 1) + " of 10");
+			lastError = doConnectRemote();
+			if (RServe.getConnection() != null && RServe.getConnection().isConnected()) {
+				configureRAfterSuccess(monitor);
+				return;
+			}
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				break;
+			}
+		}
+		RServe.setRrunning(false);
+		RServe.setConnection(null);
+		showFailure("The connection to the remote Rserve (" + store.getString("HOST") + ":" + store.getInt("TCP") + ") could not be established."
+				+ (lastError != null ? "\nLast error: " + lastError : "") + "\n\nPlease check the server, the login and the firewall.", false);
 	}
 
 	private void configureRAfterSuccess(IProgressMonitor monitor) {
 		RServe.setRrunning(true);
 		monitor.setTaskName("Connected");
-		monitor.worked(10);
 		RConnection con = RServe.getConnection();
 		RConfig.config(con);
 		RState.setBusy(false);
-		
 
 		System.out.println("Rserve connection established !");
-
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-
-			e.printStackTrace();
-		}
 	}
 
-	
-
-	/* Print the input stream for errors etc.! */
-	private void consoleOutput() {
-		new Thread() {
-
-			public void run() {
-				setPriority(Thread.MAX_PRIORITY);
-				final InputStream inp = proc.getInputStream();
-				InputStreamReader inr = new InputStreamReader(inp);
-				int ch;
-				try {
-					while ((ch = inr.read()) != -1) {
-						System.out.print((char) ch);
-					}
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}.start();
-	}
-
-	private void doConnectRemote() {
+	/* Connects to the remote server and returns the error or null */
+	private String doConnectRemote() {
 
 		RConnection c;
 		String host = store.getString("HOST");
@@ -217,39 +146,19 @@ public class RConnectionJob extends WorkspaceJob {
 			RServe.setConnection(c);
 			WorldWindView.setRConnection(c);
 		} catch (RserveException e1) {
-			System.out.println(e1.toString());
-
+			return e1.getMessage();
 		}
-		if (RServe.getConnection() != null) {
-			String name = store.getString("USERNAME");
-			String pass = store.getString("PASSWORD");
-			// System.out.println(name + " " + pass);
-			/* Login for remote connection! */
-
-			try {
-				RServe.getConnection().login(name, pass);
-			} catch (RserveException e2) {
-
-				System.out.println(e2.toString());
-				RServe.setConnection(null);
-			}
-		}
-
-	}
-
-	private void doConnectLocal() {
-       int port=store.getInt("RSERVE_CLIENT_CONNECTION_PORT");
-		RConnection c;
-
+		String name = store.getString("USERNAME");
+		String pass = store.getString("PASSWORD");
+		/* Login for remote connection! */
 		try {
-			c = new RConnection("127.0.0.1", port);
-            /*Setup all used Bio7 R connections (also for WorldWind and the REditor class)!*/
-			RServe.setConnection(c);
-
-		} catch (RserveException e1) {
-
+			c.login(name, pass);
+		} catch (RserveException e2) {
+			c.close();
+			RServe.setConnection(null);
+			return "Login failed: " + e2.getMessage();
 		}
-
+		return null;
 	}
 
 	public static boolean isCanceled() {
@@ -262,10 +171,6 @@ public class RConnectionJob extends WorkspaceJob {
 
 	public static Process getProc() {
 		return proc;
-	}
-
-	public static Runtime getRt() {
-		return rt;
 	}
 
 	public static IPreferenceStore getStore() {

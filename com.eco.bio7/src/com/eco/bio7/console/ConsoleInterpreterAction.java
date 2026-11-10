@@ -30,6 +30,7 @@ import com.eco.bio7.actions.InterpretPython;
 import com.eco.bio7.popup.actions.RunJavaClassFile;
 import com.eco.bio7.rbridge.RConnectionJob;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.worldwind.WorldWindView;
 
 public class ConsoleInterpreterAction extends Action implements IMenuCreator {
@@ -298,7 +299,7 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		participant.interpreterSelection = "R";
 		ioConsole.clearConsole();
 		/*
-		 * if (RServe.getConnection() != null) { try { RServe.getConnection().shutdown(); } catch (RserveException en) { // TODO Auto-generated catch block en.printStackTrace(); } RConnectionJob.setCanceled(true); RServe.getConnection().close(); RServe.setConnection(null);
+		 * if (RBridge.getBackend() != null) { try { RBridge.getBackend().shutdown(); } catch (RserveException en) { // TODO Auto-generated catch block en.printStackTrace(); } RConnectionJob.setCanceled(true); RBridge.getBackend().close(); RServe.setConnection(null);
 		 * 
 		 * WorldWindView.setRConnection(null); }
 		 */

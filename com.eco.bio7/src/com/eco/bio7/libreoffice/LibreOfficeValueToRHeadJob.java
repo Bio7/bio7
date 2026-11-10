@@ -25,12 +25,13 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.rosuda.REngine.REngineException;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rbridge.backend.RBackend;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RBridge;
 import com.sun.star.frame.XModel;
 import com.sun.star.uno.UnoRuntime;
 
@@ -199,7 +200,7 @@ public class LibreOfficeValueToRHeadJob extends WorkspaceJob {
 					}
 
 					if (RServe.isRrunning()) {
-						RConnection connection = RServe.getConnection();
+						RBackend connection = RBridge.getBackend();
 						String stringBuild = "."+generateRandomString();
 						String stringRowNames = "."+generateRandomString();
 						connection.eval("try(LibreOffice<-data.frame(1:" + sheetdata[0].length + "))");
