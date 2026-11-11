@@ -1361,6 +1361,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		com.eco.bio7.collection.RoiManagerDocking.install(getWindowConfigurer().getWindow().getShell().getDisplay());
 		/* A view tool bar wrapped below the tabs gets the background of the tab folder! */
 		com.eco.bio7.collection.WrappedToolbarColors.install(getWindowConfigurer().getWindow().getShell().getDisplay());
+		/* The shortcut of "Paste Clipboard as File..." in the Project Explorer! */
+		com.eco.bio7.popup.actions.PasteClipboardAsFile.activateContext(getWindowConfigurer().getWindow());
 		/* Started with File > Restart in Debug Mode... (or another JDWP argument)! */
 		if (DebugRestart.isDebugMode()) {
 			System.out.println("[Bio7] Debug mode: a Java debugger can attach to " + DebugRestart.debugAddress()
