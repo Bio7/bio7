@@ -80,7 +80,6 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Monitor;
@@ -485,13 +484,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 
-		if (getOS().equals("Windows") || getOS().equals("Linux")) {
-			int deviceZoom = DPIUtil.getDeviceZoom();
-			double zoom = deviceZoom / 100.0;
-			store.setDefault("JAVA2D_UI_SCALE", zoom);
-			double java2dScale = store.getDouble("JAVA2D_UI_SCALE");
-			System.setProperty("sun.java2d.uiScale", Double.toString(java2dScale));
-		}
 		// System.setProperty("nashorn.args", "--no-deprecation-warning");
 		// -Dnashorn.args=--no-deprecation-warning
 		IEditorRegistry registry = PlatformUI.getWorkbench().getEditorRegistry();
@@ -703,6 +695,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("LATEX_FILES_EXT_DELETE", "out,log,nav,aux,bbl,blg,dvi,toc,.synctex.gz,snm");
 		store.setDefault("LINUX_SHELL", "GNOME");
 		store.setDefault("USE_CUSTOM_DEVICE", true);
+		store.setDefault("R_PLOT_HISTORY", 30);
 		store.setDefault("PDF_USE_BROWSER", true);
 		store.setDefault("IMPORT_R_PLOT_VIRTUAL", false);
 		store.setDefault("IMAGEJ_CREATE_SINGLE_PLOTS", false);
@@ -960,7 +953,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 						if (!"EMBEDDED".equals(store2.getString("R_BACKEND"))) {
 							Bio7Dialog.message("The ImageJ Plot Canvas device needs embedded R (experimental):\n"
-									+ "R preferences > R connection > Embedded R (restart Bio7), and 'Use Custom Device'.");
+									+ "R preferences > R connection > Embedded R (then start R again), and 'Use Custom Device'.");
 						}
 					} else if (sel.equals("PLOT_SWT_VECTOR")) {
 						/* The device of embedded R (experimental): SWT vector graphics in a custom view, resizable */
@@ -969,7 +962,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 						if (!"EMBEDDED".equals(store2.getString("R_BACKEND"))) {
 							Bio7Dialog.message("The SWT Vector Plot device needs embedded R (experimental):\n"
-									+ "R preferences > R connection > Embedded R (restart Bio7), and 'Use Custom Device'.");
+									+ "R preferences > R connection > Embedded R (then start R again), and 'Use Custom Device'.");
 						}
 					} else if (sel.equals("PLOT_IMAGEJ_DISPLAYSIZE")) {
 
@@ -1364,6 +1357,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		ImageJWindowAction.setBio7RCP(true);
 		/* The window of the LLM Assistant plugin is docked into a custom view! */
 		com.eco.bio7.collection.AssistantDocking.install(getWindowConfigurer().getWindow().getShell().getDisplay());
+		/* The ROI Manager is docked into a custom view (option of the Bio7 ImageJ preferences)! */
+		com.eco.bio7.collection.RoiManagerDocking.install(getWindowConfigurer().getWindow().getShell().getDisplay());
+		/* A view tool bar wrapped below the tabs gets the background of the tab folder! */
+		com.eco.bio7.collection.WrappedToolbarColors.install(getWindowConfigurer().getWindow().getShell().getDisplay());
 		/* Started with File > Restart in Debug Mode... (or another JDWP argument)! */
 		if (DebugRestart.isDebugMode()) {
 			System.out.println("[Bio7] Debug mode: a Java debugger can attach to " + DebugRestart.debugAddress()

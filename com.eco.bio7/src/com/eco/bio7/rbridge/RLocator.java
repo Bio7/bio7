@@ -191,12 +191,31 @@ public final class RLocator {
 		command.add("--no-save");
 		command.add("--no-restore");
 		command.add("-e");
-		command.add(PROBE);
+		/* The libraries of the R in the Bio7 console: the install location of Bio7 first (see ConsolePageParticipant) */
+		command.add(bio7LibraryPaths() + PROBE);
 		ProcessOutput result = run(command, 30);
 		if (result.error() != null) {
 			return failed(h, result.error());
 		}
 		return parse(h, result.output());
+	}
+
+	/*
+	 * The R code which adds the install location of the packages (Bio7
+	 * preferences) to the library paths like the Bio7 console does at its start
+	 * (else the probe doesn't see the packages installed there, e.g., Rserve)
+	 */
+	private static String bio7LibraryPaths() {
+		try {
+			String location = com.eco.bio7.Bio7Plugin.getDefault().getPreferenceStore().getString("InstallLocation");
+			if (location == null || location.isBlank() || !new java.io.File(location.trim()).isDirectory()) {
+				return "";
+			}
+			String path = location.trim().replace("\\", "/").replace("'", "\\'");
+			return "try(.libPaths(c('" + path + "', .libPaths())), silent = TRUE);";
+		} catch (RuntimeException | LinkageError e) {
+			return "";
+		}
 	}
 
 	private static RInstallation failed(String home, String error) {

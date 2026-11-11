@@ -35,6 +35,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		store.setDefault("IMAGEJ_TOOLBAR_SIZE_Y", 150);// 130
 		
 		store.setDefault("OPEN_IMAGES_AS_VIEWS", false);
+		store.setDefault("ROI_MANAGER_AS_VIEW", false);
 		store.setDefault("ENABLE_DETACHED_VIEW_WINDOWS",true);
 		store.setDefault("DETACHED_IMAGE_POSITION_X", 100);
 		store.setDefault("DETACHED_IMAGE_POSITION_Y", 100);

@@ -369,6 +369,11 @@ public final class RSession implements AutoCloseable {
 			    invisible()
 			  }
 			  e$historyEnable <- function(n, max) {
+			    # The plots of closed devices are released (and a reused device number starts empty)
+			    open <- as.character(dev.list())
+			    stale <- setdiff(ls(e$history), setdiff(open, as.character(n)))
+			    if (length(stale)) rm(list = stale, envir = e$history)
+			    if (max <= 0L) return(invisible())
 			    assign(as.character(n), list(plots = list(), index = 0L, replayed = FALSE, max = max), envir = e$history)
 			    if (is.null(e$hooked)) {
 			      setHook("before.plot.new", function() e$historyRecord())
@@ -740,10 +745,10 @@ public final class RSession implements AutoCloseable {
 			RDeviceFactory factory = deviceFactories.get(key);
 			RDeviceFactory.DeviceSpec spec = factory.create(w, h, ps);
 			int number = devices.open(deviceNames.get(key), spec.device(), spec.dpi(), spec.pointsize());
-			if (spec.history() > 0) {
-				/* From the first page on (the R error, if any, is caught by tryEval in C) */
+			{
+				/* From the first page on (0: no history); the R error, if any, is caught by tryEval in C */
 				MemorySegment num = c.protect(c.scalarInteger(number));
-				MemorySegment mx = c.protect(c.scalarInteger(spec.history()));
+				MemorySegment mx = c.protect(c.scalarInteger(Math.max(0, spec.history())));
 				MemorySegment call = c.protect(c.lang3(helpers.get("historyEnable"), num, mx));
 				c.tryEval(call, c.globalEnv, true);
 				c.unprotect(3);

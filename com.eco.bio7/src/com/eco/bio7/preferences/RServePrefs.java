@@ -66,7 +66,7 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("General:", getFieldEditorParent()));
-		addField(new RadioGroupFieldEditor("R_BACKEND", "R connection (restart Bio7 to apply):", 1,
+		addField(new RadioGroupFieldEditor("R_BACKEND", "R connection (applies at the next start of R; from embedded R back to Rserve: restart Bio7):", 1,
 				new String[][] { { "Rserve: R as a separate process (default)", "RSERVE" },
 						{ "Embedded R: R in the process of Bio7 via the Foreign Function and Memory API (experimental)", "EMBEDDED" } },
 				getFieldEditorParent(), true));

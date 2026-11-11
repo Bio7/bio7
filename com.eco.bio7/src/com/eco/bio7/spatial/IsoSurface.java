@@ -1477,6 +1477,47 @@ public class IsoSurface {
 		return table;
 	}
 
+	/*
+	 * The viewer in the coordinates of the positions (the current modelview
+	 * matrix): {x, y, z, 1} the eye (perspective) or {dx, dy, dz, 0} the view
+	 * direction (orthographic)
+	 */
+	private static double[] viewer(GL2 gl) {
+		double[] m = new double[16], p = new double[16];
+		gl.glGetDoublev(GL2.GL_MODELVIEW_MATRIX, m, 0);
+		gl.glGetDoublev(GL2.GL_PROJECTION_MATRIX, p, 0);
+		/* The inverse of the 3x3 part (column major) */
+		double a = m[0], b = m[4], c = m[8], d = m[1], e = m[5], f = m[9], g = m[2], h = m[6], k = m[10];
+		double det = a * (e * k - f * h) - b * (d * k - f * g) + c * (d * h - e * g);
+		if (Math.abs(det) < 1e-300) {
+			return null;
+		}
+		double[][] inv = { { (e * k - f * h) / det, (c * h - b * k) / det, (b * f - c * e) / det },
+				{ (f * g - d * k) / det, (a * k - c * g) / det, (c * d - a * f) / det },
+				{ (d * h - e * g) / det, (b * g - a * h) / det, (a * e - b * d) / det } };
+		boolean orthographic = Math.abs(p[11]) < 1e-12 && Math.abs(p[15] - 1) < 1e-12;
+		if (orthographic) {
+			/* The view direction (0, 0, -1) of the eye */
+			return new double[] { -inv[0][2], -inv[1][2], -inv[2][2], 0 };
+		}
+		double tx = m[12], ty = m[13], tz = m[14];
+		return new double[] { -(inv[0][0] * tx + inv[0][1] * ty + inv[0][2] * tz), -(inv[1][0] * tx + inv[1][1] * ty + inv[1][2] * tz),
+				-(inv[2][0] * tx + inv[2][1] * ty + inv[2][2] * tz), 1 };
+	}
+
+	/* True if the triangle is seen from its inner side (the normal of the triangle points away from the viewer) */
+	private boolean seenFromInside(int t, double[] viewer) {
+		int a = indices[t * 3] * 3, b = indices[t * 3 + 1] * 3, c = indices[t * 3 + 2] * 3;
+		double ux = positions[b] - positions[a], uy = positions[b + 1] - positions[a + 1], uz = positions[b + 2] - positions[a + 2];
+		double wx = positions[c] - positions[a], wy = positions[c + 1] - positions[a + 1], wz = positions[c + 2] - positions[a + 2];
+		double nx = uy * wz - uz * wy, ny = uz * wx - ux * wz, nz = ux * wy - uy * wx;
+		if (viewer[3] == 0) {
+			/* Orthographic: the normal in the view direction */
+			return nx * viewer[0] + ny * viewer[1] + nz * viewer[2] > 0;
+		}
+		return nx * (viewer[0] - positions[a]) + ny * (viewer[1] - positions[a + 1]) + nz * (viewer[2] - positions[a + 2]) < 0;
+	}
+
 	/* Trilinear interpolation of RGB colors (clamped at the borders)! */
 	private static void sampleColor(int[] c, int w, int h, int d, float x, float y, float z, float[] out,
 			int offset) {
@@ -2958,6 +2999,17 @@ public class IsoSurface {
 	 */
 	synchronized void renderTriangles(GL2 gl, boolean cartesian, int[] mesh, int[] triangles, float[] rgb,
 			boolean fill, float lineWidth, float alpha, boolean throughSurface, boolean withRemoved) {
+		renderTriangles(gl, cartesian, mesh, triangles, rgb, fill, lineWidth, alpha, throughSurface, withRemoved, false);
+	}
+
+	/*
+	 * The same; insideOnly: only the triangles which are seen from inside of the
+	 * material (their outer side faces away from the viewer, e.g., through an
+	 * opening cut into the surface): a measurement inside is not drawn on the
+	 * outside
+	 */
+	synchronized void renderTriangles(GL2 gl, boolean cartesian, int[] mesh, int[] triangles, float[] rgb,
+			boolean fill, float lineWidth, float alpha, boolean throughSurface, boolean withRemoved, boolean insideOnly) {
 		if (!show || positions == null || indices == null || mesh != meshTriangles || triangles == null) {
 			return;
 		}
@@ -2993,10 +3045,15 @@ public class IsoSurface {
 			gl.glDisable(GL.GL_DEPTH_TEST);
 		}
 		gl.glColor4f(rgb[0], rgb[1], rgb[2], alpha);
+		/* The viewer in the coordinates of the positions: the eye (perspective) or the view direction (orthographic) */
+		double[] viewer = insideOnly ? viewer(gl) : null;
 		gl.glBegin(GL.GL_TRIANGLES);
 		java.util.BitSet hidden = withRemoved ? null : hiddenTriangles;
 		for (int t : triangles) {
 			if (hidden != null && hidden.get(t)) {
+				continue;
+			}
+			if (viewer != null && !seenFromInside(t, viewer)) {
 				continue;
 			}
 			for (int k = 0; k < 3; k++) {

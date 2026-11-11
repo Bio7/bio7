@@ -246,7 +246,12 @@ public class WorldWindView extends ViewPart {
 			public void partHidden(IWorkbenchPartReference partRef) {
 
 				if (partRef.getId().equals("com.eco.bio7.worldwind.WorldWindView")) {
-					if (Util.getOS().equals("Mac")) {
+					partShown = false;
+					/*
+					 * The embedded window is hidden (macOS); a window in fullscreen mode (e.g., on a
+					 * secondary monitor) stays: hiding it would break its keys (ESC, F2)
+					 */
+					if (Util.getOS().equals("Mac") && !worldCanvas.getWindow().isFullscreen()) {
 						if (worldCanvas.getNEWTChild() != null) {
 							worldCanvas.getNEWTChild().setVisible(false);
 							// spat.getCanvas().getNEWTChild().setPosition(0, 0);
@@ -259,6 +264,11 @@ public class WorldWindView extends ViewPart {
 			@Override
 			public void partVisible(IWorkbenchPartReference partRef) {
 				if (partRef.getId().equals("com.eco.bio7.worldwind.WorldWindView")) {
+					partShown = true;
+					/* The fullscreen window gets the keys again (ESC, F2 to F5) */
+					if (worldCanvas.getWindow().isFullscreen()) {
+						worldCanvas.getWindow().requestFocus();
+					}
 					/*
 					 * if (parent.isDisposed() == false) { Rectangle rec = parent.getClientArea();
 					 * worldCanvas.getNEWTChild().setSize(rec.width, rec.height); }
@@ -456,9 +466,20 @@ public class WorldWindView extends ViewPart {
 		}
 	}
 
+	/* The view is visible in the current perspective (see the part listener) */
+	private volatile boolean partShown = true;
+
 	public void recreateGLCanvas() {
 		GLWindow window = worldCanvas.getWindow();
 		window.setFullscreen(false);
+		/* The fullscreen mode was left while the view is hidden (another perspective): the embedded window is hidden too (macOS) */
+		if (!partShown && Util.getOS().equals("Mac")) {
+			Display.getDefault().asyncExec(() -> {
+				if (!partShown && worldCanvas.getNEWTChild() != null && !worldCanvas.getWindow().isFullscreen()) {
+					worldCanvas.getNEWTChild().setVisible(false);
+				}
+			});
+		}
 		// worldFrame.add(worldCanvas);
 		// worldFrame.add(statusBar, BorderLayout.PAGE_END);
 		// worldFrame.validate();

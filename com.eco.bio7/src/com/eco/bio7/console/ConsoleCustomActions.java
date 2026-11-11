@@ -210,8 +210,14 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 		});
 		new MenuItem(fMenu, SWT.SEPARATOR);
 
+		/* Embedded R runs in the process of Bio7: it can't be stopped (only interrupted) */
+		boolean embeddedR = com.eco.bio7.rbridge.backend.Backends.isConsoleREmbedded();
 		MenuItem menuItem4 = new MenuItem(fMenu, SWT.PUSH);
 		menuItem4.setText("Stop Native Process (R, Python, Shell)");
+		if (embeddedR && "R".equals(ConsolePageParticipant.getInterpreterSelection())) {
+			menuItem4.setText("Stop Native Process (embedded R: restart Bio7 to restart R)");
+			menuItem4.setEnabled(false);
+		}
 
 		menuItem4.addSelectionListener(new SelectionListener() {
 
@@ -279,6 +285,10 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 		MenuItem menuItem5 = new MenuItem(fMenu, SWT.PUSH);
 		menuItem5.setText("Stop All Native R Processes");
+		if (embeddedR) {
+			menuItem5.setText("Stop All Native R Processes (not with embedded R)");
+			menuItem5.setEnabled(false);
+		}
 
 		menuItem5.addSelectionListener(new SelectionListener() {
 

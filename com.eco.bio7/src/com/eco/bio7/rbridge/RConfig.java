@@ -23,6 +23,17 @@ public class RConfig {
 		config(RBackend.of(con));
 	}
 
+	/* Defines the functions of an R file of Bio7 in R (the code is sent, R needs no access to the file) */
+	private static void loadRCode(RBackend con, String file) {
+		try {
+			String code = java.nio.file.Files.readString(java.nio.file.Path.of(file), java.nio.charset.StandardCharsets.UTF_8);
+			con.assign(".bio7RCode", code);
+			con.voidEval("try(eval(parse(text = .bio7RCode), envir = globalenv())); try(rm(.bio7RCode, envir = globalenv()))");
+		} catch (IOException | RserveException | RuntimeException e) {
+			System.err.println("Bio7: the R functions of " + file + " could not be loaded: " + e.getMessage());
+		}
+	}
+
 	public static void config(RBackend con) {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		
@@ -53,6 +64,8 @@ public class RConfig {
 			con.eval("try(options(max.print=5000))");
 			/* Make the default completion function in R available! */
 			con.eval("try(source('" + scriptPath + "'))");
+			/* The package lists of the package views (cached repository index), also for a remote Rserve! */
+			loadRCode(con, scriptFolder + "bio7Packages.R");
 			/* Define a new R environment! */
 			con.eval("try(.bio7TempEnvPath<- new.env())");
 			/* Set Bio7 scriptFolder path in R! */

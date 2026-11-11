@@ -325,7 +325,7 @@ public final class SwtPlotRenderer {
 		}
 		String name = family;
 		String key = name + "|" + style + "|" + Math.round(points * 10);
-		return fonts.computeIfAbsent(key, k -> {
+		return fonts.computeIfAbsent(key, _ -> {
 			org.eclipse.swt.graphics.FontData fd = new org.eclipse.swt.graphics.FontData(name, 10, style);
 			fd.height = points;
 			return new Font(device, fd);

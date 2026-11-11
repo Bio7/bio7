@@ -4138,6 +4138,12 @@ public class Options3d extends ViewPart {
 		gd_infoLabel.heightHint = 80;
 		infoLabel.setLayoutData(gd_infoLabel);
 		infoLabel.setText("Measures the iso surface and the volume (results in the Bio7 table).");
+		/* The volume tool: what a click measures (the surface under the mouse) */
+		Measurement3d.setPreviewTextListener(text -> org.eclipse.swt.widgets.Display.getDefault().asyncExec(() -> {
+			if (!infoLabel.isDisposed() && !text.isEmpty()) {
+				infoLabel.setText(text);
+			}
+		}));
 
 		Label minLabel = new Label(compositeMeasure, SWT.NONE);
 		minLabel.setText("Min. Object Size (Voxels):");
@@ -4566,38 +4572,84 @@ public class Options3d extends ViewPart {
 			}
 		});
 
-		/* The surface cut open: the surface of an area removed, the eraser size, undo, redo and restore */
-		/* The measured volumes: through the surface (transparent) or only the volumes (the surface hidden) */
-		final Button throughButton = new Button(compositeMeasure, SWT.CHECK);
-		throughButton.setText("Show Measured Volumes Through the Surface");
-		throughButton.setToolTipText("Shows the measured volumes (objects, cavities, outlines) as transparent bodies through the iso surface,"
-				+ "\ne.g., a cavity inside of the object (also the parts removed with the eraser).");
-		throughButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-		Measurement3d throughMeasurement = SpatialUtil.getMeasurement();
-		throughButton.setSelection(throughMeasurement != null && throughMeasurement.isShowVolumesThrough());
-		throughButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				Measurement3d measurement = SpatialUtil.getMeasurement();
-				if (measurement != null) {
-					measurement.setShowVolumesThrough(throughButton.getSelection());
-				}
+		/*
+		 * The measured volumes (volume tool): what a click measures (object, cavity)
+		 * and how the measured volumes are displayed
+		 */
+		Label volumesLabel = new Label(compositeMeasure, SWT.NONE);
+		volumesLabel.setText("Measured Volumes (Volume Tool):");
+		volumesLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		Measurement3d volumeMeasurement = SpatialUtil.getMeasurement();
+
+		Label objectLabel = new Label(compositeMeasure, SWT.NONE);
+		objectLabel.setText("Object:");
+		final Combo objectCombo = new Combo(compositeMeasure, SWT.READ_ONLY);
+		objectCombo.setItems("Material (without its cavities)", "Filled (with its cavities)");
+		objectCombo.select(volumeMeasurement != null && volumeMeasurement.isObjectFilled() ? 1 : 0);
+		objectCombo.setToolTipText("A click on an object from outside: the volume of its material (the outer surface without its cavities,"
+				+ "\nas in the table) or the filled volume (everything inside of its outer surface).");
+		objectCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		objectCombo.addListener(SWT.Selection, e -> {
+			Measurement3d measurement = SpatialUtil.getMeasurement();
+			if (measurement != null) {
+				measurement.setObjectFilled(objectCombo.getSelectionIndex() == 1);
 			}
 		});
-		final Button onlyVolumesButton = new Button(compositeMeasure, SWT.CHECK);
-		onlyVolumesButton.setText("Show Only the Measured Volumes (Hide the Iso Surface)");
-		onlyVolumesButton.setToolTipText("Hides the iso surface: only the measured volumes are visible (complete, also the parts removed with the eraser)."
-				+ "\nThe surface and its measurements stay; switch it off to see the surface again.");
-		onlyVolumesButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-		onlyVolumesButton.setSelection(throughMeasurement != null && throughMeasurement.isShowOnlyVolumes());
-		onlyVolumesButton.addSelectionListener(new SelectionAdapter() {
+
+		Label cavityLabel = new Label(compositeMeasure, SWT.NONE);
+		cavityLabel.setText("Cavity:");
+		final Combo cavityCombo = new Combo(compositeMeasure, SWT.READ_ONLY);
+		cavityCombo.setItems("Whole space (objects in it included)", "Free space (without the objects in it)");
+		cavityCombo.select(volumeMeasurement != null && volumeMeasurement.isCavityFreeSpace() ? 1 : 0);
+		cavityCombo.setToolTipText("A click on the wall of a cavity (inside, e.g., through an opening cut with the eraser):"
+				+ "\nthe whole space inside of the wall or the free space without the objects which float in it.");
+		cavityCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		cavityCombo.addListener(SWT.Selection, e -> {
+			Measurement3d measurement = SpatialUtil.getMeasurement();
+			if (measurement != null) {
+				measurement.setCavityFreeSpace(cavityCombo.getSelectionIndex() == 1);
+			}
+		});
+
+		Label displayLabel = new Label(compositeMeasure, SWT.NONE);
+		displayLabel.setText("Display:");
+		final Combo displayCombo = new Combo(compositeMeasure, SWT.READ_ONLY);
+		displayCombo.setItems("On the surface", "Through the surface", "Only the measured volumes");
+		int displayMode = 0;
+		if (volumeMeasurement != null) {
+			displayMode = volumeMeasurement.isShowOnlyVolumes() ? 2 : volumeMeasurement.isShowVolumesThrough() ? 1 : 0;
+		}
+		displayCombo.select(displayMode);
+		displayCombo.setToolTipText("On the surface: the measured volumes where they are visible (a cavity through the opening)."
+				+ "\nThrough the surface: transparent through the iso surface (e.g., a cavity inside of the closed object)."
+				+ "\nOnly the measured volumes: the iso surface is hidden (the measurements stay)."
+				+ "\nColors: an object orange, a cavity blue, objects in a cavity blue (included) or red (subtracted).");
+		displayCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		displayCombo.addListener(SWT.Selection, e -> {
+			Measurement3d measurement = SpatialUtil.getMeasurement();
+			if (measurement != null) {
+				int mode = displayCombo.getSelectionIndex();
+				measurement.setShowVolumesThrough(mode == 1);
+				measurement.setShowOnlyVolumes(mode == 2);
+			}
+		});
+
+		final Button trianglesButton = new Button(compositeMeasure, SWT.CHECK);
+		trianglesButton.setText("Show as Triangles");
+		trianglesButton.setToolTipText("Draws the measured volumes (objects, cavities, outlines) as their triangles"
+				+ "\n(a wireframe on a fainter fill) instead of the selection color.");
+		trianglesButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		trianglesButton.setSelection(volumeMeasurement != null && volumeMeasurement.isShowVolumeTriangles());
+		trianglesButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				Measurement3d measurement = SpatialUtil.getMeasurement();
 				if (measurement != null) {
-					measurement.setShowOnlyVolumes(onlyVolumesButton.getSelection());
+					measurement.setShowVolumeTriangles(trianglesButton.getSelection());
 				}
 			}
 		});
 
+		/* The surface cut open: the surface of an area removed, the eraser size, undo, redo and restore */
 		Label cutLabel = new Label(compositeMeasure, SWT.NONE);
 		cutLabel.setText("Cut the Surface Open:");
 		cutLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));

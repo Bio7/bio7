@@ -53,6 +53,9 @@ public class Bio7ImageJPreferences extends FieldEditorPreferencePage implements 
 		addField(new IntegerFieldEditor("IMAGEJ_TOOLBAR_SIZE_X", "x", getFieldEditorParent()));
 		addField(new IntegerFieldEditor("IMAGEJ_TOOLBAR_SIZE_Y", "y", getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
+		addField(new LabelFieldEditor("ROI Manager:", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("ROI_MANAGER_AS_VIEW", "Open the ROI Manager in a view (instead of a window)", getFieldEditorParent()));
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("Detached ImageJ Views:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("OPEN_IMAGES_AS_VIEWS", "Open new images as views by default", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("ENABLE_DETACHED_VIEW_WINDOWS", "&Open detached views in a window", getFieldEditorParent()));

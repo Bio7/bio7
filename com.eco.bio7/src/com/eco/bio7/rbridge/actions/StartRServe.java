@@ -68,6 +68,48 @@ public class StartRServe extends Action implements IMenuCreator {
 		startStopRserve();
 	}
 
+	/*
+	 * Before the start: if embedded R is selected and not running but an R process
+	 * (Rserve) runs, ends that process after a confirmation. Returns false if the
+	 * user cancels.
+	 */
+	private boolean switchToEmbedded(ConsolePageParticipant consInst) {
+		if (!com.eco.bio7.rbridge.backend.Backends.isEmbeddedSelected() || com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning()
+				|| com.eco.bio7.rbridge.backend.Backends.unavailableReason() != null) {
+			return true;
+		}
+		Process process = consInst.getRProcess();
+		if (process == null || !process.isAlive()) {
+			return true;
+		}
+		boolean ok = MessageDialog.openConfirm(Util.getShell(), "Embedded R",
+				"Embedded R is selected in the preferences, but R runs as a separate process (Rserve).\n\n"
+						+ "Terminate the running R process and start embedded R?\n"
+						+ "Objects of the current R workspace which are not saved are lost.");
+		if (!ok) {
+			return false;
+		}
+		RConnection con = RServe.getConnection();
+		if (con != null) {
+			RConnectionJob.setCanceled(true);
+			con.close();
+		}
+		RServe.setConnection(null);
+		REditor.setConnection(null);
+		WorldWindView.setRConnection(null);
+		RServe.setRrunning(false);
+		process.destroy();
+		try {
+			if (!process.waitFor(3, java.util.concurrent.TimeUnit.SECONDS)) {
+				process.destroyForcibly();
+			}
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+		consInst.setRProcess(null);
+		return true;
+	}
+
 	private void startStopRserve() {
 
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
@@ -86,6 +128,14 @@ public class StartRServe extends Action implements IMenuCreator {
 		}
 
 		if (remote == false) {
+			/*
+			 * Embedded R is selected (preferences) but R runs as a separate process (Rserve):
+			 * that process ends, the start below opens embedded R (or Rserve again if it fails)
+			 */
+			if (!switchToEmbedded(consInst)) {
+				return;
+			}
+			c = RServe.getConnection();
 
 			/*
 			 * This actions starts Rserve by default in the native shell! else {
@@ -344,6 +394,22 @@ public class StartRServe extends Action implements IMenuCreator {
 		/* The images of the menu items are disposed with the menu (a new menu is created each time) */
 		java.util.List<org.eclipse.swt.graphics.Image> images = new java.util.ArrayList<>();
 		fMenu.addDisposeListener(e -> images.forEach(org.eclipse.swt.graphics.Image::dispose));
+
+		/*
+		 * Embedded R runs in the process of Bio7: Rserve, terminating and killing R
+		 * don't apply (only after a restart of Bio7), an evaluation can be interrupted
+		 */
+		if (com.eco.bio7.rbridge.backend.Backends.isConsoleREmbedded()) {
+			MenuItem interrupt = new MenuItem(fMenu, SWT.PUSH);
+			interrupt.setText("Interrupt R");
+			interrupt.setImage(menuImage(images, "/icons/views/stopraction.svg"));
+			interrupt.addListener(SWT.Selection, e -> com.eco.bio7.rbridge.backend.EmbeddedR.interrupt());
+			new MenuItem(fMenu, SWT.SEPARATOR);
+			MenuItem info = new MenuItem(fMenu, SWT.PUSH);
+			info.setText("Embedded R: restart Bio7 to restart R");
+			info.setEnabled(false);
+			return fMenu;
+		}
 
 		MenuItem menuItem = new MenuItem(fMenu, SWT.PUSH);
 		menuItem.setText("Start Rserve/Stop Rserve (within R)");

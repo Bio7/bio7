@@ -58,6 +58,18 @@ public final class Backends {
 	}
 
 	/**
+	 * Returns true if R of the console is embedded R (no R process of the console):
+	 * then R can be interrupted, but not terminated or restarted.
+	 */
+	public static boolean isConsoleREmbedded() {
+		if (embedded == null) {
+			return false;
+		}
+		com.eco.bio7.console.ConsolePageParticipant cpp = com.eco.bio7.console.ConsolePageParticipant.getConsolePageParticipantInstance();
+		return cpp == null || cpp.getRProcess() == null;
+	}
+
+	/**
 	 * Returns why embedded R can't be used, or null if it can: the bundle, Java 22+
 	 * and the native access of the JVM.
 	 */

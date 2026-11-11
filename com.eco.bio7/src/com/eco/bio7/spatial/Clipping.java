@@ -96,6 +96,10 @@ public class Clipping {
 		default boolean editPressed(double x, double y, double[][] ray) {
 			return false;
 		}
+
+		/** The mouse moved without a pressed button (e.g., a preview of what a click measures). */
+		default void moved(int tool, double x, double y, double[][] ray) {
+		}
 	}
 
 	private MeasureToolListener measureToolListener;
@@ -559,6 +563,25 @@ public class Clipping {
 		}
 		toolDragged(x, y);
 		return true;
+	}
+
+	/**
+	 * The mouse moved without a pressed button: sent to the measurement tools
+	 * (e.g., the preview of the volume tool).
+	 */
+	public void toolMoved(double x, double y) {
+		int current;
+		double[][] ray = null;
+		synchronized (this) {
+			current = tool;
+			if (isMeasureTool(tool) && viewBounds != null) {
+				ray = relativeRay(x, y);
+			}
+		}
+		MeasureToolListener measure = measureToolListener;
+		if (measure != null) {
+			measure.moved(current, x, y, ray);
+		}
 	}
 
 	/** Continues the drag of the mouse tool (see toolPressed). */

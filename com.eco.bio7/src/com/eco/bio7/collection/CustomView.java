@@ -52,6 +52,10 @@ public class CustomView extends ViewPart {// implements ISaveablePart2
 
 	private String name;
 
+	/* The fullscreen mode (tool bar action and the keys F2 to F5), see setFullscreenEnabled! */
+	private Action fullscreenAction;
+	private boolean fullscreenEnabled = true;
+
 	public CustomView() {
 
 	}
@@ -73,13 +77,14 @@ public class CustomView extends ViewPart {// implements ISaveablePart2
 		/* The view of the content for the fullscreen mode (F2)! */
 		customViewParent.setData(CustomViewFullscreen.VIEW_KEY, this);
 		CustomViewFullscreen.install(parent.getDisplay());
-		Action fullscreen = new Action("Fullscreen (F2)") {
+		Action fullscreen = fullscreenAction = new Action("Fullscreen (F2)") {
 			public void run() {
 				CustomViewFullscreen.toggle(CustomView.this);
 			}
 		};
 		fullscreen.setToolTipText("Display the view in fullscreen mode (F2: primary monitor, F3: secondary monitor, F4: tertiary monitor, F5: select the monitor, exit with ESC)");
 		fullscreen.setImageDescriptor(Bio7Plugin.getImageDescriptor("/icons/views/fullscreen.svg"));
+		fullscreen.setId(FULLSCREEN_ID);
 		getViewSite().getActionBars().getToolBarManager().add(fullscreen);
 		getViewSite().getActionBars().updateActionBars();
 		parent.addDisposeListener(new DisposeListener() {
@@ -107,6 +112,30 @@ public class CustomView extends ViewPart {// implements ISaveablePart2
 		});
 
 	}
+
+	/**
+	 * Enables or disables the fullscreen mode of this view (the tool bar action and
+	 * the keys F2 to F5), e.g., for a view with a tool window (UI thread).
+	 */
+	public void setFullscreenEnabled(boolean enabled) {
+		fullscreenEnabled = enabled;
+		if (fullscreenAction != null && getViewSite() != null) {
+			var toolBar = getViewSite().getActionBars().getToolBarManager();
+			if (enabled && toolBar.find(FULLSCREEN_ID) == null) {
+				toolBar.add(fullscreenAction);
+			} else if (!enabled) {
+				toolBar.remove(FULLSCREEN_ID);
+			}
+			getViewSite().getActionBars().updateActionBars();
+		}
+	}
+
+	/** Returns true if the view can be displayed in fullscreen mode. */
+	public boolean isFullscreenEnabled() {
+		return fullscreenEnabled;
+	}
+
+	private static final String FULLSCREEN_ID = "com.eco.bio7.customview.fullscreen";
 
 	public void setFocus() {
 

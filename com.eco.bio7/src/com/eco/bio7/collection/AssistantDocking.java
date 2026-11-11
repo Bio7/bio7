@@ -279,6 +279,7 @@ public final class AssistantDocking {
 			}
 		};
 		undock.setToolTipText("Open the LLM Assistant in a separate window");
+		undock.setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/views/openwindow.svg"));
 		tbm.add(undock);
 		customView.getViewSite().getActionBars().updateActionBars();
 	}

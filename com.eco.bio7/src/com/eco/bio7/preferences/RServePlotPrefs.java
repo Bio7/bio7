@@ -16,6 +16,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.SWT;
@@ -66,6 +67,10 @@ public class RServePlotPrefs extends FieldEditorPreferencePage implements IWorkb
 		addField(new BooleanFieldEditor("USE_CUSTOM_DEVICE", "Use Custom Device", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		selectionDevice=new RadioGroupFieldEditor("PLOT_DEVICE_SELECTION", "Select Device:\nPlease use action \"Apply \" to see changes and after using action \"Restore Defaults\".\nValues in the Device Definition can be changed and will be stored!", 3, new String[][] { { "Image Default", "PLOT_IMAGE" },{ "Image Cairo", "PLOT_CAIRO" },{ "Image Print", "PLOT_PRINT" }, { "PDF", "PLOT_PDF" },{ "SVG", "PLOT_SVG" },{ "PostScript", "PLOT_POSTSCRIPT" },{ "ImageJ View Display Size", "PLOT_IMAGEJ_DISPLAYSIZE" },{ "ImageJ View Display Size Cairo", "PLOT_IMAGEJ_DISPLAYSIZE_CAIRO" },{ "ImageJ Image", "PLOT_IMAGEJ_IMAGESIZE" },{"ImageJ Image Cairo", "PLOT_IMAGEJ_IMAGESIZE_CAIRO"}, {"ImageJ Plot Canvas (embedded R, experimental)", "PLOT_IMAGEJ_CANVAS"}, {"SWT Vector Plot (embedded R, experimental)", "PLOT_SWT_VECTOR"}   }, getFieldEditorParent(), false);
 		addField(selectionDevice);
+		IntegerFieldEditor plotHistory = new IntegerFieldEditor("R_PLOT_HISTORY", "Plot history (number of plots, 0 = off):", getFieldEditorParent(), 4);
+		plotHistory.setValidRange(0, 1000);
+		plotHistory.getLabelControl(getFieldEditorParent()).setToolTipText("The plots kept for the back/forward buttons of the embedded R plot devices\n(ImageJ Plot Canvas, SWT Vector Plot). Applies to new plot windows.\nThe plots are kept in the memory of R: large plots can need several MB each.");
+		addField(plotHistory);
 				
 		//addField(new StringFieldEditor("DEVICE_DEFINITION", "Device Definiton", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 		mult=new MultiLineTextFieldEditor("DEVICE_DEFINITION", "Device Definiton", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent());

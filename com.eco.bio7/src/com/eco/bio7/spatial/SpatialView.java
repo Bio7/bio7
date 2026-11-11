@@ -169,7 +169,12 @@ public class SpatialView extends ViewPart {
 			public void partHidden(IWorkbenchPartReference partRef) {
 
 				if (partRef.getId().equals("com.eco.bio7.spatial")) {
-					if (Util.getOS().equals("Mac")) {
+					partShown = false;
+					/*
+					 * The embedded window is hidden (macOS); a window in fullscreen mode (e.g., on a
+					 * secondary monitor) stays: hiding it would break its keys (ESC, F2)
+					 */
+					if (Util.getOS().equals("Mac") && !spat.glWindow.isFullscreen()) {
 						NewtCanvasSWT scanvas = spat.getCanvas();
 						if (scanvas.getNEWTChild() != null) {
 							scanvas.getNEWTChild().setVisible(false);
@@ -183,6 +188,11 @@ public class SpatialView extends ViewPart {
 			@Override
 			public void partVisible(IWorkbenchPartReference partRef) {
 				if (partRef.getId().equals("com.eco.bio7.spatial")) {
+					partShown = true;
+					/* The fullscreen window gets the keys again (ESC, F2 to F5) */
+					if (spat.glWindow.isFullscreen()) {
+						spat.glWindow.requestFocus();
+					}
 					if (Util.getOS().equals("Mac")) {
 						if (parent.isDisposed() == false) {
 							Rectangle rec = parent.getClientArea();
@@ -232,8 +242,18 @@ public class SpatialView extends ViewPart {
 		spat.getAnimator().stop();
 		spat.glWindow.setFullscreen(false);
 		spat.getAnimator().start();
-
+		/* The fullscreen mode was left while the view is hidden (another perspective): the embedded window is hidden too (macOS) */
+		if (!partShown && Util.getOS().equals("Mac")) {
+			Display.getDefault().asyncExec(() -> {
+				if (!partShown && spat.getCanvas().getNEWTChild() != null && !spat.glWindow.isFullscreen()) {
+					spat.getCanvas().getNEWTChild().setVisible(false);
+				}
+			});
+		}
 	}
+
+	/* The view is visible in the current perspective (see the part listener) */
+	private volatile boolean partShown = true;
 
 	public void setFullscreen(Fullscreen screen) {
 		full = screen;

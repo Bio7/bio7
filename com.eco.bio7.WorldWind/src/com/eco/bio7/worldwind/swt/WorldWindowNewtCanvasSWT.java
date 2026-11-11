@@ -111,6 +111,19 @@ public class WorldWindowNewtCanvasSWT extends NewtCanvasSWT implements WorldWind
 	{
 		super(parent, style, GLWindow.create(getCaps()));
 		this.window = (GLWindow) getNEWTChild();
+		/*
+		 * Workaround for HiDPI scaling on Windows (as in the 3D view): NewtCanvasSWT
+		 * sizes the NEWT window with the SWT client area in points, but NEWT on Windows
+		 * expects pixels (with a display scale > 100 % the globe would only fill a part
+		 * of the view). These listeners are called after the ones of NewtCanvasSWT and
+		 * correct the size.
+		 */
+		if (System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).startsWith("windows"))
+		{
+			org.eclipse.swt.widgets.Listener hiDpiSize = event -> updateHiDpiWindowSize();
+			addListener(org.eclipse.swt.SWT.Resize, hiDpiSize);
+			addListener(org.eclipse.swt.SWT.Paint, hiDpiSize);
+		}
 		if (shareWith != null)
 		{
 			this.window.setSharedContext(shareWith.getContext());
@@ -484,5 +497,23 @@ public class WorldWindowNewtCanvasSWT extends NewtCanvasSWT implements WorldWind
 	public void setEnableGpuCacheReinitialization(boolean enableGpuCacheReinitialization) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	/* Resizes the NEWT window to the client area of the canvas in pixels (Windows HiDPI, see the constructor) */
+	private void updateHiDpiWindowSize()
+	{
+		/*
+		 * Only when the NEWT window is embedded as a child: while it is reparented (or
+		 * in fullscreen mode) it is a top-level window
+		 */
+		if (isDisposed() || window == null || window.isFullscreen() || !window.isNativeValid() || window.getParent() == null)
+		{
+			return;
+		}
+		org.eclipse.swt.graphics.Rectangle pixels = com.jogamp.nativewindow.swt.SWTAccessor.getClientAreaInPixels(this);
+		if (pixels.width > 0 && pixels.height > 0 && (window.getWidth() != pixels.width || window.getHeight() != pixels.height))
+		{
+			window.setSize(pixels.width, pixels.height);
+		}
 	}
 }

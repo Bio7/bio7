@@ -6,7 +6,6 @@ import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.eclipse.wb.swt.DoubleFieldEditor;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
@@ -39,10 +38,7 @@ public class Bio7PreferencePage extends FieldEditorPreferencePage implements IWo
 		addField(new LabelFieldEditor("Bio7 Console", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("BIO7_CONSOLE_INTERPRET_ASCII", "Interpret ASCII control characters (Restart to apply)", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("BIO7_CONSOLE_INTERPRET_CARRIAGE_RETURN", "Interpret Carriage Return (\\r) as control character (Restart to apply)", getFieldEditorParent()));
-		
-		addField(new SpacerFieldEditor(getFieldEditorParent()));
-		addField(new LabelFieldEditor("Java Swing", getFieldEditorParent()));
-		addField(new DoubleFieldEditor("JAVA2D_UI_SCALE", "Set Scale Swing Components", getFieldEditorParent()));
+
 	}
 
 	public void init(IWorkbench workbench) {

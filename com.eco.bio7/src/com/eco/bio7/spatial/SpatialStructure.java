@@ -1787,6 +1787,10 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	public void mouseMoved(MouseEvent e) {
 		SpatialEvents.setMouseMoved(true);
 		SpatialEvents.setMouseMoveEvent(e);
+		/* The preview of the measurement tools (e.g., what a click of the volume tool measures) */
+		if (!walkthrough) {
+			clipping.toolMoved(e.getX(), e.getY());
+		}
 	}
 
 	public void mouseWheelMoved(MouseEvent e) {

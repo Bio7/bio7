@@ -42,8 +42,14 @@ public class RPlotCanvasDevice extends Plot {
 
 	/* The resolution: lwd 1 is one pixel, as the screen devices of R */
 	private static final double DPI = 96;
-	/* The number of plots of the history (back/forward) */
-	private static final int HISTORY = 30;
+	/** The number of plots of the history (back/forward), see the plot preferences (0 = off). */
+	static int historySize() {
+		try {
+			return Math.max(0, com.eco.bio7.Bio7Plugin.getDefault().getPreferenceStore().getInt("R_PLOT_HISTORY"));
+		} catch (RuntimeException e) {
+			return 30;
+		}
+	}
 	/* The end of locator() (a right click or Esc) */
 	private static final double[] STOP = new double[0];
 	private final java.util.concurrent.LinkedBlockingQueue<double[]> clicks = new java.util.concurrent.LinkedBlockingQueue<>();
@@ -86,7 +92,7 @@ public class RPlotCanvasDevice extends Plot {
 			int[] size = preferredSize(widthInches, heightInches);
 			RPlotCanvasDevice plot = new RPlotCanvasDevice(session, "R Plot", size[0], size[1], displayScale());
 			Display.getDefault().asyncExec(plot::open);
-			return new RDeviceFactory.DeviceSpec(plot.device, DPI, pointsize, HISTORY);
+			return new RDeviceFactory.DeviceSpec(plot.device, DPI, pointsize, historySize());
 		};
 	}
 
@@ -610,6 +616,7 @@ public class RPlotCanvasDevice extends Plot {
 			return;
 		}
 		appliedVersion = version;
+		showOnNewPlot(imp);
 		/* The high resolution image belongs to the shown frame (the PlotCanvas draws it with the size of the image) */
 		shownHiRes = hi;
 		contentVersion++;
@@ -621,6 +628,29 @@ public class RPlotCanvasDevice extends Plot {
 			ColorProcessor cp = new ColorProcessor(w, h, pixels);
 			ip = cp;
 			imp.setProcessor(cp);
+		}
+	}
+
+	/* The page count of the device when the view was last checked (UI thread) */
+	private long checkedPages;
+
+	/*
+	 * A new plot (also in another perspective): the view of the plot (the
+	 * ImageJ-Canvas view or a detached view) is shown in the current perspective
+	 * and its tab is selected
+	 */
+	private void showOnNewPlot(ImagePlus imp) {
+		long pages = device.pageCount();
+		if (pages == checkedPages) {
+			return;
+		}
+		checkedPages = pages;
+		var detached = com.eco.bio7.image.ui.CustomDetachedImageJView.find(imp);
+		boolean shown = detached != null
+				? PlotViews.showInPerspective(detached.getViewSite().getId(), detached.getViewSite().getSecondaryId())
+				: PlotViews.showInPerspective(CanvasView.ID, null);
+		if (shown && imp.getWindow() != null) {
+			imp.getWindow().toFront();
 		}
 	}
 

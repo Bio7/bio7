@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 icon: open as window (a window with an arrow out of the view) -->
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- The window: frame, title bar and content -->
+  <rect x="1.5" y="3.5" width="10" height="10" rx="1" fill="#ffffff" stroke="#638d43" stroke-width="1"/>
+  <rect x="1.5" y="3.5" width="10" height="2.5" fill="#638d43"/>
+  <!-- The arrow out of the window (up right) -->
+  <path d="M7 9 L14 2" fill="none" stroke="#4a6a32" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M9.5 1.5 L14.5 1.5 L14.5 6.5 Z" fill="#4a6a32"/>
+</svg>

@@ -169,10 +169,22 @@ public class RecordingGraphicsDevice implements ResizableGraphicsDevice {
 		dirty = true;
 	}
 
+	/* The number of pages (plots) drawn so far, see pageCount() */
+	private volatile long pageCount;
+
+	/**
+	 * The number of pages (new plots) drawn so far, e.g., to show the device when R
+	 * starts a new plot (any thread).
+	 */
+	public long pageCount() {
+		return pageCount;
+	}
+
 	@Override
 	public void newPage(GraphicsContext gc) {
 		synchronized (this) {
 			ops.clear();
+			pageCount++;
 		}
 		add(new NewPage(gc));
 		changed();

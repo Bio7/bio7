@@ -140,6 +140,7 @@ public final class NewtFullscreen {
 						window.setFullscreen(monitorDevices);
 						window.setFullscreen(false);
 						window.setFullscreen(monitorDevices);
+						fitToMonitorPixels(window, dev);
 						window.setVisible(true);
 					} else {
 						window.setFullscreen(monitorDevices);
@@ -150,6 +151,36 @@ public final class NewtFullscreen {
 			}
 		};
 		job.schedule();
+	}
+
+	/*
+	 * Windows with a display scale (e.g., 125 %): NEWT sizes the fullscreen window
+	 * with the monitor in window units (pixels / scale), but the window on Windows
+	 * is sized in pixels, so it would only cover a part of the monitor (as the
+	 * embedded window, see NewtCanvasSWT). The window gets the position and size of
+	 * the monitor in pixels (forced: NEWT ignores changes in fullscreen mode
+	 * otherwise; internal API of NEWT, without it the window stays as it is).
+	 */
+	private static void fitToMonitorPixels(GLWindow window, MonitorDevice dev) {
+		RectangleImmutable pixels = dev.getViewport();
+		if (pixels == null || pixels.getWidth() <= 0 || pixels.getHeight() <= 0) {
+			return;
+		}
+		if (window.getSurfaceWidth() == pixels.getWidth() && window.getSurfaceHeight() == pixels.getHeight()) {
+			return;
+		}
+		try {
+			Object impl = window.getDelegatedWindow();
+			Class<?> windowImpl = Class.forName("jogamp.newt.WindowImpl", false, impl.getClass().getClassLoader());
+			java.lang.reflect.Method position = windowImpl.getDeclaredMethod("setPositionImpl", int.class, int.class, boolean.class, boolean.class);
+			java.lang.reflect.Method size = windowImpl.getDeclaredMethod("setSizeImpl", int.class, int.class, boolean.class, boolean.class);
+			position.setAccessible(true);
+			size.setAccessible(true);
+			position.invoke(impl, pixels.getX(), pixels.getY(), true, true);
+			size.invoke(impl, pixels.getWidth(), pixels.getHeight(), true, true);
+		} catch (ReflectiveOperationException | RuntimeException e) {
+			System.err.println("Fullscreen: the size of the window could not be fitted to the monitor (" + e + ")");
+		}
 	}
 
 	/* The NEWT monitor of the SWT monitor bounds (or of the index if the bounds don't match, e.g., other units) */

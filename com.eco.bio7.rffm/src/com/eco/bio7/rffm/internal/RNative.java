@@ -159,6 +159,9 @@ public final class RNative {
 		SymbolLookup libc = os.equals("Windows") ? SymbolLookup.libraryLookup("ucrtbase.dll", arena) : LINKER.defaultLookup();
 		/* The environment before R is loaded */
 		setenv(libc, os, "R_HOME", home.toString());
+		if (os.equals("Windows")) {
+			windowsSearchPath(arena, libc, lib.getParent());
+		}
 		if (!os.equals("Windows")) {
 			/* A UTF-8 locale (e.g., an application started from the Finder has no LANG): else R runs in the C locale */
 			if (System.getenv("LANG") == null && System.getenv("LC_ALL") == null && System.getenv("LC_CTYPE") == null) {
@@ -235,13 +238,50 @@ public final class RNative {
 		}
 	}
 
+	/*
+	 * Windows: the libraries R.dll depends on (Rblas.dll, Riconv.dll,
+	 * Rgraphapp.dll, ...) are in its folder, which LoadLibrary doesn't search
+	 * (only the folder of the program, here Java, the system folders and PATH;
+	 * R.exe has them next to it). The folder is added to the search of the DLLs
+	 * (SetDllDirectory, also for libraries which depend on each other) and in
+	 * front of PATH (as the start of R does, e.g., for the DLLs of packages and
+	 * the tools started by R).
+	 */
+	private static void windowsSearchPath(Arena arena, SymbolLookup libc, Path bin) throws IOException {
+		try {
+			SymbolLookup kernel32 = SymbolLookup.libraryLookup("kernel32.dll", arena);
+			MethodHandle setDllDirectory = LINKER.downcallHandle(kernel32.find("SetDllDirectoryW").orElseThrow(),
+					FunctionDescriptor.of(JAVA_INT, ADDRESS));
+			try (Arena a = Arena.ofConfined()) {
+				int ok = (int) setDllDirectory.invokeExact(a.allocateFrom(bin.toString(), java.nio.charset.StandardCharsets.UTF_16LE));
+				if (ok == 0) {
+					System.err.println("Embedded R: SetDllDirectory failed for " + bin);
+				}
+			}
+		} catch (IOException e) {
+			throw e;
+		} catch (Throwable t) {
+			throw new IOException("The folder of R.dll could not be added to the search of the DLLs: " + t.getMessage(), t);
+		}
+		String path = System.getenv("PATH");
+		String folder = bin.toString();
+		if (path == null || !java.util.Arrays.asList(path.split(";")).contains(folder)) {
+			setenv(libc, "Windows", "PATH", path == null || path.isEmpty() ? folder : folder + ";" + path);
+		}
+	}
+
 	/* dlopen(RTLD_NOW | RTLD_GLOBAL): the symbols of R for the packages (System.load on Windows) */
 	private static void dlopenGlobal(SymbolLookup libc, String os, Path lib) throws IOException {
 		if (os.equals("Windows")) {
 			try {
 				System.load(lib.toString());
 			} catch (UnsatisfiedLinkError e) {
-				throw new IOException(e.getMessage());
+				String message = e.getMessage();
+				if (message != null && message.contains("dependent libraries")) {
+					message += " (the DLLs in " + lib.getParent()
+							+ " and the Microsoft Visual C++/UCRT runtime of Windows are needed; check that R works with Rterm.exe)";
+				}
+				throw new IOException(message);
 			}
 			return;
 		}

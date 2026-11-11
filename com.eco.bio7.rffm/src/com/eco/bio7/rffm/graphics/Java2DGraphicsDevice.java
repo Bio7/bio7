@@ -189,10 +189,22 @@ public class Java2DGraphicsDevice implements ResizableGraphicsDevice {
 		return new Frame(data.clone(), w, h, scale, version);
 	}
 
+	/* The number of pages (plots) drawn so far, see pageCount() */
+	private volatile long pageCount;
+
+	/**
+	 * The number of pages (new plots) drawn so far, e.g., to show the device when R
+	 * starts a new plot (any thread).
+	 */
+	public long pageCount() {
+		return pageCount;
+	}
+
 	/* ---------------- Drawing ---------------- */
 
 	@Override
 	public synchronized void newPage(GraphicsContext gc) {
+		pageCount++;
 		g.setClip(null);
 		g.setComposite(AlphaComposite.Src);
 		g.setColor(Color.WHITE);

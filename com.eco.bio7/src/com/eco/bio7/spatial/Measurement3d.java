@@ -2627,6 +2627,8 @@ public class Measurement3d {
 	/* A point on the surface: the relative position, the position inside, the object and the triangles */
 	private static final class Hit {
 		double[] point;
+		/* The surface is hit from its inner side (from inside of the material, e.g., through an opening) */
+		boolean backside;
 		int full;
 		int display;
 		int[] displayMesh;
@@ -2686,6 +2688,7 @@ public class Measurement3d {
 		}
 		Hit h = new Hit();
 		h.point = point;
+		h.backside = dx * nx + dy * ny + dz * nz > 0;
 		h.full = (int) hit[0];
 		h.display = displayHit != null ? (int) displayHit[0] : -1;
 		h.displayMesh = display.triangles;
@@ -2886,6 +2889,9 @@ public class Measurement3d {
 			"Volume (Cavity)" };
 	private static final float[] AREA_COLOR = { 0.1f, 0.75f, 1f };
 	private static final float[] VOLUME_COLOR = { 1f, 0.68f, 0.1f };
+	/* A measured cavity (the space inside of a wall) and the subtracted parts of a measured volume */
+	private static final float[] CAVITY_COLOR = { 0.3f, 0.45f, 1f };
+	private static final float[] SUBTRACTED_COLOR = { 0.95f, 0.2f, 0.15f };
 
 	/* A measured area or volume (or one which is drawn) */
 	private static final class Area {
@@ -2898,6 +2904,17 @@ public class Measurement3d {
 		final List<double[]> outline = new ArrayList<>();
 		int[] displayMesh;
 		int[] displayTriangles;
+		/*
+		 * The display of a volume (null: the displayed triangles): its surface (the
+		 * outer surface of an object) and the parts inside which are subtracted
+		 * (cavities of an object, objects in a free space) or included (objects in a
+		 * whole cavity), triangles of the displayed mesh
+		 */
+		int[] mainTriangles;
+		int[] innerTriangles;
+		boolean innerSubtracted;
+		/* Measured from inside of the material: only drawn where it is seen from inside */
+		boolean insideOnly;
 		double[] row;
 		/*
 		 * The points which can be edited (the corners of a polygon, the points of a
@@ -2930,6 +2947,17 @@ public class Measurement3d {
 
 	/* The mouse events of the measurement tools (see Clipping.MeasureToolListener) */
 	private final class ToolHandler implements Clipping.MeasureToolListener {
+
+		/* The volume tool: the surface under the mouse (what a click measures) */
+		@Override
+		public void moved(int tool, double x, double y, double[][] ray) {
+			if (tool != Clipping.TOOL_VOLUME || ray == null) {
+				clearPreview();
+				return;
+			}
+			preview(surfaceHit(ray));
+		}
+
 		private boolean moved;
 		private boolean straightDrag;
 		private Handle editing;
@@ -2978,6 +3006,7 @@ public class Measurement3d {
 
 		@Override
 		public void pressed(int tool, double x, double y, double[][] ray, int clickCount) {
+			clearPreview();
 			/* A handle of the selected measurement: moved (the measurement is measured again) */
 			if (clickCount < 2 && tool != Clipping.TOOL_VOLUME && tool != Clipping.TOOL_SURFACE_ERASER) {
 				Handle handle = findHandle(x, y, true);
@@ -4322,18 +4351,32 @@ public class Measurement3d {
 			surfaceArea += Math.sqrt(nx * nx + ny * ny + nz * nz) / 2;
 		}
 		if (signed < 0) {
+			/* The free space of the cavity (option): without the objects which float in it */
+			double cavityVolume = -signed;
+			if (cavityFreeSpace) {
+				cavityVolume = Math.max(0, cavityVolume - enclosedObjectsVolume(md, surface));
+			}
 			Area a = new Area(AREA_CAVITY);
 			a.hits.add(h.point);
-			a.row = new double[] { AREA_CAVITY, 1, Double.NaN, Double.NaN, surfaceArea, -signed, object };
+			a.insideOnly = h.backside;
+			a.row = new double[] { AREA_CAVITY, 1, Double.NaN, Double.NaN, surfaceArea, cavityVolume, object };
 			/* The displayed triangles of the cavity (the same mesh or the reduced display) */
 			a.displayMesh = h.displayMesh;
+			IsoSurface.MeasureData shown = null;
 			if (h.displayMesh == mt) {
 				a.displayTriangles = surface;
+				shown = md;
 			} else if (h.display >= 0) {
 				IsoSurface.MeasureData display = iso.getMeasureData();
 				if (display != null && display.triangles == h.displayMesh) {
 					a.displayTriangles = connectedTriangles(display.triangles, display.vertices.length / 3, h.display);
+					shown = display;
 				}
+			}
+			/* The objects which float in the cavity: included (whole cavity) or subtracted (free space) */
+			if (shown != null && a.displayTriangles != null) {
+				a.innerTriangles = enclosedObjects(shown, a.displayTriangles).triangles();
+				a.innerSubtracted = cavityFreeSpace;
 			}
 			synchronized (this) {
 				areas.add(a);
@@ -4352,9 +4395,24 @@ public class Measurement3d {
 		}
 		Area a = new Area(AREA_OBJECT);
 		a.hits.add(h.point);
-		a.row = new double[] { AREA_OBJECT, 1, Double.NaN, Double.NaN, row[1], row[0], object };
+		a.insideOnly = h.backside;
+		/*
+		 * The volume of the material (the outer surface without the cavities) or, as
+		 * an option, the filled volume (inside of the outer surface, the clicked one)
+		 */
+		double objectVolume = objectFilled && signed > 0 ? signed : row[0];
+		a.row = new double[] { AREA_OBJECT, 1, Double.NaN, Double.NaN, row[1], objectVolume, object };
 		a.displayMesh = mesh;
 		a.displayTriangles = list.stream().mapToInt(Integer::intValue).toArray();
+		/*
+		 * A measurement from outside: only the outer surface is displayed (nothing
+		 * inside of the object, see the cavities)
+		 */
+		IsoSurface.MeasureData display = iso.getMeasureData();
+		IsoSurface.MeasureData shown = mesh == full.triangles ? full : display != null && display.triangles == mesh ? display : null;
+		if (shown != null) {
+			a.mainTriangles = splitBySign(shown, a.displayTriangles)[0];
+		}
 		synchronized (this) {
 			areas.add(a);
 		}
@@ -4735,22 +4793,189 @@ public class Measurement3d {
 		return list;
 	}
 
+	/*
+	 * A measured volume: translucent on the surface, through the surface or alone
+	 * (complete, also the parts removed by the eraser); as triangles (wireframe) on
+	 * a fainter fill
+	 */
+	private void renderVolume(GL2 gl, boolean cartesian, int[] mesh, int[] triangles, float[] color, boolean through, boolean onlyVolumes,
+			boolean wireframe, boolean insideOnly) {
+		boolean body = through || onlyVolumes;
+		float alpha = body ? (onlyVolumes && !through ? 0.6f : 0.35f) : 0.45f;
+		if (wireframe) {
+			alpha *= 0.45f;
+		}
+		iso.renderTriangles(gl, cartesian, mesh, triangles, color, true, 0, alpha, through, body, insideOnly);
+		if (wireframe) {
+			float[] line = { color[0] * 0.75f, color[1] * 0.75f, color[2] * 0.75f };
+			iso.renderTriangles(gl, cartesian, mesh, triangles, line, false, 1f, 0.9f, through, body, insideOnly);
+		}
+	}
+
+	/* ---------------- The preview of the volume tool (the surface under the mouse) ---------------- */
+
+	/* The text of the preview (e.g., the info line of the options), any thread */
+	private static volatile java.util.function.Consumer<String> previewText;
+
+	/**
+	 * Receives the description of what a click of the volume tool measures (the
+	 * surface under the mouse) or an empty text (not in the UI thread).
+	 */
+	public static void setPreviewTextListener(java.util.function.Consumer<String> listener) {
+		previewText = listener;
+	}
+
+	/* The closed surfaces of the displayed mesh: the surface of each triangle and its signed volume (cached per mesh) */
+	private int[] previewMeshKey;
+	private int[] previewSurfaceOf;
+	private double[] previewSigned;
+	private final java.util.Map<Integer, int[]> previewSurfaceTriangles = new java.util.HashMap<>();
+	/* The shown preview: {mesh, triangles}, color, seen from inside, the surface and the text */
+	private volatile int[] previewMesh, previewTriangles;
+	private volatile float[] previewColor;
+	private volatile boolean previewInside;
+	private int previewSurface = -1;
+	private boolean previewBackside;
+	private String previewLast = "";
+
+	private synchronized void clearPreview() {
+		previewMesh = null;
+		previewTriangles = null;
+		previewSurface = -1;
+		publishPreview("");
+	}
+
+	private void publishPreview(String text) {
+		if (!text.equals(previewLast)) {
+			previewLast = text;
+			java.util.function.Consumer<String> listener = previewText;
+			if (listener != null) {
+				listener.accept(text);
+			}
+		}
+	}
+
+	/* Shows the closed surface under the mouse in the color of what a click measures (an object or a cavity) */
+	private synchronized void preview(Hit h) {
+		IsoSurface.MeasureData display = iso.getMeasureData();
+		if (h == null || h.display < 0 || display == null || display.triangles != h.displayMesh) {
+			clearPreview();
+			return;
+		}
+		if (previewMeshKey != display.triangles) {
+			labelSurfaces(display);
+		}
+		int surface = previewSurfaceOf[h.display];
+		if (surface == previewSurface && h.backside == previewBackside && previewTriangles != null) {
+			return;
+		}
+		previewSurface = surface;
+		previewBackside = h.backside;
+		boolean cavity = previewSigned[surface] < 0;
+		int[] triangles = previewSurfaceTriangles.computeIfAbsent(surface, s -> {
+			List<Integer> list = new ArrayList<>();
+			for (int i = 0; i < previewSurfaceOf.length; i++) {
+				if (previewSurfaceOf[i] == s) {
+					list.add(i);
+				}
+			}
+			return list.stream().mapToInt(Integer::intValue).toArray();
+		});
+		previewMesh = display.triangles;
+		previewTriangles = triangles;
+		previewColor = cavity ? CAVITY_COLOR : VOLUME_COLOR;
+		previewInside = h.backside;
+		String side = h.backside ? " (seen from inside)" : "";
+		String text;
+		if (cavity) {
+			text = "Click: the cavity" + side + ", " + (cavityFreeSpace ? "free space (without the objects in it)" : "whole space (objects in it included)")
+					+ " (blue).";
+		} else {
+			text = "Click: the object" + side + ", " + (objectFilled ? "filled (with its cavities)" : "material (without its cavities)")
+					+ " (orange)." + (h.backside ? "\nFor a cavity point at its wall (it turns blue)." : "");
+		}
+		publishPreview(text);
+	}
+
+	/* The closed surfaces of the mesh (connected vertices) and their signed volumes */
+	private void labelSurfaces(IsoSurface.MeasureData m) {
+		float[] v = m.vertices;
+		int[] t = m.triangles;
+		int nv = v.length / 3;
+		int[] parent = new int[nv];
+		for (int i = 0; i < nv; i++) {
+			parent[i] = i;
+		}
+		for (int i = 0; i < t.length; i += 3) {
+			union(parent, t[i], t[i + 1]);
+			union(parent, t[i], t[i + 2]);
+		}
+		int[] index = new int[nv];
+		java.util.Arrays.fill(index, -1);
+		int count = 0;
+		int[] surfaceOf = new int[t.length / 3];
+		List<Double> signed = new ArrayList<>();
+		for (int i = 0; i < t.length; i += 3) {
+			int root = find(parent, t[i]);
+			if (index[root] < 0) {
+				index[root] = count++;
+				signed.add(0.0);
+			}
+			int s = index[root];
+			surfaceOf[i / 3] = s;
+			int a = t[i] * 3, b = t[i + 1] * 3, d = t[i + 2] * 3;
+			signed.set(s, signed.get(s) + (v[a] * ((double) v[b + 1] * v[d + 2] - (double) v[b + 2] * v[d + 1])
+					- v[a + 1] * ((double) v[b] * v[d + 2] - (double) v[b + 2] * v[d])
+					+ v[a + 2] * ((double) v[b] * v[d + 1] - (double) v[b + 1] * v[d])) / 6.0);
+		}
+		previewMeshKey = t;
+		previewSurfaceOf = surfaceOf;
+		previewSigned = signed.stream().mapToDouble(Double::doubleValue).toArray();
+		previewSurfaceTriangles.clear();
+	}
+
+	/* The measured volumes are drawn as triangles (wireframe), see setShowVolumeTriangles */
+	private volatile boolean showVolumeTriangles;
+
+	/** Draws the measured volumes as triangles (a wireframe on a fainter fill). */
+	public void setShowVolumeTriangles(boolean show) {
+		showVolumeTriangles = show;
+	}
+
+	/** Returns true if the measured volumes are drawn as triangles. */
+	public boolean isShowVolumeTriangles() {
+		return showVolumeTriangles;
+	}
+
 	/* Draws the measured areas (translucent on the surface) and the area which is drawn */
 	private void renderAreas(GL2 gl, double[] bounds, boolean flip, boolean cartesian, float scale) {
 		boolean through = showVolumesThrough;
 		boolean onlyVolumes = iso.isSurfaceHidden();
+		boolean wireframe = showVolumeTriangles;
 		for (Area a : areas) {
 			if (a.displayTriangles != null && a.displayTriangles.length > 0) {
 				boolean isVolume = a.type == AREA_OUTLINE || a.type == AREA_OBJECT || a.type == AREA_CAVITY;
-				if (isVolume && (through || onlyVolumes)) {
-					/*
-					 * The measured volume as a transparent body: through the surface (e.g., a cavity
-					 * inside of the object) and complete (also the parts removed by the eraser)
-					 */
-					iso.renderTriangles(gl, cartesian, a.displayMesh, a.displayTriangles, VOLUME_COLOR, true, 0, onlyVolumes && !through ? 0.6f : 0.35f,
-							through, true);
-				} else {
-					iso.renderTriangles(gl, cartesian, a.displayMesh, a.displayTriangles, isVolume ? VOLUME_COLOR : AREA_COLOR, true, 0, 0.45f);
+				if (!isVolume) {
+					iso.renderTriangles(gl, cartesian, a.displayMesh, a.displayTriangles, AREA_COLOR, true, 0, 0.45f);
+					continue;
+				}
+				/*
+				 * The measured volume in the color of its kind (an object, a cavity) and the
+				 * parts inside: subtracted (red) or included (the color of the volume)
+				 */
+				/*
+				 * The measured volume in the color of its kind (an object from outside: its
+				 * outer surface; a cavity inside: its wall, visible through the opening or
+				 * with the display "through"); as triangles as an option
+				 */
+				boolean inside = a.type == AREA_CAVITY;
+				float[] color = inside ? CAVITY_COLOR : VOLUME_COLOR;
+				int[] main = a.mainTriangles != null ? a.mainTriangles : a.displayTriangles;
+				renderVolume(gl, cartesian, a.displayMesh, main, color, through, onlyVolumes, wireframe, a.insideOnly);
+				/* The objects in a cavity: seen from outside of them */
+				if (a.innerTriangles != null && a.innerTriangles.length > 0) {
+					renderVolume(gl, cartesian, a.displayMesh, a.innerTriangles, a.innerSubtracted ? SUBTRACTED_COLOR : color, through,
+							onlyVolumes, wireframe, false);
 				}
 			}
 		}
@@ -5506,6 +5731,12 @@ public class Measurement3d {
 		renderObjectLabels(gl, bounds, flip, pixelScale);
 		lastPixelScale = pixelScale > 0 ? pixelScale : 1;
 		renderAreas(gl, bounds, flip, cartesian, lastPixelScale);
+		/* The preview of the volume tool (the surface under the mouse) */
+		int[] pm = previewMesh, pt = previewTriangles;
+		float[] pc = previewColor;
+		if (pm != null && pt != null && pc != null) {
+			iso.renderTriangles(gl, cartesian, pm, pt, pc, true, 0, 0.3f, false, false, previewInside);
+		}
 		renderMeasurementNumbers(gl, bounds, flip, lastPixelScale);
 		if (points.isEmpty()) {
 			/* The handles of a selected area */
@@ -5731,6 +5962,204 @@ public class Measurement3d {
 
 	/* The measured volumes are drawn through the surface (transparent, inside of the object) */
 	private volatile boolean showVolumesThrough;
+
+	/* The volume of a clicked cavity without the objects in it, of a clicked object with its cavities */
+	private volatile boolean cavityFreeSpace;
+	private volatile boolean objectFilled;
+
+	/**
+	 * The volume of a clicked cavity (its wall): true without the objects which
+	 * float in it (the free space), false the whole space inside of the wall.
+	 */
+	public void setCavityFreeSpace(boolean freeSpace) {
+		cavityFreeSpace = freeSpace;
+	}
+
+	/** Returns true if the volume of a clicked cavity is its free space (see setCavityFreeSpace). */
+	public boolean isCavityFreeSpace() {
+		return cavityFreeSpace;
+	}
+
+	/**
+	 * The volume of a clicked object: true the filled volume (inside of its outer
+	 * surface, with its cavities), false the volume of its material (the outer
+	 * surface without the cavities).
+	 */
+	public void setObjectFilled(boolean filled) {
+		objectFilled = filled;
+	}
+
+	/** Returns true if the volume of a clicked object is its filled volume (see setObjectFilled). */
+	public boolean isObjectFilled() {
+		return objectFilled;
+	}
+
+	/*
+	 * The volume of the objects which float in a cavity (given by the triangles of
+	 * its wall): the filled volumes of the outermost closed surfaces with a
+	 * positive volume inside of the wall (an odd number of crossings of a ray in
+	 * the x direction). The cavities of these objects belong to them, not to the
+	 * free space of the outer cavity.
+	 */
+	private static double enclosedObjectsVolume(IsoSurface.MeasureData md, int[] cavityTriangles) {
+		return enclosedObjects(md, cavityTriangles).volume();
+	}
+
+	/* The objects which float in a cavity: their volume (filled) and their triangles */
+	private record Enclosed(double volume, int[] triangles) {
+	}
+
+	private static Enclosed enclosedObjects(IsoSurface.MeasureData md, int[] cavityTriangles) {
+		float[] v = md.vertices;
+		int[] t = md.triangles;
+		int nv = v.length / 3;
+		double sx = md.stepX * md.pixelSize, sy = md.stepY * md.pixelSize, sz = md.stepZ * md.pixelSize;
+		double[] p = new double[nv * 3];
+		for (int i = 0; i < nv; i++) {
+			p[i * 3] = (v[i * 3] + 0.5) * sx;
+			p[i * 3 + 1] = (v[i * 3 + 1] + 0.5) * sy;
+			p[i * 3 + 2] = (v[i * 3 + 2] + 0.5) * sz;
+		}
+		/* The closed surfaces (connected vertices) */
+		int[] parent = new int[nv];
+		for (int i = 0; i < nv; i++) {
+			parent[i] = i;
+		}
+		for (int i = 0; i < t.length; i += 3) {
+			union(parent, t[i], t[i + 1]);
+			union(parent, t[i], t[i + 2]);
+		}
+		int[] index = new int[nv];
+		java.util.Arrays.fill(index, -1);
+		int count = 0;
+		int[] surfaceOf = new int[nv];
+		for (int i = 0; i < nv; i++) {
+			int root = find(parent, i);
+			if (index[root] < 0) {
+				index[root] = count++;
+			}
+			surfaceOf[i] = index[root];
+		}
+		double[] signed = new double[count];
+		double[][] lo = new double[count][3], hi = new double[count][3];
+		int[] representative = new int[count];
+		java.util.Arrays.fill(representative, -1);
+		for (int c = 0; c < count; c++) {
+			java.util.Arrays.fill(lo[c], Double.MAX_VALUE);
+			java.util.Arrays.fill(hi[c], -Double.MAX_VALUE);
+		}
+		for (int i = 0; i < nv; i++) {
+			int c = surfaceOf[i];
+			if (representative[c] < 0) {
+				representative[c] = i;
+			}
+			for (int k = 0; k < 3; k++) {
+				lo[c][k] = Math.min(lo[c][k], p[i * 3 + k]);
+				hi[c][k] = Math.max(hi[c][k], p[i * 3 + k]);
+			}
+		}
+		for (int i = 0; i < t.length; i += 3) {
+			int a = t[i] * 3, b = t[i + 1] * 3, d = t[i + 2] * 3;
+			signed[surfaceOf[t[i]]] += (p[a] * (p[b + 1] * p[d + 2] - p[b + 2] * p[d + 1]) - p[a + 1] * (p[b] * p[d + 2] - p[b + 2] * p[d])
+					+ p[a + 2] * (p[b] * p[d + 1] - p[b + 1] * p[d])) / 6.0;
+		}
+		if (cavityTriangles.length == 0) {
+			return new Enclosed(0, new int[0]);
+		}
+		int cavity = surfaceOf[t[cavityTriangles[0] * 3]];
+		/* The triangles of each surface */
+		int[] start = new int[count + 1];
+		for (int i = 0; i < t.length; i += 3) {
+			start[surfaceOf[t[i]] + 1]++;
+		}
+		for (int c = 0; c < count; c++) {
+			start[c + 1] += start[c];
+		}
+		int[] fill = start.clone();
+		int[] trianglesOf = new int[t.length / 3];
+		for (int i = 0; i < t.length; i += 3) {
+			trianglesOf[fill[surfaceOf[t[i]]]++] = i;
+		}
+		/* The test point of each surface (a vertex, slightly moved to avoid hits of edges and vertices) */
+		double diagonal = Math.max(1e-12, Math.hypot(hi[cavity][0] - lo[cavity][0], Math.hypot(hi[cavity][1] - lo[cavity][1], hi[cavity][2] - lo[cavity][2])));
+		double jitter = 1e-7 * diagonal;
+		java.util.function.IntFunction<double[]> point = c -> {
+			int r = representative[c] * 3;
+			return new double[] { p[r], p[r + 1] + jitter * 0.7548776662, p[r + 2] + jitter * 0.5698402910 };
+		};
+		java.util.function.BiPredicate<Integer, Integer> inside = (c, outer) -> {
+			if (lo[c][0] < lo[outer][0] || lo[c][1] < lo[outer][1] || lo[c][2] < lo[outer][2] || hi[c][0] > hi[outer][0]
+					|| hi[c][1] > hi[outer][1] || hi[c][2] > hi[outer][2]) {
+				return false;
+			}
+			double[] q = point.apply(c);
+			int crossings = 0;
+			for (int k = start[outer]; k < start[outer + 1]; k++) {
+				int i = trianglesOf[k];
+				if (crossesX(q, p, t[i] * 3, t[i + 1] * 3, t[i + 2] * 3)) {
+					crossings++;
+				}
+			}
+			return (crossings & 1) == 1;
+		};
+		/* The objects in the cavity, then only the outermost ones */
+		List<Integer> objects = new ArrayList<>();
+		for (int c = 0; c < count; c++) {
+			if (c != cavity && signed[c] > 0 && representative[c] >= 0 && inside.test(c, cavity)) {
+				objects.add(c);
+			}
+		}
+		double volume = 0;
+		List<Integer> triangles = new ArrayList<>();
+		for (int c : objects) {
+			boolean nested = false;
+			for (int o : objects) {
+				if (o != c && signed[o] > signed[c] && inside.test(c, o)) {
+					nested = true;
+					break;
+				}
+			}
+			if (!nested) {
+				volume += signed[c];
+				for (int k = start[c]; k < start[c + 1]; k++) {
+					triangles.add(trianglesOf[k] / 3);
+				}
+			}
+		}
+		return new Enclosed(volume, triangles.stream().mapToInt(Integer::intValue).toArray());
+	}
+
+	/*
+	 * Splits triangles of a mesh into the closed surfaces with a positive signed
+	 * volume (outer surfaces) and with a negative one (the walls of cavities):
+	 * {outer, inner}.
+	 */
+	private static int[][] splitBySign(IsoSurface.MeasureData md, int[] selected) {
+		float[] v = md.vertices;
+		int[] t = md.triangles;
+		int nv = v.length / 3;
+		int[] parent = new int[nv];
+		for (int i = 0; i < nv; i++) {
+			parent[i] = i;
+		}
+		for (int tri : selected) {
+			union(parent, t[tri * 3], t[tri * 3 + 1]);
+			union(parent, t[tri * 3], t[tri * 3 + 2]);
+		}
+		java.util.Map<Integer, Double> signed = new java.util.HashMap<>();
+		for (int tri : selected) {
+			int a = t[tri * 3] * 3, b = t[tri * 3 + 1] * 3, d = t[tri * 3 + 2] * 3;
+			double s = (v[a] * ((double) v[b + 1] * v[d + 2] - (double) v[b + 2] * v[d + 1])
+					- v[a + 1] * ((double) v[b] * v[d + 2] - (double) v[b + 2] * v[d])
+					+ v[a + 2] * ((double) v[b] * v[d + 1] - (double) v[b + 1] * v[d])) / 6.0;
+			signed.merge(find(parent, t[tri * 3]), s, Double::sum);
+		}
+		List<Integer> outer = new ArrayList<>(), inner = new ArrayList<>();
+		for (int tri : selected) {
+			(signed.get(find(parent, t[tri * 3])) >= 0 ? outer : inner).add(tri);
+		}
+		return new int[][] { outer.stream().mapToInt(Integer::intValue).toArray(), inner.stream().mapToInt(Integer::intValue).toArray() };
+	}
 
 	/**
 	 * Shows the measured volumes (objects, cavities, outlines) as transparent

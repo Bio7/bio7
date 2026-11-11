@@ -975,104 +975,90 @@ public class PackageInstallView extends ViewPart {
 	public void packageInstallUpdate() {
 
 		RBackend c = RBridge.getBackend();
-		if (c != null) {
-			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-			String server = store.getString("R_PACKAGE_SERVER");
-			try {
-
-				/*
-				 * Here we get information about the installed packages, versions and new
-				 * available repo versions! First we create a dataframe (will be sorted at the
-				 * end) with a fixed number of rows (n) which we fill with the information
-				 * extracted from the current installed packages and the latest online versions!
-				 */
-
-				out = c.eval("try(.calculate_version_update<-function(){\n" + "  new_versions <- old.packages(repos =\""
-						+ server + "\")\n" + "  new_versions_repo_vers <- new_versions[, \"ReposVer\"]\n"
-						+ "  installed_packages <- installed.packages()\n"
-						+ "  installed_package_names <- as.character(installed_packages[, \"Package\"])\n"
-						+ "  version_installed_package_names <- as.character(installed_packages[, \"Version\"])\n"
-						+ "  n<-length(installed_package_names)\n"
-						+ "  df_packages <- data.frame(Name = character(n), Current_Version = character(n), Latest_Version = character(n), \n"
-						+ "      stringsAsFactors = FALSE)\n" + "  for (x in 1:length(installed_package_names)) {\n"
-						+ "      if (isTRUE(installed_package_names[x] %in% new_versions[, \"Package\"])) {\n"
-						+ "       \n" + "          df_packages$Name[x] <- installed_package_names[x]\n"
-						+ "          df_packages$Current_Version[x] <- version_installed_package_names[x]\n"
-						+ "          df_packages$Latest_Version[x] <- new_versions_repo_vers[installed_package_names[x]]\n"
-						+ "          \n" + "      } else {\n" + "         \n"
-						+ "          df_packages$Name[x] <- installed_package_names[x]\n"
-						+ "          df_packages$Current_Version[x] <- version_installed_package_names[x]\n"
-						+ "          df_packages$Latest_Version[x] <- version_installed_package_names[x]\n"
-						+ "      }\n" + "  }\n" + "df_packages<-df_packages[order(df_packages$Name),]\n"
-						+ "  return(df_packages)\n" + "})\n" + "try(.calculate_version_update())").asList();
-
-			} catch (REXPMismatchException e) {
-
-				e.printStackTrace();
-			} catch (RserveException e) {
-
-				e.printStackTrace();
-			}
+		if (c == null) {
+			return;
 		}
+		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		String server = store.getString("R_PACKAGE_SERVER").replace("\\", "/").replace("\"", "");
+		/*
+		 * First the installed packages (at once), then the latest versions of the
+		 * repository (its index is cached on disk for a day, see
+		 * rcompletion/bio7Packages.R; the first download takes some seconds)!
+		 */
+		try {
+			if (c.eval("as.integer(exists(\".bio7PackageVersions\"))").asInteger() == 1) {
+				REXP installed = c.eval("try(.bio7InstalledPackages())");
+				fillInstalledPackagesTable(installed, false);
+				REXP versions = c.eval("try(.bio7PackageVersions(\"" + server + "\"))");
+				fillInstalledPackagesTable(versions, true);
+				return;
+			}
+		} catch (REXPMismatchException | RserveException e) {
+			/* The R code of Bio7 is not loaded: the former calculation */
+		}
+		try {
+			REXP result = c.eval("try(local({\n" + "  new_versions <- old.packages(repos = \"" + server + "\")\n"
+					+ "  ip <- installed.packages()\n" + "  o <- order(ip[, \"Package\"])\n"
+					+ "  df <- data.frame(Name = as.character(ip[o, \"Package\"]), Current_Version = as.character(ip[o, \"Version\"]), stringsAsFactors = FALSE)\n"
+					+ "  latest <- df$Current_Version\n"
+					+ "  if (!is.null(new_versions)) { m <- match(df$Name, new_versions[, \"Package\"]); latest[!is.na(m)] <- as.character(new_versions[m[!is.na(m)], \"ReposVer\"]) }\n"
+					+ "  df$Latest_Version <- latest\n" + "  df\n" + "}))");
+			fillInstalledPackagesTable(result, true);
+		} catch (RserveException e) {
+			e.printStackTrace();
+		}
+	}
 
+	/*
+	 * Fills the table of the installed packages with a data frame (Name,
+	 * Current_Version and, with the versions, Latest_Version). Newer versions are
+	 * marked. Keeps the selection and the scroll position.
+	 */
+	private void fillInstalledPackagesTable(REXP table, boolean withVersions) {
+		String[] packageNames;
+		String[] currentVersions;
+		String[] latestVersions;
+		try {
+			if (table == null || !table.isList()) {
+				return;
+			}
+			org.rosuda.REngine.RList list = table.asList();
+			packageNames = list.at(0).asStrings();
+			currentVersions = list.at(1).asStrings();
+			latestVersions = withVersions && list.size() > 2 ? list.at(2).asStrings() : null;
+		} catch (REXPMismatchException e) {
+			e.printStackTrace();
+			return;
+		}
 		Display display = PlatformUI.getWorkbench().getDisplay();
-		display.syncExec(new Runnable() {
-
-			public void run() {
-				/*
-				 * Store the selected top index of the table to scroll to it after an update of
-				 * the table!
-				 */
-				int tempIndex = allInstalledPackagesList.getTopIndex();
-				int[] selIndex = allInstalledPackagesList.getSelectionIndices();
-
-				allInstalledPackagesList.setVisible(false);
-
-				String[] packageNames = null;
-				String[] currentVersions = null;
-				String[] latestVersions = null;
-				/* Get the dataframe columns as string lists! */
-				try {
-					packageNames = out.at(0).asStrings();
-					currentVersions = out.at(1).asStrings();
-					latestVersions = out.at(2).asStrings();
-				} catch (REXPMismatchException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-				if (allInstalledPackagesList != null) {
-					if (allInstalledPackagesList.isDisposed() == false) {
-						allInstalledPackagesList.removeAll();
-						for (int i = 0; i < packageNames.length; i++) {
-
-							// panel.setLine(i, markedVariables[i]);
-							TableItem it = new TableItem(allInstalledPackagesList, SWT.NONE);
-							it.setText(new String[] { packageNames[i], currentVersions[i], latestVersions[i] });
-							if (currentVersions[i].equals(latestVersions[i]) == false) {
-								if (Util.isThemeBlack()) {
-									it.setBackground(Util.getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY));
-								} else {
-									it.setBackground(Util.getDisplay().getSystemColor(SWT.COLOR_DARK_GREEN));
-								}
-							}
-
+		display.syncExec(() -> {
+			if (allInstalledPackagesList == null || allInstalledPackagesList.isDisposed()) {
+				return;
+			}
+			/* The selection and the scroll position stay after the update of the table! */
+			int tempIndex = allInstalledPackagesList.getTopIndex();
+			int[] selIndex = allInstalledPackagesList.getSelectionIndices();
+			allInstalledPackagesList.setRedraw(false);
+			try {
+				allInstalledPackagesList.removeAll();
+				for (int i = 0; i < packageNames.length; i++) {
+					TableItem it = new TableItem(allInstalledPackagesList, SWT.NONE);
+					String latest = latestVersions != null ? latestVersions[i] : "...";
+					it.setText(new String[] { packageNames[i], currentVersions[i], latest });
+					if (latestVersions != null && !currentVersions[i].equals(latestVersions[i])) {
+						if (Util.isThemeBlack()) {
+							it.setBackground(Util.getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY));
+						} else {
+							it.setBackground(Util.getDisplay().getSystemColor(SWT.COLOR_DARK_GREEN));
 						}
 					}
-
 				}
-
-				allInstalledPackagesList.setVisible(true);
 				allInstalledPackagesList.setSelection(selIndex);
 				allInstalledPackagesList.setTopIndex(tempIndex);
-
-				packageNames = null;
-				currentVersions = null;
-				latestVersions = null;
-				out = null;
+			} finally {
+				allInstalledPackagesList.setRedraw(true);
 			}
 		});
-
 	}
 
 	private void setInDocument(Table aList) {

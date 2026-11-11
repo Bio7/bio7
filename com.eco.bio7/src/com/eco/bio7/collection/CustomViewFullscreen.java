@@ -98,6 +98,9 @@ public class CustomViewFullscreen {
 
 	/* The action of the keys F2 to F5 for the view (displayed in fullscreen mode or not)! */
 	private static void handleKey(int key, CustomView v) {
+		if (!v.isFullscreenEnabled() && !isFullscreen(v)) {
+			return;
+		}
 		if (isActive() && !isFullscreen(v)) {
 			return;
 		}

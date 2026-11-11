@@ -756,7 +756,15 @@ public class RSetupDialog extends Dialog {
 					installations.set(i, updated);
 				}
 				updateSelection();
-				if (ok) {
+				if (ok && !updated.hasRserve()) {
+					/* Installed (it loads from its library), but R doesn't search that library */
+					String library = libraryText.getText().trim();
+					logger.accept("Rserve was installed into " + library + ", but R doesn't find it there (not one of the libraries of R).");
+					MessageDialog.openWarning(getShell(), "Rserve",
+							"Rserve was installed into\n" + library + "\n\nbut R doesn't search this folder for packages (it is not one of its libraries,"
+									+ " .libPaths()).\n\nPlease install it into one of the libraries of R (the default in this dialog), or add the folder"
+									+ " in the Bio7 preferences (R: the install location of the packages) or to R_LIBS_USER.");
+				} else if (ok) {
 					logger.accept("Rserve was installed: " + updated.describeRserve());
 					String text = "Rserve was installed (" + updated.describeRserve() + ").";
 					if (RserveLauncher.isConsoleRRunning()) {

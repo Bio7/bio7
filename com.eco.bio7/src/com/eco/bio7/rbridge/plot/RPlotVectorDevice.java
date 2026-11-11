@@ -59,7 +59,6 @@ public final class RPlotVectorDevice {
 	private static final String TITLE = "R Plot";
 	/* lwd 1 is one pixel (point), as the screen devices of R */
 	private static final double DPI = 96;
-	private static final int HISTORY = 30;
 	/* The smallest size R draws in (plots with several panels), a smaller view shows the plot scaled */
 	private static final int MIN_PLOT_WIDTH = 480, MIN_PLOT_HEIGHT = 420;
 	/* A smaller canvas is a minimized view: keep the size */
@@ -87,6 +86,8 @@ public final class RPlotVectorDevice {
 	private Label historyLabel, statusLabel;
 	private volatile boolean closedByR;
 	private volatile int[] requestedSize;
+	/* The page count of the device when the view was last checked (UI thread) */
+	private long checkedPages;
 
 	private final LinkedBlockingQueue<double[]> clicks = new LinkedBlockingQueue<>();
 	private volatile boolean locating;
@@ -108,7 +109,7 @@ public final class RPlotVectorDevice {
 			int[] size = preferredSize(widthInches, heightInches);
 			RPlotVectorDevice plot = new RPlotVectorDevice(session, size[0], size[1]);
 			Display.getDefault().asyncExec(plot::open);
-			return new RDeviceFactory.DeviceSpec(plot.device, DPI, pointsize, HISTORY);
+			return new RDeviceFactory.DeviceSpec(plot.device, DPI, pointsize, RPlotCanvasDevice.historySize());
 		};
 	}
 
@@ -152,6 +153,8 @@ public final class RPlotVectorDevice {
 			openViews.remove(number);
 			return;
 		}
+		/* A new plot view: in the folder of the ImageJ-Canvas view (if the perspective has one) */
+		PlotViews.dockBesideImageJCanvas(VIEW_ID, viewName);
 		root = new Composite(parent, SWT.NONE);
 		GridLayout layout = new GridLayout(1, false);
 		layout.marginWidth = layout.marginHeight = 0;
@@ -164,7 +167,7 @@ public final class RPlotVectorDevice {
 			Rectangle area = canvas.getClientArea();
 			mapping = SwtPlotRenderer.paint(e.gc, shown, area.width, area.height);
 		});
-		canvas.addListener(SWT.Resize, e -> canvasResized());
+		canvas.addListener(SWT.Resize, _ -> canvasResized());
 		installClicks();
 
 		Composite bar = new Composite(root, SWT.NONE);
@@ -181,7 +184,7 @@ public final class RPlotVectorDevice {
 		statusLabel = new Label(bar, SWT.NONE);
 		statusLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-		root.addListener(SWT.Dispose, e -> {
+		root.addListener(SWT.Dispose, _ -> {
 			openViews.remove(number);
 			clicks.offer(STOP);
 			closedByUser();
@@ -207,7 +210,7 @@ public final class RPlotVectorDevice {
 		b.setText(text);
 		b.setToolTipText(tip);
 		b.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
-		b.addListener(SWT.Selection, e -> action.run());
+		b.addListener(SWT.Selection, _ -> action.run());
 	}
 
 	private boolean isOpen() {
@@ -242,6 +245,12 @@ public final class RPlotVectorDevice {
 				if (isOpen()) {
 					shown = pending;
 					canvas.redraw();
+					/* A new plot (also in another perspective): the view is shown in the current perspective */
+					long pages = device.pageCount();
+					if (pages != checkedPages) {
+						checkedPages = pages;
+						PlotViews.showInPerspective(VIEW_ID, viewName);
+					}
 				}
 			});
 		}

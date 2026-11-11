@@ -50,7 +50,12 @@ public class ListRPackagesJob extends WorkspaceJob {
 			RBackend c = RBridge.getBackend();
 
 			try {
-				c.eval("try(.bio7ListOfWebPackages<-available.packages(contriburl=contrib.url(\"" + server + "\")))");
+				/*
+				 * The source index of the repository (cached on disk for a day, see
+				 * rcompletion/bio7Packages.R); the matrix stays in R (not transferred)
+				 */
+				c.voidEval("try(.bio7ListOfWebPackages <- if (exists(\".bio7AvailablePackages\")) .bio7AvailablePackages(\"" + server
+						+ "\", type = \"source\") else available.packages(contriburl = contrib.url(\"" + server + "\")))");
 
 				try {
 					packageList = c.eval("try(.bio7ListOfWebPackages[,1])").asStrings();
