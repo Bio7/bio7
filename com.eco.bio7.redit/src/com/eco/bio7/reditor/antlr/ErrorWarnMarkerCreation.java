@@ -35,17 +35,44 @@ public class ErrorWarnMarkerCreation extends WorkspaceJob {
 	private String replacementText = null;
 	private static ILock lock = Job.getJobManager().newLock();
 
+	/* null: always current */
+	private java.util.function.BooleanSupplier current;
+
+	/* The marker jobs run one after another (deleting and creating markers don't interleave) */
+	private static final org.eclipse.core.runtime.jobs.ISchedulingRule ONE_AT_A_TIME = new org.eclipse.core.runtime.jobs.ISchedulingRule() {
+		public boolean contains(org.eclipse.core.runtime.jobs.ISchedulingRule rule) {
+			return rule == this;
+		}
+
+		public boolean isConflicting(org.eclipse.core.runtime.jobs.ISchedulingRule rule) {
+			return rule == this;
+		}
+	};
+
 	public ErrorWarnMarkerCreation(String name, REditor editor, ArrayList<ErrorWarnStore> errors) {
+		this(name, editor, errors, null);
+	}
+
+	/**
+	 * @param current false if the markers are outdated when the job runs (a newer
+	 *                parse scheduled its own markers): then the job does nothing
+	 */
+	public ErrorWarnMarkerCreation(String name, REditor editor, ArrayList<ErrorWarnStore> errors, java.util.function.BooleanSupplier current) {
 		super(name);
 		this.errors = errors;
 		this.editor = editor;
-
+		this.current = current;
+		setRule(ONE_AT_A_TIME);
 	}
 
 	@Override
 	public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
 		monitor.beginTask("Create Markers", IProgressMonitor.UNKNOWN);
-		
+		if (current != null && !current.getAsBoolean()) {
+			/* Outdated: the job of the newer parse creates the markers */
+			return Status.OK_STATUS;
+		}
+
 		if (editor != null) {
 
 			IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);

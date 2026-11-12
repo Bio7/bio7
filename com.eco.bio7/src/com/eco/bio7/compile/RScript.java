@@ -162,7 +162,11 @@ public class RScript {
 	}
 
 	/**
-	 * Evaluates a script for R without running in a job.
+	 * Evaluates a script for R without running in a job: the call returns when R
+	 * has evaluated it. Embedded R: in the calling thread (call it from a job or a
+	 * background thread for long scripts, else the UI waits); Rserve: in the UI
+	 * thread as before. For long scripts prefer {@link #rScriptJob(String, String)}.
+	 *
 	 * @param a script.
 	 */
 	public static void script(String a) {
@@ -175,13 +179,14 @@ public class RScript {
 		if (RServe.isRrunning()) {
 			if (cscript != null) {
 
-				Display display = PlatformUI.getWorkbench().getDisplay();
-				display.syncExec(new Runnable() {
+				/* Embedded R: in this thread (not forced into the UI thread); Rserve: UI thread */
+				final String code = script;
+				com.eco.bio7.rbridge.REvaluator.run(cscript, new Runnable() {
 
 					public void run() {
 
 						try {
-							cscript.voidEval(script);
+							cscript.voidEval(code);
 						} catch (RserveException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();

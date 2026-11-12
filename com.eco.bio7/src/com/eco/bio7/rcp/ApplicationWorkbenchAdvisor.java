@@ -99,30 +99,38 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 				}
 			}
 			if (storeRWorkspace) {
-				IRunnableWithProgress runnableR = new IRunnableWithProgress() {
+				/*
+				 * We have to save the R editors here because else the Rserve connection will be
+				 * lost because of the save file dialog of the editors! (UI thread: editors)
+				 */
+				IRunnableWithProgress saveEditors = new IRunnableWithProgress() {
 					public void run(IProgressMonitor monitor) {
-
-						monitor.beginTask("Saving R workspace...", IProgressMonitor.UNKNOWN);
-						/*
-						 * We have to save the R editors here because else the Rserve connection will be
-						 * lost because of the save file dialog of the editors!
-						 */
+						monitor.beginTask("Saving editors...", IProgressMonitor.UNKNOWN);
 						IEditorPart[] dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
 								.getActivePage().getDirtyEditors();
 						for (IEditorPart iEditorPart : dirtyEditors) {
 							iEditorPart.doSave(monitor);
 						}
+					}
+				};
+				/*
+				 * R in another thread (fork): the dialog stays responsive while R saves a
+				 * large workspace
+				 */
+				String command = store.getString("ON_QUIT_COMMAND");
+				IRunnableWithProgress runnableR = new IRunnableWithProgress() {
+					public void run(IProgressMonitor monitor) {
+						monitor.beginTask("Saving R workspace...", IProgressMonitor.UNKNOWN);
 						/* Save the R workspace for the next session if enabled! */
-						String command = store.getString("ON_QUIT_COMMAND");
 						if (RServe.isAlive()) {
 							RServeUtil.evalR(command, null);
 						}
 					}
-
 				};
 
 				try {
-					new ProgressMonitorDialog(null).run(false, false, runnableR);
+					new ProgressMonitorDialog(null).run(false, false, saveEditors);
+					new ProgressMonitorDialog(null).run(true, false, runnableR);
 				} catch (InvocationTargetException | InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -135,7 +143,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			}
 
 			terminate_rserve();
-			/* Embedded R (experimental): the finalizers of R run, the devices close */
+			/* Embedded R: the finalizers of R run, the devices close */
 			if (com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning()) {
 				com.eco.bio7.rbridge.backend.EmbeddedR.close();
 			}

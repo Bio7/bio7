@@ -265,7 +265,7 @@ public class RImageMethodsView extends ViewPart {
 					}
 
 				} else {
-					Bio7Dialog.message("No Rserve connection available!");
+					Bio7Dialog.message("R is not running (please start R)!");
 				}
 
 			}
@@ -419,7 +419,7 @@ public class RImageMethodsView extends ViewPart {
 
 					}
 				} else {
-					Bio7Dialog.message("No Rserve connection available!");
+					Bio7Dialog.message("R is not running (please start R)!");
 				}
 			}
 		});
@@ -495,7 +495,7 @@ public class RImageMethodsView extends ViewPart {
 
 					}
 				} else {
-					Bio7Dialog.message("No Rserve connection available!");
+					Bio7Dialog.message("R is not running (please start R)!");
 				}
 
 			}
@@ -542,7 +542,7 @@ public class RImageMethodsView extends ViewPart {
 
 					}
 				} else {
-					Bio7Dialog.message("No Rserve connection available!");
+					Bio7Dialog.message("R is not running (please start R)!");
 				}
 
 			}
@@ -591,7 +591,7 @@ public class RImageMethodsView extends ViewPart {
 
 					}
 				} else {
-					Bio7Dialog.message("No Rserve connection available!");
+					Bio7Dialog.message("R is not running (please start R)!");
 				}
 			}
 		});
@@ -651,7 +651,7 @@ public class RImageMethodsView extends ViewPart {
 
 					}
 				} else {
-					Bio7Dialog.message("No Rserve connection available!");
+					Bio7Dialog.message("R is not running (please start R)!");
 				}
 			}
 		});

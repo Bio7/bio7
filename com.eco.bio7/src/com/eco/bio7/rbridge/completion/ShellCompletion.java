@@ -54,6 +54,7 @@ import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.RStrObjectInformation;
 import com.eco.bio7.rbridge.UpdateCompletion;
+import com.eco.bio7.rbridge.views.RShellText;
 import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.reditor.actions.RefreshLoadedPackagesForCompletion;
 import com.eco.bio7.reditor.antlr.Parse;
@@ -75,7 +76,8 @@ public class ShellCompletion implements UpdateCompletion {
 	private Image dataImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/settings_obj.svg");
 	private Image libImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/package_obj.svg");
 	private Image arrayImage = ResourceManager.getPluginImage(Bio7Plugin.getDefault(), "/icons/goto_input.svg");
-	private Text control;
+	/* The input of the R-Shell (a StyledText with the methods of a Text) */
+	private RShellText control;
 	private String[] statistics;
 	private String[] statisticsContext;
 	private String[] statisticsSet;
@@ -127,7 +129,7 @@ public class ShellCompletion implements UpdateCompletion {
 		return instance;
 	}
 
-	public ShellCompletion(RShellView view, Text control, final IControlContentAdapter controlContentAdapter) {
+	public ShellCompletion(RShellView view, RShellText control, final IControlContentAdapter controlContentAdapter) {
 		// IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		this.view = view;
 		this.control = control;
@@ -270,16 +272,20 @@ public class ShellCompletion implements UpdateCompletion {
 
 		RBackend con = RBridge.getBackend();
 		if (con != null) {
+			/* Set if this job set RState busy (only then it resets it) */
+			java.util.concurrent.atomic.AtomicBoolean setBusy = new java.util.concurrent.atomic.AtomicBoolean();
 			Job job = new Job("Reload") {
 
 				@Override
 				protected IStatus run(IProgressMonitor monitor) {
 					monitor.beginTask("Reload package information...", IProgressMonitor.UNKNOWN);
 
+					/* A job (not the UI thread): no time limit */
 					RBackend c = RBridge.getBackend();
 					if (c != null) {
 						if (RState.isBusy() == false) {
 							RState.setBusy(true);
+							setBusy.set(true);
 							try {
 
 								/*
@@ -324,14 +330,13 @@ public class ShellCompletion implements UpdateCompletion {
 			};
 			job.addJobChangeListener(new JobChangeAdapter() {
 				public void done(IJobChangeEvent event) {
-					if (event.getResult().isOK()) {
-
+					/* Not the state of another job (R was busy: this job did nothing) */
+					if (setBusy.get()) {
 						RState.setBusy(false);
+					}
+					if (event.getResult().isOK()) {
 						/*We need to call the update if we also declare objects with a package call in the R-Shell!*/
 						RServeUtil.listRObjects();
-
-					} else {
-						RState.setBusy(false);
 					}
 				}
 			});
@@ -359,7 +364,7 @@ public class ShellCompletion implements UpdateCompletion {
 	 * Here we calculate the first occurrence of the below chars to the left to
 	 * enable nested commands!
 	 */
-	protected int calculateFirstOccurrenceOfChar(Text control, int offset) {
+	protected int calculateFirstOccurrenceOfChar(RShellText control, int offset) {
 		int i = offset;
 		String sep = store.getString("RSHELL_SEPERATOR_CHARS");
 		char[] charArray = sep.toCharArray();
@@ -671,6 +676,136 @@ public class ShellCompletion implements UpdateCompletion {
 		}
 	}
 
+	/* ---------------- R calls of the completion (not waiting long in the UI thread) ---------------- */
+
+	/* The time the completion (UI thread) waits at most for R */
+	private static final long COMPLETION_WAIT_MS = 3_000;
+
+	/*
+	 * RServeUtil.fromR in a job: the UI thread waits at most waitMillis (else null,
+	 * the job finishes on its own); null also if R is busy
+	 */
+	private static REXP fromRWithin(String code, long waitMillis) {
+		java.util.concurrent.CompletableFuture<REXP> f = new java.util.concurrent.CompletableFuture<>();
+		org.eclipse.core.runtime.jobs.Job job = new org.eclipse.core.runtime.jobs.Job("R code completion") {
+			@Override
+			protected org.eclipse.core.runtime.IStatus run(org.eclipse.core.runtime.IProgressMonitor monitor) {
+				try {
+					f.complete(RServeUtil.fromR(code));
+				} catch (Throwable t) {
+					f.complete(null);
+				}
+				return org.eclipse.core.runtime.Status.OK_STATUS;
+			}
+		};
+		job.setSystem(true);
+		job.schedule();
+		try {
+			return f.get(waitMillis, java.util.concurrent.TimeUnit.MILLISECONDS);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	/*
+	 * A list from R (e.g., all installed datasets) which is loaded in a job: each
+	 * use refreshes it in the background and returns the last result at once;
+	 * only the first use waits (at most waitMillis)
+	 */
+	private static final class RListCache {
+		private final java.util.function.Supplier<String[][]> loader;
+		private volatile String[][] value;
+		private java.util.concurrent.CompletableFuture<String[][]> loading;
+
+		RListCache(java.util.function.Supplier<String[][]> loader) {
+			this.loader = loader;
+		}
+
+		String[][] get(long waitMillis) {
+			java.util.concurrent.CompletableFuture<String[][]> f = refresh();
+			String[][] v = value;
+			if (v != null) {
+				return v;
+			}
+			try {
+				return f.get(waitMillis, java.util.concurrent.TimeUnit.MILLISECONDS);
+			} catch (Exception e) {
+				return null;
+			}
+		}
+
+		private synchronized java.util.concurrent.CompletableFuture<String[][]> refresh() {
+			if (loading == null || loading.isDone()) {
+				java.util.concurrent.CompletableFuture<String[][]> f = new java.util.concurrent.CompletableFuture<>();
+				loading = f;
+				org.eclipse.core.runtime.jobs.Job job = new org.eclipse.core.runtime.jobs.Job("R code completion") {
+					@Override
+					protected org.eclipse.core.runtime.IStatus run(org.eclipse.core.runtime.IProgressMonitor monitor) {
+						try {
+							String[][] v = loader.get();
+							if (v != null) {
+								value = v;
+							}
+							f.complete(v);
+						} catch (Throwable t) {
+							f.complete(null);
+						}
+						return org.eclipse.core.runtime.Status.OK_STATUS;
+					}
+				};
+				job.setSystem(true);
+				job.schedule();
+			}
+			return loading;
+		}
+	}
+
+	/* Names from R (time-limited), null if none, R is busy or didn't answer in time */
+	private static String[] namesFromR(String code) {
+		REXP rexp = fromRWithin(code, COMPLETION_WAIT_MS);
+		if (rexp == null || rexp.isNull()) {
+			return null;
+		}
+		String[] v = strings(rexp);
+		return v == null || v.length == 0 ? null : v;
+	}
+
+	private static String[] strings(REXP x) {
+		try {
+			return x == null ? null : x.asStrings();
+		} catch (REXPMismatchException e) {
+			return null;
+		}
+	}
+
+	/* All installed datasets: item, package, title */
+	private static final RListCache datasets = new RListCache(() -> {
+		RServeUtil.evalR("try(.bio7Pkgs <- setdiff(.packages(TRUE), c(\"base\", \"stats\")));"
+				+ "try(.bio7PkgsTemp<-data(package = .bio7Pkgs)$result);"
+				+ "try(.bio7PkgsTemp<-.bio7PkgsTemp[order(.bio7PkgsTemp[,3]), ])", null);
+		String[] item = strings(RServeUtil.fromR("try(.bio7PkgsTemp[, \"Item\"])"));
+		String[] packages = strings(RServeUtil.fromR("try(.bio7PkgsTemp[, \"Package\"])"));
+		String[] title = strings(RServeUtil.fromR("try(.bio7PkgsTemp[, \"Title\"])"));
+		if (item == null || packages == null || title == null || packages.length != item.length || title.length != item.length) {
+			return null;
+		}
+		return new String[][] { item, packages, title };
+	});
+
+	/* All installed packages: name, title */
+	private static final RListCache libraries = new RListCache(() -> {
+		RServeUtil.evalR("try(.bio7ListOfWebPackages <- list(sort(.packages(all.available = TRUE))));"
+				+ "try(.bio7ListOfWebPackagesNames<-.bio7ListOfWebPackages[[1]]);"
+				+ "try(.bio7TitleResult<-lapply(.bio7ListOfWebPackagesNames,packageDescription,fields = c(\"Title\")))",
+				null);
+		String[] title = strings(RServeUtil.fromR("try(as.character(.bio7TitleResult))"));
+		String[] names = strings(RServeUtil.fromR("try(.bio7ListOfWebPackagesNames)"));
+		if (title == null || names == null || title.length != names.length) {
+			return null;
+		}
+		return new String[][] { names, title };
+	});
+
 	/*
 	 * Here we calculate matrix, dataframe subsets (rows, columns, etc.)
 	 */
@@ -679,7 +814,7 @@ public class ShellCompletion implements UpdateCompletion {
 		IContentProposal[] array = null;
 		ImageContentProposal[] proposalsMatDFVec = null;
 		int length = contentLastCorr.length();
-		RBackend c = RBridge.getBackend();
+		com.eco.bio7.rbridge.REvaluator c = com.eco.bio7.rbridge.REvaluator.forEditor(RBridge.getBackend());
 		if (c != null) {
 			// propo = null;
 
@@ -691,22 +826,10 @@ public class ShellCompletion implements UpdateCompletion {
 			if (doubleMatrixCall) {
 				/* If we have only one argument! */
 				if (bracketCommaCount == 0) {
-					try {
-						REXP rexp = null;
-						/* Here we leave out matrices and arrays (matrices are arrays)! */
-						rexp = RServeUtil.fromR("try(if (is.data.frame(" + matDfName + ")){colnames(" + matDfName
-								+ ")} else if (is.list(" + matDfName + ")) {names(" + matDfName
-								+ ")} else if (is.vector(" + matDfName + ")) {names(" + matDfName + ")} ,silent=TRUE)");
-
-						if (rexp.isNull() == false) {
-							item = rexp.asStrings();
-
-						}
-
-					} catch (REXPMismatchException e) {
-
-						e.printStackTrace();
-					}
+					/* Here we leave out matrices and arrays (matrices are arrays)! */
+					item = namesFromR("try(if (is.data.frame(" + matDfName + ")){colnames(" + matDfName
+							+ ")} else if (is.list(" + matDfName + ")) {names(" + matDfName
+							+ ")} else if (is.vector(" + matDfName + ")) {names(" + matDfName + ")} ,silent=TRUE)");
 					/* If we have two arguments with one comma! */
 				} else if (bracketCommaCount == 1) {
 
@@ -717,73 +840,24 @@ public class ShellCompletion implements UpdateCompletion {
 			else {
 				/* If we have only one argument! */
 				if (bracketCommaCount == 0) {
-					try {
-						REXP rexp = null;
-
-						rexp = RServeUtil.fromR("try(if (is.data.frame(" + matDfName + ")||is.matrix(" + matDfName
-								+ ")){colnames(" + matDfName + ")} else if(is.array(" + matDfName + ")){rownames("
-								+ matDfName + ")} else{names(" + matDfName + ")} ,silent=TRUE)");
-
-						if (rexp.isNull() == false) {
-							item = rexp.asStrings();
-
-						}
-
-					} catch (REXPMismatchException e) {
-
-						e.printStackTrace();
-					}
+					item = namesFromR("try(if (is.data.frame(" + matDfName + ")||is.matrix(" + matDfName
+							+ ")){colnames(" + matDfName + ")} else if(is.array(" + matDfName + ")){rownames("
+							+ matDfName + ")} else{names(" + matDfName + ")} ,silent=TRUE)");
 					/* If we have two arguments with one comma! */
 				} else if (bracketCommaCount == 1) {
 					/* Left argument from nearest offset calculation!! */
 					if (state == 0) {
-						try {
-							REXP rexp = null;
-
-							rexp = RServeUtil.fromR("try(rownames(" + matDfName + "),silent=TRUE)");
-
-							if (rexp.isNull() == false) {
-								item = rexp.asStrings();
-							}
-
-						} catch (REXPMismatchException e) {
-
-							e.printStackTrace();
-						}
+						item = namesFromR("try(rownames(" + matDfName + "),silent=TRUE)");
 						/* Right argument from nearest offset calculation! */
 					} else if (state == 1) {
-						try {
-							REXP rexp = null;
-
-							rexp = RServeUtil.fromR("try(colnames(" + matDfName + "),silent=TRUE)");
-
-							if (rexp.isNull() == false) {
-								item = rexp.asStrings();
-							}
-
-						} catch (REXPMismatchException e) {
-
-							e.printStackTrace();
-						}
+						item = namesFromR("try(colnames(" + matDfName + "),silent=TRUE)");
 					}
 					/*
 					 * If we have more then 2-dimensions we expect an array! Before the array
 					 * arguments are give with row- and colnames function!
 					 */
 				} else {
-					try {
-						REXP rexp = null;
-
-						rexp = RServeUtil.fromR("try(dimnames(" + matDfName + ")[[" + (state + 1) + "]],silent=TRUE)");
-
-						if (rexp.isNull() == false) {
-							item = rexp.asStrings();
-						}
-
-					} catch (REXPMismatchException e) {
-
-						e.printStackTrace();
-					}
+					item = namesFromR("try(dimnames(" + matDfName + ")[[" + (state + 1) + "]],silent=TRUE)");
 
 				}
 			}
@@ -844,8 +918,7 @@ public class ShellCompletion implements UpdateCompletion {
 			}
 
 		} else {
-			System.out.println("No Rserve connection available!");
-		}
+					}
 		return proposalsMatDFVec;
 	}
 
@@ -855,12 +928,11 @@ public class ShellCompletion implements UpdateCompletion {
 	private ImageContentProposal[] getWorkSpaceVars(int offset, Parse parse) {
 		propo = null;
 
-		RBackend c = RBridge.getBackend();
+		com.eco.bio7.rbridge.REvaluator c = com.eco.bio7.rbridge.REvaluator.forEditor(RBridge.getBackend());
 		if (c != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
-				Display display = Util.getDisplay();
-				display.syncExec(() -> {
+				com.eco.bio7.rbridge.REvaluator.run(c, () -> {
 
 					if (c != null) {
 						try {
@@ -931,8 +1003,7 @@ public class ShellCompletion implements UpdateCompletion {
 				});
 				RState.setBusy(false);
 			} else {
-				System.out.println("R is busy!");
-			}
+							}
 		}
 		return propo;
 	}
@@ -947,12 +1018,11 @@ public class ShellCompletion implements UpdateCompletion {
 		// String lastIndex = prefix.substring(0, prefix.lastIndexOf(":"));
 		String afterLastIndex = prefix.substring(prefix.lastIndexOf(":") + 1, prefix.length());
 		int length = afterLastIndex.length();
-		RBackend c = RBridge.getBackend();
+		com.eco.bio7.rbridge.REvaluator c = com.eco.bio7.rbridge.REvaluator.forEditor(RBridge.getBackend());
 		if (c != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
-				Display display = Util.getDisplay();
-				display.syncExec(() -> {
+				com.eco.bio7.rbridge.REvaluator.run(c, () -> {
 
 					if (c != null) {
 						ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
@@ -993,8 +1063,7 @@ public class ShellCompletion implements UpdateCompletion {
 				RState.setBusy(false);
 
 			} else {
-				System.out.println("R is busy!");
-			}
+							}
 		}
 		return propo;
 	}
@@ -1007,13 +1076,12 @@ public class ShellCompletion implements UpdateCompletion {
 		propo = null;
 		String afterLastIndex = prefix.substring(prefix.lastIndexOf(":") + 1, prefix.length());
 		int length = afterLastIndex.length();
-		RBackend c = RBridge.getBackend();
+		com.eco.bio7.rbridge.REvaluator c = com.eco.bio7.rbridge.REvaluator.forEditor(RBridge.getBackend());
 		if (c != null) {
 			ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
-				Display display = Util.getDisplay();
-				display.syncExec(() -> {
+				com.eco.bio7.rbridge.REvaluator.run(c, () -> {
 
 					if (c != null) {
 						String res = prefix.substring(0, prefix.lastIndexOf(":::"));
@@ -1062,8 +1130,7 @@ public class ShellCompletion implements UpdateCompletion {
 				});
 				RState.setBusy(false);
 			} else {
-				System.out.println("R is busy!");
-			}
+							}
 			list.clear();
 		}
 		return propo;
@@ -1075,12 +1142,11 @@ public class ShellCompletion implements UpdateCompletion {
 		String afterLastIndex = prefix.substring(prefix.lastIndexOf("@") + 1, prefix.length());
 		int length = afterLastIndex.length();
 		ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
-		RBackend c = RBridge.getBackend();
+		com.eco.bio7.rbridge.REvaluator c = com.eco.bio7.rbridge.REvaluator.forEditor(RBridge.getBackend());
 		if (c != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
-				Display display = Util.getDisplay();
-				display.syncExec(() -> {
+				com.eco.bio7.rbridge.REvaluator.run(c, () -> {
 
 					if (c != null) {
 						String res = prefix.substring(0, prefix.lastIndexOf("@"));
@@ -1132,13 +1198,12 @@ public class ShellCompletion implements UpdateCompletion {
 				});
 				RState.setBusy(false);
 			} else {
-				System.out.println("R is busy!");
-			}
+							}
 
 		}
 
 		else {
-			// System.out.println("No Rserve connection available!");
+			/* R is not running: no message (code completion while typing) */
 		}
 		list.clear();
 		return propo;
@@ -1150,12 +1215,11 @@ public class ShellCompletion implements UpdateCompletion {
 		String afterLastIndex = prefix.substring(prefix.lastIndexOf("$") + 1, prefix.length());
 		int length = afterLastIndex.length();
 		ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
-		RBackend c = RBridge.getBackend();
+		com.eco.bio7.rbridge.REvaluator c = com.eco.bio7.rbridge.REvaluator.forEditor(RBridge.getBackend());
 		if (c != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
-				Display display = Util.getDisplay();
-				display.syncExec(() -> {
+				com.eco.bio7.rbridge.REvaluator.run(c, () -> {
 
 					if (c != null) {
 						try {
@@ -1200,12 +1264,11 @@ public class ShellCompletion implements UpdateCompletion {
 				});
 				RState.setBusy(false);
 			} else {
-				System.out.println("R is busy!");
-			}
+							}
 		}
 
 		else {
-			// System.out.println("No Rserve connection available!");
+			/* R is not running: no message (code completion while typing) */
 		}
 		list.clear();
 		return propo;
@@ -1218,26 +1281,19 @@ public class ShellCompletion implements UpdateCompletion {
 	private ImageContentProposal[] dataActivation(int offset, String contentLastCorr) {
 		// IContentProposal[] array = null;
 		int length = contentLastCorr.length();
-		RBackend c = RBridge.getBackend();
+		com.eco.bio7.rbridge.REvaluator c = com.eco.bio7.rbridge.REvaluator.forEditor(RBridge.getBackend());
 		if (c != null) {
 			propo = null;
 			ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
 
-			String[] item = null;
-			String[] packages = null;
-			String[] title = null;
-			/* Get all installed dataset names, their package and description! */
-			try {
-				RServeUtil.evalR("try(.bio7Pkgs <- setdiff(.packages(TRUE), c(\"base\", \"stats\")));"
-						+ "try(.bio7PkgsTemp<-data(package = .bio7Pkgs)$result);"
-						+ "try(.bio7PkgsTemp<-.bio7PkgsTemp[order(.bio7PkgsTemp[,3]), ])", null);
-				item = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Item\"])").asStrings();
-				packages = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Package\"])").asStrings();
-				title = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Title\"])").asStrings();
-			} catch (REXPMismatchException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			/* All installed dataset names, their package and description (cached, refreshed in a job) */
+			String[][] data = datasets.get(COMPLETION_WAIT_MS);
+			if (data == null) {
+				return new ImageContentProposal[0];
 			}
+			String[] item = data[0];
+			String[] packages = data[1];
+			String[] title = data[2];
 
 			/* If text length after parenheses is at least 0! */
 			if (length >= 0) {
@@ -1271,33 +1327,24 @@ public class ShellCompletion implements UpdateCompletion {
 			// IContentProposal[] arrayTemp = makeProposalArray(array);
 			list.clear();
 		} else {
-			System.out.println("No Rserve connection available!");
-		}
+					}
 		return propo;
 	}
 
 	/* Here we calculate available libraries and create ImageContentProposals! */
 	private ImageContentProposal[] libraryActivation(int offset, String contentLastCorr) {
-		RBackend c = RBridge.getBackend();
+		com.eco.bio7.rbridge.REvaluator c = com.eco.bio7.rbridge.REvaluator.forEditor(RBridge.getBackend());
 		int length = contentLastCorr.length();
 		if (c != null) {
 			propo = null;
 			ArrayList<IContentProposal> list = new ArrayList<IContentProposal>();
-			String[] dirPackageFiles = null;
-			String[] packageTitle = null;
-			try {
-				RServeUtil.evalR("try(.bio7ListOfWebPackages <- list(sort(.packages(all.available = TRUE))));"
-						+ "try(.bio7ListOfWebPackagesNames<-.bio7ListOfWebPackages[[1]]);"
-						+ "try(.bio7TitleResult<-lapply(.bio7ListOfWebPackagesNames,packageDescription,fields = c(\"Title\")))",
-						null);
-
-				packageTitle = RServeUtil.fromR("try(as.character(.bio7TitleResult))").asStrings();
-				dirPackageFiles = RServeUtil.fromR("try(.bio7ListOfWebPackagesNames)").asStrings();
-
-			} catch (REXPMismatchException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			/* All installed packages and their titles (cached, refreshed in a job) */
+			String[][] libs = libraries.get(COMPLETION_WAIT_MS);
+			if (libs == null) {
+				return new ImageContentProposal[0];
 			}
+			String[] dirPackageFiles = libs[0];
+			String[] packageTitle = libs[1];
 			/* If text length after parenheses is at least 0! */
 			if (length >= 0) {
 				for (int i = 0; i < dirPackageFiles.length; i++) {
@@ -1331,8 +1378,7 @@ public class ShellCompletion implements UpdateCompletion {
 			// IContentProposal[] arrayTemp = makeProposalArray(array);
 			list.clear();
 		} else {
-			System.out.println("No Rserve connection available!");
-		}
+					}
 		return propo;
 
 		/*

@@ -87,7 +87,7 @@ public class RLibraryList extends Shell {
 
 					}
 				} else {
-					System.out.println("No Rserve connection available !");
+					System.out.println("R is not running (please start R)!");
 				}
 
 			}
@@ -126,7 +126,7 @@ public class RLibraryList extends Shell {
 
 					}
 				} else {
-					System.out.println("No Rserve connection available !");
+					System.out.println("R is not running (please start R)!");
 				}
 
 			}
@@ -193,7 +193,7 @@ public class RLibraryList extends Shell {
 		}
 
 		else {
-			System.out.println("No Rserve connection available!");
+			System.out.println("R is not running (please start R)!");
 		}
 
 		//

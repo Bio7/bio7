@@ -113,7 +113,8 @@ public class RefreshLoadedPackagesForCompletion extends Action implements IObjec
 
 							RState.setBusy(false);
 						} else {
-
+							/* Else R would stay busy for Bio7 (e.g., no hover and code completion) */
+							RState.setBusy(false);
 						}
 					}
 				});

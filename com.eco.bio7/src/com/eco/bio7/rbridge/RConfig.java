@@ -108,6 +108,15 @@ public class RConfig {
 			// e1.printStackTrace();
 			System.out.println("Error occured!");
 		}
+		/*
+		 * R runs and the completion helper is defined: the packages of the R scripts
+		 * opened before R was started are loaded now (in a job, when R is free)
+		 */
+		try {
+			com.eco.bio7.reditor.actions.PackageCompletionOnOpen.rStarted();
+		} catch (RuntimeException | LinkageError e) {
+			System.err.println("Bio7: the packages of the opened R scripts could not be loaded: " + e.getMessage());
+		}
 	}
 
 }

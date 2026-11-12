@@ -676,8 +676,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("R_DEBUG_PORT", 21555);
 		store.setDefault("RSERVE_CLIENT_CONNECTION_PORT", 6311);
 		store.setDefault("RSERVE_CONNECT_TIMEOUT", 20);
-		/* Rserve (default) or embedded R (experimental) */
-		store.setDefault("R_BACKEND", "RSERVE");
+		/* Embedded R (default; if it can't be started, Rserve is used) or Rserve */
+		store.setDefault("R_BACKEND", "EMBEDDED");
 		store.setDefault("SHINY_PORT", 5559);
 		store.setDefault("LATEX_ENGINE", "pdflatex");
 		store.setDefault("BIBTEX_ENGINE", "bibtex");
@@ -947,21 +947,21 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 						}
 
 					} else if (sel.equals("PLOT_IMAGEJ_CANVAS")) {
-						/* The device of embedded R (experimental): live in the ImageJ plot canvas, resizable */
+						/* The device of embedded R: live in the ImageJ plot canvas, resizable */
 						prefsPlotRserve.mult.setStringValue("options(device = \"bio7PlotCanvas\")");
 						prefsPlotRserve.deviceFilename.setStringValue("");
 						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 						if (!"EMBEDDED".equals(store2.getString("R_BACKEND"))) {
-							Bio7Dialog.message("The ImageJ Plot Canvas device needs embedded R (experimental):\n"
+							Bio7Dialog.message("The ImageJ Plot Canvas device needs embedded R:\n"
 									+ "R preferences > R connection > Embedded R (then start R again), and 'Use Custom Device'.");
 						}
 					} else if (sel.equals("PLOT_SWT_VECTOR")) {
-						/* The device of embedded R (experimental): SWT vector graphics in a custom view, resizable */
+						/* The device of embedded R: SWT vector graphics in a custom view, resizable */
 						prefsPlotRserve.mult.setStringValue("options(device = \"bio7PlotVector\")");
 						prefsPlotRserve.deviceFilename.setStringValue("");
 						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 						if (!"EMBEDDED".equals(store2.getString("R_BACKEND"))) {
-							Bio7Dialog.message("The SWT Vector Plot device needs embedded R (experimental):\n"
+							Bio7Dialog.message("The SWT Vector Plot device needs embedded R:\n"
 									+ "R preferences > R connection > Embedded R (then start R again), and 'Use Custom Device'.");
 						}
 					} else if (sel.equals("PLOT_IMAGEJ_DISPLAYSIZE")) {

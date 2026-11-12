@@ -539,7 +539,7 @@ public class Util {
 	 * @param newFont a new font object
 	 * @param parent a parent composite for a temporary text to calculate a default height.
 	 */
-	public static void updateTextHeight(Text text, Font newFont, Composite parent) {
+	public static void updateTextHeight(org.eclipse.swt.widgets.Control text, Font newFont, Composite parent) {
 		
 		Text temp = new Text(parent, SWT.BORDER);
 		int defaultHeight = temp.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;

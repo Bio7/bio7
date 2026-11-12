@@ -486,12 +486,12 @@ public class RSimpleDefaultInformationControl extends AbstractInformationControl
 	}
 
 	private void getRApiInformation(final String finalContent) {
-		REvaluator c = REditor.getEvaluator();
+		REvaluator c = REvaluator.forEditor(REditor.getEvaluator());
 		if (c != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
-				Display display = PlatformUI.getWorkbench().getDisplay();
-				display.syncExec(new Runnable() {
+				try {
+				REvaluator.run(c, new Runnable() {
 					public void run() {
 						RStrObjectInformation rObjectInfo = new RStrObjectInformation();
 
@@ -507,7 +507,9 @@ public class RSimpleDefaultInformationControl extends AbstractInformationControl
 						}
 					}
 				});
-				RState.setBusy(false);
+				} finally {
+					RState.setBusy(false);
+				}
 			}
 		}
 	}

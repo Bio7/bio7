@@ -40,7 +40,7 @@ import com.eco.bio7.rffm.RSession;
 import com.eco.bio7.rffm.RValue;
 
 /**
- * The embedded backend (experimental): R in the process of Bio7 (plugin
+ * The embedded backend (default): R in the process of Bio7 (plugin
  * com.eco.bio7.rffm). The values are converted between the data model of the
  * plugin (RValue) and the REXP classes which Bio7 uses.
  */
@@ -62,22 +62,81 @@ public final class EmbeddedRBackend implements RBackend {
 		return new RserveException(null, e.getMessage());
 	}
 
+	/*
+	 * The UI thread must not wait for R while it evaluates console input (a long
+	 * computation would freeze Bio7): the call fails at once
+	 */
+	private void checkUiThread() throws RserveException {
+		if (session.isBusy() && !session.isRThread() && org.eclipse.swt.widgets.Display.getCurrent() != null) {
+			throw new RserveException(null, "R is busy (console evaluation running)");
+		}
+	}
+
 	@Override
 	public REXP eval(String code) throws RserveException {
+		return eval(code, 0);
+	}
+
+	private REXP eval(String code, long timeoutMillis) throws RserveException {
+		checkUiThread();
 		try {
-			return toREXP(session.eval(code));
+			return toREXP(session.eval(code, timeoutMillis));
 		} catch (RException e) {
 			throw error(e);
 		}
 	}
 
-	@Override
-	public void voidEval(String code) throws RserveException {
+	private void voidEval(String code, long timeoutMillis) throws RserveException {
+		checkUiThread();
 		try {
-			session.voidEval(code);
+			session.voidEval(code, timeoutMillis);
 		} catch (RException e) {
 			throw error(e);
 		}
+	}
+
+	/* Evaluations wait at most timeoutMillis; assign as this backend */
+	@Override
+	public com.eco.bio7.rbridge.REvaluator withTimeout(long timeoutMillis) {
+		EmbeddedRBackend b = this;
+		return new com.eco.bio7.rbridge.REvaluator() {
+			public REXP eval(String code) throws RserveException {
+				return b.eval(code, timeoutMillis);
+			}
+
+			public void voidEval(String code) throws RserveException {
+				b.voidEval(code, timeoutMillis);
+			}
+
+			public void assign(String name, String value) throws RserveException {
+				b.assign(name, value);
+			}
+
+			public void assign(String name, REXP value) throws RserveException {
+				b.assign(name, value);
+			}
+
+			public void assign(String name, String[] values) throws REngineException {
+				b.assign(name, values);
+			}
+
+			public void assign(String name, double[] values) throws REngineException {
+				b.assign(name, values);
+			}
+
+			public void assign(String name, int[] values) throws REngineException {
+				b.assign(name, values);
+			}
+
+			public boolean isEmbedded() {
+				return true;
+			}
+		};
+	}
+
+	@Override
+	public void voidEval(String code) throws RserveException {
+		voidEval(code, 0);
 	}
 
 	@Override

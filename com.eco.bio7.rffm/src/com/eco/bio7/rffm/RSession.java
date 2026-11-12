@@ -137,9 +137,14 @@ public final class RSession implements AutoCloseable {
 		return readingConsole;
 	}
 
-	/** Returns true if R evaluates. */
+	/** Returns true if R evaluates console input (or console input is queued). */
 	public boolean isBusy() {
 		return busy;
+	}
+
+	/** Returns true if the current thread is the thread of R. */
+	public boolean isRThread() {
+		return Thread.currentThread() == thread;
 	}
 
 	/** The version of R (e.g., 4.6.0). */
@@ -241,7 +246,11 @@ public final class RSession implements AutoCloseable {
 		call.downcallHandle(n.symbolAddress("R_setStartTime"), FunctionDescriptor.ofVoid()).invokeExact();
 		/* structRstart (R_ext/RStartup.h, RSTART_VERSION 1), offsets of R 4.2 and later */
 		MemorySegment rp = arena.allocate(512, 8);
-		int unused = (int) call.downcallHandle(n.symbolAddress("R_DefParamsEx"), FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT)).invokeExact(rp, 1);
+		int defParams = (int) call.downcallHandle(n.symbolAddress("R_DefParamsEx"), FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT)).invokeExact(rp, 1);
+		if (defParams != 0) {
+			/* This R doesn't accept the start structure (version 1) of the offsets below: no start (Rserve is used) */
+			throw new IllegalStateException("This version of R doesn't support the start structure of embedded R (R_DefParamsEx returned " + defParams + ")");
+		}
 		MemorySegment user = (MemorySegment) call.downcallHandle(n.symbolAddress("getRUser"), FunctionDescriptor.of(ADDRESS)).invokeExact();
 		rp.set(JAVA_INT, 0, 1); // R_Quiet
 		rp.set(JAVA_INT, 8, options.interactive() ? 1 : 0); // R_Interactive
@@ -271,6 +280,10 @@ public final class RSession implements AutoCloseable {
 		call.downcallHandle(n.symbolAddress("readconsolecfg"), FunctionDescriptor.ofVoid()).invokeExact();
 		n.numericLocaleC();
 		call.downcallHandle(n.symbolAddress("setup_Rmainloop"), FunctionDescriptor.ofVoid()).invokeExact();
+		/* R runs in UTF-8 (LC_CTYPE=.UTF-8, see RNative.load): the console text is UTF-8 */
+		if (n.isUtf8Locale()) {
+			n.consoleCharset = java.nio.charset.StandardCharsets.UTF_8;
+		}
 	}
 
 	private MemorySegment stub(String method, FunctionDescriptor fd) {
@@ -691,7 +704,7 @@ public final class RSession implements AutoCloseable {
 			flushCapture();
 			/* The prompt after a hidden capture is not shown (the visible one is already there) */
 			if (capture == null || captureEcho || captureFilter != null) {
-				console.prompt(prompt.reinterpret(Integer.MAX_VALUE).getString(0, n.consoleCharset));
+				console.prompt(RNative.cString(prompt, n.consoleCharset));
 			}
 			console.busy(false);
 			readingConsole = true;
@@ -713,7 +726,7 @@ public final class RSession implements AutoCloseable {
 
 	void showMessage(MemorySegment msg) {
 		try {
-			console.message(msg.reinterpret(Integer.MAX_VALUE).getString(0, n.consoleCharset));
+			console.message(RNative.cString(msg, n.consoleCharset));
 		} catch (Throwable t) {
 			/* ignored */
 		}
@@ -772,6 +785,11 @@ public final class RSession implements AutoCloseable {
 	}
 
 	private <T> T call(RTask<T> task) throws RException {
+		return call(task, 0);
+	}
+
+	/* timeoutMillis <= 0: no limit */
+	private <T> T call(RTask<T> task, long timeoutMillis) throws RException {
 		if (!alive) {
 			throw new RException("R is not running");
 		}
@@ -791,21 +809,105 @@ public final class RSession implements AutoCloseable {
 		if (readingConsole) {
 			throw new RException("R waits for console input (e.g., browser() or readline()): please finish it in the console first");
 		}
-		FutureTask<T> f = new FutureTask<>((Callable<T>) task::run);
+		/* A limited thread (e.g., the UI thread) waits at most waitLimitMillis until R starts the call */
+		long startLimit = 0;
+		java.util.function.BooleanSupplier limited = waitLimitedThread;
+		boolean limitedCaller = limited != null && limited.getAsBoolean();
+		if (limitedCaller && waitLimitMillis > 0) {
+			startLimit = waitLimitMillis;
+		}
+		return await(task, timeoutMillis, startLimit, limitedCaller);
+	}
+
+	/* R runs a call for which a limited thread (e.g., the UI thread) waits (thread of R) */
+	private volatile boolean runningForLimited;
+
+	/**
+	 * Returns true if R runs a call for which a limited thread (e.g., the UI
+	 * thread, see setWaitLimit) waits: a callback of R must not wait for that
+	 * thread then (e.g., locator() waiting for a click in the UI).
+	 */
+	public boolean isLimitedThreadWaiting() {
+		return runningForLimited;
+	}
+
+	private <T> T await(RTask<T> task, long timeoutMillis, long startLimit, boolean limitedCaller) throws RException {
+		/* 0: queued, 1: started, 2: withdrawn (R skips it) */
+		java.util.concurrent.atomic.AtomicInteger state = new java.util.concurrent.atomic.AtomicInteger();
+		FutureTask<T> f = new FutureTask<>((Callable<T>) () -> {
+			if (!state.compareAndSet(0, 1)) {
+				return null;
+			}
+			runningForLimited = limitedCaller;
+			try {
+				return task.run();
+			} finally {
+				runningForLimited = false;
+			}
+		});
 		tasks.add(f);
+		long now = System.currentTimeMillis();
+		long end = timeoutMillis > 0 ? now + timeoutMillis : Long.MAX_VALUE;
+		long startEnd = startLimit > 0 ? now + startLimit : Long.MAX_VALUE;
 		try {
-			return f.get();
+			while (true) {
+				long until = state.get() == 0 ? Math.min(end, startEnd) : end;
+				if (until == Long.MAX_VALUE) {
+					return f.get();
+				}
+				try {
+					return f.get(Math.max(1, until - System.currentTimeMillis()), TimeUnit.MILLISECONDS);
+				} catch (TimeoutException e) {
+					if (state.compareAndSet(0, 2)) {
+						/* Not started: withdrawn, it never runs */
+						f.cancel(false);
+						throw new RException(System.currentTimeMillis() >= end ? "R did not answer within " + timeoutMillis + " ms (busy)"
+								: "R is busy (another evaluation runs): please try again when it has finished");
+					}
+					if (System.currentTimeMillis() >= end) {
+						/* Started: R finishes it, the result is dropped */
+						throw new RException("R did not answer within " + timeoutMillis + " ms (busy)");
+					}
+					/* Started within the wait limit: wait for the result (up to the timeout, if any) */
+				}
+			}
 		} catch (ExecutionException e) {
 			Throwable cause = e.getCause();
 			throw cause instanceof RException r ? r : new RException(String.valueOf(cause.getMessage()), cause);
 		} catch (InterruptedException e) {
+			state.compareAndSet(0, 2);
+			f.cancel(false);
 			Thread.currentThread().interrupt();
 			throw new RException("interrupted");
 		}
 	}
 
+	private volatile java.util.function.BooleanSupplier waitLimitedThread;
+	private volatile long waitLimitMillis;
+
+	/**
+	 * Calls from a thread for which isLimited returns true (e.g., the UI thread)
+	 * wait at most waitMillis until R starts them (R busy with another evaluation):
+	 * else they are withdrawn and fail with an RException. Once started, they run
+	 * as long as they need. null or waitMillis &lt;= 0: no limit.
+	 */
+	public void setWaitLimit(java.util.function.BooleanSupplier isLimited, long waitMillis) {
+		this.waitLimitedThread = isLimited;
+		this.waitLimitMillis = waitMillis;
+	}
+
 	/** Evaluates R code (all expressions) and returns the value of the last one. */
 	public RValue eval(String code) throws RException {
+		return eval(code, 0);
+	}
+
+	/**
+	 * As eval(String), but waits at most timeoutMillis for R (e.g., for the hover or
+	 * code completion of an editor while R is busy); &lt;= 0: no limit.
+	 *
+	 * @throws RException also if R didn't answer in time
+	 */
+	public RValue eval(String code, long timeoutMillis) throws RException {
 		return call(() -> {
 			MemorySegment v = evalOnRThread(code);
 			try {
@@ -813,16 +915,21 @@ public final class RSession implements AutoCloseable {
 			} finally {
 				c.unprotect(1);
 			}
-		});
+		}, timeoutMillis);
 	}
 
 	/** Evaluates R code without transferring the result. */
 	public void voidEval(String code) throws RException {
+		voidEval(code, 0);
+	}
+
+	/** As voidEval(String), but waits at most timeoutMillis for R; &lt;= 0: no limit. */
+	public void voidEval(String code, long timeoutMillis) throws RException {
 		call(() -> {
 			evalOnRThread(code);
 			c.unprotect(1);
 			return null;
-		});
+		}, timeoutMillis);
 	}
 
 	/** Assigns a value to a variable of the global environment. */
@@ -915,9 +1022,17 @@ public final class RSession implements AutoCloseable {
 	 * the console of R; an incomplete expression waits for the next line.
 	 */
 	public void console(String line) {
-		consoleInput.add(line == null ? "" : line);
 		/* R reads it itself if it waits in readline() */
-		if (!readingConsole) {
+		boolean queue = !readingConsole;
+		if (queue) {
+			/*
+			 * Busy from now on (not only when the task starts): a call queued behind the
+			 * console input would wait until the evaluation ends
+			 */
+			busy = true;
+		}
+		consoleInput.add(line == null ? "" : line);
+		if (queue) {
 			tasks.add(this::drainConsole);
 		}
 	}
@@ -927,6 +1042,8 @@ public final class RSession implements AutoCloseable {
 		while ((line = consoleInput.poll()) != null) {
 			consoleStep(line);
 		}
+		/* The input may have been read by readline() of another evaluation */
+		busy = false;
 	}
 
 	private void consoleStep(String line) {

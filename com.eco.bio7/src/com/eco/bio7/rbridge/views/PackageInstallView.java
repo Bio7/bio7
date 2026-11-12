@@ -478,7 +478,7 @@ public class PackageInstallView extends ViewPart {
 
 					}
 				} else {
-					System.out.println("No Rserve connection available !");
+					System.out.println("R is not running (please start R)!");
 				}
 
 			}
@@ -556,7 +556,7 @@ public class PackageInstallView extends ViewPart {
 
 					}
 				} else {
-					System.out.println("No Rserve connection available !");
+					System.out.println("R is not running (please start R)!");
 				}
 
 			}
@@ -617,8 +617,10 @@ public class PackageInstallView extends ViewPart {
 
 				if (tree.getSelection().length > 0) {
 					String selectedPackage = tree.getSelection()[0].getText();
-					RServeUtil.evalR("try(detach(package:" + selectedPackage + ", unload=TRUE))", null);
-					createAttachedPackageTree();
+					inBackground("Detach R package", () -> {
+						RServeUtil.evalR("try(detach(package:" + selectedPackage + ", unload=TRUE))", null);
+						createAttachedPackageTree();
+					});
 
 				}
 
@@ -750,28 +752,41 @@ public class PackageInstallView extends ViewPart {
 						/* Load data on click! */
 						else {
 							// RServeUtil.evalR("try(force(" + text + "))", null);
-							String head = "NA";
-							String str = "NA";
 							int ind = text.indexOf("(");
 							if (ind > -1) {
 								text = text.substring(0, ind - 1);
 							}
-							try {
-								String evalHead = "tryCatch({class(" + text
-										+ ")},error=function(error_message) {return(\"Dataset not available!\")})";
-								head = RServeUtil.fromR(evalHead).asString();
-								String evalStr = "try(capture.output(tryCatch({str(" + text
-										+ ")},error=function(error_message) {return(\"Load data first!\")})))";
-								str = RServeUtil.fromR(evalStr).asString();
-							} catch (REXPMismatchException e1) {
-								// TODO Auto-generated catch block
-
-								e1.printStackTrace();
-							}
-
-							TreeItem subItem = new TreeItem(item, SWT.NONE);
-							subItem.setText(new String[] { head, str });
-							item.setExpanded(true);
+							String name = text;
+							/* R in a job, the tree item afterwards (the UI doesn't wait for R) */
+							inBackground("Dataset information", () -> {
+								String head = "NA";
+								String str = "NA";
+								try {
+									String evalHead = "tryCatch({class(" + name
+											+ ")},error=function(error_message) {return(\"Dataset not available!\")})";
+									REXP h = RServeUtil.fromR(evalHead);
+									if (h != null) {
+										head = h.asString();
+									}
+									String evalStr = "try(capture.output(tryCatch({str(" + name
+											+ ")},error=function(error_message) {return(\"Load data first!\")})))";
+									REXP s = RServeUtil.fromR(evalStr);
+									if (s != null) {
+										str = s.asString();
+									}
+								} catch (REXPMismatchException e1) {
+									e1.printStackTrace();
+								}
+								String[] row = { head, str };
+								Display.getDefault().asyncExec(() -> {
+									if (item.isDisposed() || item.getItemCount() >= 1) {
+										return;
+									}
+									TreeItem subItem = new TreeItem(item, SWT.NONE);
+									subItem.setText(row);
+									item.setExpanded(true);
+								});
+							});
 
 						}
 					}
@@ -790,7 +805,8 @@ public class PackageInstallView extends ViewPart {
 					if (text.isEmpty() == false) {
 						/* Open function body on click! */
 						if (showFunc) {
-							RServeUtil.evalR("print(force(" + text + "))", null);
+							String function = text;
+							inBackground("Print R function", () -> RServeUtil.evalR("print(force(" + function + "))", null));
 							// RServeUtil.listRObjects();
 						}
 						/* Load data on click! */
@@ -806,11 +822,13 @@ public class PackageInstallView extends ViewPart {
 
 								text = text.substring(0, ind - 1);
 							}
-							RServeUtil.evalR("try(data(" + text + "))", null);
-
-							RServeUtil.evalR("try(print(summary(" + text + ")))", null);
-
-							RServeUtil.listRObjects();
+							String dataset = text;
+							/* In a job, one after another (the UI doesn't wait for R) */
+							inBackground("Load R dataset", () -> {
+								RServeUtil.evalR("try(data(" + dataset + "))", null);
+								RServeUtil.evalR("try(print(summary(" + dataset + ")))", null);
+								RServeUtil.listRObjects();
+							});
 						}
 					}
 
@@ -1106,32 +1124,60 @@ public class PackageInstallView extends ViewPart {
 		return allInstalledPackagesList;
 	}
 
+	/*
+	 * Runs R calls (e.g., RServeUtil.evalR/fromR, which wait for their job) in a
+	 * background job: the UI thread doesn't wait for R. UI updates: asyncExec.
+	 */
+	private static void inBackground(String name, Runnable r) {
+		Job job = new Job(name) {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				r.run();
+				return Status.OK_STATUS;
+			}
+		};
+		job.setSystem(true);
+		job.schedule();
+	}
+
+	/* Updates the tree of the attached packages (R in a job, the tree afterwards) */
 	public void createAttachedPackageTree() {
-		if (RServe.isAliveDialog() == false) {
-			return;
-		}
-		REXP pack = null;
-		tree.removeAll();
-		/* Just to avoid the dialog from RServeUtil! */
+		inBackground("List attached R packages", () -> {
+			if (RServe.isAliveDialog() == false) {
+				return;
+			}
+			String[] v = attachedPackages();
+			Display.getDefault().asyncExec(() -> fillAttachedPackageTree(v));
+		});
+	}
 
-		String[] v = null;
-		// List all variables in the R workspace!
-
+	/* The attached packages (R; not in the UI thread) or null */
+	private static String[] attachedPackages() {
 		RServeUtil.evalR(
 				".bio7TempVarEnvironment <- new.env();try(.bio7TempVarEnvironment$workspaceRPackages<-.packages())",
 				null);
-		pack = RServeUtil.fromR("try(.bio7TempVarEnvironment$workspaceRPackages)");
+		REXP pack = RServeUtil.fromR("try(.bio7TempVarEnvironment$workspaceRPackages)");
 		if (pack == null) {
-			return;
+			return null;
 		}
+		String[] v = null;
 		try {
-
 			v = pack.asStrings();
 		} catch (REXPMismatchException e1) {
-
 			e1.printStackTrace();
 		}
 		RServeUtil.evalR("try(rm(workspaceRPackages,envir=.bio7TempVarEnvironment))", null);
+		return v;
+	}
+
+	private void fillAttachedPackageTree(String[] v) {
+		if (tree == null || tree.isDisposed()) {
+			return;
+		}
+		tree.removeAll();
+		if (v == null) {
+			return;
+		}
 
 		TreeItem packages = new TreeItem(tree, 0);
 		packages.setText("Attached:");

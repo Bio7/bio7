@@ -330,7 +330,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					/* Break the evaluate line selection action! */
 					ExecuteRTextSelection lineSelection = ExecuteRTextSelection.getInstance();
 					lineSelection.stopEvaluation();
-					/* Embedded R (experimental): interrupt the evaluation in the process of Bio7 */
+					/* Embedded R: interrupt the evaluation in the process of Bio7 */
 					if (interpreterSelection.equals("R") && RProcess == null && Backends.isEmbeddedRunning()) {
 						EmbeddedR.interrupt();
 						return;
@@ -748,7 +748,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		consoleEncoding = store.getString("Console_Encoding");
-		/* Embedded R (experimental, preference): R in the process of Bio7, else Rserve as before */
+		/* Embedded R (default, preference): R in the process of Bio7, else (or if it can't be started) Rserve */
 		if (Backends.isEmbeddedSelected()) {
 			if (Backends.isEmbeddedRunning()) {
 				return;
@@ -757,7 +757,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			if (error == null) {
 				return;
 			}
-			String message = "Embedded R (experimental) could not be started:\n" + error + "\n\nR is started as a separate process (Rserve).";
+			String message = "Embedded R could not be started:\n" + error + "\n\nR is started as a separate process (Rserve).";
 			System.err.println(message.replace("\n\n", " "));
 			Display.getDefault().asyncExec(() -> MessageDialog.openWarning(Util.getShell(), "Embedded R", message));
 		}
@@ -1376,7 +1376,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 						}
 					}
 					if (RProcess == null && Backends.isEmbeddedRunning()) {
-						/* Embedded R (experimental): the line is evaluated by R in the process of Bio7 */
+						/* Embedded R: the line is evaluated by R in the process of Bio7 */
 						EmbeddedR.console(input);
 					} else if (RProcess != null) {
 						final OutputStream os = RProcess.getOutputStream();
@@ -1677,25 +1677,38 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			if (rProcess == null && Backends.isEmbeddedRunning()) {
 				EmbeddedR.console(command);
 			} else if (rProcess != null) {
-				final OutputStream os = rProcess.getOutputStream();
-				final OutputStreamWriter osw = new OutputStreamWriter(os);
-				final BufferedWriter bw = new BufferedWriter(osw, 100);
+				/*
+				 * In one background thread (in order): a write blocks while the pipe is full
+				 * (R busy, large input), the caller (e.g., the UI thread) not
+				 */
+				R_PIPE_WRITER.execute(() -> {
+					final OutputStream os = rProcess.getOutputStream();
+					final OutputStreamWriter osw = new OutputStreamWriter(os);
+					final BufferedWriter bw = new BufferedWriter(osw, 100);
 
-				try {
-					bw.write(command);
-					bw.newLine();
+					try {
+						bw.write(command);
+						bw.newLine();
 
-					// If necessary: bw.write("\r\n");
-					os.flush();
-					bw.flush();
-					// bw.close();
-					System.out.flush();
-				} catch (IOException e) {
-					System.err.println("");
-				}
+						// If necessary: bw.write("\r\n");
+						os.flush();
+						bw.flush();
+						// bw.close();
+						System.out.flush();
+					} catch (IOException e) {
+						System.err.println("");
+					}
+				});
 			}
 
 		}
 	}
+
+	/* Writes to the native R process (stdin) in order, not in the calling thread */
+	private static final java.util.concurrent.ExecutorService R_PIPE_WRITER = java.util.concurrent.Executors.newSingleThreadExecutor(r -> {
+		Thread t = new Thread(r, "R console input");
+		t.setDaemon(true);
+		return t;
+	});
 
 }

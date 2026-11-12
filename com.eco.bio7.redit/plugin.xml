@@ -329,14 +329,14 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
              class="com.eco.bio7.reditor.actions.RFormatAction"
              definitionId="com.eco.bio7.reditor.rserve.format"
              id="com.eco.bio7.reditor.rserve.for"
-             label="Format R Source (Rserve)"
+             label="Format R Source"
              menubarPath="format.menu/format">
        </action>
        <action
              class="com.eco.bio7.reditor.actions.RFormatSelectionAction"
              definitionId="com.eco.bio7.reditor.rserve.format.selection"
              id="com.eco.bio7.reditor.rserve.for.sel"
-             label="Format Selected R Source (Rserve)"
+             label="Format Selected R Source"
              menubarPath="format.menu/format">
        </action>
        <action

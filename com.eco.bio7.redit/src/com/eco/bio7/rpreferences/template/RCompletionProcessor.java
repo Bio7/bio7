@@ -558,12 +558,11 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 		propo = null;
 
 		// int length = prefix.length();
-		REvaluator c = REditor.getEvaluator();
+		REvaluator c = REvaluator.forEditor(REditor.getEvaluator());
 		if (c != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
-				Display display = Util.getDisplay();
-				display.syncExec(() -> {
+				REvaluator.run(c, () -> {
 
 					if (c != null) {
 						// ArrayList<CompletionProposal> list = new ArrayList<CompletionProposal>();
@@ -610,10 +609,9 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 				});
 				RState.setBusy(false);
 			} else {
-				System.out.println("R is busy!");
-			}
+							}
 		} else {
-			// System.out.println("No Rserve connection available!");
+			/* R is not running: no message (code completion while typing) */
 		}
 		/*
 		 * If no workspace variables are available we return an empty String array thus
@@ -632,12 +630,11 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 		final int offSet = offset;
 		String afterLastIndex = prefix.substring(prefix.lastIndexOf(":") + 1, prefix.length());
 		int length = afterLastIndex.length();
-		REvaluator c = REditor.getEvaluator();
+		REvaluator c = REvaluator.forEditor(REditor.getEvaluator());
 		if (c != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
-				Display display = Util.getDisplay();
-				display.syncExec(() -> {
+				REvaluator.run(c, () -> {
 
 					if (c != null) {
 						ArrayList<CompletionProposal> list = new ArrayList<CompletionProposal>();
@@ -677,13 +674,11 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 				});
 				RState.setBusy(false);
 			} else {
-				System.out.println("R is busy!");
-			}
+							}
 		}
 
 		else {
-			System.out.println("No Rserve connection available!");
-		}
+					}
 
 		return propo;
 	}
@@ -695,12 +690,11 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 		String afterLastIndex = prefix.substring(prefix.lastIndexOf(":") + 1, prefix.length());
 		int length = afterLastIndex.length();
 		ArrayList<CompletionProposal> list = new ArrayList<CompletionProposal>();
-		REvaluator c = REditor.getEvaluator();
+		REvaluator c = REvaluator.forEditor(REditor.getEvaluator());
 		if (c != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
-				Display display = Util.getDisplay();
-				display.syncExec(() -> {
+				REvaluator.run(c, () -> {
 
 					if (c != null) {
 						String res = prefix.substring(0, prefix.lastIndexOf(":::"));
@@ -737,13 +731,11 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 				});
 				RState.setBusy(false);
 			} else {
-				System.out.println("R is busy!");
-			}
+							}
 		}
 
 		else {
-			System.out.println("No Rserve connection available!");
-		}
+					}
 		list.clear();
 		return propo;
 	}
@@ -755,12 +747,11 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 		String afterLastIndex = prefix.substring(prefix.lastIndexOf("@") + 1, prefix.length());
 		int length = afterLastIndex.length();
 		ArrayList<CompletionProposal> list = new ArrayList<CompletionProposal>();
-		REvaluator c = REditor.getEvaluator();
+		REvaluator c = REvaluator.forEditor(REditor.getEvaluator());
 		if (c != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
-				Display display = Util.getDisplay();
-				display.syncExec(() -> {
+				REvaluator.run(c, () -> {
 
 					if (c != null) {
 						String res = prefix.substring(0, prefix.lastIndexOf("@"));
@@ -807,13 +798,11 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 				});
 				RState.setBusy(false);
 			} else {
-				System.out.println("R is busy!");
-			}
+							}
 		}
 
 		else {
-			System.out.println("No Rserve connection available!");
-		}
+					}
 		list.clear();
 		return propo;
 	}
@@ -825,12 +814,11 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 		String afterLastIndex = prefix.substring(prefix.lastIndexOf("$") + 1, prefix.length());
 		int length = afterLastIndex.length();
 		ArrayList<CompletionProposal> list = new ArrayList<CompletionProposal>();
-		REvaluator c = REditor.getEvaluator();
+		REvaluator c = REvaluator.forEditor(REditor.getEvaluator());
 		if (c != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
-				Display display = Util.getDisplay();
-				display.syncExec(() -> {
+				REvaluator.run(c, () -> {
 
 					if (c != null) {
 						String res = prefix.substring(0, prefix.lastIndexOf("$"));
@@ -875,13 +863,11 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 				});
 				RState.setBusy(false);
 			} else {
-				System.out.println("R is busy!");
-			}
+							}
 		}
 
 		else {
-			System.out.println("No Rserve connection available!");
-		}
+					}
 		list.clear();
 		return propo;
 	}
@@ -897,12 +883,11 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 
 			if (funcNameFromProposals.equals("library") || funcNameFromProposals.equals("require")) {
 
-				REvaluator c = REditor.getEvaluator();
+				REvaluator c = REvaluator.forEditor(REditor.getEvaluator());
 				if (c != null) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
-						Display display = Util.getDisplay();
-						display.syncExec(() -> {
+						REvaluator.run(c, () -> {
 
 							if (c != null) {
 								String[] dirPackageFiles = null;
@@ -951,24 +936,21 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 						});
 						RState.setBusy(false);
 					} else {
-						System.out.println("R is busy!");
-					}
+											}
 				}
 
 				else {
-					System.out.println("No Rserve connection available!");
-				}
+									}
 
 			}
 
 			else if (funcNameFromProposals.equals("data")) {
 
-				REvaluator c = REditor.getEvaluator();
+				REvaluator c = REvaluator.forEditor(REditor.getEvaluator());
 				if (c != null) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
-						Display display = Util.getDisplay();
-						display.syncExec(() -> {
+						REvaluator.run(c, () -> {
 
 							if (c != null) {
 
@@ -1016,13 +998,11 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 						});
 						RState.setBusy(false);
 					} else {
-						System.out.println("R is busy!");
-					}
+											}
 				}
 
 				else {
-					System.out.println("No Rserve connection available!");
-				}
+									}
 
 			}
 		}
@@ -1035,12 +1015,11 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 		int length = prefix.length();
 		/* The current workspace variables! */
 		getWorkSpaceVars();
-		REvaluator con = REditor.getEvaluator();
+		REvaluator con = REvaluator.forEditor(REditor.getEvaluator());
 		if (con != null) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
-				Display display = Util.getDisplay();
-				display.syncExec(() -> {
+				REvaluator.run(con, () -> {
 
 					if (con != null) {
 
@@ -1255,13 +1234,11 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 
 				RState.setBusy(false);
 			} else {
-				System.out.println("R is busy!");
-			}
+							}
 		}
 
 		else {
-			System.out.println("No Rserve connection available!");
-		}
+					}
 
 		return propo;
 	}

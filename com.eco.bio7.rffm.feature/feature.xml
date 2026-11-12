@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="com.eco.bio7.rffm.feature"
-      label="Bio7 Embedded R (FFM, experimental)"
+      label="Bio7 Embedded R (FFM)"
       version="1.0.0.qualifier"
       provider-name="Bio7">
 
    <description>
       Embeds an existing R installation in the Java process with the Foreign
 Function and Memory API (Java 22+): no Rserve, no compiled native code.
-Includes a Java graphics device. Experimental.
+Includes Java graphics devices. The default R connection of Bio7
+(if it can't be started, Rserve is used).
    </description>
 
    <license url="https://www.eclipse.org/legal/epl-2.0/">

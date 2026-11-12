@@ -90,7 +90,9 @@ public class ExecuteRTextSelection extends Action {
 			}
 
 			else {
-				if (RState.isBusy()) {
+				/* While selections run, further ones are queued; else R is busy with something else */
+				if (RState.isBusy() && !isSelectionRunning()) {
+					System.out.println("R is busy. Can't execute the R script!");
 					return;
 				}
 
@@ -138,9 +140,10 @@ public class ExecuteRTextSelection extends Action {
 
 							// RServe.printJobJoin(code);
 
-							evalRSelection(null, temp.getAbsolutePath());
-
-							temp.delete();
+							/* Queued (no join: the UI stays free); the file is deleted when it was evaluated */
+							if (temp != null) {
+								submit(null, temp, true);
+							}
 							buff.setLength(0); // clear buffer!
 						} else {
 							/*
@@ -170,6 +173,8 @@ public class ExecuteRTextSelection extends Action {
 
 	public void stopEvaluation() {
 		interrupt = true;
+		/* The selections not yet evaluated are dropped */
+		clearQueue();
 		// RServeUtil.evalR("try(try(" + code + "))", null);
 		buff.setLength(0); // clear buffer!
 	}
@@ -220,46 +225,108 @@ public class ExecuteRTextSelection extends Action {
 		return inhalt;
 	}
 	/**
-	 * Evaluates a script in R running in a job without using join for the plot
-	 * job!.
-	 * 
+	 * Evaluates a script (or the script file loc) in R in a job. The call returns
+	 * at once (the UI stays free); selections are evaluated one after another in
+	 * the order of the calls.
+	 *
 	 * @param script a script.
 	 * @param loc    the script location.
 	 */
 	public static void evalRSelection(String script, String loc) {
-		if (RServe.isAliveDialog()) {
-			if (RState.isBusy() == false) {
-				RState.setBusy(true);
-				RInterpreterJob Do = new RInterpreterJob(script, loc);
-				Do.setUser(true);
-				Do.addJobChangeListener(new JobChangeAdapter() {
-					public void done(IJobChangeEvent event) {
-						if (event.getResult().isOK()) {
-							int countDev = RServe.getDisplayNumber();
-							RState.setBusy(false);
-							if (countDev > 0) {
-								RServe.closeAndDisplayNoJoin();
-							}
-							RServeUtil.listRObjects();
-							// BatchModel.resumeFlow();
+		submit(script, loc == null ? null : new File(loc), false);
+	}
 
-						} else {
-							RState.setBusy(false);
-						}
-					}
-				});
+	/* ---------------- The queue of the selections ---------------- */
 
-				Do.schedule();
-				try {
-					Do.join();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			} else {
-				System.out.println("R is busy. Can't execute the R script!");
+	private record Selection(String script, File file, boolean deleteFile) {
+	}
+
+	private static final java.util.ArrayDeque<Selection> queue = new java.util.ArrayDeque<>();
+	/* A selection job runs (RState is busy because of it) */
+	private static boolean running;
+
+	private static synchronized boolean isSelectionRunning() {
+		return running;
+	}
+
+	private static void submit(String script, File file, boolean deleteFile) {
+		if (!RServe.isAliveDialog()) {
+			if (deleteFile && file != null) {
+				file.delete();
 			}
+			return;
 		}
+		synchronized (ExecuteRTextSelection.class) {
+			queue.add(new Selection(script, file, deleteFile));
+		}
+		startNext();
+	}
 
+	private static void clearQueue() {
+		synchronized (ExecuteRTextSelection.class) {
+			for (Selection s : queue) {
+				if (s.deleteFile() && s.file() != null) {
+					s.file().delete();
+				}
+			}
+			queue.clear();
+		}
+	}
+
+	/* Starts the next selection if none runs and R is free; else it waits (retry) */
+	private static void startNext() {
+		Selection next;
+		synchronized (ExecuteRTextSelection.class) {
+			if (running || queue.isEmpty()) {
+				return;
+			}
+			if (RState.isBusy()) {
+				/* R is busy with something else (e.g., the object list): try again soon */
+				retryLater();
+				return;
+			}
+			next = queue.poll();
+			running = true;
+			RState.setBusy(true);
+		}
+		RInterpreterJob job = new RInterpreterJob(next.script(), next.file() == null ? null : next.file().getAbsolutePath());
+		job.setUser(true);
+		job.addJobChangeListener(new JobChangeAdapter() {
+			public void done(IJobChangeEvent event) {
+				if (next.deleteFile() && next.file() != null) {
+					next.file().delete();
+				}
+				boolean ok = event.getResult().isOK();
+				int countDev = ok ? RServe.getDisplayNumber() : 0;
+				/* R free first, then not running: a selection in between is queued, not refused */
+				RState.setBusy(false);
+				boolean more;
+				synchronized (ExecuteRTextSelection.class) {
+					running = false;
+					more = !queue.isEmpty();
+				}
+				if (countDev > 0) {
+					RServe.closeAndDisplayNoJoin();
+				}
+				if (ok && !more) {
+					/* The object list after the last queued selection */
+					RServeUtil.listRObjects();
+				}
+				startNext();
+			}
+		});
+		job.schedule();
+	}
+
+	private static void retryLater() {
+		org.eclipse.core.runtime.jobs.Job retry = new org.eclipse.core.runtime.jobs.Job("Evaluate R selection (waiting)") {
+			@Override
+			protected org.eclipse.core.runtime.IStatus run(org.eclipse.core.runtime.IProgressMonitor monitor) {
+				startNext();
+				return org.eclipse.core.runtime.Status.OK_STATUS;
+			}
+		};
+		retry.setSystem(true);
+		retry.schedule(200);
 	}
 }

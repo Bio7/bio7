@@ -127,20 +127,18 @@ public class RQuickFixCompletionProposal implements ICompletionProposal {
 					}
 				});
 
+				/*
+				 * Not joined: apply() runs in the UI thread, which would wait for R. The
+				 * package proposals are reloaded when the job is done (listener above)
+				 */
 				job.schedule();
-				try {
-					job.join();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
 			} else {
 				System.out.println("R is busy. Can't execute the R script!");
 			}
 		}
 
 		else {
-			System.out.println("No Rserve connection available!");
+			System.out.println("R is not running (please start R)!");
 		}
 
 	}
@@ -253,7 +251,7 @@ public class RQuickFixCompletionProposal implements ICompletionProposal {
 		}
 
 		else {
-			System.out.println("No Rserve connection available!");
+			System.out.println("R is not running (please start R)!");
 		}
 
 	}

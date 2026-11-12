@@ -144,6 +144,7 @@ import com.eco.bio7.rbridge.actions.OfficeValueToRAction;
 import com.eco.bio7.rbridge.actions.OfficeValueToRHeadAction;
 import com.eco.bio7.rbridge.completion.ContentProposalAdapter;
 import com.eco.bio7.rbridge.completion.ShellCompletion;
+import com.eco.bio7.rbridge.completion.StyledTextContentAdapter;
 import com.eco.bio7.rcp.ApplicationActionBarAdvisor;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.actions.OfficeOpenAction;
@@ -161,7 +162,10 @@ public class RShellView extends ViewPart {
 
 	private static List listShell;
 	private static boolean isConsoleExpanded = true;
-	public Text text;
+	/* The input: a StyledText (bracket highlighting) with the methods of a Text */
+	public RShellText text;
+	/* Evaluates the input (Return, Eval) */
+	private Listener evaluateInput;
 	private SimpleContentProposalProvider prov;
 	private ContentProposalAdapter adapter;
 	private ContentProposalAdapter adapter2;
@@ -292,8 +296,15 @@ public class RShellView extends ViewPart {
 		// provCompletion = new SimpleContentProposalProvider(new String[] {
 		// "a", "b", "c" });
 
-		text = new Text(parent, SWT.SINGLE | SWT.BORDER);
-		DropTarget target = new DropTarget(text, operations);
+		text = new RShellText(parent, SWT.SINGLE | SWT.BORDER);
+		/* A StyledText may already have a drop target: then it is used */
+		DropTarget target;
+		Object existingTarget = text.getData(DND.DROP_TARGET_KEY);
+		if (existingTarget instanceof DropTarget dt) {
+			target = dt;
+		} else {
+			target = new DropTarget(text, operations);
+		}
 		target.setTransfer(types);
 		Font font = new Font(Util.getDisplay(), currentFont);
 		text.setFont(font);
@@ -311,7 +322,8 @@ public class RShellView extends ViewPart {
 		// hiding it initially
 		txtIndication.hide();
 
-		text.addListener(SWT.DefaultSelection, new Listener() {
+		/* Return evaluates the input (see the key listener below, after the completion adapters) */
+		evaluateInput = new Listener() {
 			public void handleEvent(Event e) {
 				if (RServe.isAlive()) {
 					if (cmdError == false) {
@@ -339,7 +351,7 @@ public class RShellView extends ViewPart {
 					}
 				}
 			}
-		});
+		};
 
 		text.addMouseListener(new MouseListener() {
 
@@ -351,75 +363,13 @@ public class RShellView extends ViewPart {
 			@Override
 			public void mouseDown(MouseEvent e) {
 				if (keyPressed) {
-					int caretPosition = ((Text) (e.widget)).getCaretPosition();
-					String textBeforeCaret = text.getText(caretPosition - 1, caretPosition - 1);
-					String textBehingClosingCaret = text.getText(caretPosition, caretPosition);
-					char xch = '(';
-					char ych = '(';
-					if (textBeforeCaret.equals("(") || textBeforeCaret.equals("[") || textBeforeCaret.equals("{")) {
-						Document doc = new Document();
-						switch (textBeforeCaret) {
-						case "(":
-							xch = '(';
-							ych = ')';
-							break;
-						case "[":
-							xch = '[';
-							ych = ']';
-							break;
-						case "{":
-							xch = '{';
-							ych = '}';
-							break;
-
-						default:
-							break;
-						}
-
-						doc.set(text.getText());
-						try {
-							int closingBracket = searchForClosingBracket(caretPosition, xch, ych, doc);
-							if (closingBracket >= 0) {
-								text.setSelection(caretPosition, closingBracket);
-							}
-
-						} catch (BadLocationException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-					}
-					if (textBehingClosingCaret.equals(")") || textBehingClosingCaret.equals("]")
-							|| textBehingClosingCaret.equals("}")) {
-						Document doc = new Document();
-						switch (textBeforeCaret) {
-						case ")":
-							xch = '(';
-							ych = ')';
-							break;
-						case "]":
-							xch = '[';
-							ych = ']';
-							break;
-						case "}":
-							xch = '{';
-							ych = '}';
-							break;
-
-						default:
-							break;
-						}
-
-						doc.set(text.getText());
-						try {
-							int openingBracket = searchForOpenBracket(caretPosition, xch, ych, doc);
-							if (openingBracket >= 0) {
-								text.setSelection(openingBracket + 1, caretPosition);
-							}
-
-						} catch (BadLocationException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
+					/*
+					 * Click with a pressed key: the content of the brackets at the click (a bracket
+					 * next to it, else the enclosing ones) is selected
+					 */
+					int[] pair = text.getBracketPair();
+					if (pair != null) {
+						text.setSelection(pair[0] + 1, pair[1]);
 					}
 				}
 
@@ -574,7 +524,7 @@ public class RShellView extends ViewPart {
 						text.setFocus();
 					}
 				}
-				Text text = (Text) e.getSource();
+				RShellText text = (RShellText) e.getSource();
 				String command = text.getText();
 				/*
 				 * Here we parse the command(s) which comes from the textfield! Parsing is very
@@ -601,7 +551,7 @@ public class RShellView extends ViewPart {
 				/* For the mouse bracket selection release the key! */
 				keyPressed = false;
 
-				Text text = (Text) e.getSource();
+				RShellText text = (RShellText) e.getSource();
 				String command = text.getText();
 				/*
 				 * Here we parse the command(s) which comes from the textfield! Parsing is very
@@ -625,10 +575,28 @@ public class RShellView extends ViewPart {
 
 		});
 		prov = new SimpleContentProposalProvider(history);
-		adapter = new ContentProposalAdapter(text, new TextContentAdapter(), prov, stroke, null);
+		adapter = new ContentProposalAdapter(text, new StyledTextContentAdapter(), prov, stroke, null);
 		/* Add code completion to textfield! */
-		shellCompletion = new ShellCompletion(this, text, new TextContentAdapter());
+		shellCompletion = new ShellCompletion(this, text, new StyledTextContentAdapter());
 		REditor.setShellCompletion(shellCompletion);
+		/*
+		 * Added after the completion adapters: they get Return first (accepting a
+		 * proposal sets doit to false). Return evaluates the input, Alt+Shift+Up selects
+		 * the enclosing brackets (repeated: the next outer ones)
+		 */
+		text.addListener(SWT.KeyDown, e -> {
+			if (!e.doit) {
+				return;
+			}
+			int modifiers = e.stateMask & SWT.MODIFIER_MASK;
+			if ((e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR) && modifiers == 0) {
+				e.doit = false;
+				evaluateInput.handleEvent(e);
+			} else if (e.keyCode == SWT.ARROW_UP && modifiers == (SWT.ALT | SWT.SHIFT)) {
+				e.doit = false;
+				text.selectEnclosing();
+			}
+		});
 
 		Button btnEvaluate = new Button(parent, SWT.F2);
 		GridData gd_btnEvaluate = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);

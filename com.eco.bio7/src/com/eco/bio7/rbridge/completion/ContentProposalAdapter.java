@@ -520,12 +520,12 @@ public class ContentProposalAdapter {
 			private String getRApiInformation(String finalContent, String label) {
 				IPreferenceStore store = Bio7REditorPlugin.getDefault().getPreferenceStore();
 
-				RBackend c = RBridge.getBackend();
+				com.eco.bio7.rbridge.REvaluator c = com.eco.bio7.rbridge.REvaluator.forEditor(RBridge.getBackend());
 				if (c != null) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
-						Display display = PlatformUI.getWorkbench().getDisplay();
-						display.syncExec(new Runnable() {
+						try {
+						com.eco.bio7.rbridge.REvaluator.run(c, new Runnable() {
 							public void run() {
 
 								RStrObjectInformation rObjectInfo = new RStrObjectInformation();
@@ -544,7 +544,9 @@ public class ContentProposalAdapter {
 
 							}
 						});
-						RState.setBusy(false);
+						} finally {
+							RState.setBusy(false);
+						}
 					}
 				}
 				if (informationControlText == null)

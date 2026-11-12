@@ -51,6 +51,7 @@ import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.antlr.refactor.RefactorParse;
+import com.eco.bio7.reditor.format.RFormatterSupport;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.util.Util;
 
@@ -73,9 +74,18 @@ public class RFormatSelectionAction implements IObjectActionDelegate, IEditorAct
 
 	public void run(IAction action) {
 		store = Bio7REditorPlugin.getDefault().getPreferenceStore();
-		styler = store.getBoolean("STYLER_PACKAGE");
-		stylerArguments = store.getString("STYLER_PACKAGE_ARGUMENTS");
+		String formatter = RFormatterSupport.formatter(store);
 		IEditorPart editore = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		if (RFormatterSupport.JAVA.equals(formatter)) {
+			/* The built-in formatter: the selected lines in the document (undoable), no R needed */
+			if (editore instanceof ITextEditor textEditor) {
+				RFormatterSupport.formatSelection(textEditor, store);
+			}
+			return;
+		}
+		/* Optional: the R packages formatR or styler (see the preferences) */
+		styler = RFormatterSupport.STYLER.equals(formatter);
+		stylerArguments = store.getString("STYLER_PACKAGE_ARGUMENTS");
 
 		IEditorPart[] dirtyEditors = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getDirtyEditors();
 		for (IEditorPart iEditorPart : dirtyEditors) {

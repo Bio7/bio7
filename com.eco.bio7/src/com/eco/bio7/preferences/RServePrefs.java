@@ -67,11 +67,11 @@ public class RServePrefs extends FieldEditorPreferencePage implements IWorkbench
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("General:", getFieldEditorParent()));
 		addField(new RadioGroupFieldEditor("R_BACKEND", "R connection (applies at the next start of R; from embedded R back to Rserve: restart Bio7):", 1,
-				new String[][] { { "Rserve: R as a separate process (default)", "RSERVE" },
-						{ "Embedded R: R in the process of Bio7 via the Foreign Function and Memory API (experimental)", "EMBEDDED" } },
+				new String[][] { { "Embedded R: R in the process of Bio7 via the Foreign Function and Memory API (default)", "EMBEDDED" },
+						{ "Rserve: R as a separate process", "RSERVE" } },
 				getFieldEditorParent(), true));
 		addField(new LabelFieldEditor("Embedded R: a crash of R (e.g., of a package) ends Bio7 (save your work); R can't be terminated or restarted\n"
-				+ "without restarting Bio7; mclapply() runs sequentially (mc.cores = 1); some features still need Rserve (see the documentation).",
+				+ "without restarting Bio7; mclapply() runs sequentially (mc.cores = 1). If embedded R can't be started, Rserve is used.",
 				getFieldEditorParent()));
 		addField(new DirectoryFieldEditor(PreferenceConstants.PATH_R, "&Path to R:", getFieldEditorParent()));
 		addField(new ActionButtonFieldEditor("Find R, install R or Rserve:", "R and Rserve Setup...", () -> {

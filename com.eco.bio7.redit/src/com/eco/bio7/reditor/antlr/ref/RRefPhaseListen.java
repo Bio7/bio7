@@ -606,9 +606,11 @@ public class RRefPhaseListen extends RBaseListener {
 			 * If we do not find the functions in the current file we search in the loaded
 			 * packages!
 			 */
-			if (CalculateRProposals.stat != null) {
+			/* A set lookup (not a scan of all proposals for each call); null: no proposals loaded */
+			Boolean known = CalculateRProposals.isKnownFunction(funcName);
+			if (known != null) {
 
-				if (CalculateRProposals.stat.containsValue(funcName)) {
+				if (known) {
 
 					/* Store function call args for code completion! */
 					if (offsetCodeCompl >= startIndex && offsetCodeCompl <= stopIndex) {

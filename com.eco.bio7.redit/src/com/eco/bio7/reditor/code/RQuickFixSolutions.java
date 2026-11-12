@@ -330,7 +330,8 @@ public class RQuickFixSolutions {
 	}
 
 	public String[] searchForPackageFunction(String funcName) {
-		REvaluator c = REditor.getEvaluator();
+		/* Called in the UI thread (quick assist): time-limited for embedded R */
+		REvaluator c = REvaluator.forEditor(REditor.getEvaluator());
 
 		if (c != null) {
 			if (RState.isBusy() == false) {
@@ -346,13 +347,14 @@ public class RQuickFixSolutions {
 				} catch (RserveException | REXPMismatchException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+				} finally {
+					/* Only reset the state set here (not that of a running job, e.g., an installation) */
 					RState.setBusy(false);
 				}
 
 			} else {
 				System.out.println("R is busy!");
 			}
-			RState.setBusy(false);
 		}
 
 		/*

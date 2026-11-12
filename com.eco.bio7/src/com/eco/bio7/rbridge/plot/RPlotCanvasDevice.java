@@ -30,7 +30,7 @@ import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
 
 /**
- * An R graphics device shown in the plot canvas of SWT ImageJ (experimental,
+ * An R graphics device shown in the plot canvas of SWT ImageJ (
  * embedded R only): R draws with Java2D (in the thread of R); the frames are
  * shown while R draws (like a screen device of R). Resizing the plot window
  * draws the plot again in the new size (the PlotCanvas calls setSize).
@@ -327,6 +327,11 @@ public class RPlotCanvasDevice extends Plot {
 
 	/* locator() in the thread of R: waits for a click (or the end, an interrupt, the closed plot) */
 	private double[] waitForClick() {
+		if (session.isLimitedThreadWaiting()) {
+			/* The UI thread waits for R (the code runs from the UI): no click could arrive */
+			System.err.println("locator(): not available while the UI waits for R (run the code in the console or a job)");
+			return null;
+		}
 		clicks.clear();
 		locating = true;
 		Display display = Display.getDefault();

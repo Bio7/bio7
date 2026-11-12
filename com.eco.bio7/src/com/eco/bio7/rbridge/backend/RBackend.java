@@ -19,7 +19,7 @@ import org.rosuda.REngine.Rserve.RConnection;
 import org.rosuda.REngine.Rserve.RserveException;
 
 /**
- * The connection of Bio7 to R: Rserve (default) or embedded R (experimental).
+ * The connection of Bio7 to R: embedded R (default) or Rserve.
  * The methods and exceptions are those of RConnection which Bio7 uses, so the
  * code works with both.
  *

@@ -345,7 +345,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 
 					Bio7Dialog.message("Values transferred!");
 				} else {
-					Bio7Dialog.message("No Rserve connection available!");
+					Bio7Dialog.message("R is not running (please start R)!");
 				}
 			} else {
 				Bio7Dialog.message("No ROI Manager available!");
@@ -691,7 +691,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 					}
 
 				} else {
-					Bio7Dialog.message("No Rserve connection available!");
+					Bio7Dialog.message("R is not running (please start R)!");
 				}
 			} else {
 				Bio7Dialog.message("No ROI Manager available!");
@@ -732,7 +732,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 				Bio7Dialog.message("Can't load 'sp' package!");
 			}
 		} else {
-			Bio7Dialog.message("No Rserve connection available!");
+			Bio7Dialog.message("R is not running (please start R)!");
 		}
 	}
 

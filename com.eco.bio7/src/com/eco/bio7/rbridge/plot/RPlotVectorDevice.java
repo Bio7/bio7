@@ -48,7 +48,7 @@ import com.eco.bio7.rffm.graphics.RecordingGraphicsDevice;
 
 /**
  * An R graphics device drawn with SWT as vector graphics in a Bio7 custom view
- * (experimental, embedded R only). R records the drawing operations
+ * (embedded R only). R records the drawing operations
  * (RecordingGraphicsDevice, in the thread of R), the UI draws them with the
  * SWT GC: sharp at any size and zoom. Resizing the view draws the plot again in
  * the new size; until then the current plot is scaled.
@@ -357,6 +357,11 @@ public final class RPlotVectorDevice {
 
 	/* In the thread of R: waits for a click (or the end, an interrupt, the closed plot) */
 	private double[] waitForClick() {
+		if (session.isLimitedThreadWaiting()) {
+			/* The UI thread waits for R (the code runs from the UI): no click could arrive */
+			System.err.println("locator(): not available while the UI waits for R (run the code in the console or a job)");
+			return null;
+		}
 		clicks.clear();
 		locating = true;
 		Display display = Display.getDefault();

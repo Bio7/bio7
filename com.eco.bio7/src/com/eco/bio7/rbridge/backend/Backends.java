@@ -37,7 +37,7 @@ public final class Backends {
 	private Backends() {
 	}
 
-	/** Returns true if embedded R is selected in the preferences (experimental). */
+	/** Returns true if embedded R is selected in the preferences (the default). */
 	public static boolean isEmbeddedSelected() {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		return EMBEDDED.equals(store.getString(PREFERENCE));

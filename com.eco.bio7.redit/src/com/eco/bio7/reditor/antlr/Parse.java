@@ -54,6 +54,10 @@ public class Parse {
 	private Map<String, String> shellCurrentPackageImports;
 	private boolean isInPipeFunction;
 	private String currentPipeData;
+	/* The packages of the script were passed to the code completion (once, when it was opened) */
+	private volatile boolean packagesForCompletionRequested;
+	/* The number of the latest marker job: older ones are skipped (their markers are outdated) */
+	private final java.util.concurrent.atomic.AtomicLong markerGeneration = new java.util.concurrent.atomic.AtomicLong();
 
 	public Map<String, String> getShellCurrentPackageImports() {
 		return shellCurrentPackageImports;
@@ -98,6 +102,11 @@ public class Parse {
 
 	}
 
+	/** Returns true if the editor of this parser is open (not closed and disposed). */
+	public boolean isEditorOpen() {
+		return editor != null && editor.getDocumentProvider() != null && editor.getEditorInput() != null;
+	}
+
 	public boolean isInFunctionCall() {
 		return isInFunctionCall;
 	}
@@ -125,7 +134,12 @@ public class Parse {
 	 * e.g., from the editor reconciler.
 	 */
 
-	public void parse() {
+	/*
+	 * Synchronized: the reconciler and jobs (e.g., after reloading the code
+	 * completion) don't parse the same editor at the same time (all callers run in
+	 * background threads)
+	 */
+	public synchronized void parse() {
 
 		IDocumentProvider dp = editor.getDocumentProvider();
 		if (dp==null) {
@@ -200,6 +214,11 @@ public class Parse {
 		walker.walk(ref, tree);
 		/* For the use in the Quickfix package import! */
 		currentPackageImports = ref.getCurrentPackageImports();
+		/* The first parse (the script was opened): its packages for the code completion (in a job, if enabled) */
+		if (!packagesForCompletionRequested) {
+			packagesForCompletionRequested = true;
+			com.eco.bio7.reditor.actions.PackageCompletionOnOpen.scriptOpened(new java.util.ArrayList<>(currentPackageImports.keySet()), this);
+		}
 		/*
 		 * long startTime = System.currentTimeMillis();
 		 * 
@@ -231,8 +250,10 @@ public class Parse {
 
 			});
 		}
-		/* Create all collected markers in a job! */
-		ErrorWarnMarkerCreation markerJob = new ErrorWarnMarkerCreation("Create Markers", editor, li.getErrWarn());
+		/* Create all collected markers in a job! (skipped if a newer parse already scheduled its markers) */
+		long generation = markerGeneration.incrementAndGet();
+		ErrorWarnMarkerCreation markerJob = new ErrorWarnMarkerCreation("Create Markers", editor, li.getErrWarn(),
+				() -> generation == markerGeneration.get());
 
 		/*
 		 * markerJob.addJobChangeListener(new JobChangeAdapter() { public void

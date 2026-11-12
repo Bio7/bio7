@@ -25,18 +25,32 @@ import org.rosuda.REngine.Rserve.RSession;
  */
 public class RState {
 
-	private static boolean busy = false;
+	private static volatile boolean busy = false;
+
+	/* The state of an R which evaluates on its own (e.g., the console of embedded R) */
+	private static volatile java.util.function.BooleanSupplier externalBusy;
 
 	private static RSession rSession = null;
 
 	/**
 	 * A method to detect if the R interpreter is busy.
-	 * 
+	 *
 	 * @return a boolean value.
 	 */
 	public static boolean isBusy() {
-		return busy;
+		if (busy) {
+			return true;
+		}
+		java.util.function.BooleanSupplier ext = externalBusy;
+		return ext != null && ext.getAsBoolean();
+	}
 
+	/**
+	 * Sets a supplier which reports if R is busy outside of setBusy (e.g., embedded
+	 * R evaluating console input), or null.
+	 */
+	public static void setExternalBusy(java.util.function.BooleanSupplier supplier) {
+		externalBusy = supplier;
 	}
 
 	/**

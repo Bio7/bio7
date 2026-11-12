@@ -188,12 +188,13 @@ public class REditorTextHover implements ITextHover, ITextHoverExtension, ITextH
 					return htmlHelpText + "," + wordOffset + "," + resultedLength;
 				}
 
-				REvaluator c = REditor.getEvaluator();
+				/* Embedded R: in this (hover) thread, time-limited; Rserve: in the UI thread */
+				REvaluator c = REvaluator.forEditor(REditor.getEvaluator());
 				if (c != null) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
-						Display display = PlatformUI.getWorkbench().getDisplay();
-						display.syncExec(new Runnable() {
+						try {
+						REvaluator.run(c, new Runnable() {
 							public void run() {
 								RStrObjectInformation rObjectInfo = new RStrObjectInformation();
 
@@ -209,7 +210,9 @@ public class REditorTextHover implements ITextHover, ITextHoverExtension, ITextH
 								}
 							}
 						});
-						RState.setBusy(false);
+						} finally {
+							RState.setBusy(false);
+						}
 					}
 				}
 			} else {

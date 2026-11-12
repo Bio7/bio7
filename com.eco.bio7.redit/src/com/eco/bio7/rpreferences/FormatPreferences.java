@@ -18,6 +18,8 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import com.eco.bio7.reditor.Bio7REditorPlugin;
+import com.eco.bio7.reditor.format.RFormatterSupport;
+import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
 
 public class FormatPreferences extends FieldEditorPreferencePage implements IWorkbenchPreferencePage, PropertyChangeListener {
@@ -36,8 +38,28 @@ public class FormatPreferences extends FieldEditorPreferencePage implements IWor
 	 */
 	@Override
 	protected void createFieldEditors() {
-		addField(new LabelFieldEditor("Default Formatter Package:", getFieldEditorParent()));
-		addField(new BooleanFieldEditor("STYLER_PACKAGE", "Use the styler package (default is formatR)", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));	
+		addField(new ComboFieldEditor(RFormatterSupport.FORMATTER, "Formatter:",
+				new String[][] { { "Bio7 (built-in, no R needed)", RFormatterSupport.JAVA }, { "formatR (R package)", RFormatterSupport.FORMATR },
+						{ "styler (R package)", RFormatterSupport.STYLER } },
+				getFieldEditorParent()));
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
+		addField(new LabelFieldEditor("Bio7 (built-in):", getFieldEditorParent()));
+		IntegerFieldEditor indentSize = new IntegerFieldEditor(RFormatterSupport.INDENT_SIZE, "Spaces per indentation level:", getFieldEditorParent());
+		indentSize.setValidRange(0, 16);
+		addField(indentSize);
+		addField(new BooleanFieldEditor(RFormatterSupport.USE_TABS, "Indent with tabs", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		IntegerFieldEditor continuation = new IntegerFieldEditor(RFormatterSupport.CONTINUATION_INDENT, "Continuation indentation (levels):", getFieldEditorParent());
+		continuation.setValidRange(0, 4);
+		addField(continuation);
+		addField(new BooleanFieldEditor(RFormatterSupport.SPACE_OPERATORS, "Spaces around operators ('x <- a + b')", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addField(new BooleanFieldEditor(RFormatterSupport.SPACE_AFTER_COMMA, "Space after a comma", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addField(new BooleanFieldEditor(RFormatterSupport.SPACE_KEYWORD_PARENTHESIS, "Space after 'if', 'for', 'while' ('if (x)')", BooleanFieldEditor.DEFAULT,
+				getFieldEditorParent()));
+		addField(new BooleanFieldEditor(RFormatterSupport.REPLACE_ASSIGNMENT, "Replace the assignment '=' with '<-'", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addField(new BooleanFieldEditor(RFormatterSupport.BRACE_NEW_LINE, "Set '{' on a new line", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		IntegerFieldEditor blankLines = new IntegerFieldEditor(RFormatterSupport.MAX_BLANK_LINES, "Maximum blank lines in a row:", getFieldEditorParent());
+		blankLines.setValidRange(0, 99);
+		addField(blankLines);
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("styler (R package):", getFieldEditorParent()));
 		addField(new StringFieldEditor("STYLER_PACKAGE_ARGUMENTS", "styler package arguments\r\n", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));

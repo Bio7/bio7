@@ -35,11 +35,14 @@ import com.eco.bio7.rffm.RSession;
 import com.eco.bio7.rffm.RStartOptions;
 
 /**
- * Embedded R in the console of Bio7 (experimental): starts R from the
+ * Embedded R in the console of Bio7 (default): starts R from the
  * installation of the preferences, connects the console (output, prompts,
  * input, interrupt) and registers the device of the ImageJ plot canvas.
  */
 public final class EmbeddedR {
+
+	/** The time the UI thread waits at most for R to become free (milliseconds). */
+	public static final long UI_WAIT_LIMIT_MS = 5_000;
 
 	/** The R function of the plot canvas device (options(device = ...)). */
 	public static final String CANVAS_DEVICE = "bio7PlotCanvas";
@@ -107,6 +110,16 @@ public final class EmbeddedR {
 		}
 		EmbeddedRBackend backend = new EmbeddedRBackend(session);
 		Backends.setEmbedded(backend);
+		/*
+		 * R evaluating console input counts as busy (e.g., the hover of the R editor
+		 * doesn't wait for it); not for calls from R itself (they run directly)
+		 */
+		com.eco.bio7.rbridge.RState.setExternalBusy(() -> session.isAlive() && session.isBusy() && !session.isRThread());
+		/*
+		 * The UI thread waits at most a few seconds for R to become free (e.g., while a
+		 * job installs a package): then the call fails instead of freezing Bio7
+		 */
+		session.setWaitLimit(() -> Display.getCurrent() != null, UI_WAIT_LIMIT_MS);
 		/* The R editor evaluates with the same connection */
 		com.eco.bio7.reditors.REditor.setEvaluatorSupplier(com.eco.bio7.rbridge.RBridge::getBackend);
 		com.eco.bio7.worldwind.WorldWindView.setEvaluatorSupplier(com.eco.bio7.rbridge.RBridge::getBackend);
@@ -118,7 +131,7 @@ public final class EmbeddedR {
 		}
 		RServe.setRrunning(true);
 		RConfig.config(backend);
-		print("Embedded R " + session.version() + " (experimental) in " + home + "\n", false);
+		print("Embedded R " + session.version() + " in " + home + "\n", false);
 		return null;
 	}
 

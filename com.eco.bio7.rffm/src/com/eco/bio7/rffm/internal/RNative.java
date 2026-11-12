@@ -14,6 +14,7 @@
 package com.eco.bio7.rffm.internal;
 
 import static java.lang.foreign.ValueLayout.ADDRESS;
+import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 import static java.lang.foreign.ValueLayout.JAVA_DOUBLE;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
 import static java.lang.foreign.ValueLayout.JAVA_LONG;
@@ -26,6 +27,7 @@ import java.lang.foreign.MemorySegment;
 import java.lang.foreign.SymbolLookup;
 import java.lang.invoke.MethodHandle;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -60,8 +62,11 @@ public final class RNative {
 	public final Arena arena = Arena.global();
 	private final SymbolLookup r;
 	private final SymbolLookup libc;
-	/** The charset of the console (the native encoding of R). */
-	public final Charset consoleCharset;
+	/**
+	 * The charset of the console (the native encoding of R): set again after the
+	 * start of R if R runs in a UTF-8 locale (see {@link #isUtf8Locale()}).
+	 */
+	public volatile Charset consoleCharset;
 
 	/* The C API */
 	final MethodHandle Rf_initialize_R, setup_Rmainloop, Rf_endEmbeddedR, R_RunExitFinalizers;
@@ -161,6 +166,18 @@ public final class RNative {
 		setenv(libc, os, "R_HOME", home.toString());
 		if (os.equals("Windows")) {
 			windowsSearchPath(arena, libc, lib.getParent());
+			/*
+			 * R 4.2+ (UCRT) runs in UTF-8 in Rterm and RGui because their manifest sets the
+			 * code page of the process to UTF-8. Without it (the JVM), R uses the code page
+			 * of Windows (e.g., 1252): text outside of it in R code becomes <U+...>.
+			 * Setting only R's locale to UTF-8 (LC_CTYPE) is opt-in (-Dbio7.r.utf8=true):
+			 * with the system code page still 1252, list.files() and system() fail for
+			 * paths with non-ASCII characters (tested). The clean solution: a manifest of
+			 * the launcher with activeCodePage UTF-8 (then R uses UTF-8 by itself).
+			 */
+			if (Boolean.getBoolean("bio7.r.utf8") && System.getenv("LC_ALL") == null && System.getenv("LC_CTYPE") == null && supportsUtf8Locale(libc)) {
+				setenv(libc, os, "LC_CTYPE", ".UTF-8");
+			}
 		}
 		if (!os.equals("Windows")) {
 			/* A UTF-8 locale (e.g., an application started from the Finder has no LANG): else R runs in the C locale */
@@ -320,6 +337,53 @@ public final class RNative {
 			}
 		}
 		return map;
+	}
+
+	/* LC_CTYPE of the C runtime (UCRT of Windows, macOS: 2; glibc: 0) */
+	private static int lcCtype(String os) {
+		return os.equals("Linux") ? 0 : 2;
+	}
+
+	/* Windows (UCRT): the C runtime accepts the locale ".UTF-8" (Windows 10, 1903 and later) */
+	private static boolean supportsUtf8Locale(SymbolLookup libc) {
+		try (Arena a = Arena.ofConfined()) {
+			MethodHandle setlocale = LINKER.downcallHandle(libc.find("setlocale").orElseThrow(), FunctionDescriptor.of(ADDRESS, JAVA_INT, ADDRESS));
+			MemorySegment result = (MemorySegment) setlocale.invokeExact(lcCtype("Windows"), a.allocateFrom(".UTF-8"));
+			return result.address() != 0;
+		} catch (Throwable t) {
+			return false;
+		}
+	}
+
+	/** Returns true if the C runtime (of R) runs in a UTF-8 locale (LC_CTYPE). */
+	public boolean isUtf8Locale() {
+		try {
+			MethodHandle setlocale = LINKER.downcallHandle(libc.find("setlocale").orElseThrow(), FunctionDescriptor.of(ADDRESS, JAVA_INT, ADDRESS));
+			MemorySegment result = (MemorySegment) setlocale.invokeExact(lcCtype(os), MemorySegment.NULL);
+			if (result.address() == 0) {
+				return false;
+			}
+			String locale = cString(result, StandardCharsets.US_ASCII).toLowerCase(Locale.ROOT);
+			return locale.contains("utf8") || locale.contains("utf-8");
+		} catch (Throwable t) {
+			return false;
+		}
+	}
+
+	/**
+	 * A C string (up to the 0 byte) in any charset. MemorySegment.getString
+	 * supports only some standard charsets (not, e.g., windows-1252).
+	 */
+	public static String cString(MemorySegment p, Charset cs) {
+		if (p == null || p.address() == 0) {
+			return "";
+		}
+		MemorySegment s = p.reinterpret(Integer.MAX_VALUE);
+		long length = 0;
+		while (s.get(JAVA_BYTE, length) != 0) {
+			length++;
+		}
+		return new String(s.asSlice(0, length).toArray(JAVA_BYTE), cs);
 	}
 
 	private static void setenv(SymbolLookup libc, String os, String key, String value) throws IOException {

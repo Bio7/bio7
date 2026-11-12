@@ -22,7 +22,7 @@ import com.eco.bio7.reditors.REditor;
 
 /**
  * The connection of Bio7 to R, independent of how R is connected: embedded R
- * (experimental, in the process of Bio7) or Rserve. Use RServe.getConnection()
+ * (default, in the process of Bio7) or Rserve. Use RServe.getConnection()
  * only for code which needs Rserve itself (e.g., a remote connection).
  */
 public final class RBridge {
@@ -67,7 +67,7 @@ public final class RBridge {
 		return getBackend() != null;
 	}
 
-	/** Returns true if embedded R (experimental) is used. */
+	/** Returns true if embedded R is used. */
 	public static boolean isEmbedded() {
 		return Backends.isEmbeddedRunning();
 	}

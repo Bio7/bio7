@@ -31,11 +31,32 @@ public class CalculateRProposals {
 
 	private static boolean startupTemplate = true;
 
-	public static HashMap<Integer, String> stat;
+	/* Published complete (a parser in another thread never sees a half loaded list) */
+	public static volatile HashMap<Integer, String> stat;
 
 	private static HashMap<Integer, String> statContext;
 
 	private static HashMap<Integer, String> statSet;
+
+	/* The function names of the proposals for a fast lookup (the parser checks each call) */
+	private static volatile java.util.Set<String> functionNames;
+
+	/* Incremented with each (re)load of the proposals */
+	private static final java.util.concurrent.atomic.AtomicLong version = new java.util.concurrent.atomic.AtomicLong();
+
+	/**
+	 * Returns true if a function of the loaded packages has this name, false if
+	 * not, null if no proposals are loaded yet.
+	 */
+	public static Boolean isKnownFunction(String name) {
+		java.util.Set<String> names = functionNames;
+		return names == null ? null : names.contains(name);
+	}
+
+	/** The number of the current proposals (changes with each reload). */
+	public static long version() {
+		return version.get();
+	}
 
 	public static String[] getStatistics() {
 		return statistics;
@@ -49,15 +70,19 @@ public class CalculateRProposals {
 		return statisticsContext;
 	}
 
-	public static void loadRCodePackageTemplates() {
+	/*
+	 * Loaded into new lists which replace the current ones when they are complete
+	 * (synchronized: one load at a time)
+	 */
+	public static synchronized void loadRCodePackageTemplates() {
 		// IPreferenceStore s = new ScopedPreferenceStore(InstanceScope.INSTANCE,
 		// "com.eco.bio7");
 		/* Temporary lists to load the proposals! */
 		/* The HashMap is choosen for a fast lookup of the R parser! */
 		Bundle bundle = Platform.getBundle("com.eco.bio7");
-		stat = new HashMap<Integer, String>();
-		statContext = new HashMap<Integer, String>();
-		statSet = new HashMap<Integer, String>();
+		HashMap<Integer, String> stat = new HashMap<Integer, String>();
+		HashMap<Integer, String> statContext = new HashMap<Integer, String>();
+		HashMap<Integer, String> statSet = new HashMap<Integer, String>();
 		String tempPath;
 		/* Load the new calculated templates else use the default templates! */
 		if (startupTemplate == false) {
@@ -153,15 +178,24 @@ public class CalculateRProposals {
 			e.printStackTrace();
 		}
 		/* Create arrays! */
-		statistics = new String[stat.size()];
-		statisticsContext = new String[statContext.size()];
-		statisticsSet = new String[stat.size()];
+		String[] statistics = new String[stat.size()];
+		String[] statisticsContext = new String[statContext.size()];
+		String[] statisticsSet = new String[stat.size()];
 		/* Copy values from HashMap to array! */
 		for (int i = 0; i < stat.size(); i++) {
 			statistics[i] = stat.get(i);
 			statisticsContext[i] = statContext.get(i);
 			statisticsSet[i] = statSet.get(i);
 		}
+		/* Now the complete lists replace the current ones */
+		CalculateRProposals.statistics = statistics;
+		CalculateRProposals.statisticsContext = statisticsContext;
+		CalculateRProposals.statisticsSet = statisticsSet;
+		CalculateRProposals.statContext = statContext;
+		CalculateRProposals.statSet = statSet;
+		CalculateRProposals.functionNames = new java.util.HashSet<>(stat.values());
+		CalculateRProposals.stat = stat;
+		version.incrementAndGet();
 
 		// stat = null;
 		// statContext = null;

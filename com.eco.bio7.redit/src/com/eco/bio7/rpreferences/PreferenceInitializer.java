@@ -118,7 +118,11 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		storeR.setDefault("CLOSE_SINGLEQUOTE", true);
 		storeR.setDefault("REDITOR_EDIT_INDENT", true);
 
+		/* The built-in formatter (default) and its options; formatR and styler are optional */
+		com.eco.bio7.reditor.format.RFormatterSupport.initializeDefaults(storeR);
 		storeR.setDefault("STYLER_PACKAGE", false);
+		/* The packages of an opened script are added to the code completion (default: attached with library()) */
+		storeR.setDefault(com.eco.bio7.reditor.actions.PackageCompletionOnOpen.MODE, com.eco.bio7.reditor.actions.PackageCompletionOnOpen.ATTACH);
 		storeR.setDefault("FORMAT_COMMENTS", true);
 		storeR.setDefault("FORMAT_BLANK_LINES", true);
 		storeR.setDefault("FORMAT_REPLACE_ASSIGNMENT", false);

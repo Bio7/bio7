@@ -248,7 +248,8 @@ public final class DeviceBridge {
 	}
 
 	private static String string(MemorySegment p, Charset cs) {
-		return p.address() == 0 ? "" : p.reinterpret(Integer.MAX_VALUE).getString(0, cs);
+		/* Any charset (getString supports only some standard charsets, e.g., not windows-1252) */
+		return RNative.cString(p, cs);
 	}
 
 	private static void report(Throwable t) {

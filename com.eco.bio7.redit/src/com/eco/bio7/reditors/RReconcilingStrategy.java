@@ -219,9 +219,7 @@ public class RReconcilingStrategy implements IReconcilingStrategy, IReconcilingS
 	 * eclipse.jface.text.reconciler.DirtyRegion, org.eclipse.jface.text.IRegion)
 	 */
 	public void reconcile(DirtyRegion dirtyRegion, IRegion subRegion) {
-		Parse parse = editor.getParser();
-		parse.parse();
-
+		/* Parsed once in reconcile(IRegion) below (not twice: large files) */
 		try {
 			IRegion startLineInfo = fDocument.getLineInformationOfOffset(subRegion.getOffset());
 			IRegion endLineInfo = fDocument.getLineInformationOfOffset(subRegion.getOffset() + Math.max(0, subRegion.getLength() - 1));

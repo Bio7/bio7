@@ -42,6 +42,12 @@ public class RCodePreferences extends FieldEditorPreferencePage implements IWork
 		addField(new StringFieldEditor("ACTIVATION_CHARS", "Activation chars (Restart to apply!)", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 		addField(new LabelFieldEditor("Use e.g. '3' if 'Open code completion/templates when typing' is enabled else use the default value(s)!", getFieldEditorParent()));
 		addField(new IntegerFieldEditor("ACTIVATION_AMOUNT_CHAR_COMPLETION", "Activate Templates after word length!", getFieldEditorParent()));
+		addField(new org.eclipse.jface.preference.ComboFieldEditor(com.eco.bio7.reditor.actions.PackageCompletionOnOpen.MODE,
+				"Packages of an opened script (library(), require()):",
+				new String[][] { { "Attach (library(), as 'Reload package completion')", com.eco.bio7.reditor.actions.PackageCompletionOnOpen.ATTACH },
+						{ "Load only for the code completion (not attached)", com.eco.bio7.reditor.actions.PackageCompletionOnOpen.LOAD },
+						{ "Off", com.eco.bio7.reditor.actions.PackageCompletionOnOpen.OFF } },
+				getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("Editor performance:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("EDITOR_TO_OUTLINE", "Show editor position in 'Outline' view", getFieldEditorParent()));
