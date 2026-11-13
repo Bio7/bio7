@@ -70,13 +70,13 @@ public class TransferGeometryView extends ViewPart {
 		//initializeToolBar();
 		initializeMenu();
 		GridLayout gl_container = new GridLayout(1, true);
-		gl_container.marginHeight = 0;
-		gl_container.verticalSpacing = 0;
+		gl_container.marginHeight = 6;
+		/* Space between the rows (the check boxes and radio buttons have their natural height) */
+		gl_container.verticalSpacing = 6;
 		container.setLayout(gl_container);
 
 		Button btnSelectionCoordinatesAs = new Button(container, SWT.RADIO);
-		GridData gd_btnSelectionCoordinatesAs = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_btnSelectionCoordinatesAs.heightHint = 30;
+		GridData gd_btnSelectionCoordinatesAs = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		btnSelectionCoordinatesAs.setLayoutData(gd_btnSelectionCoordinatesAs);
 		btnSelectionCoordinatesAs.addSelectionListener(new SelectionAdapter() {
 
@@ -102,8 +102,7 @@ public class TransferGeometryView extends ViewPart {
 		btnSelectionCoordinatesAs.setText("Selection coordinates as a list");
 
 		Button btnRadioButton = new Button(container, SWT.RADIO);
-		GridData gd_btnRadioButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_btnRadioButton.heightHint = 30;
+		GridData gd_btnRadioButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		btnRadioButton.setLayoutData(gd_btnRadioButton);
 		btnRadioButton.addSelectionListener(new SelectionAdapter() {
 
@@ -140,8 +139,7 @@ public class TransferGeometryView extends ViewPart {
 		combo.setEnabled(false);
 
 		btnAddDataframe = new Button(container, SWT.CHECK);
-		GridData gd_btnAddDataframe = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_btnAddDataframe.heightHint = 30;
+		GridData gd_btnAddDataframe = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		btnAddDataframe.setLayoutData(gd_btnAddDataframe);
 		btnAddDataframe.setEnabled(false);
 		btnAddDataframe.addSelectionListener(new SelectionAdapter() {
@@ -213,7 +211,6 @@ public class TransferGeometryView extends ViewPart {
 
 		btnTransferAsCentroid = new Button(container, SWT.CHECK);
 		GridData gd_btnTransferAsCentroid = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-		gd_btnTransferAsCentroid.heightHint = 30;
 		btnTransferAsCentroid.setLayoutData(gd_btnTransferAsCentroid);
 		btnTransferAsCentroid.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -229,8 +226,7 @@ public class TransferGeometryView extends ViewPart {
 		btnTransferAsCentroid.setText("Transfer as centroid coordinates");
 
 		btnAddProjectionFrom = new Button(container, SWT.CHECK);
-		GridData gd_btnAddProjectionFrom = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_btnAddProjectionFrom.heightHint = 30;
+		GridData gd_btnAddProjectionFrom = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		btnAddProjectionFrom.setLayoutData(gd_btnAddProjectionFrom);
 		btnAddProjectionFrom.setEnabled(false);
 		btnAddProjectionFrom.addSelectionListener(new SelectionAdapter() {
