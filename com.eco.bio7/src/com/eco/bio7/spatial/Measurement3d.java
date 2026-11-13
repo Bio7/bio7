@@ -2673,7 +2673,8 @@ public class Measurement3d {
 		Clipping.Region region = clipping.getRegion(extent, HeightMaps.isFlipVertically());
 		double[] displayHit = intersect(display, ray, region);
 		IsoSurface.MeasureData full = iso.getMeasurementData();
-		double[] hit = full == null || full.triangles == display.triangles ? displayHit : intersect(full, ray, region);
+		double[] hit = full == null || full.triangles == display.triangles ? displayHit
+				: intersectNear(full, display, ray, region, displayHit);
 		if (hit == null) {
 			return null;
 		}
@@ -2878,24 +2879,267 @@ public class Measurement3d {
 	}
 
 	/* The triangles of the connected surface (vertices in common) of a triangle */
-	private static int[] connectedTriangles(int[] t, int nv, int triangle) {
-		int[] parent = new int[nv];
-		for (int i = 0; i < nv; i++) {
-			parent[i] = i;
+	private int[] connectedTriangles(IsoSurface.MeasureData m, int triangle) {
+		return surfaces(m).triangles(triangle);
+	}
+
+	/*
+	 * The closed surfaces (connected vertices) of a mesh: the surface of each
+	 * triangle, the triangles of each surface and its signed volume (voxel
+	 * coordinates). Computed once per mesh (before: for each click of the volume
+	 * tool all vertices and triangles of the full resolution)
+	 */
+	private static final class Surfaces {
+		final int[] mesh;
+		final int[] of;
+		final int[] start;
+		final int[] triangles;
+		final double[] signed;
+
+		Surfaces(IsoSurface.MeasureData m) {
+			float[] v = m.vertices;
+			int[] t = m.triangles;
+			int nv = v.length / 3;
+			int nt = t.length / 3;
+			int[] parent = new int[nv];
+			for (int i = 0; i < nv; i++) {
+				parent[i] = i;
+			}
+			for (int i = 0; i < t.length; i += 3) {
+				union(parent, t[i], t[i + 1]);
+				union(parent, t[i], t[i + 2]);
+			}
+			int[] index = new int[nv];
+			java.util.Arrays.fill(index, -1);
+			int count = 0;
+			of = new int[nt];
+			for (int i = 0; i < nt; i++) {
+				int root = find(parent, t[i * 3]);
+				if (index[root] < 0) {
+					index[root] = count++;
+				}
+				of[i] = index[root];
+			}
+			start = new int[count + 1];
+			signed = new double[count];
+			for (int i = 0; i < nt; i++) {
+				start[of[i] + 1]++;
+				int a = t[i * 3] * 3, b = t[i * 3 + 1] * 3, d = t[i * 3 + 2] * 3;
+				signed[of[i]] += (v[a] * ((double) v[b + 1] * v[d + 2] - (double) v[b + 2] * v[d + 1])
+						- v[a + 1] * ((double) v[b] * v[d + 2] - (double) v[b + 2] * v[d])
+						+ v[a + 2] * ((double) v[b] * v[d + 1] - (double) v[b + 1] * v[d])) / 6.0;
+			}
+			for (int k = 0; k < count; k++) {
+				start[k + 1] += start[k];
+			}
+			triangles = new int[nt];
+			int[] next = java.util.Arrays.copyOf(start, count);
+			for (int i = 0; i < nt; i++) {
+				triangles[next[of[i]]++] = i;
+			}
+			mesh = t;
 		}
-		for (int i = 0; i < t.length; i += 3) {
-			union(parent, t[i], t[i + 1]);
-			union(parent, t[i], t[i + 2]);
+
+		/* The triangles of the surface of a triangle */
+		int[] triangles(int triangle) {
+			int k = of[triangle];
+			return java.util.Arrays.copyOfRange(triangles, start[k], start[k + 1]);
 		}
-		int root = find(parent, t[triangle * 3]);
-		int[] list = new int[t.length / 3];
-		int count = 0;
-		for (int i = 0; i < t.length; i += 3) {
-			if (find(parent, t[i]) == root) {
-				list[count++] = i / 3;
+
+		/* The triangles of the outer surfaces (positive volume) of the given triangles (whole surfaces) */
+		int[] outer(int[] selected) {
+			int[] out = new int[selected.length];
+			int n = 0;
+			for (int tri : selected) {
+				if (signed[of[tri]] >= 0) {
+					out[n++] = tri;
+				}
+			}
+			return java.util.Arrays.copyOf(out, n);
+		}
+	}
+
+	/* The surfaces of the last two meshes (the measured one in full resolution and the displayed one) */
+	private final Object surfacesLock = new Object();
+	private Surfaces surfacesA, surfacesB;
+
+	private Surfaces surfaces(IsoSurface.MeasureData m) {
+		synchronized (surfacesLock) {
+			if (surfacesA != null && surfacesA.mesh == m.triangles) {
+				return surfacesA;
+			}
+			if (surfacesB != null && surfacesB.mesh == m.triangles) {
+				Surfaces s = surfacesB;
+				surfacesB = surfacesA;
+				surfacesA = s;
+				return s;
+			}
+			Surfaces s = new Surfaces(m);
+			surfacesB = surfacesA;
+			surfacesA = s;
+			return s;
+		}
+	}
+
+	/*
+	 * The triangles of a mesh in a grid of cells (by their centers), to find the
+	 * triangles near a ray without testing all (the measured surface in full
+	 * resolution has millions of triangles)
+	 */
+	private static final class TriangleGrid {
+		final int[] mesh;
+		final double cell;
+		final int gx, gy, gz;
+		final int[] start;
+		final int[] items;
+
+		TriangleGrid(IsoSurface.MeasureData m) {
+			mesh = m.triangles;
+			float[] v = m.vertices;
+			int[] t = m.triangles;
+			int nt = t.length / 3;
+			/* At most about 2^18 cells */
+			cell = Math.max(2, Math.cbrt((double) m.nx * m.ny * m.nz / 262144.0));
+			gx = Math.max(1, (int) Math.ceil((m.nx + 1) / cell));
+			gy = Math.max(1, (int) Math.ceil((m.ny + 1) / cell));
+			gz = Math.max(1, (int) Math.ceil((m.nz + 1) / cell));
+			int[] cellOf = new int[nt];
+			start = new int[gx * gy * gz + 1];
+			for (int i = 0; i < nt; i++) {
+				int a = t[i * 3] * 3, b = t[i * 3 + 1] * 3, c = t[i * 3 + 2] * 3;
+				int cx = clampCell((v[a] + v[b] + v[c]) / 3 / cell, gx);
+				int cy = clampCell((v[a + 1] + v[b + 1] + v[c + 1]) / 3 / cell, gy);
+				int cz = clampCell((v[a + 2] + v[b + 2] + v[c + 2]) / 3 / cell, gz);
+				cellOf[i] = (cz * gy + cy) * gx + cx;
+				start[cellOf[i] + 1]++;
+			}
+			for (int k = 0; k < gx * gy * gz; k++) {
+				start[k + 1] += start[k];
+			}
+			items = new int[nt];
+			int[] next = java.util.Arrays.copyOf(start, gx * gy * gz);
+			for (int i = 0; i < nt; i++) {
+				items[next[cellOf[i]]++] = i;
 			}
 		}
-		return java.util.Arrays.copyOf(list, count);
+
+		private static int clampCell(double c, int n) {
+			return Math.max(0, Math.min(n - 1, (int) Math.floor(c)));
+		}
+
+		/*
+		 * The triangles near the ray (voxel coordinates o + d * t) for t in [t0, t1]:
+		 * all triangles with a center at most radius (voxels) from the ray
+		 */
+		int[] near(double ox, double oy, double oz, double dx, double dy, double dz, double t0, double t1, double radius) {
+			double length = Math.sqrt(dx * dx + dy * dy + dz * dz);
+			if (length == 0 || t1 < t0) {
+				return new int[0];
+			}
+			java.util.BitSet seen = new java.util.BitSet(gx * gy * gz);
+			int[] out = new int[256];
+			int n = 0;
+			int reach = (int) Math.ceil(radius / cell) + 1;
+			/* Steps of a cell along the ray, the cells around each step */
+			int steps = (int) Math.ceil((t1 - t0) * length / cell) + 1;
+			for (int s = 0; s <= steps; s++) {
+				double tt = t0 + (t1 - t0) * s / steps;
+				double px = (ox + dx * tt) / cell, py = (oy + dy * tt) / cell, pz = (oz + dz * tt) / cell;
+				int cx = (int) Math.floor(px), cy = (int) Math.floor(py), cz = (int) Math.floor(pz);
+				if (cx + reach < 0 || cy + reach < 0 || cz + reach < 0 || cx - reach >= gx || cy - reach >= gy
+						|| cz - reach >= gz) {
+					continue;
+				}
+				for (int z = Math.max(0, cz - reach); z <= Math.min(gz - 1, cz + reach); z++) {
+					for (int y = Math.max(0, cy - reach); y <= Math.min(gy - 1, cy + reach); y++) {
+						for (int x = Math.max(0, cx - reach); x <= Math.min(gx - 1, cx + reach); x++) {
+							int k = (z * gy + y) * gx + x;
+							if (seen.get(k)) {
+								continue;
+							}
+							seen.set(k);
+							int count = start[k + 1] - start[k];
+							if (n + count > out.length) {
+								out = java.util.Arrays.copyOf(out, Math.max(out.length * 2, n + count));
+							}
+							System.arraycopy(items, start[k], out, n, count);
+							n += count;
+						}
+					}
+				}
+			}
+			return java.util.Arrays.copyOf(out, n);
+		}
+	}
+
+	private final Object gridLock = new Object();
+	private TriangleGrid triangleGrid;
+
+	private TriangleGrid triangleGrid(IsoSurface.MeasureData m) {
+		synchronized (gridLock) {
+			if (triangleGrid == null || triangleGrid.mesh != m.triangles) {
+				triangleGrid = new TriangleGrid(m);
+			}
+			return triangleGrid;
+		}
+	}
+
+	/*
+	 * The first triangle of the measured surface (full resolution) along the ray,
+	 * found near the hit of the displayed (reduced) surface: only the triangles
+	 * near the ray up to the displayed hit are tested. Else (nothing found there)
+	 * all triangles
+	 */
+	private double[] intersectNear(IsoSurface.MeasureData full, IsoSurface.MeasureData display, double[][] ray,
+			Clipping.Region region, double[] displayHit) {
+		if (displayHit == null) {
+			return intersect(full, ray, region);
+		}
+		double ox = ray[0][0] * full.nx - 0.5, oy = ray[0][1] * full.ny - 0.5, oz = ray[0][2] * full.nz - 0.5;
+		double dx = (ray[1][0] - ray[0][0]) * full.nx, dy = (ray[1][1] - ray[0][1]) * full.ny,
+				dz = (ray[1][2] - ray[0][2]) * full.nz;
+		double length = Math.sqrt(dx * dx + dy * dy + dz * dz);
+		if (length == 0) {
+			return intersect(full, ray, region);
+		}
+		/* The displayed surface differs from the measured one by about a voxel of the display */
+		double ratio = Math.max(full.nx / (double) Math.max(1, display.nx),
+				Math.max(full.ny / (double) Math.max(1, display.ny), full.nz / (double) Math.max(1, display.nz)));
+		double radius = 2 * ratio + 2;
+		double t1 = displayHit[1] + radius / length;
+		/* The part of the ray in the box of the mesh (from the start of the ray) */
+		double t0 = 0;
+		double[] o = { ox, oy, oz }, d = { dx, dy, dz }, hi = { full.nx + radius, full.ny + radius, full.nz + radius };
+		for (int k = 0; k < 3; k++) {
+			if (Math.abs(d[k]) < 1e-12) {
+				continue;
+			}
+			double a = (-radius - o[k]) / d[k], b = (hi[k] - o[k]) / d[k];
+			t0 = Math.max(t0, Math.min(a, b));
+		}
+		int[] near = triangleGrid(full).near(ox, oy, oz, dx, dy, dz, t0, t1, radius);
+		double[] hit = intersect(full, ray, region, near);
+		if (hit != null && hit[1] <= t1) {
+			return hit;
+		}
+		return intersect(full, ray, region);
+	}
+
+	/*
+	 * Computes the surfaces and the grid of the measured surface in advance (in the
+	 * thread of the preview, while the mouse moves with the volume tool): the
+	 * click doesn't wait for them
+	 */
+	private void prepareVolumeTool() {
+		IsoSurface.MeasureData full = iso.getMeasurementData();
+		IsoSurface.MeasureData display = iso.getMeasureData();
+		if (full == null || full.triangles == null || full.vertices == null) {
+			return;
+		}
+		surfaces(full);
+		if (display != null && display.triangles != full.triangles) {
+			triangleGrid(full);
+		}
 	}
 
 	/* ------------------------------ Measurement tools ------------------------------ */
@@ -2975,7 +3219,8 @@ public class Measurement3d {
 				clearPreview();
 				return;
 			}
-			preview(surfaceHit(ray));
+			/* Not in the event thread of the view (each move would wait for the search of the surface) */
+			requestPreview(ray);
 		}
 
 		private boolean moved;
@@ -4356,7 +4601,7 @@ public class Measurement3d {
 		 * object is cut open with the clipping): the volume of the cavity
 		 */
 		IsoSurface.MeasureData md = full;
-		int[] surface = connectedTriangles(md.triangles, md.vertices.length / 3, h.full);
+		int[] surface = connectedTriangles(md, h.full);
 		double sx = md.stepX * md.pixelSize, sy = md.stepY * md.pixelSize, sz = md.stepZ * md.pixelSize;
 		double signed = 0, surfaceArea = 0;
 		float[] mv = md.vertices;
@@ -4390,7 +4635,7 @@ public class Measurement3d {
 			} else if (h.display >= 0) {
 				IsoSurface.MeasureData display = iso.getMeasureData();
 				if (display != null && display.triangles == h.displayMesh) {
-					a.displayTriangles = connectedTriangles(display.triangles, display.vertices.length / 3, h.display);
+					a.displayTriangles = connectedTriangles(display, h.display);
 					shown = display;
 				}
 			}
@@ -4406,11 +4651,12 @@ public class Measurement3d {
 			return;
 		}
 		/* The displayed triangles of the object */
-		List<Integer> list = new ArrayList<>();
+		int[] objectTriangles = new int[mesh != null ? mesh.length / 3 : 0];
+		int objectCount = 0;
 		if (mesh != null && objectOfVertex != null) {
 			for (int i = 0; i < mesh.length; i += 3) {
 				if (objectOfVertex[mesh[i]] == object) {
-					list.add(i / 3);
+					objectTriangles[objectCount++] = i / 3;
 				}
 			}
 		}
@@ -4424,7 +4670,7 @@ public class Measurement3d {
 		double objectVolume = objectFilled && signed > 0 ? signed : row[0];
 		a.row = new double[] { AREA_OBJECT, 1, Double.NaN, Double.NaN, row[1], objectVolume, object };
 		a.displayMesh = mesh;
-		a.displayTriangles = list.stream().mapToInt(Integer::intValue).toArray();
+		a.displayTriangles = java.util.Arrays.copyOf(objectTriangles, objectCount);
 		/*
 		 * A measurement from outside: only the outer surface is displayed (nothing
 		 * inside of the object, see the cavities)
@@ -4432,7 +4678,8 @@ public class Measurement3d {
 		IsoSurface.MeasureData display = iso.getMeasureData();
 		IsoSurface.MeasureData shown = mesh == full.triangles ? full : display != null && display.triangles == mesh ? display : null;
 		if (shown != null) {
-			a.mainTriangles = splitBySign(shown, a.displayTriangles)[0];
+			/* The triangles of an object are whole surfaces: the outer ones from the cached surfaces */
+			a.mainTriangles = surfaces(shown).outer(a.displayTriangles);
 		}
 		synchronized (this) {
 			areas.add(a);
@@ -4859,11 +5106,109 @@ public class Measurement3d {
 	private boolean previewBackside;
 	private String previewLast = "";
 
-	private synchronized void clearPreview() {
-		previewMesh = null;
-		previewTriangles = null;
-		previewSurface = -1;
-		publishPreview("");
+	/*
+	 * The preview has its own lock (not the lock of the measurement): render() holds
+	 * that lock for the whole frame, each mouse move waited for the frame
+	 */
+	private final Object previewLock = new Object();
+	/* A preview is shown or requested (else a mouse move has nothing to clear) */
+	private volatile boolean previewActive;
+	/* The ray of the last mouse move of the volume tool which is not searched yet */
+	private final java.util.concurrent.atomic.AtomicReference<double[][]> previewRay = new java.util.concurrent.atomic.AtomicReference<>();
+	private final java.util.concurrent.atomic.AtomicBoolean previewRunning = new java.util.concurrent.atomic.AtomicBoolean();
+	private static final java.util.concurrent.ExecutorService PREVIEW_EXECUTOR = java.util.concurrent.Executors
+			.newSingleThreadExecutor(r -> {
+				Thread t = new Thread(r, "Bio7 3D volume tool preview");
+				t.setDaemon(true);
+				return t;
+			});
+
+	private void clearPreview() {
+		/* Each mouse move of the other tools (and without a tool): nothing to do */
+		if (!previewActive) {
+			return;
+		}
+		previewRay.set(null);
+		synchronized (previewLock) {
+			previewActive = false;
+			previewMesh = null;
+			previewTriangles = null;
+			previewSurface = -1;
+			publishPreview("");
+		}
+	}
+
+	/* The preview of the last mouse move in a background thread (moves during a search: only the last one is searched) */
+	private void requestPreview(double[][] ray) {
+		previewActive = true;
+		previewRay.set(ray);
+		if (previewRunning.compareAndSet(false, true)) {
+			PREVIEW_EXECUTOR.execute(this::runPreview);
+		}
+	}
+
+	private void runPreview() {
+		try {
+			double[][] ray;
+			while ((ray = previewRay.getAndSet(null)) != null) {
+				try {
+					Hit h = previewHit(ray);
+					synchronized (previewLock) {
+						/* Not if the tool was changed or the mouse pressed in the meantime */
+						if (previewActive) {
+							preview(h);
+						}
+					}
+					/* What a click needs (once per surface) */
+					if (previewRay.get() == null) {
+						prepareVolumeTool();
+					}
+				} catch (RuntimeException e) {
+					/* E.g., the surface was changed during the search: the next move searches again */
+				}
+			}
+		} finally {
+			previewRunning.set(false);
+		}
+		/* A move after the loop (before the flag was reset) */
+		if (previewRay.get() != null && previewRunning.compareAndSet(false, true)) {
+			PREVIEW_EXECUTOR.execute(this::runPreview);
+		}
+	}
+
+	/*
+	 * The displayed surface under the mouse (the preview needs only the displayed
+	 * triangle and the side, not the measured surface in full resolution)
+	 */
+	private Hit previewHit(double[][] ray) {
+		IsoSurface.MeasureData display = iso.isDisplayed() ? iso.getMeasureData() : null;
+		if (ray == null || display == null || display.vertices == null || display.triangles == null
+				|| display.triangles.length == 0) {
+			return null;
+		}
+		double[] extent = displayedExtent();
+		if (extent == null) {
+			return null;
+		}
+		Clipping.Region region = clipping.getRegion(extent, HeightMaps.isFlipVertically());
+		double[] hit = intersect(display, ray, region);
+		if (hit == null) {
+			return null;
+		}
+		double dx = (ray[1][0] - ray[0][0]) * display.nx, dy = (ray[1][1] - ray[0][1]) * display.ny,
+				dz = (ray[1][2] - ray[0][2]) * display.nz;
+		int tri = (int) hit[0] * 3;
+		float[] mv = display.vertices;
+		int ia = display.triangles[tri] * 3, ib = display.triangles[tri + 1] * 3, ic = display.triangles[tri + 2] * 3;
+		double ux = mv[ib] - mv[ia], uy = mv[ib + 1] - mv[ia + 1], uz = mv[ib + 2] - mv[ia + 2];
+		double wx = mv[ic] - mv[ia], wy = mv[ic + 1] - mv[ia + 1], wz = mv[ic + 2] - mv[ia + 2];
+		double nx = uy * wz - uz * wy, ny = uz * wx - ux * wz, nz = ux * wy - uy * wx;
+		Hit h = new Hit();
+		h.backside = dx * nx + dy * ny + dz * nz > 0;
+		h.full = -1;
+		h.display = (int) hit[0];
+		h.displayMesh = display.triangles;
+		return h;
 	}
 
 	private void publishPreview(String text) {
@@ -4877,10 +5222,14 @@ public class Measurement3d {
 	}
 
 	/* Shows the closed surface under the mouse in the color of what a click measures (an object or a cavity) */
-	private synchronized void preview(Hit h) {
+	private void preview(Hit h) {
 		IsoSurface.MeasureData display = iso.getMeasureData();
 		if (h == null || h.display < 0 || display == null || display.triangles != h.displayMesh) {
-			clearPreview();
+			/* Nothing under the mouse (the tool stays active) */
+			previewMesh = null;
+			previewTriangles = null;
+			previewSurface = -1;
+			publishPreview("");
 			return;
 		}
 		if (previewMeshKey != display.triangles) {
@@ -6148,38 +6497,6 @@ public class Measurement3d {
 			}
 		}
 		return new Enclosed(volume, triangles.stream().mapToInt(Integer::intValue).toArray());
-	}
-
-	/*
-	 * Splits triangles of a mesh into the closed surfaces with a positive signed
-	 * volume (outer surfaces) and with a negative one (the walls of cavities):
-	 * {outer, inner}.
-	 */
-	private static int[][] splitBySign(IsoSurface.MeasureData md, int[] selected) {
-		float[] v = md.vertices;
-		int[] t = md.triangles;
-		int nv = v.length / 3;
-		int[] parent = new int[nv];
-		for (int i = 0; i < nv; i++) {
-			parent[i] = i;
-		}
-		for (int tri : selected) {
-			union(parent, t[tri * 3], t[tri * 3 + 1]);
-			union(parent, t[tri * 3], t[tri * 3 + 2]);
-		}
-		java.util.Map<Integer, Double> signed = new java.util.HashMap<>();
-		for (int tri : selected) {
-			int a = t[tri * 3] * 3, b = t[tri * 3 + 1] * 3, d = t[tri * 3 + 2] * 3;
-			double s = (v[a] * ((double) v[b + 1] * v[d + 2] - (double) v[b + 2] * v[d + 1])
-					- v[a + 1] * ((double) v[b] * v[d + 2] - (double) v[b + 2] * v[d])
-					+ v[a + 2] * ((double) v[b] * v[d + 1] - (double) v[b + 1] * v[d])) / 6.0;
-			signed.merge(find(parent, t[tri * 3]), s, Double::sum);
-		}
-		List<Integer> outer = new ArrayList<>(), inner = new ArrayList<>();
-		for (int tri : selected) {
-			(signed.get(find(parent, t[tri * 3])) >= 0 ? outer : inner).add(tri);
-		}
-		return new int[][] { outer.stream().mapToInt(Integer::intValue).toArray(), inner.stream().mapToInt(Integer::intValue).toArray() };
 	}
 
 	/**
