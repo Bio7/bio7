@@ -221,9 +221,9 @@
    <extension
          point="org.eclipse.ui.commands">
       <command
-            description="Start RServe"
+            description="Start R"
             id="com.eco.bio7.Start_RServe_Action"
-            name="Start RServe">
+            name="Start R">
       </command>
       <sequenceModifier
   			find="CTRL"
@@ -560,7 +560,7 @@
             category="com.eco.bio7.R"
             class="com.eco.bio7.preferences.RServePlotPrefs"
             id="com.eco.bio7.RServePlot"
-            name="Preferences RServe Plots">
+            name="Preferences R Plots">
       </page>
       <page
             category="com.eco.bio7.R"
