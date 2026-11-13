@@ -224,6 +224,12 @@ public final class RSession implements AutoCloseable {
 		MemorySegment av = argv(arena, args)[0];
 		var init = RNative.LINKER.downcallHandle(n.symbolAddress("Rf_initialize_R"), FunctionDescriptor.of(JAVA_INT, JAVA_INT, ADDRESS));
 		int unused = (int) init.invokeExact(args.size(), av);
+		/*
+		 * The waits of R (e.g., Sys.sleep) wake up every 100 ms: an interrupt
+		 * (R_interrupts_pending, set without a signal) is handled then. Without it
+		 * R_checkActivity waits the whole time (Sys.sleep(30) couldn't be interrupted).
+		 */
+		n.setInt("R_wait_usec", 100_000);
 		/* The console of R through the callbacks */
 		n.setPointer("R_Outputfile", MemorySegment.NULL);
 		n.setPointer("R_Consolefile", MemorySegment.NULL);

@@ -35,6 +35,19 @@ public class CustomTheme {
 	/** The theme ids start with the id of the Eclipse theme, so that Bio7 detects a dark theme. */
 	public static final String DARK_ID = "org.eclipse.e4.ui.css.theme.e4_dark";
 	public static final String LIGHT_ID = "org.eclipse.e4.ui.css.theme.e4_default";
+	/*
+	 * The Bio7 light theme of macOS with an own id (e4_default is also registered by
+	 * org.eclipse.ui.themes, then its stylesheet wins), see lightThemeId()
+	 */
+	public static final String LIGHT_MAC_ID = "org.eclipse.e4.ui.css.theme.e4_default_bio7_mac";
+
+	/**
+	 * The id of the Bio7 light default theme in the theme engine: macOS has an own id,
+	 * the other systems e4_default (the ids of the custom themes keep e4_default).
+	 */
+	public static String lightThemeId() {
+		return "macosx".equals(org.eclipse.core.runtime.Platform.getOS()) ? LIGHT_MAC_ID : LIGHT_ID;
+	}
 	private static final String CUSTOM = ".custom.";
 
 	public static final String PROPERTIES = "theme.properties";
@@ -62,6 +75,9 @@ public class CustomTheme {
 	/** The styles of the whole toolbar (flat color, gradient, raised with highlight and shadow). */
 	public static final String[] STYLES = { "flat", "gradient", "raised" };
 	public static final String[] STYLE_LABELS = { "Flat", "Gradient", "Raised" };
+	/* The styles of the push buttons in the views (see ThemeButtons) */
+	public static final String[] BUTTON_STYLES = { "native", "flat", "rounded", "round" };
+	public static final String[] BUTTON_STYLE_LABELS = { "Native", "Flat", "Rounded", "Round" };
 	/** The tab rows below the first tab rows with the continuous artwork. */
 	public static final String[] LOWER = { "band", "none", "tabs" };
 	public static final String[] LOWER_LABELS = { "The picture (like the first tab rows)", "No artwork (the tab row color)",
@@ -73,6 +89,9 @@ public class CustomTheme {
 	private final String folderName;
 	private String name = "New Theme";
 	private String author = "";
+	/* The credit of the artwork (e.g., "Image: NASA/JPL-Caltech") and the page of its source, shown on the import */
+	private String credit = "";
+	private String creditUrl = "";
 	private boolean dark = true;
 	private final Map<String, RGB> colors = new LinkedHashMap<String, RGB>();
 	/* The colors of the theme when it was installed, created or imported (for a reset)! */
@@ -100,6 +119,8 @@ public class CustomTheme {
 	/* The view tab rows: a gradient (to the gradient end colors) and the artwork of the toolbar */
 	/* The style of the tab rows (see STYLES): flat, gradient or raised */
 	private String tabStyle = "flat";
+	/* The style of the push buttons in the views (see BUTTON_STYLES) */
+	private String buttonStyle = "native";
 	private boolean tabArtwork;
 	/* The fade of the artwork in the tab rows (an own setting, see FADES) */
 	private String tabFade = "center";
@@ -238,6 +259,24 @@ public class CustomTheme {
 
 	public void setAuthor(String author) {
 		this.author = author;
+	}
+
+	/** The credit of the artwork (e.g., the source and license of an image), "" if none. */
+	public String getCredit() {
+		return credit;
+	}
+
+	public void setCredit(String credit) {
+		this.credit = credit == null ? "" : credit.trim();
+	}
+
+	/** The page of the source of the artwork, "" if none. */
+	public String getCreditUrl() {
+		return creditUrl;
+	}
+
+	public void setCreditUrl(String creditUrl) {
+		this.creditUrl = creditUrl == null ? "" : creditUrl.trim();
 	}
 
 	public boolean isDark() {
@@ -444,6 +483,15 @@ public class CustomTheme {
 		this.tabStyle = java.util.List.of(STYLES).contains(tabStyle) ? tabStyle : "flat";
 	}
 
+	/** The style of the push buttons in the views: native, flat, rounded or round (see BUTTON_STYLES). */
+	public String getButtonStyle() {
+		return buttonStyle;
+	}
+
+	public void setButtonStyle(String buttonStyle) {
+		this.buttonStyle = java.util.List.of(BUTTON_STYLES).contains(buttonStyle) ? buttonStyle : "native";
+	}
+
 	/** True if the tab rows show the artwork of the toolbar (image, mode, opacity, fade). */
 	public boolean isTabArtwork() {
 		return tabArtwork;
@@ -555,6 +603,8 @@ public class CustomTheme {
 		CustomTheme copy = new CustomTheme(newFolder, dark);
 		copy.name = name;
 		copy.author = author;
+		copy.credit = credit;
+		copy.creditUrl = creditUrl;
 		copy.colors.clear();
 		copy.colors.putAll(colors);
 		copy.originalColors.putAll(originalColors);
@@ -575,6 +625,7 @@ public class CustomTheme {
 		copy.textFont = textFont;
 		copy.fontReference = fontReference;
 		copy.tabStyle = tabStyle;
+		copy.buttonStyle = buttonStyle;
 		copy.tabArtwork = tabArtwork;
 		copy.tabFade = tabFade;
 		copy.tabFadeWidth = tabFadeWidth;
@@ -630,6 +681,13 @@ public class CustomTheme {
 		Properties p = new Properties();
 		p.setProperty("name", name);
 		p.setProperty("author", author);
+		/* Only if set (the themes without a credit keep their properties) */
+		if (!credit.isEmpty()) {
+			p.setProperty("credit", credit);
+		}
+		if (!creditUrl.isEmpty()) {
+			p.setProperty("credit.url", creditUrl);
+		}
 		p.setProperty("base", dark ? "dark" : "light");
 		for (Map.Entry<String, RGB> e : colors.entrySet()) {
 			p.setProperty("color." + e.getKey(), hex(e.getValue()));
@@ -648,6 +706,7 @@ public class CustomTheme {
 			p.setProperty("font.reference", Double.toString(fontReference));
 		}
 		p.setProperty("tabs.style", tabStyle);
+		p.setProperty("buttons.style", buttonStyle);
 		p.setProperty("tabs.artwork", String.valueOf(tabArtwork));
 		p.setProperty("tabs.image", tabImage);
 		p.setProperty("artwork.continuous", String.valueOf(artworkContinuous));
@@ -680,6 +739,8 @@ public class CustomTheme {
 		CustomTheme t = new CustomTheme(folderName, dark);
 		t.name = p.getProperty("name", folderName);
 		t.author = p.getProperty("author", "");
+		t.setCredit(p.getProperty("credit", ""));
+		t.setCreditUrl(p.getProperty("credit.url", ""));
 		for (String[] slot : SLOTS) {
 			String v = p.getProperty("color." + slot[0]);
 			if (v != null && v.matches("#?[0-9a-fA-F]{6}")) {
@@ -738,6 +799,7 @@ public class CustomTheme {
 		/* The style of the tab rows (an older theme: the gradient switch) */
 		t.setTabStyle(p.getProperty("tabs.style", Boolean.parseBoolean(p.getProperty("tabs.gradient", "false")) ? "gradient" : "flat"));
 		t.setTabArtwork(Boolean.parseBoolean(p.getProperty("tabs.artwork", "false")));
+		t.setButtonStyle(p.getProperty("buttons.style", "native"));
 		t.artworkContinuous = Boolean.parseBoolean(p.getProperty("artwork.continuous", "false"));
 		t.setTabsLower(p.getProperty("tabs.lower", "band"));
 		t.setTabSelectedOpacity(parseInt(p.getProperty("tabs.selectedOpacity"), 100));
@@ -911,7 +973,8 @@ public class CustomTheme {
 		/* The buttons in the views */
 		rule(css, ".MPart Button", "background-color: " + c("widgetBackground") + ";\n\tcolor: " + c("widgetText") + ";");
 		/* The text fields and the text areas of the views (e.g., the output of the R shell, not the editors) */
-		rule(css, ".MPart Text,\n.MPart Spinner,\n.MPart Combo,\n.MPart CCombo,\n.MPart DateTime,\n.View StyledText",
+		/* ".MPart Composite > StyledText": the more specific rule of the base dark theme (a grey background) */
+		rule(css, ".MPart Text,\n.MPart Spinner,\n.MPart Combo,\n.MPart CCombo,\n.MPart DateTime,\n.View StyledText,\n.MPart Composite > StyledText",
 				"background-color: " + c("fieldBackground") + ";\n\tcolor: " + c("fieldText") + ";");
 		/* The console (the text area and its page)! */
 		rule(css, "#org-eclipse-ui-console-ConsoleView .MPart > Composite,\n#org-eclipse-ui-console-ConsoleView .MPart StyledText,\n"
@@ -922,6 +985,40 @@ public class CustomTheme {
 				"background-color: " + c("consoleBackground") + ";\n\tcolor: " + c("consoleText") + ";");
 		/* The content of the views (lists, trees, tables)! */
 		rule(css, ".MPart Tree,\n.MPart Table,\n.MPart List,\n.MPart Grid", "background-color: " + c("viewBackground") + ";\n\tcolor: " + c("text") + ";");
+		/*
+		 * The work areas with the darker background of the console (after the rules
+		 * above, more specific): the ImageJ-Canvas (the tab folder of the images and the
+		 * empty area), the input of the R-Shell and the sheets of the Table view
+		 */
+		/*
+		 * The CSS engine uses the simple class names: the input of the R-Shell is a
+		 * RShellText (not matched by StyledText), the history of the R-Shell a List.
+		 * The description of the console ("Bio7 Console") above the console page.
+		 */
+		rule(css, "#com-eco-bio7-imagej CTabFolder,\n#com-eco-bio7-imagej Composite,\n#com-eco-bio7-imagej Canvas,\n"
+				+ "#com-eco-bio7-imagej Label,\n#com-eco-bio7-RShell StyledText,\n#com-eco-bio7-RShell RShellText,\n#com-eco-bio7-RShell List,\n"
+				+ "#com-eco-bio7-rbridge-RTable Grid,\n#com-eco-bio7-rbridge-RTable CTabFolder,\n"
+				+ "#org-eclipse-ui-console-ConsoleView .MPart Composite,\n#org-eclipse-ui-console-ConsoleView .MPart Label",
+				"background-color: " + c("consoleBackground") + ";\n\tcolor: " + c("consoleText") + ";");
+		/*
+		 * The empty part of the tab rows of the images (ImageJ-Canvas) and of the sheets
+		 * (Table): the renderer fills it with the color of the unselected tabs (else a
+		 * lighter strip above the work area)
+		 */
+		rule(css, "#com-eco-bio7-imagej CTabFolder,\n#com-eco-bio7-rbridge-RTable CTabFolder", "swt-unselected-tabs-color: " + c("consoleBackground") + ";");
+		/*
+		 * The empty editor area and the Outline (its page with the message or the tree)
+		 * with the darker background of the work areas
+		 */
+		rule(css, "#org-eclipse-ui-editorss,\n#org-eclipse-ui-editorss CTabFolder,\nCTabFolder.MArea,\n"
+				+ "#org-eclipse-ui-views-ContentOutline .MPart Composite,\n#org-eclipse-ui-views-ContentOutline .MPart Label,\n"
+				+ "#org-eclipse-ui-views-ContentOutline .MPart Tree,\n#org-eclipse-ui-navigator-ProjectExplorer .MPart Tree,\n"
+				+ "#org-eclipse-ui-navigator-ProjectExplorer .MPart Composite,\n#org-eclipse-ui-navigator-ProjectExplorer Tree,\n"
+				+ "#org-eclipse-ui-navigator-ProjectExplorer Composite,\n#com-eco-bio7-rbridge-RTable Composite",
+				"background-color: " + c("consoleBackground") + ";\n\tcolor: " + c("consoleText") + ";");
+		/* The Geometry Selections view (a scrolled composite) like the other views */
+		rule(css, "#com-eco-bio7-image-TransferGeometryView ScrolledComposite,\n#com-eco-bio7-image-TransferGeometryView Composite",
+				"background-color: " + c("panelBackground") + ";\n\tcolor: " + c("text") + ";");
 		/*
 		 * The widgets in the groups have the color of the groups (macOS: the groups are
 		 * custom boxes with the color, see GroupColors), not the group itself: it has

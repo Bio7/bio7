@@ -152,7 +152,7 @@ public class ExecuteDevtoolsCommand {
 					}
 
 				} else {
-					Bio7Dialog.message("Please start Rserve or the R console.");
+					Bio7Dialog.message("Please start R or the R console.");
 				}
 
 			}

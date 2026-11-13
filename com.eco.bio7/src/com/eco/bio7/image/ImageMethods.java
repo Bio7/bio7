@@ -784,7 +784,7 @@ public class ImageMethods {
 				System.out.println("No image data name specified!");
 			}
 		} else {
-			System.out.println("Rserve is not alive!");
+			System.out.println("R is not running!\nPlease start R (toolbar action \"Start R\").");
 		}
 	}
 
@@ -935,7 +935,7 @@ public class ImageMethods {
 			}
 
 		} else {
-			System.out.println("RServer connection failed - Server is not running !");
+			System.out.println("R is not running!\nPlease start R (toolbar action \"Start R\").");
 		}
 	}
 
@@ -1666,7 +1666,7 @@ public class ImageMethods {
 
 			} else {
 
-				System.out.println("Rserve is not alive!");
+				System.out.println("R is not running!\nPlease start R (toolbar action \"Start R\").");
 			}
 		} else {
 			/* If ROI Manager isn't active! */

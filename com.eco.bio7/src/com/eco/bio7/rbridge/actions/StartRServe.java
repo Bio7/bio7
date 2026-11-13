@@ -412,7 +412,7 @@ public class StartRServe extends Action implements IMenuCreator {
 		}
 
 		MenuItem menuItem = new MenuItem(fMenu, SWT.PUSH);
-		menuItem.setText("Start Rserve/Stop Rserve (within R)");
+		menuItem.setText("Start R/Stop R");
 		// Image image =
 		// PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
 

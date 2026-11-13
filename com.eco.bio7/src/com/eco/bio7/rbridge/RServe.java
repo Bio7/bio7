@@ -118,7 +118,7 @@ public class RServe {
 				System.out.println("R is busy!");
 			}
 		} else {
-			System.out.println("No connection to Rserve available!");
+			System.out.println("No connection to R available!");
 		}
 	}
 
@@ -402,7 +402,7 @@ public class RServe {
 					MessageBox messageBox = new MessageBox(new Shell(),
 
 							SWT.ICON_WARNING);
-					messageBox.setMessage("Rserve connection failed\nServer is not running!");
+					messageBox.setMessage("R is not running!\nPlease start R (toolbar action \"Start R\").");
 					messageBox.open();
 				}
 			});

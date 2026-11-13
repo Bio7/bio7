@@ -134,7 +134,7 @@ public class RScript {
 				if (customDevice == false) {
 					startPlotJob(inhalt, b);
 				} else {
-					Bio7Dialog.message("Can't plot marked commands if custom device is used!\nPlease deselect the \"Use Custom Device\" preferences in the Rserve preferences!");
+					Bio7Dialog.message("Can't plot marked commands if custom device is used!\nPlease deselect the \"Use Custom Device\" preferences in the R plot preferences!");
 				}
 
 			}

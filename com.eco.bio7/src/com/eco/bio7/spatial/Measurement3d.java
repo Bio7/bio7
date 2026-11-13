@@ -102,6 +102,12 @@ public class Measurement3d {
 
 	/* The measured objects: the mesh, the object number of the vertices and the labels */
 	private boolean highlightObjects = true;
+	/*
+	 * The measured objects are shown (colors and numbers): false if they were only
+	 * measured for the volume tool (the object of a click), then only the measured
+	 * volume is displayed
+	 */
+	private boolean objectsShown;
 	private int[] objectMesh;
 	private int[] vertexObject;
 	/* The measured surface (full resolution) and the object numbers of its vertices */
@@ -192,6 +198,14 @@ public class Measurement3d {
 	 *         surface is available
 	 */
 	public double[][] measureIsoSurface(boolean showTable) {
+		return measureIsoSurface(showTable, true);
+	}
+
+	/*
+	 * show: the objects are shown with colors and numbers (false: only measured, e.g.,
+	 * for the object of a click with the volume tool)
+	 */
+	private double[][] measureIsoSurface(boolean showTable, boolean show) {
 		/* The full resolution (also if the display is reduced) */
 		IsoSurface.MeasureData m = iso.getMeasurementData();
 		IsoSurface.MeasureData display = iso.getMeasureData();
@@ -389,7 +403,8 @@ public class Measurement3d {
 			/* The sheets of a former measurement don't fit the new objects */
 			objectGrid = null;
 			distanceGrid = null;
-			if (highlightObjects) {
+			objectsShown = show;
+			if (highlightObjects && show) {
 				iso.setObjectColors(colors, display.triangles);
 			}
 		}
@@ -510,8 +525,12 @@ public class Measurement3d {
 		} else {
 			/* Measured again for the colors */
 			IsoSurface.MeasureData m = iso.getMeasureData();
+			boolean shown;
+			synchronized (this) {
+				shown = objectsShown;
+			}
 			if (m != null && m.triangles != null && m.triangles == objectMesh) {
-				measureIsoSurface(false);
+				measureIsoSurface(false, shown);
 			}
 		}
 	}
@@ -555,7 +574,7 @@ public class Measurement3d {
 					}
 				}
 			}
-			if (!highlightObjects) {
+			if (!highlightObjects || !objectsShown) {
 				return;
 			}
 		}
@@ -641,7 +660,7 @@ public class Measurement3d {
 	 * the 3D view, pixels from the top left) or 0.
 	 */
 	public synchronized int getLabelAt(double x, double y) {
-		if (!highlightObjects || labelBounds.isEmpty() || labelViewportHeight <= 0) {
+		if (!highlightObjects || !objectsShown || labelBounds.isEmpty() || labelViewportHeight <= 0) {
 			return 0;
 		}
 		double wy = labelViewportHeight - y;
@@ -1832,6 +1851,7 @@ public class Measurement3d {
 			measuredObject = null;
 			objectLabels = null;
 			objectColors = null;
+			objectsShown = false;
 			selectedObject = 0;
 			labelBounds.clear();
 			distanceLines = null;
@@ -4311,7 +4331,8 @@ public class Measurement3d {
 		synchronized (this) {
 			measured = measuredData == full && measuredObject != null && objectRows != null;
 		}
-		if (!measured && measureIsoSurface(false) == null) {
+		/* Only measured (the object of the click): the objects are not shown with colors and numbers */
+		if (!measured && measureIsoSurface(false, false) == null) {
 			return;
 		}
 		int object;
@@ -6446,7 +6467,7 @@ public class Measurement3d {
 	 */
 	private void renderObjectLabels(GL2 gl, double[] b, boolean flip, float pixelScale) {
 		labelBounds.clear();
-		if (!highlightObjects || objectLabels == null || objectLabels.length == 0) {
+		if (!highlightObjects || !objectsShown || objectLabels == null || objectLabels.length == 0) {
 			return;
 		}
 		IsoSurface.MeasureData m = iso.getMeasureData();

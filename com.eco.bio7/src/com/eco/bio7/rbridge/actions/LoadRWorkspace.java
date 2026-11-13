@@ -76,7 +76,7 @@ public class LoadRWorkspace extends Action {
 				System.out.println();
 
 			} else {
-				Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console or the Rserve connection!");
+				Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console or R!");
 			}
 
 		} else {

@@ -16,7 +16,8 @@ import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.util.MessagesThemeIDsSettings;
 
 public class ThemeSwitchHandler extends Action {
-	private static final String DEFAULT_THEME = "org.eclipse.e4.ui.css.theme.e4_default";
+	/* The Bio7 light theme (macOS: an own id, see CustomTheme.lightThemeId) */
+	private static final String DEFAULT_THEME = com.eco.bio7.themes.CustomTheme.lightThemeId();
 
 	public ThemeSwitchHandler(String text) {
 		super(text);

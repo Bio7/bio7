@@ -171,7 +171,7 @@ public class RInterpreterJob extends WorkspaceJob {
 
 				} catch (RserveException e) {
 					exception = true;
-					System.out.println("Rserve exception!");
+					System.out.println("R exception!");
 				}
 
 			}

@@ -123,6 +123,7 @@ final class ViewColors {
 			ThemeToolTips.apply(null, null, null);
 			applyHeapStatus(null);
 			SelectionColors.apply(null);
+			ThemeButtons.apply(null);
 		} else {
 			ThemeToolTips.apply(theme.getColor("assistBackground"), theme.getColor("assistText"), theme.getColor("groupBorder"));
 			applyHeapStatus(theme);
@@ -132,8 +133,11 @@ final class ViewColors {
 			SelectionColors.apply(theme.getColor("inactiveSelection"));
 			GroupColors.apply(theme.getColor("groupBackground"), theme.getColor("groupBorder"), theme.getColor("text"));
 			GridHeaderColors.setColors(theme.getColor("tableHeader"), theme.getColor("tableHeaderText"), theme.getColor("tableHeaderLine"),
-					theme.getColor("viewBackground"));
+					/* The sheets of the Table view have the background of the console (see CustomTheme) */
+					theme.getColor("consoleBackground"));
 			applyGridSelection(theme);
+			/* The push buttons of the views (native, flat or rounded) */
+			ThemeButtons.apply(theme);
 			/* The compass of the globe with the colors of the theme */
 			com.eco.bio7.worldwind.ThemedCompassLayer.setThemeColors(theme.getColor("widgetBackground"), theme.getColor("tableHeaderLine"),
 					theme.getColor("widgetText"), theme.getColor("iconColor"));

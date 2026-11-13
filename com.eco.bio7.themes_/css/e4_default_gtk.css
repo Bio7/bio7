@@ -106,3 +106,12 @@ CTabFolder.MArea {
 CTabFolder Canvas {
 	background-color: #F8F7F6;
 }
+
+/*
+ * The input of the R-Shell: a StyledText subclass (RShellText), no rule of Text or
+ * StyledText matches it (it had the grey background of the view): white like the text fields
+ */
+RShellText {
+	background-color: COLOR-LIST-BACKGROUND;
+	color: COLOR-LIST-FOREGROUND;
+}

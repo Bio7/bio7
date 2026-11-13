@@ -68,7 +68,7 @@ public final class ThemeStore {
 	 * The version of the example themes: an example of an older version is
 	 * installed again if it has not been changed by the user!
 	 */
-	private static final int EXAMPLES_VERSION = 12;
+	private static final int EXAMPLES_VERSION = 13;
 	/* Examples of earlier versions (removed from Bio7): deleted if installed and unchanged */
 	private static final List<String> REMOVED_EXAMPLES = List.of("autumn-harvest", "autumn-leaves", "data-science", "dolphin",
 			"ecological-modeling", "fiery", "forest-night", "halloween", "science", "spring", "summer", "winter");
@@ -103,6 +103,7 @@ public final class ThemeStore {
 		if (CustomTheme.isCustomThemeId(engineTheme)) {
 			active = CustomTheme.folderOf(engineTheme);
 		}
+		useOwnLightThemeId(engineTheme);
 		if (!active.isEmpty()) {
 			CustomTheme theme = find(active);
 			if (theme != null) {
@@ -112,6 +113,31 @@ public final class ThemeStore {
 		}
 		/* A default theme: the colors of the views (e.g., the groups) when the workbench is running */
 		org.eclipse.swt.widgets.Display.getDefault().asyncExec(ViewColors::apply);
+	}
+
+	/*
+	 * macOS: the Bio7 light theme has an own id (e4_default can be the theme of
+	 * org.eclipse.ui.themes). The light default theme of an older workspace (or of a
+	 * new one, if the system is not dark) is switched to it.
+	 */
+	private static void useOwnLightThemeId(String engineTheme) {
+		if (!"macosx".equals(org.eclipse.core.runtime.Platform.getOS())) {
+			return;
+		}
+		boolean light = CustomTheme.LIGHT_ID.equals(engineTheme) || (engineTheme.isEmpty() && !org.eclipse.swt.widgets.Display.isSystemDarkTheme());
+		if (!light) {
+			return;
+		}
+		IThemeEngine engine = engine();
+		if (engine == null) {
+			return;
+		}
+		for (org.eclipse.e4.ui.css.swt.theme.ITheme t : engine.getThemes()) {
+			if (CustomTheme.LIGHT_MAC_ID.equals(t.getId())) {
+				engine.setTheme(t, true);
+				return;
+			}
+		}
 	}
 
 	/** The folder with the custom themes. */
@@ -417,7 +443,7 @@ public final class ThemeStore {
 		ToolbarArtwork.setTheme(null, null);
 		IThemeEngine engine = engine();
 		if (engine != null) {
-			engine.setTheme(dark ? CustomTheme.DARK_ID : CustomTheme.LIGHT_ID, true);
+			engine.setTheme(dark ? CustomTheme.DARK_ID : CustomTheme.lightThemeId(), true);
 		}
 		/* After the stylesheets of the default theme (e.g., the colors of the memory display follow its background) */
 		org.eclipse.swt.widgets.Display.getDefault().asyncExec(ViewColors::apply);

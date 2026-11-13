@@ -112,6 +112,8 @@ class Spread {
 
 		grid = new Grid(composite, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL | SWT.VIRTUAL);
 		grid.setBackground(Util.getSWTBackgroundColor());
+		/* The colors of the theme (CSS) again: they replace the color above if the theme defines them */
+		grid.reskin(SWT.NONE);
 		//grid.setRowHeaderRenderer(new CustomRowHeaderRenderer());
 		final Menu menu = new Menu(grid);
 		grid.setMenu(menu);

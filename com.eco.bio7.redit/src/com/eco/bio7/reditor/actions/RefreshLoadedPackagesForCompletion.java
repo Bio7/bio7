@@ -124,7 +124,7 @@ public class RefreshLoadedPackagesForCompletion extends Action implements IObjec
 				System.out.println("R is busy!");
 			}
 		} else {
-			message("Rserve is not alive!");
+			message("R is not running!\nPlease start R (toolbar action \"Start R\").");
 		}
 
 	}

@@ -343,7 +343,7 @@ public class ShellCompletion implements UpdateCompletion {
 			// job.setSystem(true);
 			job.schedule();
 		} else {
-			// message("Rserve is not alive!");
+			// message("R is not running!\nPlease start R (toolbar action \"Start R\").");
 		}
 
 	}

@@ -3099,7 +3099,7 @@ public class RShellView extends ViewPart {
 								RBridge.getBackend().eval("try(remove(" + data[i] + "))");
 							} else {
 								System.out.println(
-										"Variable .bio7Device wasn't deleted\nNecessary function definition (defined in the Rserve preferences) for the default plot device in Bio7!");
+										"Variable .bio7Device wasn't deleted\nNecessary function definition (defined in the R plot preferences) for the default plot device in Bio7!");
 							}
 						}
 

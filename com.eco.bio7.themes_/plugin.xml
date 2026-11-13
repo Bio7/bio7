@@ -55,6 +55,25 @@
             label="Bio7 Mac"
             os="macosx">
       </theme>
+      <!--
+        The Bio7 light theme of macOS with an own id: the id e4_default is also registered by
+        org.eclipse.ui.themes (if installed, e.g., started from the IDE), then its stylesheet
+        is used instead. The entry above is kept for a new workspace (the default theme id),
+        Bio7 switches to this id at the start (see ThemeStore.startup).
+      -->
+      <theme
+            basestylesheeturi="css/e4_default_bio7_mac.css"
+            id="org.eclipse.e4.ui.css.theme.e4_default_bio7_mac"
+            label="Bio7 Light"
+            os="macosx">
+      </theme>
+      <!-- The stylesheet which another plugin contributes to the light theme (e4_default) -->
+      <stylesheet
+            uri="platform:/plugin/org.eclipse.debug.ui/css/e4-light_debug_prefstyle.css">
+         <themeid
+               refid="org.eclipse.e4.ui.css.theme.e4_default_bio7_mac">
+         </themeid>
+      </stylesheet>
    <theme
          basestylesheeturi="css/e4_default_gtk.css"
          id="org.eclipse.e4.ui.css.theme.e4_default"

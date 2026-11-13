@@ -412,11 +412,12 @@ public class RTable extends ViewPart {
 	 */
 	private void initializeToolBar() {
 		IToolBarManager toolbarManager = getViewSite().getActionBars().getToolBarManager();
-		toolbarManager.add(fi);
-		toolbarManager.add(edit);
-		toolbarManager.add(add);
-		toolbarManager.add(fromSpread);
-		toolbarManager.add(scriptAction);
+		/* The menus as buttons with a visible arrow in the dark themes (see MenuButtonItem) */
+		toolbarManager.add(com.eco.bio7.util.MenuButtonItem.of(fi));
+		toolbarManager.add(com.eco.bio7.util.MenuButtonItem.of(edit));
+		toolbarManager.add(com.eco.bio7.util.MenuButtonItem.of(add));
+		toolbarManager.add(com.eco.bio7.util.MenuButtonItem.of(fromSpread));
+		toolbarManager.add(com.eco.bio7.util.MenuButtonItem.of(scriptAction));
 		toolbarManager.add(new Separator());
 		toolbarManager.add(undoAction);
 		toolbarManager.add(redoAction);

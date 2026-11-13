@@ -454,7 +454,7 @@ public class RServeUtil {
 
 				} catch (RserveException e) {
 
-					System.out.println("Rserve exception!");
+					System.out.println("R exception!");
 				}
 
 			}

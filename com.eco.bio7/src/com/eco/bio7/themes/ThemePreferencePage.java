@@ -83,6 +83,7 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 	private Composite editor;
 	private Text name;
 	private Text author;
+	private Text credit;
 	private Combo base;
 	private Combo style;
 	private final Map<String, ColorSelector> selectors = new HashMap<String, ColorSelector>();
@@ -99,6 +100,7 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 	private Button themeGaps;
 	private Label tabImageLabel;
 	private Combo tabStyle;
+	private Combo buttonStyle;
 	private Combo tabFade;
 	private Scale tabFadeWidth;
 	private Scale tabOpacity;
@@ -201,6 +203,20 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		style = new Combo(editor, SWT.READ_ONLY);
 		style.setItems(CustomTheme.STYLE_LABELS);
 		style.addListener(SWT.Selection, e -> changed());
+		new Label(editor, SWT.NONE).setText("Buttons:");
+		buttonStyle = new Combo(editor, SWT.READ_ONLY);
+		buttonStyle.setItems(CustomTheme.BUTTON_STYLE_LABELS);
+		buttonStyle.setToolTipText("The push buttons of the views (not of the dialogs):\nNative: the buttons of the system. Flat: boxes in the colors 'Buttons' and 'Buttons text'\nwith the color 'Group border'. Rounded: the boxes with rounded corners.\nRound: the ends of the boxes are half circles.");
+		buttonStyle.addListener(SWT.Selection, e -> changed());
+		/* The rest of the row */
+		new Label(editor, SWT.NONE);
+		new Label(editor, SWT.NONE);
+		/* The credit of the artwork (e.g., the source and license of an image), shown when the theme is imported */
+		new Label(editor, SWT.NONE).setText("Credits:");
+		credit = new Text(editor, SWT.BORDER);
+		credit.setToolTipText("The credit of the artwork, e.g., 'Image: NASA/JPL-Caltech' (shown when the theme is imported)");
+		credit.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
+		credit.addListener(SWT.Modify, e -> changed());
 
 		Group colors = new Group(editor, SWT.NONE);
 		colors.setText("Colors");
@@ -414,6 +430,7 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		viewsGap.setSelection(custom && current.hasGaps() ? current.getGapViews() : WindowGaps.getPreferenceViewsGap());
 		name.setText(custom ? current.getName() : index == 1 ? DARK_LABEL : LIGHT_LABEL);
 		author.setText(shown.getAuthor());
+		credit.setText(shown.getCredit() + (shown.getCreditUrl().isEmpty() ? "" : " - " + shown.getCreditUrl()));
 		base.select(shown.isDark() ? 1 : 0);
 		style.select(Math.max(0, List.of(CustomTheme.STYLES).indexOf(shown.getStyle())));
 		for (String[] slot : CustomTheme.SLOTS) {
@@ -423,6 +440,7 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		viewFontLabel.setText(CustomTheme.describeFont(shown.getPlatformFont()));
 		textFontLabel.setText(CustomTheme.describeFont(shown.getPlatformTextFont()));
 		tabStyle.select(Math.max(0, List.of(CustomTheme.STYLES).indexOf(shown.getTabStyle())));
+		buttonStyle.select(Math.max(0, List.of(CustomTheme.BUTTON_STYLES).indexOf(shown.getButtonStyle())));
 		tabArtwork.setSelection(shown.isTabArtwork());
 		tabImageLabel.setText(tabImageText(shown));
 		tabFade.select(Math.max(0, List.of(CustomTheme.FADES).indexOf(shown.getTabFade())));
@@ -495,6 +513,7 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		}
 		current.setName(name.getText().trim().isEmpty() ? "Unnamed" : name.getText().trim());
 		current.setAuthor(author.getText().trim());
+		setCredit(current, credit.getText());
 		for (String[] slot : CustomTheme.SLOTS) {
 			current.setColor(slot[0], selectors.get(slot[0]).getColorValue());
 		}
@@ -508,6 +527,7 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		current.setTabsLower(CustomTheme.LOWER[Math.max(0, tabsLower.getSelectionIndex())]);
 		current.setTabSelectedOpacity(tabSelectedOpacity.getSelection());
 		current.setTabStyle(CustomTheme.STYLES[Math.max(0, tabStyle.getSelectionIndex())]);
+		current.setButtonStyle(CustomTheme.BUTTON_STYLES[Math.max(0, buttonStyle.getSelectionIndex())]);
 		current.setTabArtwork(tabArtwork.getSelection());
 		current.setTabFade(CustomTheme.FADES[Math.max(0, tabFade.getSelectionIndex())]);
 		current.setTabFadeWidth(tabFadeWidth.getSelection());
@@ -727,8 +747,38 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 			CustomTheme theme = ThemeStore.importTheme(new File(file));
 			current = null;
 			fillTable(theme.getFolderName());
+			showCredit(theme);
 		} catch (IOException | RuntimeException e) {
 			MessageDialog.openError(getShell(), "Theme", "The theme could not be imported: " + e.getMessage());
+		}
+	}
+
+	/* The credit of the artwork of an imported theme (e.g., the source and license of an image) */
+	private void showCredit(CustomTheme theme) {
+		if (theme.getCredit().isEmpty() && theme.getCreditUrl().isEmpty()) {
+			return;
+		}
+		StringBuilder text = new StringBuilder("The theme '" + theme.getName() + "' uses artwork with this credit:\n\n");
+		if (!theme.getCredit().isEmpty()) {
+			text.append(theme.getCredit()).append("\n");
+		}
+		if (!theme.getCreditUrl().isEmpty()) {
+			text.append("Source: ").append(theme.getCreditUrl()).append("\n");
+		}
+		text.append("\nThe credit is shown in the field 'Credits' of the theme.");
+		MessageDialog.openInformation(getShell(), "Theme Credits", text.toString());
+	}
+
+	/* The field "Credits": the credit and the page of the source (after " - " if it is a link) */
+	private static void setCredit(CustomTheme theme, String text) {
+		String value = text.trim();
+		int dash = value.lastIndexOf(" - ");
+		if (dash >= 0 && value.substring(dash + 3).trim().matches("(?i)https?://\\S+")) {
+			theme.setCredit(value.substring(0, dash));
+			theme.setCreditUrl(value.substring(dash + 3));
+		} else {
+			theme.setCredit(value);
+			theme.setCreditUrl("");
 		}
 	}
 

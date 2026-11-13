@@ -65,7 +65,7 @@ public class LoadRLibrary extends Action {
 			MessageBox messageBox = new MessageBox(new Shell(),
 
 			SWT.ICON_WARNING);
-			messageBox.setMessage("RServer connection failed - Server is not running !");
+			messageBox.setMessage("R is not running!\nPlease start R (toolbar action \"Start R\").");
 			messageBox.open();
 
 		}

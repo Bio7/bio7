@@ -337,14 +337,10 @@ public class CanvasView extends ViewPart {
 
 	private void initializeToolBar() {
 		IToolBarManager tbm = getViewSite().getActionBars().getToolBarManager();
-		tbm.add(file);
-		tbm.add(edit);
-		tbm.add(image);
-		tbm.add(process);
-		tbm.add(analyze);
-		tbm.add(plugins);
-		tbm.add(window);
-		tbm.add(help);
+		/* Windows and Linux: buttons with a visible arrow in the dark themes (see MenuButtonItem) */
+		for (org.eclipse.jface.action.IAction menu : new org.eclipse.jface.action.IAction[] { file, edit, image, process, analyze, plugins, window, help }) {
+			tbm.add(com.eco.bio7.util.MenuButtonItem.of(menu));
+		}
 		/* If we have a plugin which installs a main menu item! */
 		updateBio7ImageJMenu();
 	}
@@ -374,7 +370,7 @@ public class CanvasView extends ViewPart {
 			for (org.eclipse.swt.widgets.MenuItem item : menuBar.getItems()) {
 				String name = item.getText().replace("&", "");
 				if (!name.isEmpty() && !isDefaultMenu(name)) {
-					tbm.add(new com.eco.bio7.ImageJPluginActions.ImageJExtensionAction(name));
+					tbm.add(com.eco.bio7.util.MenuButtonItem.of(new com.eco.bio7.ImageJPluginActions.ImageJExtensionAction(name)));
 				}
 			}
 			tbm.update(true);

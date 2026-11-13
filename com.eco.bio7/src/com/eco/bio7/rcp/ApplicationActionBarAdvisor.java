@@ -355,7 +355,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		counterreset = new CounterReset("Counter Reset", window);
 		register(counterreset);
 
-		startrserve = new StartRServe("Start Rserve", window);
+		startrserve = new StartRServe("Start R", window);
 		register(startrserve);
 
 		printexpression = new PrintExpression("PrintExpression", window);

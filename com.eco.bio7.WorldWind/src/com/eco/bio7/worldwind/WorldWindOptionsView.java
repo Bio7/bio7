@@ -118,7 +118,7 @@ import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.ColorDialog;
-import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
@@ -162,11 +162,11 @@ public class WorldWindOptionsView extends ViewPart {
 
 	private List list;
 	private Table table;
-	private Combo combo_4;
-	private Combo combo_3;
-	private Combo combo_2;
-	private Combo combo_1;
-	private Combo combo;
+	private CCombo combo_4;
+	private CCombo combo_3;
+	private CCombo combo_2;
+	private CCombo combo_1;
+	private CCombo combo;
 	private static Text maxLon;
 	private static Text maxLat;
 	private static Text minLon;
@@ -917,7 +917,7 @@ public class WorldWindOptionsView extends ViewPart {
 
 							SWT.ICON_WARNING);
 					messageBox.setText("Info!");
-					messageBox.setMessage("Rserve is not Alive!");
+					messageBox.setMessage("R is not running!\nPlease start R (toolbar action \"Start R\").");
 					messageBox.open();
 
 				}
@@ -1313,9 +1313,8 @@ public class WorldWindOptionsView extends ViewPart {
 		shapeLabel.setText("Shape:");
 		new Label(composite_6, SWT.NONE);
 
-		combo_1 = new Combo(composite_6, SWT.READ_ONLY);
-		GridData gd_combo_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_combo_1.heightHint = 30;
+		combo_1 = new com.eco.bio7.util.ThemeCombo(composite_6, SWT.READ_ONLY | SWT.BORDER);
+		GridData gd_combo_1 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		combo_1.setLayoutData(gd_combo_1);
 		combo_1.setToolTipText("Selects the measure type!");
 		combo_1.addSelectionListener(new SelectionAdapter() {
@@ -1349,9 +1348,8 @@ public class WorldWindOptionsView extends ViewPart {
 		pathTypeLabel.setText("Path type:");
 		new Label(composite_6, SWT.NONE);
 
-		combo_2 = new Combo(composite_6, SWT.READ_ONLY);
-		GridData gd_combo_2 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_combo_2.heightHint = 30;
+		combo_2 = new com.eco.bio7.util.ThemeCombo(composite_6, SWT.READ_ONLY | SWT.BORDER);
+		GridData gd_combo_2 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		combo_2.setLayoutData(gd_combo_2);
 		combo_2.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -1374,9 +1372,8 @@ public class WorldWindOptionsView extends ViewPart {
 		unitsLabel.setText("Units:");
 		new Label(composite_6, SWT.NONE);
 
-		combo_3 = new Combo(composite_6, SWT.READ_ONLY);
-		GridData gd_combo_3 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_combo_3.heightHint = 30;
+		combo_3 = new com.eco.bio7.util.ThemeCombo(composite_6, SWT.READ_ONLY | SWT.BORDER);
+		GridData gd_combo_3 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		combo_3.setLayoutData(gd_combo_3);
 		combo_3.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -1418,9 +1415,8 @@ public class WorldWindOptionsView extends ViewPart {
 		angleFormatLabel.setText("Angle Format:");
 		new Label(composite_6, SWT.NONE);
 
-		combo_4 = new Combo(composite_6, SWT.READ_ONLY);
+		combo_4 = new com.eco.bio7.util.ThemeCombo(composite_6, SWT.READ_ONLY | SWT.BORDER);
 		GridData gd_combo_4 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-		gd_combo_4.heightHint = 30;
 		combo_4.setLayoutData(gd_combo_4);
 		combo_4.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -1639,7 +1635,7 @@ public class WorldWindOptionsView extends ViewPart {
 
 							SWT.ICON_WARNING);
 					messageBox.setText("Info!");
-					messageBox.setMessage("Rserve is not Alive!");
+					messageBox.setMessage("R is not running!\nPlease start R (toolbar action \"Start R\").");
 					messageBox.open();
 
 				}
@@ -1689,9 +1685,8 @@ public class WorldWindOptionsView extends ViewPart {
 		});
 		flatButton.setText("Flat");
 
-		combo = new Combo(composite_5, SWT.READ_ONLY);
-		GridData gd_combo = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_combo.heightHint = 37;
+		combo = new com.eco.bio7.util.ThemeCombo(composite_5, SWT.READ_ONLY | SWT.BORDER);
+		GridData gd_combo = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		combo.setLayoutData(gd_combo);
 		combo.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {

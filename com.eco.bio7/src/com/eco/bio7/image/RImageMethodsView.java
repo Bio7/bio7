@@ -32,7 +32,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
@@ -64,9 +64,9 @@ public class RImageMethodsView extends ViewPart {
 	public RImageMethodsView() {
 	}
 
-	private Combo toimageJCombo;
+	private CCombo toimageJCombo;
 
-	private static Combo transferTypeCombo;
+	private static CCombo transferTypeCombo;
 
 	private Text imageMatrixNameFromR;
 
@@ -659,7 +659,7 @@ public class RImageMethodsView extends ViewPart {
 		gd_picButton.heightHint = 35;
 		picButton.setLayoutData(gd_picButton);
 
-		transferTypeCombo = new Combo(top, SWT.READ_ONLY);
+		transferTypeCombo = new com.eco.bio7.util.ThemeCombo(top, SWT.READ_ONLY | SWT.BORDER);
 		transferTypeCombo.select(0);
 		transferTypeCombo.setToolTipText("The datatype to transfer in both directions!");
 		transferTypeCombo.addSelectionListener(new SelectionAdapter() {
@@ -671,7 +671,7 @@ public class RImageMethodsView extends ViewPart {
 		transferTypeCombo.setText("Double");
 		transferTypeCombo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
-		toimageJCombo = new Combo(top, SWT.READ_ONLY);
+		toimageJCombo = new com.eco.bio7.util.ThemeCombo(top, SWT.READ_ONLY | SWT.BORDER);
 		toimageJCombo.setToolTipText("Selects the image type which will be created in Imagej");
 		toimageJCombo.select(0);
 		toimageJCombo.addSelectionListener(new SelectionAdapter() {
@@ -917,11 +917,11 @@ public class RImageMethodsView extends ViewPart {
 	}
 
 	/* Used in Cluster and Pca job */
-	public static Combo getTransferTypeCombo() {
+	public static CCombo getTransferTypeCombo() {
 		return transferTypeCombo;
 	}
 
-	protected static void setTransferTypeCombo(Combo transferTypeCombo) {
+	protected static void setTransferTypeCombo(CCombo transferTypeCombo) {
 		RImageMethodsView.transferTypeCombo = transferTypeCombo;
 	}
 

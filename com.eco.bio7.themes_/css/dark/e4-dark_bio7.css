@@ -333,3 +333,9 @@ CTabFolder Composite.ToolbarComposite,
 .MPart CTabFolder {
 	swt-tab-renderer: url('bundleclass://com.eco.bio7/com.eco.bio7.themes.InnerTabRendering');
 }
+
+/* The input of the R-Shell: a StyledText subclass (RShellText), the rules of Text and StyledText don't match it */
+RShellText {
+	background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+	color: '#org-eclipse-ui-workbench-DARK_FOREGROUND';
+}

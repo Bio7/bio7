@@ -160,7 +160,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 	private String readGeoreferenceWithR(File f) {
 		RBackend con = RBridge.getBackend();
 		if (con == null) {
-			return "There is no connection to R (Rserve).";
+			return "There is no connection to R.";
 		}
 		String path = f.getAbsolutePath().replace("\\", "/").replace("\"", "\\\"");
 		try {
@@ -205,7 +205,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 	private String missingSpPackage() {
 		RBackend con = RBridge.getBackend();
 		if (con == null) {
-			return "There is no connection to R (Rserve).";
+			return "There is no connection to R.";
 		}
 		try {
 			if (!installed(con, "sp")) {

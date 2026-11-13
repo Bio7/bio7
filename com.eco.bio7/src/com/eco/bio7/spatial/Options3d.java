@@ -35,7 +35,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.ColorDialog;
-import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
@@ -2262,9 +2262,9 @@ public class Options3d extends ViewPart {
 		final Label sourceLabel = new Label(textureGroup, SWT.NONE);
 		sourceLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		sourceLabel.setText("Source:");
-		final Combo sourceCombo = new Combo(textureGroup, SWT.READ_ONLY);
+		final CCombo sourceCombo = new com.eco.bio7.util.ThemeCombo(textureGroup, SWT.READ_ONLY | SWT.BORDER);
 		sourceCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		sourceCombo.setItems("ImageJ Image (Static)", "ImageJ Image (Dynamic)", "Image File");
+		sourceCombo.setItems(new String[] { "ImageJ Image (Static)", "ImageJ Image (Dynamic)", "Image File" });
 		sourceCombo.setToolTipText(
 				"ImageJ Image (Static): a texture of the active ImageJ image (load again after changes, e.g., of the LUT)\nImageJ Image (Dynamic): the texture is updated with the active ImageJ image\nImage File: a texture from an image file");
 		sourceCombo.select(0);
@@ -2774,9 +2774,9 @@ public class Options3d extends ViewPart {
 		final Label modeLabel = new Label(compositeVolume, SWT.NONE);
 		modeLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		modeLabel.setText("Mode:");
-		final Combo modeCombo = new Combo(compositeVolume, SWT.READ_ONLY);
+		final CCombo modeCombo = new com.eco.bio7.util.ThemeCombo(compositeVolume, SWT.READ_ONLY | SWT.BORDER);
 		modeCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		modeCombo.setItems("Alpha Blending", "Maximum Intensity");
+		modeCombo.setItems(new String[] { "Alpha Blending", "Maximum Intensity" });
 		/* The current mode of the volume (or the default) */
 		VolumeRenderer currentVolume = volumeRenderer();
 		modeCombo.select(currentVolume != null ? currentVolume.getMode() : VolumeRenderer.MODE_ALPHA_BLENDING);
@@ -3169,9 +3169,9 @@ public class Options3d extends ViewPart {
 		final Label colorModeLabel = new Label(compositeIso, SWT.NONE);
 		colorModeLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		colorModeLabel.setText("Colors:");
-		final Combo colorModeCombo = new Combo(compositeIso, SWT.READ_ONLY);
+		final CCombo colorModeCombo = new com.eco.bio7.util.ThemeCombo(compositeIso, SWT.READ_ONLY | SWT.BORDER);
 		colorModeCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		colorModeCombo.setItems("Single Color", "Intensity (LUT)", "Depth (LUT)", "Image Colors");
+		colorModeCombo.setItems(new String[] { "Single Color", "Intensity (LUT)", "Depth (LUT)", "Image Colors" });
 		/* The current color mode of the surface (or the default) */
 		IsoSurface currentIso = isoSurface();
 		colorModeCombo.select(currentIso != null ? currentIso.getColorMode() : IsoSurface.COLOR_SINGLE);
@@ -3425,8 +3425,8 @@ public class Options3d extends ViewPart {
 		final Label label = new Label(parent, SWT.NONE);
 		label.setText("Values:");
 		label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		final Combo combo = new Combo(parent, SWT.READ_ONLY);
-		combo.setItems("All Values", "Threshold of the Image", "Labels (List)");
+		final CCombo combo = new com.eco.bio7.util.ThemeCombo(parent, SWT.READ_ONLY | SWT.BORDER);
+		combo.setItems(new String[] { "All Values", "Threshold of the Image", "Labels (List)" });
 		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		combo.setToolTipText("The values of the stack which are displayed:\nAll Values: the whole stack (default)."
 				+ "\nThreshold of the Image: only the values in the threshold of the image in ImageJ (Image > Adjust > Threshold),"
@@ -4014,9 +4014,9 @@ public class Options3d extends ViewPart {
 		/* The mouse tools in the 3D view (left mouse button) */
 		Label toolLabel = new Label(compositeClip, SWT.NONE);
 		toolLabel.setText("Mouse:");
-		final Combo toolCombo = new Combo(compositeClip, SWT.READ_ONLY);
+		final CCombo toolCombo = new com.eco.bio7.util.ThemeCombo(compositeClip, SWT.READ_ONLY | SWT.BORDER);
 		toolCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-		toolCombo.setItems("Rotate View", "Move Plane (Shift: Rotate)", "Erase Voxels (Shift: Restore)");
+		toolCombo.setItems(new String[] { "Rotate View", "Move Plane (Shift: Rotate)", "Erase Voxels (Shift: Restore)" });
 		toolCombo.select(0);
 		toolCombo.setToolTipText("The tool of the left mouse button in the 3D view");
 		Label eraserLabel = new Label(compositeClip, SWT.NONE);
@@ -4165,9 +4165,9 @@ public class Options3d extends ViewPart {
 
 		Label resolutionLabel = new Label(compositeMeasure, SWT.NONE);
 		resolutionLabel.setText("Measurement Resolution:");
-		final Combo resolutionCombo = new Combo(compositeMeasure, SWT.READ_ONLY);
+		final CCombo resolutionCombo = new com.eco.bio7.util.ThemeCombo(compositeMeasure, SWT.READ_ONLY | SWT.BORDER);
 		resolutionCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		resolutionCombo.setItems("1x (Voxels of the Stack)", "2x (Small Objects)", "3x", "4x");
+		resolutionCombo.setItems(new String[] { "1x (Voxels of the Stack)", "2x (Small Objects)", "3x", "4x" });
 		resolutionCombo.select(0);
 		resolutionCombo.setToolTipText(
 				"The resolution of the measured iso surface: 2x - 4x upsample the stack (cubic interpolation) for the measurements, more accurate for objects of a few voxels (the display is not changed)");
@@ -4182,9 +4182,9 @@ public class Options3d extends ViewPart {
 
 		Label decimalsLabel = new Label(compositeMeasure, SWT.NONE);
 		decimalsLabel.setText("Decimals of the Tables:");
-		final Combo decimalsCombo = new Combo(compositeMeasure, SWT.READ_ONLY);
+		final CCombo decimalsCombo = new com.eco.bio7.util.ThemeCombo(compositeMeasure, SWT.READ_ONLY | SWT.BORDER);
 		decimalsCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		decimalsCombo.setItems("4 (Default)", "6", "9", "12", "Full Precision");
+		decimalsCombo.setItems(new String[] { "4 (Default)", "6", "9", "12", "Full Precision" });
 		decimalsCombo.select(0);
 		decimalsCombo.setToolTipText(
 				"The decimals of the values in the tables and in the CSV files of the matrices (Full Precision: the shortest number which is read as the same double value, no rounding)");
@@ -4583,8 +4583,8 @@ public class Options3d extends ViewPart {
 
 		Label objectLabel = new Label(compositeMeasure, SWT.NONE);
 		objectLabel.setText("Object:");
-		final Combo objectCombo = new Combo(compositeMeasure, SWT.READ_ONLY);
-		objectCombo.setItems("Material (without its cavities)", "Filled (with its cavities)");
+		final CCombo objectCombo = new com.eco.bio7.util.ThemeCombo(compositeMeasure, SWT.READ_ONLY | SWT.BORDER);
+		objectCombo.setItems(new String[] { "Material (without its cavities)", "Filled (with its cavities)" });
 		objectCombo.select(volumeMeasurement != null && volumeMeasurement.isObjectFilled() ? 1 : 0);
 		objectCombo.setToolTipText("A click on an object from outside: the volume of its material (the outer surface without its cavities,"
 				+ "\nas in the table) or the filled volume (everything inside of its outer surface).");
@@ -4598,8 +4598,8 @@ public class Options3d extends ViewPart {
 
 		Label cavityLabel = new Label(compositeMeasure, SWT.NONE);
 		cavityLabel.setText("Cavity:");
-		final Combo cavityCombo = new Combo(compositeMeasure, SWT.READ_ONLY);
-		cavityCombo.setItems("Whole space (objects in it included)", "Free space (without the objects in it)");
+		final CCombo cavityCombo = new com.eco.bio7.util.ThemeCombo(compositeMeasure, SWT.READ_ONLY | SWT.BORDER);
+		cavityCombo.setItems(new String[] { "Whole space (objects in it included)", "Free space (without the objects in it)" });
 		cavityCombo.select(volumeMeasurement != null && volumeMeasurement.isCavityFreeSpace() ? 1 : 0);
 		cavityCombo.setToolTipText("A click on the wall of a cavity (inside, e.g., through an opening cut with the eraser):"
 				+ "\nthe whole space inside of the wall or the free space without the objects which float in it.");
@@ -4613,8 +4613,8 @@ public class Options3d extends ViewPart {
 
 		Label displayLabel = new Label(compositeMeasure, SWT.NONE);
 		displayLabel.setText("Display:");
-		final Combo displayCombo = new Combo(compositeMeasure, SWT.READ_ONLY);
-		displayCombo.setItems("On the surface", "Through the surface", "Only the measured volumes");
+		final CCombo displayCombo = new com.eco.bio7.util.ThemeCombo(compositeMeasure, SWT.READ_ONLY | SWT.BORDER);
+		displayCombo.setItems(new String[] { "On the surface", "Through the surface", "Only the measured volumes" });
 		int displayMode = 0;
 		if (volumeMeasurement != null) {
 			displayMode = volumeMeasurement.isShowOnlyVolumes() ? 2 : volumeMeasurement.isShowVolumesThrough() ? 1 : 0;

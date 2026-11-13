@@ -58,7 +58,7 @@ public class OpenRservePreferencesAction extends Action implements ActionFactory
 	 * protected void configureWorkspaceSettings() {
 	 * 
 	 * RServePrefs pref = new RServePrefs(); IPreferencePage page = pref;
-	 * page.setTitle("Rserve preferences"); // page.setImageDescriptor(image);
+	 * page.setTitle("R preferences"); // page.setImageDescriptor(image);
 	 * 
 	 * RPackagesPreferencePage pref1=new RPackagesPreferencePage();
 	 * IPreferencePage page1 = pref1;

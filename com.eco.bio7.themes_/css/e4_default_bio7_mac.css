@@ -461,4 +461,11 @@ Bounds: x=1082 y=186 h=31 w=31;
   font-size: 14px;
 }
 
-
+/*
+ * The input of the R-Shell: a StyledText subclass (RShellText), no rule of Text or
+ * StyledText matches it (it had the grey background of the view): white like the text fields
+ */
+RShellText {
+	background-color: COLOR-LIST-BACKGROUND;
+	color: COLOR-LIST-FOREGROUND;
+}

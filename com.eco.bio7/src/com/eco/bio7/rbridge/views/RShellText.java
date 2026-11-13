@@ -38,14 +38,25 @@ public class RShellText extends StyledText {
 
 	/* The offsets of the highlighted brackets or null */
 	private int[] highlighted;
+	/* An update of the brackets is scheduled (see scheduleBrackets) */
+	private boolean scheduled;
 
 	public RShellText(Composite parent, int style) {
 		super(parent, style);
-		addCaretListener(e -> updateBrackets());
+		/*
+		 * A light theme: white like the text fields (no CSS rule of Text or StyledText
+		 * matches this subclass, it had the grey background of the view). The CSS of a
+		 * dark or custom theme sets its colors later (see CustomTheme and e4-dark_bio7.css).
+		 */
+		if (!com.eco.bio7.util.Util.isDarkTheme()) {
+			setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+			setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
+		}
+		addCaretListener(e -> scheduleBrackets());
 		/* After an edit the styles moved with the text: set again */
 		addModifyListener(e -> {
 			highlighted = null;
-			updateBrackets();
+			scheduleBrackets();
 		});
 		/*
 		 * Single line: Return doesn't traverse (to a default button), the key event
@@ -138,6 +149,24 @@ public class RShellText extends StyledText {
 		}
 		setSelection(bestStart, bestEnd);
 		return true;
+	}
+
+	/*
+	 * After the event: the caret event is also sent during setText() (in
+	 * StyledText.reset(), before the layout and the styles are reset), then
+	 * setStyleRanges() uses the old layout with the new content (e.g.,
+	 * IllegalArgumentException in StyledTextRenderer.hasLink: an offset of the old
+	 * text). Several events give one update.
+	 */
+	private void scheduleBrackets() {
+		if (scheduled || isDisposed()) {
+			return;
+		}
+		scheduled = true;
+		getDisplay().asyncExec(() -> {
+			scheduled = false;
+			updateBrackets();
+		});
 	}
 
 	/*

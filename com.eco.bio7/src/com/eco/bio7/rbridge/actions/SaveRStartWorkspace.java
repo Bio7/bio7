@@ -36,7 +36,7 @@ public class SaveRStartWorkspace extends Action {
 
 			SWT.ICON_WARNING);
 			messageBox
-					.setMessage("RServer connection failed - Server is not running !");
+					.setMessage("R is not running!\nPlease start R (toolbar action \"Start R\").");
 			messageBox.open();
 
 		}

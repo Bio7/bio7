@@ -45,7 +45,7 @@ public class ProfileSelectionAction implements IObjectActionDelegate, IEditorAct
 			 RBackend con = RBridge.getBackend(); 
 			  if (con != null) {
 				  Bio7Dialog.message(
-							"Please start the native R mode in the shell (or leave the Rserve connection  - toolbar 'Start Rserve' action) in the Bio7 console\nto profile the script!\n\nResults will be displayed in an external browser!");
+							"Please start the native R mode in the shell (or stop R - toolbar 'Start R' action) in the Bio7 console\nto profile the script!\n\nResults will be displayed in an external browser!");
 				  return;
 			  }
 
@@ -64,7 +64,7 @@ public class ProfileSelectionAction implements IObjectActionDelegate, IEditorAct
 						System.out.println(editorScript);
 					} else {
 						Bio7Dialog.message(
-								"Please start the native R mode in the shell (or leave the Rserve connection  - toolbar 'Start Rserve' action) in the Bio7 console\nto profile the script!\n\nResults will be displayed in an external browser!");
+								"Please start the native R mode in the shell (or stop R - toolbar 'Start R' action) in the Bio7 console\nto profile the script!\n\nResults will be displayed in an external browser!");
 					}
 				}
 

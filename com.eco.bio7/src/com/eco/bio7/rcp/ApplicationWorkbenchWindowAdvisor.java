@@ -610,9 +610,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault("Console_Encoding", "CP850");
 			store.setDefault("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTempR2
 					+ "tempDevicePlot%05d.tiff"
-					+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
+					+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")" + VECTOR_DEVICE_DEFAULT);
 			store.setDefault("DEVICE_FILENAME", "");
-			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
+			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_SWT_VECTOR");
 			store.setDefault("PDF_READER", "ACROBAT");
 		} else if (getOS().equals("Linux")) {
 			store.setDefault("SAVE_ALL_EDITORS", false);
@@ -622,9 +622,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault("shell_arguments", "");
 			store.setDefault("DEVICE_DEFINITION", ".bio7Device <- function(filename = \"" + pathTempR
 					+ "tempDevicePlot%05d.tiff"
-					+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
+					+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")" + VECTOR_DEVICE_DEFAULT);
 			store.setDefault("DEVICE_FILENAME", "");
-			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
+			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_SWT_VECTOR");
 			store.setDefault("PDF_READER", "OKULAR");
 		} else if (getOS().equals("Mac")) {
 			store.setDefault("SAVE_ALL_EDITORS", true);
@@ -634,9 +634,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault("shell_arguments", "export TERM=xterm");
 			store.setDefault("DEVICE_DEFINITION",
 					".bio7Device <- function(filename = \"" + pathTempR + "tempDevicePlot%05d.tiff"
-							+ "\") { tiff(filename,width = 480, height = 480)}; options(device=\".bio7Device\")");
+							+ "\") { tiff(filename,width = 480, height = 480)}; options(device=\".bio7Device\")" + VECTOR_DEVICE_DEFAULT);
 			store.setDefault("DEVICE_FILENAME", "");
-			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_IMAGE");
+			store.setDefault("PLOT_DEVICE_SELECTION", "PLOT_SWT_VECTOR");
 			store.setDefault("PDF_READER", "ACROBAT");
 		}
 
@@ -777,27 +777,15 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			@Override
 			public void propertyChange(PropertyChangeEvent event) {
 
-				if (event.getProperty() == "DEVICE_DEFINITION") {
+				if ("DEVICE_DEFINITION".equals(event.getProperty())) {
 
 					String value = event.getNewValue().toString();
 					if (getOS().equals("Windows")) {
 
 						value = value.replace("\\", "/");
 					}
-					if (RState.isBusy() == false) {
-						RBackend con = RBridge.getBackend();
-						if (con != null) {
-							try {
-								con.eval(value);
-
-							} catch (RserveException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-					} else {
-						// System.out.println("Couldn't change R preferences-> R is busy!");
-					}
+					/* Applied now or (R is busy, e.g., at the start or during a plot) as soon as R is idle */
+					applyDeviceDefinition(value);
 				} else if (event.getProperty() == "USE_CUSTOM_DEVICE") {
 					String val = event.getNewValue().toString();
 					if (RState.isBusy() == false) {
@@ -956,8 +944,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 									+ "R preferences > R connection > Embedded R (then start R again), and 'Use Custom Device'.");
 						}
 					} else if (sel.equals("PLOT_SWT_VECTOR")) {
-						/* The device of embedded R: SWT vector graphics in a custom view, resizable */
-						prefsPlotRserve.mult.setStringValue("options(device = \"bio7PlotVector\")");
+						/*
+						 * The device of embedded R: SWT vector graphics in a custom view, resizable
+						 * (with Rserve the image device, see VECTOR_DEVICE_DEFAULT)
+						 */
+						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
+								+ "tempDevicePlot%05d.tiff"
+								+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")" + VECTOR_DEVICE_DEFAULT);
 						prefsPlotRserve.deviceFilename.setStringValue("");
 						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
 						if (!"EMBEDDED".equals(store2.getString("R_BACKEND"))) {
@@ -999,6 +992,67 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		// Initialize important classes for Bio7!!!
 		initBio7();
 
+	}
+
+	/*
+	 * The default device: the SWT Vector Plot of embedded R. Its R function only
+	 * exists in embedded R, so the default definition defines the image device first
+	 * (used with Rserve) and selects the vector device if it is available.
+	 */
+	private static final String VECTOR_DEVICE_DEFAULT = "; if (exists(\"bio7PlotVector\", mode = \"function\")) options(device = \"bio7PlotVector\")";
+
+	/* The device definition which is applied when R is idle (the latest one, see applyDeviceDefinition) */
+	private static volatile String pendingDeviceDefinition;
+	/* A retry is scheduled (one for all definitions which arrive while R is busy) */
+	private static boolean deviceDefinitionRetry;
+
+	/*
+	 * Evaluates the device definition (e.g., the size of the ImageJ-Canvas view for
+	 * the device "ImageJ View Display Size") in R. If R is busy (e.g., while R
+	 * starts or plots), the definition is applied later: before, it was dropped and
+	 * the plots used the former size until the view was resized again.
+	 */
+	private static void applyDeviceDefinition(String value) {
+		pendingDeviceDefinition = value;
+		Display display = Display.getDefault();
+		Runnable run = () -> {
+			if (!deviceDefinitionRetry) {
+				tryDeviceDefinition(display, 0);
+			}
+		};
+		if (display.getThread() == Thread.currentThread()) {
+			run.run();
+		} else {
+			display.asyncExec(run);
+		}
+	}
+
+	private static void tryDeviceDefinition(Display display, int attempt) {
+		deviceDefinitionRetry = false;
+		String value = pendingDeviceDefinition;
+		if (value == null) {
+			return;
+		}
+		RBackend con = RBridge.getBackend();
+		if (con == null) {
+			/* No R: RConfig sets the device definition of the preferences when R starts */
+			pendingDeviceDefinition = null;
+			return;
+		}
+		if (RState.isBusy()) {
+			/* Retried for some minutes (a long computation), a newer definition replaces it */
+			if (attempt < 600 && !display.isDisposed()) {
+				deviceDefinitionRetry = true;
+				display.timerExec(500, () -> tryDeviceDefinition(display, attempt + 1));
+			}
+			return;
+		}
+		pendingDeviceDefinition = null;
+		try {
+			con.eval(value);
+		} catch (RserveException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**

@@ -74,7 +74,7 @@ public class ExecuteRScriptAction extends Action {
 					System.out.print("source('" + path + "')");
 					System.out.println();
 				} else {
-					Bio7Dialog.message("Please start Rserve or the \"Native R\" shell in the Bio7 console!");
+					Bio7Dialog.message("Please start R or the \"Native R\" shell in the Bio7 console!");
 				}
 
 			}

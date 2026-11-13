@@ -112,10 +112,12 @@ public class ThemeTabRendering extends Bio7TabRendering {
 			result = new Image(display, (ImageDataProvider) zoom -> {
 				ImageData black = renderTab(part, state, bounds, area, original, new Color(0, 0, 0), zoom);
 				ImageData white = renderTab(part, state, bounds, area, original, new Color(255, 255, 255), zoom);
+				/* Null (an empty offscreen tab): the image can't be created, the tab is painted normally below */
 				return black == null || white == null ? null : composite(black, white, fill, opacity / 100.0);
 			});
 			gc.drawImage(result, area.x, area.y);
 		} catch (RuntimeException e) {
+			/* E.g., the offscreen tab was empty (see composite) */
 			super.draw(part, state, bounds, gc);
 		} finally {
 			if (result != null && !result.isDisposed()) {
@@ -248,7 +250,17 @@ public class ThemeTabRendering extends Bio7TabRendering {
 			}
 		}
 		out.alphaData = alpha;
-		return out;
+		/*
+		 * Nothing painted offscreen (sometimes, e.g., while the folder is laid out after a
+		 * change of the theme): null, the tab is painted normally (else the selected tab
+		 * would be invisible with a low opacity, e.g., 0 in the theme Stars)
+		 */
+		for (byte b : alpha) {
+			if (b != 0) {
+				return out;
+			}
+		}
+		return null;
 	}
 
 	/* The colors of the partly covered pixels (e.g., the antialiased edges) are multiplied with their alpha */

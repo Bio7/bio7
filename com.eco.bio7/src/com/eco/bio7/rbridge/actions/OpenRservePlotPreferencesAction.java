@@ -42,7 +42,7 @@ public class OpenRservePlotPreferencesAction extends Action implements ActionFac
 
 		RServePrefs pref = new RServePrefs();
 		IPreferencePage page = pref;
-		page.setTitle("Rserve preferences");
+		page.setTitle("R preferences");
 		// page.setImageDescriptor(image);
 		
 		

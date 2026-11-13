@@ -54,7 +54,7 @@ public class DatabaseMethods {
 			}
 			RState.setBusy(false);
 		} else {
-			Bio7Dialog.message("Rserve is not alive!");
+			Bio7Dialog.message("R is not running!\nPlease start R (toolbar action \"Start R\").");
 		}
 
 		/*
@@ -86,7 +86,7 @@ public class DatabaseMethods {
 		 * if (event.getResult().isOK()) { RState.setBusy(false);
 		 * 
 		 * } else { RState.setBusy(false); } } }); // job.setSystem(true);
-		 * job.schedule(); } else { Bio7Dialog.message("Rserve is not alive!"); }
+		 * job.schedule(); } else { Bio7Dialog.message("R is not running!\nPlease start R (toolbar action \"Start R\")."); }
 		 */
 		return res;
 	}
@@ -185,7 +185,7 @@ public class DatabaseMethods {
 
 			job.schedule();
 		} else {
-			Bio7Dialog.message("Rserve is not alive!");
+			Bio7Dialog.message("R is not running!\nPlease start R (toolbar action \"Start R\").");
 		}
 
 	}
@@ -249,7 +249,7 @@ public class DatabaseMethods {
 			// job.setSystem(true);
 			job.schedule();
 		} else {
-			Bio7Dialog.message("Rserve is not alive!");
+			Bio7Dialog.message("R is not running!\nPlease start R (toolbar action \"Start R\").");
 		}
 
 	}

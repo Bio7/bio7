@@ -191,7 +191,7 @@ public class IJTranserResultsTable {
 			MessageBox messageBox = new MessageBox(new Shell(),
 
 					SWT.ICON_INFORMATION);
-			messageBox.setMessage("RServer connection failed - Server is not running !");
+			messageBox.setMessage("R is not running!\nPlease start R (toolbar action \"Start R\").");
 			messageBox.open();
 
 		}
@@ -303,7 +303,7 @@ public class IJTranserResultsTable {
 
 			} else {
 
-				Bio7Dialog.message("Rserve is not alive!");
+				Bio7Dialog.message("R is not running!\nPlease start R (toolbar action \"Start R\").");
 			}
 		} else {
 			Bio7Dialog.message("No image opened!");

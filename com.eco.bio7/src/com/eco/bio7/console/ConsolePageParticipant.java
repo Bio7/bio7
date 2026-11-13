@@ -308,10 +308,10 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					/* Rserve only: embedded R and the console share one workspace */
 					if (interpreterSelection.equals("R") && RServe.getConnection() != null) {
 						fastSaveAndReloadRWorkspace();
-						System.out.print("Rserve workspace data transferred to native R workspace!");
+						System.out.print("R workspace data transferred to native R workspace!");
 						System.out.println();
 					} else {
-						Bio7Dialog.message("Please start Rserve and the \"Native R\" shell in the Bio7 console!");
+						Bio7Dialog.message("Please start R and the \"Native R\" shell in the Bio7 console!");
 					}
 
 				}
@@ -469,10 +469,11 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		toolBarManager.add(new ConsoleRShellAction());
 		toolBarManager.add(new ConsoleNativeShellAction());
 		toolBarManager.add(new ConsolePythonShellAction());
-		toolBarManager.add(new ConsoleCustomActions(this));
+		/* The menus as buttons with a visible arrow in the dark themes (see MenuButtonItem) */
+		toolBarManager.add(com.eco.bio7.util.MenuButtonItem.of(new ConsoleCustomActions(this)));
 		// item = new PlaceholderLabel().getPlaceholderLabel();
 		ia = new ConsoleInterpreterAction(this);
-		toolBarManager.add(ia);
+		toolBarManager.add(com.eco.bio7.util.MenuButtonItem.of(ia));
 		// toolBarManager.add(item);
 
 		in = new BufferedReader(isr);

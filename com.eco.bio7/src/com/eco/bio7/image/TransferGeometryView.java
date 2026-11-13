@@ -11,7 +11,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
@@ -29,11 +29,11 @@ import org.eclipse.swt.widgets.Label;
 public class TransferGeometryView extends ViewPart {
 
 	public static final String ID = "com.eco.bio7.image.TransferGeometryView"; //$NON-NLS-1$
-	private Combo combo;
+	private CCombo combo;
 	protected boolean transferAsList = true;
 	protected String geometrySelection;
 	protected int geometrySelectionSelection = 0;
-	private Combo combo_1;
+	private CCombo combo_1;
 	private Button btnAddDataframe;
 	protected String selDataframe;
 	protected String crsText;
@@ -61,10 +61,10 @@ public class TransferGeometryView extends ViewPart {
 		
 		scrolledComposite = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL);	
 		scrolledComposite.setExpandHorizontal(true);
-		scrolledComposite.setExpandVertical(false);
+		/* The height of the content (see setMinSize at the end): the rows are not compressed, else scroll bars */
+		scrolledComposite.setExpandVertical(true);
 		
 		Composite container = new Composite(scrolledComposite, SWT.NONE);
-		container.setSize(300,350);
 		scrolledComposite.setContent(container);
 		createActions();
 		//initializeToolBar();
@@ -122,9 +122,8 @@ public class TransferGeometryView extends ViewPart {
 		});
 		btnRadioButton.setText("Spatial Data (R package 'sp' required!)");
 
-		combo = new Combo(container, SWT.NONE);
-		GridData gd_combo = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_combo.heightHint = 40;
+		combo = new com.eco.bio7.util.ThemeCombo(container, SWT.BORDER);
+		GridData gd_combo = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		combo.setLayoutData(gd_combo);
 		combo.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -198,9 +197,8 @@ public class TransferGeometryView extends ViewPart {
 		});
 		btnAddDataframe.setText("Add selected dataframe (reselect for a refresh!)");
 
-		combo_1 = new Combo(container, SWT.NONE);
-		GridData gd_combo_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_combo_1.heightHint = 40;
+		combo_1 = new com.eco.bio7.util.ThemeCombo(container, SWT.BORDER);
+		GridData gd_combo_1 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		combo_1.setLayoutData(gd_combo_1);
 		combo_1.addSelectionListener(new SelectionAdapter() {
 
@@ -331,6 +329,19 @@ public class TransferGeometryView extends ViewPart {
 			}
 		});
 		btnTransfer.setText("Transfer to R!");
+		/*
+		 * The minimum size of the content: the width of the view and the height of the
+		 * content for this width (a fixed size compressed the rows, the preferred width
+		 * of the long labels made the content wider than the view)
+		 */
+		Runnable fit = () -> {
+			if (!scrolledComposite.isDisposed()) {
+				int width = Math.max(1, scrolledComposite.getClientArea().width);
+				scrolledComposite.setMinSize(width, container.computeSize(width, SWT.DEFAULT).y);
+			}
+		};
+		scrolledComposite.addListener(SWT.Resize, _ -> fit.run());
+		fit.run();
 
 	}
 

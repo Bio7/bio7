@@ -42,7 +42,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
@@ -74,7 +74,8 @@ public class DatabaseView extends ViewPart {
 	private Text serverTextfield;
 	private StyledText previewTextfield;
 	protected String dir;
-	private Combo combo;
+	/* A CCombo: the colors of the theme (a read-only Combo is a native popup button on macOS, not colored) */
+	private CCombo combo;
 	private Spinner spinner;
 	protected ConnectionProfiles profilesXML;
 	private Text textDisconnect;
@@ -443,7 +444,8 @@ public class DatabaseView extends ViewPart {
 		Label lblDriver = new Label(container, SWT.NONE);
 		lblDriver.setText("ODBC Driver:");
 
-		combo = new Combo(container, SWT.READ_ONLY);
+		combo = new com.eco.bio7.util.ThemeCombo(container, SWT.READ_ONLY | SWT.BORDER);
+		combo.setVisibleItemCount(12);
 		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		combo.addSelectionListener(new SelectionAdapter() {
 			@Override

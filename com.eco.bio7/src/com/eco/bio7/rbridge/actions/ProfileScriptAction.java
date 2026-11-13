@@ -31,7 +31,7 @@ public class ProfileScriptAction implements IObjectActionDelegate, IEditorAction
 			RBackend con = RBridge.getBackend();
 			if (con != null) {
 				Bio7Dialog.message(
-						"Please start the native R mode in the shell (or leave the Rserve connection  - toolbar 'Start Rserve' action) in the Bio7 console\nto profile the script!\n\nResults will be displayed in an external browser!");
+						"Please start the native R mode in the shell (or stop R - toolbar 'Start R' action) in the Bio7 console\nto profile the script!\n\nResults will be displayed in an external browser!");
 				return;
 			}
 
@@ -50,7 +50,7 @@ public class ProfileScriptAction implements IObjectActionDelegate, IEditorAction
 					System.out.println(editorScript);
 				} else {
 					Bio7Dialog.message(
-							"Please start the native R mode in the shell (or leave the Rserve connection  - toolbar 'Start Rserve' action) in the Bio7 console\nto profile the script!\n\nResults will be displayed in an external browser!");
+							"Please start the native R mode in the shell (or stop R - toolbar 'Start R' action) in the Bio7 console\nto profile the script!\n\nResults will be displayed in an external browser!");
 				}
 			}
 
@@ -91,7 +91,7 @@ public class ProfileScriptAction implements IObjectActionDelegate, IEditorAction
 			 * else { MessageBox messageBox = new MessageBox(new Shell(),
 			 * 
 			 * SWT.ICON_WARNING); messageBox.setMessage(
-			 * "RServer connection failed - Server is not running !"); messageBox.open();
+			 * "R is not running!\nPlease start R (toolbar action \"Start R\")."); messageBox.open();
 			 * 
 			 * }
 			 */

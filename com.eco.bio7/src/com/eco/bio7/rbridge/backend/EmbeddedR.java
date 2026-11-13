@@ -57,6 +57,70 @@ public final class EmbeddedR {
 	private EmbeddedR() {
 	}
 
+	/* The oldest R version for embedded R (R 4.2.1 crashed in the console on Windows, a JIT compile in embedded R) */
+	private static final int MIN_MAJOR = 4, MIN_MINOR = 3;
+
+	/*
+	 * The reason if the R version of the home is older than the oldest supported
+	 * version, else null (also if the version is unknown). Checked before the start:
+	 * R can't be unloaded from the Bio7 process again.
+	 */
+	private static String unsupportedVersion(String home) {
+		String version = rVersion(home);
+		if (version == null) {
+			return null;
+		}
+		String[] parts = version.split("\\.");
+		try {
+			int major = Integer.parseInt(parts[0].trim());
+			int minor = parts.length > 1 ? Integer.parseInt(parts[1].trim()) : 0;
+			if (major < MIN_MAJOR || (major == MIN_MAJOR && minor < MIN_MINOR)) {
+				return "Embedded R needs R " + MIN_MAJOR + "." + MIN_MINOR + " or later (this is R " + version + ").";
+			}
+		} catch (NumberFormatException e) {
+			/* Unknown format: started */
+		}
+		return null;
+	}
+
+	/*
+	 * The version of R ("4.5.2"): from include/Rversion.h of the home (fast, the R
+	 * installers of macOS and Windows contain it), else from a short R process
+	 * (RLocator.probe), null if unknown
+	 */
+	private static String rVersion(String home) {
+		java.nio.file.Path header = Path.of(home, "include", "Rversion.h");
+		if (java.nio.file.Files.isRegularFile(header)) {
+			try {
+				String major = null, minor = null;
+				for (String line : java.nio.file.Files.readAllLines(header, java.nio.charset.StandardCharsets.ISO_8859_1)) {
+					String l = line.trim();
+					if (l.startsWith("#define R_MAJOR")) {
+						major = quoted(l);
+					} else if (l.startsWith("#define R_MINOR")) {
+						minor = quoted(l);
+					}
+				}
+				if (major != null && minor != null) {
+					return major + "." + minor;
+				}
+			} catch (java.io.IOException | RuntimeException e) {
+				/* The R process below */
+			}
+		}
+		try {
+			RLocator.RInstallation r = RLocator.probe(home);
+			return r.isValid() ? r.version() : null;
+		} catch (RuntimeException e) {
+			return null;
+		}
+	}
+
+	private static String quoted(String line) {
+		int a = line.indexOf('"'), b = line.lastIndexOf('"');
+		return a >= 0 && b > a ? line.substring(a + 1, b) : null;
+	}
+
 	/**
 	 * Starts embedded R (in the UI thread or any thread).
 	 *
@@ -82,6 +146,11 @@ public final class EmbeddedR {
 				return "R of the PATH could not be started: " + r.error();
 			}
 			home = r.home();
+		}
+		/* Older R versions are not supported (Rserve is used then) */
+		String tooOld = unsupportedVersion(home);
+		if (tooOld != null) {
+			return tooOld;
 		}
 		connectConsole();
 		/* The size of the ImageJ view for the plot canvas device */
