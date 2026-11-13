@@ -255,8 +255,7 @@ public class TransferGeometryView extends ViewPart {
 		btnAddProjectionFrom.setText("Add projection from georeferenced file (Projected Coordinate System!)");
 
 		text = new Text(container, SWT.BORDER);
-		GridData gd_text = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_text.heightHint = 30;
+		GridData gd_text = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		text.setLayoutData(gd_text);
 		text.setEnabled(false);
 

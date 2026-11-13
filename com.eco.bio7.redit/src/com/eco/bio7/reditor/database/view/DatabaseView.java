@@ -648,8 +648,7 @@ public class DatabaseView extends ViewPart {
 				// previewTextfield.setText(createTemplate(true));
 			}
 		});
-		GridData gd_textDisconnect = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
-		gd_textDisconnect.heightHint = 22;
+		GridData gd_textDisconnect = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
 		textDisconnect.setLayoutData(gd_textDisconnect);
 
 		CTabItem tbtmSshTunnel = new CTabItem(tabFolder, SWT.NONE);
@@ -678,9 +677,8 @@ public class DatabaseView extends ViewPart {
 				}
 			}
 		});
-		GridData gd_textSshHost = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		GridData gd_textSshHost = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		gd_textSshHost.widthHint = 207;
-		gd_textSshHost.heightHint = 20;
 		textSshHost.setLayoutData(gd_textSshHost);
 
 		spinnerSshPort = new Spinner(composite_1, SWT.BORDER);
@@ -703,7 +701,6 @@ public class DatabaseView extends ViewPart {
 			}
 		});
 		GridData gd_spinnerSshPort = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-		gd_spinnerSshPort.heightHint = 20;
 		spinnerSshPort.setLayoutData(gd_spinnerSshPort);
 
 		Label lblUsername = new Label(composite_1, SWT.NONE);
@@ -718,7 +715,6 @@ public class DatabaseView extends ViewPart {
 			}
 		});
 		GridData gd_textSshUsername = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
-		gd_textSshUsername.heightHint = 20;
 		textSshUsername.setLayoutData(gd_textSshUsername);
 
 		Label lblTimeout = new Label(composite_1, SWT.NONE);
@@ -743,7 +739,6 @@ public class DatabaseView extends ViewPart {
 		});
 		spinnerTimeout.setSelection(20);
 		GridData gd_spinnerTimeout = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-		gd_spinnerTimeout.heightHint = 20;
 		spinnerTimeout.setLayoutData(gd_spinnerTimeout);
 		new Label(composite_1, SWT.NONE);
 
@@ -789,7 +784,6 @@ public class DatabaseView extends ViewPart {
 			}
 		});
 		GridData gd_spinnerLocalPort = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
-		gd_spinnerLocalPort.heightHint = 20;
 		spinnerLocalPort.setLayoutData(gd_spinnerLocalPort);
 		new Label(composite_1, SWT.NONE);
 
@@ -806,7 +800,6 @@ public class DatabaseView extends ViewPart {
 			}
 		});
 		GridData gd_textSshCustomArgs = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-		gd_textSshCustomArgs.heightHint = 20;
 		textSshCustomArgs.setLayoutData(gd_textSshCustomArgs);
 		new Label(composite_1, SWT.NONE);
 		new Label(composite_1, SWT.NONE);

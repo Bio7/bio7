@@ -180,9 +180,8 @@ public class ImageRoiSelectionInputDialog extends Dialog {
 		{
 			spinner = new Spinner(container, SWT.BORDER);
 			spinner.setMaximum(100000);
-			GridData gd_spinner = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+			GridData gd_spinner = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 			gd_spinner.widthHint = 279;
-			gd_spinner.heightHint = 30;
 			spinner.setLayoutData(gd_spinner);
 		}
 		new Label(container, SWT.NONE);

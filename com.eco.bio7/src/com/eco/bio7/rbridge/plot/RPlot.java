@@ -464,7 +464,6 @@ public class RPlot extends Composite {
 
 		titleText = new Text(composite_1, SWT.BORDER);
 		GridData gd_titleText = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
-		gd_titleText.heightHint = 30;
 		titleText.setLayoutData(gd_titleText);
 		titleText.setText("Plot");
 
@@ -473,7 +472,6 @@ public class RPlot extends Composite {
 		titleLabel.setText("Title");
 		xText = new Text(composite_1, SWT.BORDER);
 		GridData gd_xText = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-		gd_xText.heightHint = 30;
 		xText.setLayoutData(gd_xText);
 		xText.setText("x");
 		new Label(this, SWT.NONE);
@@ -485,7 +483,6 @@ public class RPlot extends Composite {
 
 		yText = new Text(composite_1, SWT.BORDER);
 		GridData gd_yText = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-		gd_yText.heightHint = 30;
 		yText.setLayoutData(gd_yText);
 		yText.setText("y");
 		new Label(this, SWT.NONE);

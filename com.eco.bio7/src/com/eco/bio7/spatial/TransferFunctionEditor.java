@@ -236,22 +236,22 @@ public class TransferFunctionEditor extends Composite {
 		String text = "";
 		if (selectedOpacity != null) {
 			text = "Position " + format(selectedOpacity.x) + dataValue(selectedOpacity.x) + ", opacity "
-					+ String.format("%.2f", selectedOpacity.a);
+					+ String.format(java.util.Locale.ROOT, "%.2f", selectedOpacity.a);
 		} else if (selectedColor != null) {
 			text = "Position " + format(selectedColor.x) + dataValue(selectedColor.x);
 		} else if (!Double.isNaN(dataMin)) {
-			text = "Range " + String.format("%.4g", dataMin) + " - " + String.format("%.4g", dataMax);
+			text = "Range " + String.format(java.util.Locale.ROOT, "%.4g", dataMin) + " - " + String.format(java.util.Locale.ROOT, "%.4g", dataMax);
 		}
 		infoLabel.setText(text);
 		layout();
 	}
 
 	private static String format(double v) {
-		return String.format("%.3f", v);
+		return String.format(java.util.Locale.ROOT, "%.3f", v);
 	}
 
 	private String dataValue(double x) {
-		return Double.isNaN(dataMin) ? "" : " (value " + String.format("%.4g", dataMin + x * (dataMax - dataMin)) + ")";
+		return Double.isNaN(dataMin) ? "" : " (value " + String.format(java.util.Locale.ROOT, "%.4g", dataMin + x * (dataMax - dataMin)) + ")";
 	}
 
 	/* Opacity canvas */

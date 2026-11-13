@@ -706,8 +706,7 @@ public class Options3d extends ViewPart {
 		showFramerateButton.setText("Show fps");
 
 		setFixedFPS = new Spinner(composite_2, SWT.BORDER);
-		GridData gd_setFixedFPS = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-		gd_setFixedFPS.heightHint = 25;
+		GridData gd_setFixedFPS = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
 		setFixedFPS.setLayoutData(gd_setFixedFPS);
 		setFixedFPS.setToolTipText("Sets the Rendering speed to the selected FPS!");
 		setFixedFPS.setSelection(60);
@@ -1373,8 +1372,7 @@ public class Options3d extends ViewPart {
 		/* Switch for the second light! */
 
 		final Spinner spinner = new Spinner(composite_6, SWT.BORDER);
-		GridData gd_spinner = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_spinner.heightHint = 25;
+		GridData gd_spinner = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		spinner.setLayoutData(gd_spinner);
 		spinner.setMinimum(-1000000);
 		spinner.addSelectionListener(new SelectionAdapter() {
@@ -1391,8 +1389,7 @@ public class Options3d extends ViewPart {
 		spinner.setMaximum(1000000);
 
 		final Spinner spinner_1 = new Spinner(composite_6, SWT.BORDER);
-		GridData gd_spinner_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_spinner_1.heightHint = 25;
+		GridData gd_spinner_1 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		spinner_1.setLayoutData(gd_spinner_1);
 		spinner_1.setMinimum(-1000000);
 
@@ -1410,8 +1407,7 @@ public class Options3d extends ViewPart {
 		spinner_1.setSelection(1000);
 
 		final Spinner spinner_2 = new Spinner(composite_6, SWT.BORDER);
-		GridData gd_spinner_2 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_spinner_2.heightHint = 25;
+		GridData gd_spinner_2 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		spinner_2.setLayoutData(gd_spinner_2);
 		spinner_2.setMinimum(-1000000);
 
@@ -1456,8 +1452,7 @@ public class Options3d extends ViewPart {
 		enabledButton_1.setText("Enabled");
 
 		final Spinner spinner_3 = new Spinner(composite_6, SWT.BORDER);
-		GridData gd_spinner_3 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_spinner_3.heightHint = 25;
+		GridData gd_spinner_3 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		spinner_3.setLayoutData(gd_spinner_3);
 		spinner_3.setMinimum(-1000000);
 		spinner_3.addSelectionListener(new SelectionAdapter() {
@@ -1473,8 +1468,7 @@ public class Options3d extends ViewPart {
 		spinner_3.setMaximum(1000000);
 
 		final Spinner spinner_4 = new Spinner(composite_6, SWT.BORDER);
-		GridData gd_spinner_4 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_spinner_4.heightHint = 25;
+		GridData gd_spinner_4 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		spinner_4.setLayoutData(gd_spinner_4);
 		spinner_4.setMinimum(-1000000);
 		spinner_4.setMaximum(1000000);
@@ -1490,8 +1484,7 @@ public class Options3d extends ViewPart {
 		});
 
 		final Spinner spinner_5 = new Spinner(composite_6, SWT.BORDER);
-		GridData gd_spinner_5 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_spinner_5.heightHint = 25;
+		GridData gd_spinner_5 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		spinner_5.setLayoutData(gd_spinner_5);
 		spinner_5.setMinimum(-1000000);
 		spinner_5.setMaximum(1000000);
@@ -1535,8 +1528,7 @@ public class Options3d extends ViewPart {
 		enabledButton_2.setText("Enabled");
 
 		final Spinner spinner_6 = new Spinner(composite_6, SWT.BORDER);
-		GridData gd_spinner_6 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_spinner_6.heightHint = 25;
+		GridData gd_spinner_6 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		spinner_6.setLayoutData(gd_spinner_6);
 		spinner_6.setMinimum(-1000000);
 		spinner_6.addSelectionListener(new SelectionAdapter() {
@@ -1552,8 +1544,7 @@ public class Options3d extends ViewPart {
 		spinner_6.setMaximum(1000000);
 
 		final Spinner spinner_7 = new Spinner(composite_6, SWT.BORDER);
-		GridData gd_spinner_7 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_spinner_7.heightHint = 25;
+		GridData gd_spinner_7 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		spinner_7.setLayoutData(gd_spinner_7);
 		spinner_7.setMinimum(-1000000);
 		spinner_7.setMaximum(1000000);
@@ -1569,8 +1560,7 @@ public class Options3d extends ViewPart {
 		});
 
 		final Spinner spinner_8 = new Spinner(composite_6, SWT.BORDER);
-		GridData gd_spinner_8 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_spinner_8.heightHint = 25;
+		GridData gd_spinner_8 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		spinner_8.setLayoutData(gd_spinner_8);
 		spinner_8.setMinimum(-1000000);
 		spinner_8.setMaximum(1000000);
@@ -1614,8 +1604,7 @@ public class Options3d extends ViewPart {
 		enabledButton_3.setText("Enabled");
 
 		final Spinner spinner_9 = new Spinner(composite_6, SWT.BORDER);
-		GridData gd_spinner_9 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_spinner_9.heightHint = 25;
+		GridData gd_spinner_9 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		spinner_9.setLayoutData(gd_spinner_9);
 		spinner_9.setMinimum(-1000000);
 		spinner_9.addSelectionListener(new SelectionAdapter() {
@@ -1631,8 +1620,7 @@ public class Options3d extends ViewPart {
 		spinner_9.setMaximum(1000000);
 
 		final Spinner spinner_10 = new Spinner(composite_6, SWT.BORDER);
-		GridData gd_spinner_10 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_spinner_10.heightHint = 25;
+		GridData gd_spinner_10 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		spinner_10.setLayoutData(gd_spinner_10);
 		spinner_10.setMinimum(-1000000);
 		spinner_10.setMaximum(1000000);
@@ -1648,8 +1636,7 @@ public class Options3d extends ViewPart {
 		});
 
 		final Spinner spinner_11 = new Spinner(composite_6, SWT.BORDER);
-		GridData gd_spinner_11 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_spinner_11.heightHint = 25;
+		GridData gd_spinner_11 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		spinner_11.setLayoutData(gd_spinner_11);
 		spinner_11.setMinimum(-1000000);
 		spinner_11.setMaximum(1000000);
@@ -1737,8 +1724,8 @@ public class Options3d extends ViewPart {
 		renderFramesButton.setText("Render Frames");
 		text_11 = new Text(composite_8, SWT.BORDER);
 		text_11.setToolTipText("Number of frames to render!");
-		GridData gd_text_11 = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-		gd_text_11.heightHint = 30;
+		/* The normal height of a text field */
+		GridData gd_text_11 = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
 		text_11.setLayoutData(gd_text_11);
 		text_11.setText(Integer.toString(stackSizeCount));
 		text_11.addListener(SWT.Modify, new Listener() {
@@ -2833,7 +2820,7 @@ public class Options3d extends ViewPart {
 		opacityScale.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				float value = opacityScale.getSelection() / 100.0f;
-				opacityLabel.setText("Opacity: " + String.format("%.2f", value));
+				opacityLabel.setText("Opacity: " + String.format(java.util.Locale.ROOT, "%.2f", value));
 				VolumeRenderer volume = volumeRenderer();
 				if (volume != null) {
 					volume.setOpacity(value);
@@ -2860,7 +2847,7 @@ public class Options3d extends ViewPart {
 		samplingScale.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				float value = samplingScale.getSelection() / 2.0f;
-				samplingLabel.setText("Sampling: " + String.format("%.1f", value) + "x");
+				samplingLabel.setText("Sampling: " + String.format(java.util.Locale.ROOT, "%.1f", value) + "x");
 				VolumeRenderer volume = volumeRenderer();
 				if (volume != null) {
 					volume.setSampling(value);
@@ -2991,7 +2978,7 @@ public class Options3d extends ViewPart {
 			if (!all) {
 				isoValueLabel.setText("Iso Value: (selected values)");
 			} else if (iso != null && iso.getImage() != null) {
-				isoValueLabel.setText("Iso Value: " + String.format("%.4g", iso.getIsoValue()));
+				isoValueLabel.setText("Iso Value: " + String.format(java.util.Locale.ROOT, "%.4g", iso.getIsoValue()));
 			}
 		};
 		for (org.eclipse.swt.widgets.Control c : createSelectionControls(compositeIso,
@@ -3063,7 +3050,7 @@ public class Options3d extends ViewPart {
 					double min = iso.getDisplayMin();
 					double max = iso.getDisplayMax();
 					double value = min + (max - min) * isoValueScale.getSelection() / 1000.0;
-					isoValueLabel.setText("Iso Value: " + String.format("%.4g", value));
+					isoValueLabel.setText("Iso Value: " + String.format(java.util.Locale.ROOT, "%.4g", value));
 					iso.setIsoValue(value);
 				}
 			}
@@ -3085,7 +3072,7 @@ public class Options3d extends ViewPart {
 					double max = iso.getDisplayMax();
 					double range = max > min ? max - min : 1;
 					isoValueScale.setSelection((int) Math.round((iso.getIsoValue() - min) / range * 1000));
-					isoValueLabel.setText("Iso Value: " + String.format("%.4g", iso.getIsoValue()));
+					isoValueLabel.setText("Iso Value: " + String.format(java.util.Locale.ROOT, "%.4g", iso.getIsoValue()));
 					showIsoValue.run();
 				}
 			}
@@ -3097,7 +3084,7 @@ public class Options3d extends ViewPart {
 		smoothingScale.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				float value = smoothingScale.getSelection() / 10.0f;
-				smoothingLabel.setText("Smoothing: " + String.format("%.1f", value));
+				smoothingLabel.setText("Smoothing: " + String.format(java.util.Locale.ROOT, "%.1f", value));
 				IsoSurface iso = isoSurface();
 				if (iso != null) {
 					iso.setSmoothing(value);
@@ -3123,7 +3110,7 @@ public class Options3d extends ViewPart {
 		opacityScale.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				float value = opacityScale.getSelection() / 100.0f;
-				opacityLabel.setText("Opacity: " + String.format("%.2f", value));
+				opacityLabel.setText("Opacity: " + String.format(java.util.Locale.ROOT, "%.2f", value));
 				IsoSurface iso = isoSurface();
 				if (iso != null) {
 					iso.setOpacity(value);

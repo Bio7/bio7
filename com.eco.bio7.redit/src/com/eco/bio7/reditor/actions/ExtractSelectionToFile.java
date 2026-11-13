@@ -91,7 +91,13 @@ public class ExtractSelectionToFile implements IEditorActionDelegate {
 					IFile fil = project.getFile(varName + ".R");
 
 					if (fil.exists() == false) {
-						byte[] bytes = text.getBytes();
+						byte[] bytes;
+						try {
+							/* In the encoding of the project (the editor reads the file with it) */
+							bytes = text.getBytes(project.getDefaultCharset());
+						} catch (CoreException | java.io.UnsupportedEncodingException e) {
+							bytes = text.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+						}
 						InputStream source = new ByteArrayInputStream(bytes);
 						try {
 							fil.create(source, IResource.NONE, null);

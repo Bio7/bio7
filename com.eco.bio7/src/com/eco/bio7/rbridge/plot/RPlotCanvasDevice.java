@@ -190,8 +190,11 @@ public class RPlotCanvasDevice extends Plot {
 		statusControl = status;
 		/* No coordinate readout of ImageJ (the data coordinates of an ImageJ plot) */
 		window.showStatus("");
-		org.eclipse.swt.widgets.Button back = button(panel, "\u25C0", "The previous plot (history)", () -> moveInHistory(-1));
-		org.eclipse.swt.widgets.Button forward = button(panel, "\u25B6", "The next plot (history)", () -> moveInHistory(1));
+		/* Triangles as icons (the characters have different sizes on macOS) */
+		org.eclipse.swt.widgets.Button back = TriangleButton.create(panel, true, "The previous plot (history)", () -> moveInHistory(-1));
+		org.eclipse.swt.widgets.Button forward = TriangleButton.create(panel, false, "The next plot (history)", () -> moveInHistory(1));
+		back.setLayoutData(new org.eclipse.swt.layout.GridData(org.eclipse.swt.SWT.FILL, org.eclipse.swt.SWT.CENTER, false, false));
+		forward.setLayoutData(new org.eclipse.swt.layout.GridData(org.eclipse.swt.SWT.FILL, org.eclipse.swt.SWT.CENTER, false, false));
 		historyLabel = new org.eclipse.swt.widgets.Label(panel, org.eclipse.swt.SWT.NONE);
 		historyLabel.setText("      ");
 		historyLabel.setToolTipText("The position in the history of the plots");

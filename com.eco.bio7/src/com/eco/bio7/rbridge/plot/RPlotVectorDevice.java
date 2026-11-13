@@ -175,8 +175,9 @@ public final class RPlotVectorDevice {
 		GridLayout barLayout = new GridLayout(6, false);
 		barLayout.marginHeight = 2;
 		bar.setLayout(barLayout);
-		button(bar, "◀", "Previous plot", () -> moveInHistory(-1));
-		button(bar, "▶", "Next plot", () -> moveInHistory(1));
+		/* Triangles as icons (the characters have different sizes on macOS) */
+		TriangleButton.create(bar, true, "Previous plot", () -> moveInHistory(-1)).setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+		TriangleButton.create(bar, false, "Next plot", () -> moveInHistory(1)).setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
 		historyLabel = new Label(bar, SWT.NONE);
 		historyLabel.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
 		button(bar, "Save...", "Save the plot (PNG, PDF or SVG; R draws it again)", this::save);

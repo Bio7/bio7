@@ -457,7 +457,6 @@ public class RPlotView extends ViewPart {
 
 		titleText = new Text(composite_1, SWT.BORDER);
 		GridData gd_titleText = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
-		gd_titleText.heightHint = 30;
 		titleText.setLayoutData(gd_titleText);
 		titleText.setText("Plot");
 
@@ -466,7 +465,6 @@ public class RPlotView extends ViewPart {
 		titleLabel.setText("Title");
 		xText = new Text(composite_1, SWT.BORDER);
 		GridData gd_xText = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-		gd_xText.heightHint = 30;
 		xText.setLayoutData(gd_xText);
 		xText.setText("x");
 		new Label(composite_1, SWT.NONE);
@@ -478,7 +476,6 @@ public class RPlotView extends ViewPart {
 
 		yText = new Text(composite_1, SWT.BORDER);
 		GridData gd_yText = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-		gd_yText.heightHint = 30;
 		yText.setLayoutData(gd_yText);
 		yText.setText("y");
 		new Label(composite_1, SWT.NONE);

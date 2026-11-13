@@ -786,7 +786,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 					}
 					/* Applied now or (R is busy, e.g., at the start or during a plot) as soon as R is idle */
 					applyDeviceDefinition(value);
-				} else if (event.getProperty() == "USE_CUSTOM_DEVICE") {
+				} else if ("USE_CUSTOM_DEVICE".equals(event.getProperty())) {
 					String val = event.getNewValue().toString();
 					if (RState.isBusy() == false) {
 						RBackend con = RBridge.getBackend();
@@ -815,7 +815,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 				}
 
-				else if (event.getProperty() == "PLOT_DEVICE_SELECTION") {
+				else if ("PLOT_DEVICE_SELECTION".equals(event.getProperty())) {
 
 					IPreferenceStore store2 = Bio7Plugin.getDefault().getPreferenceStore();
 

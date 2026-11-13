@@ -53,8 +53,7 @@ public class ResizeDialog extends Dialog {
 
 		
 		spinner = new Spinner(container, SWT.BORDER);
-		GridData gd_spinner = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_spinner.heightHint = 30;
+		GridData gd_spinner = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		spinner.setLayoutData(gd_spinner);
 		spinner.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
@@ -91,8 +90,7 @@ public class ResizeDialog extends Dialog {
 		
 				
 				spinner_1 = new Spinner(container, SWT.BORDER);
-				GridData gd_spinner_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-				gd_spinner_1.heightHint = 30;
+				GridData gd_spinner_1 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 				spinner_1.setLayoutData(gd_spinner_1);
 				spinner_1.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(final SelectionEvent e) {

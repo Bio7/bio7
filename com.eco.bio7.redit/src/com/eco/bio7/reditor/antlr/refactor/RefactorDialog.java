@@ -99,8 +99,7 @@ public class RefactorDialog extends Dialog {
 		lblInsertName.setText("Name of Variable");
 
 		text = new Text(container, SWT.BORDER);
-		GridData gd_text = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_text.heightHint = 25;
+		GridData gd_text = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		text.setLayoutData(gd_text);
 		text.addVerifyListener(new VerifyListener() {
 			@Override

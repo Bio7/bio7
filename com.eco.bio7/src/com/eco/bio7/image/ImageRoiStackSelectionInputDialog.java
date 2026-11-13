@@ -80,15 +80,13 @@ public class ImageRoiStackSelectionInputDialog extends Dialog {
 		lblTo.setText("To");
 
 		spinner_1 = new Spinner(container, SWT.BORDER);
-		GridData gd_spinner_1 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_spinner_1.heightHint = 30;
+		GridData gd_spinner_1 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		spinner_1.setLayoutData(gd_spinner_1);
 		spinner_1.setMinimum(1);
 		spinner_1.setSelection(1);
 
 		spinner_2 = new Spinner(container, SWT.BORDER);
-		GridData gd_spinner_2 = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_spinner_2.heightHint = 30;
+		GridData gd_spinner_2 = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		spinner_2.setLayoutData(gd_spinner_2);
 		spinner_2.setMinimum(1);
 		spinner_2.setMaximum(10000000);
@@ -225,8 +223,7 @@ public class ImageRoiStackSelectionInputDialog extends Dialog {
 		{
 			spinner = new Spinner(container, SWT.BORDER);
 			spinner.setMaximum(100000);
-			GridData gd_spinner = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-			gd_spinner.heightHint = 30;
+			GridData gd_spinner = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 			spinner.setLayoutData(gd_spinner);
 		}
 		new Label(container, SWT.NONE);

@@ -122,7 +122,7 @@ public class RCompletionShell extends Shell {
 		button.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				try {
-					if (text.getText() != "") {
+					if (!text.getText().isBlank()) {
 						if (RServe.isAliveDialog()) {
 							com.eco.bio7.rbridge.RServe.printJob(text.getText());
 						}

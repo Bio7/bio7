@@ -54,9 +54,8 @@ public class ImageSelectionInputDialog extends Dialog {
 		new Label(container, SWT.NONE);
 		{
 			txtMatrix = new Text(container, SWT.BORDER);
-			GridData gd_txtMatrix = new GridData(SWT.FILL, SWT.FILL, true,
+			GridData gd_txtMatrix = new GridData(SWT.FILL, SWT.CENTER, true,
 					false, 2, 1);
-			gd_txtMatrix.heightHint = 30;
 			txtMatrix.setLayoutData(gd_txtMatrix);
 			txtMatrix.setText("matrix");
 		}
@@ -89,9 +88,8 @@ public class ImageSelectionInputDialog extends Dialog {
 		}
 		{
 			spinner = new Spinner(container, SWT.BORDER);
-			GridData gd_spinner = new GridData(SWT.FILL, SWT.FILL, true, false,
+			GridData gd_spinner = new GridData(SWT.FILL, SWT.CENTER, true, false,
 					1, 1);
-			gd_spinner.heightHint = 30;
 			spinner.setLayoutData(gd_spinner);
 		}
 		new Label(container, SWT.NONE);

@@ -104,8 +104,7 @@ public class ClusterDialog extends Dialog {
 		numberOfClustersLabel.setText("Number of Clusters:");
 
 		spinner = new Spinner(container, SWT.BORDER);
-		GridData gd_spinner = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		gd_spinner.heightHint = 30;
+		GridData gd_spinner = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		spinner.setLayoutData(gd_spinner);
 		spinner.setSelection(2);
 		spinner.addSelectionListener(new SelectionAdapter() {
@@ -117,8 +116,7 @@ public class ClusterDialog extends Dialog {
 		new Label(container, SWT.NONE);
 		new Label(container, SWT.NONE);
 		text = new Text(container, SWT.BORDER);
-		GridData gd_text = new GridData(SWT.FILL, SWT.FILL, true, false, 4, 1);
-		gd_text.heightHint = 30;
+		GridData gd_text = new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1);
 		text.setLayoutData(gd_text);
 		text.setEnabled(false);
 
