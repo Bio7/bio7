@@ -825,6 +825,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		userItem.setText("Timesteps: " + Time.getCounter());
 
 		statusLineMgr.add(userItem);
+		/* The memory of embedded R (not contained in the Java memory display) */
+		com.eco.bio7.rbridge.RMemoryStatus.install(statusLineMgr);
 
 	}
 

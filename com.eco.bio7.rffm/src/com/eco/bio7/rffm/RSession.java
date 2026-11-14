@@ -794,8 +794,31 @@ public final class RSession implements AutoCloseable {
 		return call(task, 0);
 	}
 
+	/*
+	 * The number of finished calls and console inputs: a change shows that R has
+	 * worked (e.g., for a display of the memory of R)
+	 */
+	private final java.util.concurrent.atomic.AtomicLong activity = new java.util.concurrent.atomic.AtomicLong();
+
+	/**
+	 * Returns a counter of the finished calls and console inputs. It changes after
+	 * every evaluation, also after short ones which are over before a poll of
+	 * isBusy() could see them.
+	 */
+	public long getActivity() {
+		return activity.get();
+	}
+
 	/* timeoutMillis <= 0: no limit */
 	private <T> T call(RTask<T> task, long timeoutMillis) throws RException {
+		try {
+			return callCounted(task, timeoutMillis);
+		} finally {
+			activity.incrementAndGet();
+		}
+	}
+
+	private <T> T callCounted(RTask<T> task, long timeoutMillis) throws RException {
 		if (!alive) {
 			throw new RException("R is not running");
 		}
@@ -1100,6 +1123,7 @@ public final class RSession implements AutoCloseable {
 			console.prompt("> ");
 		} finally {
 			busy = false;
+			activity.incrementAndGet();
 			console.busy(false);
 			signalInputRequest();
 		}

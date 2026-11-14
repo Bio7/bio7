@@ -60,6 +60,14 @@ public interface RBackend extends com.eco.bio7.rbridge.REvaluator {
 	/** Returns true for embedded R. */
 	boolean isEmbedded();
 
+	/**
+	 * A counter which changes after every evaluation of R (embedded R), or -1 if
+	 * not available (Rserve).
+	 */
+	default long activity() {
+		return -1;
+	}
+
 	/** The Rserve connection or null (embedded R). */
 	RConnection rserveConnection();
 

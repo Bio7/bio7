@@ -4665,10 +4665,15 @@ public class Measurement3d {
 		a.insideOnly = h.backside;
 		/*
 		 * The volume of the material (the outer surface without the cavities) or, as
-		 * an option, the filled volume (inside of the outer surface, the clicked one)
+		 * an option, the filled volume (inside of the outer surface, the clicked one).
+		 * The surface area of the same body: the material has the outer surface and
+		 * the walls of its cavities (the table), the filled object only the outer
+		 * surface
 		 */
-		double objectVolume = objectFilled && signed > 0 ? signed : row[0];
-		a.row = new double[] { AREA_OBJECT, 1, Double.NaN, Double.NaN, row[1], objectVolume, object };
+		boolean filled = objectFilled && signed > 0;
+		double objectVolume = filled ? signed : row[0];
+		double objectArea = filled ? surfaceArea : row[1];
+		a.row = new double[] { AREA_OBJECT, 1, Double.NaN, Double.NaN, objectArea, objectVolume, object };
 		a.displayMesh = mesh;
 		a.displayTriangles = java.util.Arrays.copyOf(objectTriangles, objectCount);
 		/*

@@ -58,6 +58,11 @@ public final class EmbeddedRBackend implements RBackend {
 		return session;
 	}
 
+	@Override
+	public long activity() {
+		return session.getActivity();
+	}
+
 	private static RserveException error(RException e) {
 		return new RserveException(null, e.getMessage());
 	}
