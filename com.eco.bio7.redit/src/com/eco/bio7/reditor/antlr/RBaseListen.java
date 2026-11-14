@@ -497,6 +497,14 @@ public class RBaseListen extends RBaseListener {
 		 * }
 		 */
 
+		/* A right assignment (1 -> x): the variable on the right is defined */
+		if (ctx.getChildCount() > 2 && ctx.expr(1) instanceof E30Context right) {
+			String rop = ctx.getChild(1).getText();
+			if (rop.equals("->") || rop.equals("->>")) {
+				currentScope.define(new RVariableSymbol(right.getText()));
+				return;
+			}
+		}
 		/* Now we only want to consider variables with an ID! (E30Context) */
 		if (ctx.expr(0) instanceof E30Context == false) {
 			return;

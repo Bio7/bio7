@@ -101,13 +101,6 @@ import com.eco.bio7.rbridge.RSetupDialog;
 import com.eco.bio7.util.Util;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.actions.ExecuteRTextSelection;
-import com.eco.bio7.rbridge.debug.DebugContinueAction;
-import com.eco.bio7.rbridge.debug.DebugInfoAction;
-import com.eco.bio7.rbridge.debug.DebugNextAction;
-import com.eco.bio7.rbridge.debug.DebugRScript;
-import com.eco.bio7.rbridge.debug.DebugStepFinishAction;
-import com.eco.bio7.rbridge.debug.DebugStepIntoAction;
-import com.eco.bio7.rbridge.debug.DebugStopAction;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
 import com.eco.bio7.reditor.database.view.DatabaseView;
@@ -1587,58 +1580,23 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		return ConsolePageParticipantInstance;
 	}
 
-	/* Add toolbar actions to the console view! */
+	/*
+	 * The debug actions are in the toolbar of the Debug view (like the debug
+	 * window of ImageJ macros), not in the console: the console keeps its toolbar
+	 */
 	public void setRDebugToolbarActions() {
-		StartBio7Utils utils = StartBio7Utils.getConsoleInstance();
-
-		/* Add the debug actions dynamically! */
-		IToolBarManager tm = toolBarManager;
-		/* Remove the distance label! */
-		// tm.remove("PlaceholderLabel");
-		IContributionItem[] its = toolBarManager.getItems();
-		boolean exist = false;
-		for (int i = 0; i < its.length; i++) {
-
-			if (its[i].getId() != null) {
-				/* Control if the items exists already! */
-				if (its[i].getId().equals("Stop")) {
-					// tm.add(item);
-					exist = true;
-				}
-
-			}
-
-		}
-		if (exist == false) {
-			tm.add(new DebugRScript());
-			tm.add(new DebugStopAction());
-			tm.add(new DebugNextAction());
-			tm.add(new DebugContinueAction());
-			tm.add(new DebugStepIntoAction());
-			tm.add(new DebugStepFinishAction());
-			tm.add(new DebugInfoAction());
-			/* Add the distance label again! */
-			// tm.add(item);
-			actionBars.updateActionBars();
-		}
-		/* Remove all toolbar actions from the console view! */
-		/*
-		 * if (utils != null) { utils.cons.clear(); }
-		 */
+		deleteDebugToolbarActions();
 	}
 
+	/* Removes debug actions of the console toolbar (of older versions) */
 	public void deleteDebugToolbarActions() {
-
-		toolBarManager.remove("Debug");
-		toolBarManager.remove("Stop");
-		toolBarManager.remove("Next");
-		toolBarManager.remove("Continue");
-		toolBarManager.remove("StepInto");
-		toolBarManager.remove("Finish");
-		toolBarManager.remove("DebugInfo");
-
-		actionBars.updateActionBars();
-
+		boolean removed = false;
+		for (String id : new String[] { "Debug", "Stop", "Next", "Continue", "StepInto", "Finish", "RunToCursor", "DebugInfo" }) {
+			removed |= toolBarManager.remove(id) != null;
+		}
+		if (removed) {
+			actionBars.updateActionBars();
+		}
 	}
 
 	public Process getShellProcess() {

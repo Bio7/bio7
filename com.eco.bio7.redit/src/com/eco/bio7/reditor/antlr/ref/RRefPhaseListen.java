@@ -443,6 +443,10 @@ public class RRefPhaseListen extends RBaseListener {
 					RSymbol var = currentScope.resolve(varName);
 
 					if (var == null) {
+						/* A name, not a variable (x$name, pkg::name, a formula), or it exists in R */
+						if (isNoVariable(ctx, varName)) {
+							return;
+						}
 						/*
 						 * Find out (if enabled in the preferences) recursively (bottom up) if the
 						 * variable assignment is in a sublist to avoid to many warnings in the
@@ -471,6 +475,42 @@ public class RRefPhaseListen extends RBaseListener {
 			}
 		}
 
+	}
+
+	/*
+	 * An identifier which is not a variable of the script: the name of an element
+	 * or slot (x$name, x@name), a package or its object (pkg::name, pkg:::name),
+	 * the target of a right assignment (1 -> x), a variable of a formula (y ~ x),
+	 * a dot argument (..1), or a name which exists in R (pi, iris, a variable of
+	 * the workspace)
+	 */
+	private static boolean isNoVariable(RParser.E30Context ctx, String name) {
+		ParseTree parent = ctx.getParent();
+		if (parent instanceof RParser.E4Context e4 && e4.expr(1) == ctx) {
+			return true;
+		}
+		if (parent instanceof RParser.E3Context) {
+			return true;
+		}
+		if (parent instanceof RParser.E17VariableDeclarationContext e17 && e17.expr(1) == ctx && e17.getChildCount() > 1) {
+			String op = e17.getChild(1).getText();
+			if (op.equals("->") || op.equals("->>")) {
+				return true;
+			}
+		}
+		if (name.startsWith("..") && name.length() > 2 && name.substring(2).chars().allMatch(Character::isDigit)) {
+			return true;
+		}
+		for (ParseTree p = parent; p != null; p = p.getParent()) {
+			if (p instanceof RParser.E15Context || p instanceof RParser.E16Context) {
+				return true;
+			}
+			/* Not across a function definition */
+			if (p instanceof E19DefFunctionContext) {
+				break;
+			}
+		}
+		return com.eco.bio7.reditors.RLiveNames.exists(name);
 	}
 
 	public void enterE17VariableDeclaration(RParser.E17VariableDeclarationContext ctx) {

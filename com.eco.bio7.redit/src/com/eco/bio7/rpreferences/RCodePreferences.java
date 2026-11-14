@@ -33,6 +33,7 @@ public class RCodePreferences extends FieldEditorPreferencePage implements IWork
 		addField(new LabelFieldEditor("Code context:", getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new BooleanFieldEditor("SHOW_INFOPOPUP", "Show Infopopup", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("R_EDITOR_HOVERS", "Enable Hovers (all, also in the context menu of the editor)", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("SHOW_HOVERPOPUP", "Show Hover Popup", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("SHOW_HOVERPOPUP_STR", "Show Hover Object Popup (str())", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("MARK_WORDS", "Mark selected words", getFieldEditorParent()));

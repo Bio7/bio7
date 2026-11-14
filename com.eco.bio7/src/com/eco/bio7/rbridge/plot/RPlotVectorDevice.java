@@ -153,8 +153,8 @@ public final class RPlotVectorDevice {
 			openViews.remove(number);
 			return;
 		}
-		/* A new plot view: in the folder of the ImageJ-Canvas view (if the perspective has one) */
-		PlotViews.dockBesideImageJCanvas(VIEW_ID, viewName);
+		/* A new plot view: right beside the console (else in the folder of the ImageJ-Canvas view) */
+		PlotViews.dock(VIEW_ID, viewName);
 		root = new Composite(parent, SWT.NONE);
 		GridLayout layout = new GridLayout(1, false);
 		layout.marginWidth = layout.marginHeight = 0;

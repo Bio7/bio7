@@ -64,7 +64,11 @@ public final class RSession implements AutoCloseable {
 
 	private final RStartOptions options;
 	private final LinkedBlockingQueue<Runnable> tasks = new LinkedBlockingQueue<>();
-	private final LinkedBlockingQueue<String> consoleInput = new LinkedBlockingQueue<>();
+	/* A console line and its number (a capture waits for the prompt after its own line) */
+	private record ConsoleLine(String text, long seq) {
+	}
+
+	private final LinkedBlockingQueue<ConsoleLine> consoleInput = new LinkedBlockingQueue<>();
 	private final StringBuilder pendingInput = new StringBuilder();
 	private final Map<String, MemorySegment> helpers = new HashMap<>();
 	private MemorySegment helperEnv;
@@ -560,6 +564,60 @@ public final class RSession implements AutoCloseable {
 	/* consoleCapture with a filter: the output is shown once, filtered, before the next prompt */
 	private volatile java.util.function.UnaryOperator<String> captureFilter;
 	private volatile boolean captureFlushed;
+	/* The line of the running capture, its buffer and echo, the input requests when R took it (-1: not yet) */
+	private long captureSeq = -1;
+	private StringBuilder pendingCapture;
+	private String captureEchoLine;
+	private long captureStart = -1;
+	private long lineSeq;
+	/* The last line typed in the console (not a capture) and its output, for the observer (thread of R) */
+	private String userLine;
+	private final StringBuilder userOutput = new StringBuilder();
+	private volatile java.util.function.BiConsumer<String, String> consoleObserver;
+	private static final java.util.concurrent.ExecutorService OBSERVER_EXECUTOR = java.util.concurrent.Executors.newSingleThreadExecutor(r -> {
+		Thread t = new Thread(r, "R console observer");
+		t.setDaemon(true);
+		return t;
+	});
+
+	/**
+	 * Called (in a background thread) after R has evaluated a line typed in the
+	 * console (not a consoleCapture) and asks for the next input: the line and its
+	 * output. E.g., a debugger follows the steps typed in the console.
+	 */
+	public void setConsoleObserver(java.util.function.BiConsumer<String, String> observer) {
+		consoleObserver = observer;
+	}
+
+	/* Queues a console line (numbered) */
+	private ConsoleLine enqueue(String text) {
+		synchronized (inputSignal) {
+			ConsoleLine l = new ConsoleLine(text == null ? "" : text, ++lineSeq);
+			consoleInput.add(l);
+			return l;
+		}
+	}
+
+	/* R takes a console line (thread of R): the capture starts with its own line */
+	private String taken(ConsoleLine l) {
+		String echo = null;
+		synchronized (inputSignal) {
+			if (l.seq() == captureSeq) {
+				captureStart = inputRequests;
+				capture = pendingCapture;
+				echo = captureEchoLine;
+				userLine = null;
+			} else if (capture == null) {
+				userLine = l.text();
+				userOutput.setLength(0);
+			}
+		}
+		if (echo != null) {
+			/* As typed after the prompt */
+			console.write(echo + "\n", false);
+		}
+		return l.text();
+	}
 
 	/* Shows the filtered output of a capture (thread of R, before the next prompt) */
 	private void flushCapture() {
@@ -589,9 +647,25 @@ public final class RSession implements AutoCloseable {
 
 	/* R asks for the next console input (in browser() or at the top level) */
 	private void signalInputRequest() {
+		String line;
+		String out;
 		synchronized (inputSignal) {
 			inputRequests++;
 			inputSignal.notifyAll();
+			line = userLine;
+			out = userOutput.toString();
+			userLine = null;
+			userOutput.setLength(0);
+		}
+		var observer = consoleObserver;
+		if (line != null && observer != null) {
+			OBSERVER_EXECUTOR.execute(() -> {
+				try {
+					observer.accept(line, out);
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+			});
 		}
 	}
 
@@ -627,24 +701,25 @@ public final class RSession implements AutoCloseable {
 			throw new RException("R is not running");
 		}
 		StringBuilder sb = new StringBuilder();
-		long before;
+		/*
+		 * The output is collected from the moment R takes this line (a line typed in
+		 * the console before may still run) up to the next input request
+		 */
 		synchronized (inputSignal) {
-			before = inputRequests;
 			/* With a filter the output is collected and shown at the end */
 			captureEcho = echo && filter == null;
 			captureFilter = echo ? filter : null;
 			captureFlushed = false;
-			capture = sb;
+			captureEchoLine = echo ? line : null;
+			pendingCapture = sb;
+			captureStart = -1;
+			captureSeq = lineSeq + 1;
+			console(line);
 		}
 		try {
-			if (echo) {
-				/* As typed after the prompt */
-				console.write(line + "\n", false);
-			}
-			console(line);
 			long deadline = System.currentTimeMillis() + timeoutMillis;
 			synchronized (inputSignal) {
-				while (inputRequests == before) {
+				while (captureStart < 0 || inputRequests == captureStart) {
 					long wait = deadline - System.currentTimeMillis();
 					if (wait <= 0) {
 						break;
@@ -655,8 +730,14 @@ public final class RSession implements AutoCloseable {
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		} finally {
-			capture = null;
-			captureFilter = null;
+			synchronized (inputSignal) {
+				/* Not taken yet (time limit): the line runs as console input */
+				captureSeq = -1;
+				pendingCapture = null;
+				captureEchoLine = null;
+				capture = null;
+				captureFilter = null;
+			}
 		}
 		synchronized (sb) {
 			return sb.toString();
@@ -667,8 +748,16 @@ public final class RSession implements AutoCloseable {
 		try {
 			byte[] b = buf.reinterpret(len).toArray(JAVA_BYTE);
 			String text = new String(b, n.consoleCharset);
-			if (captured(text.replace("\u0002", "").replace("\u0003", "").replace("\u0004", ""))) {
+			String plain = text.replace("\u0002", "").replace("\u0003", "").replace("\u0004", "");
+			if (captured(plain)) {
 				return;
+			}
+			if (consoleObserver != null) {
+				synchronized (inputSignal) {
+					if (userLine != null && userOutput.length() < 65536) {
+						userOutput.append(plain);
+					}
+				}
 			}
 			/*
 			 * The errors (\u0002) and warnings (\u0003) of the console are marked up to
@@ -715,7 +804,7 @@ public final class RSession implements AutoCloseable {
 			console.busy(false);
 			readingConsole = true;
 			signalInputRequest();
-			String line = consoleInput.take();
+			String line = taken(consoleInput.take());
 			console.busy(true);
 			byte[] b = (line + "\n").getBytes(n.consoleCharset);
 			int count = Math.min(b.length, len - 1);
@@ -1060,16 +1149,16 @@ public final class RSession implements AutoCloseable {
 			 */
 			busy = true;
 		}
-		consoleInput.add(line == null ? "" : line);
+		enqueue(line);
 		if (queue) {
 			tasks.add(this::drainConsole);
 		}
 	}
 
 	private void drainConsole() {
-		String line;
+		ConsoleLine line;
 		while ((line = consoleInput.poll()) != null) {
-			consoleStep(line);
+			consoleStep(taken(line));
 		}
 		/* The input may have been read by readline() of another evaluation */
 		busy = false;
@@ -1343,10 +1432,18 @@ public final class RSession implements AutoCloseable {
 			alive = false;
 			return null;
 		});
+		/*
+		 * A running computation is interrupted; R waiting in browser() (a debug
+		 * session) leaves it with Q: an empty line would be "next" for browser() and R
+		 * would wait at the next statement until the time limit
+		 */
+		if (busy && !readingConsole) {
+			interrupt();
+		}
 		tasks.add(f);
-		consoleInput.add("");
+		enqueue(readingConsole ? "Q" : "");
 		try {
-			f.get(30, TimeUnit.SECONDS);
+			f.get(15, TimeUnit.SECONDS);
 		} catch (Exception e) {
 			alive = false;
 		}

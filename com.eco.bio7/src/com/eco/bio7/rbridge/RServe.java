@@ -386,6 +386,11 @@ public class RServe {
 		/* The R editor (other bundle) evaluates with the connection of RBridge (Rserve or embedded R) */
 		REditor.setEvaluatorSupplier(RBridge::getBackend);
 		WorldWindView.setEvaluatorSupplier(RBridge::getBackend);
+		/* The hover of a variable in the R editor in a debug session (its value, open it in the table) */
+		com.eco.bio7.reditors.RDebugHover.install(com.eco.bio7.rbridge.debug.DebugProgress::hoverText,
+				com.eco.bio7.rbridge.debug.DebugProgress::openVariableInTable);
+		/* The R chunks of the markdown editor (the output inline below a chunk) */
+		RChunkEvaluator.install();
 	}
 
 	/**

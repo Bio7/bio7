@@ -58,6 +58,8 @@ public class REditorTextHover implements ITextHover, ITextHoverExtension, ITextH
 	String message = "";
 	private IPreferenceStore store;
 	private boolean isHex = false;
+	/* The hover shows a variable of a debug session (RDebugHover) */
+	private boolean debugValue = false;
 
 	public static String getHtmlHelpText() {
 		return htmlHelpText;
@@ -79,6 +81,11 @@ public class REditorTextHover implements ITextHover, ITextHoverExtension, ITextH
 	public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion) {
 		hoverMarker = false;
 		isHex = false;
+		debugValue = false;
+		/* All hovers of the editor switched off (the context menu of the editor) */
+		if (!store.getBoolean("R_EDITOR_HOVERS")) {
+			return null;
+		}
 		int offset = hoverRegion.getOffset();
 		int length = 0;
 		int minusLength = 0;
@@ -162,6 +169,12 @@ public class REditorTextHover implements ITextHover, ITextHoverExtension, ITextH
 				} catch (BadLocationException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+				}
+				/* A debug session: the value of a variable (with the action to open it) */
+				String debugInfo = RDebugHover.describe(htmlHelpText);
+				if (debugInfo != null) {
+					debugValue = true;
+					return debugInfo;
 				}
 				/* If we have detected a color name we produce a color display! */
 				for (int i = 0; i < RColors.colorNames.length; i++) {
@@ -340,7 +353,8 @@ public class REditorTextHover implements ITextHover, ITextHoverExtension, ITextH
 	// just an old version of the API method that returns only strings
 	@Override
 	public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
-		return getHoverInfo2(textViewer, hoverRegion).toString();
+		Object info = getHoverInfo2(textViewer, hoverRegion);
+		return info == null ? null : info.toString();
 	}
 
 	// returns the region object for a given position in the text editor
@@ -361,6 +375,8 @@ public class REditorTextHover implements ITextHover, ITextHoverExtension, ITextH
 			public IInformationControl createInformationControl(Shell parent) {
 				if (hoverMarker) {
 					return new RDefaultHoverTextmarkerInformationControl(parent, proposals, message, rEditor);
+				} else if (debugValue) {
+					return new com.eco.bio7.reditor.control.RDebugValueInformationControl(parent);
 				} else if (isHex) {
 					return new RColorInformationControl(parent);
 				} else {

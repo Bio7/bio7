@@ -177,7 +177,7 @@
             class="com.eco.bio7.rbridge.debug.DebugVariablesView"
             icon="icons/views/rview.svg"
             id="com.eco.bio7.rbridge.debug.DebugVariablesView"
-            name="Debug (x)">
+            name="Debug">
       </view>
       <view
             allowMultiple="true"

@@ -86,6 +86,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		storeR.setDefault("IF_CONDITION_FOLDING", true);
 
 		storeR.setDefault("SHOW_INFOPOPUP", true);
+		storeR.setDefault("R_EDITOR_HOVERS", true);
 		storeR.setDefault("SHOW_HOVERPOPUP", true);
 		storeR.setDefault("SHOW_HOVERPOPUP_STR", true);
 		storeR.setDefault("MARK_WORDS", false);

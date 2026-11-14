@@ -99,7 +99,7 @@ public class EditSelBreakpointAction extends AbstractRulerActionDelegate impleme
 								e.printStackTrace();
 							}
 
-							InputDialog dlg = new InputDialog(Util.getShell(), "Expression", "Enter Expressions:  e.g. 'if(x==5) browser()'", expression, null);
+							InputDialog dlg = new InputDialog(Util.getShell(), "Expression", "Condition, hit count or log point:\n  x == 5  (stop when TRUE)\n  #10  (stop at the 10th time)\n  log: mean(x)  (print the value, don\'t stop)", expression, null);
 
 							if (dlg.open() == Window.OK) {
 								

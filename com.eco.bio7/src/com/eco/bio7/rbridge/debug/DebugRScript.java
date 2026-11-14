@@ -145,76 +145,67 @@ public class DebugRScript extends Action {
 		if (d == null || d.isEmbedded()) {
 
 			final String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
+			final boolean embedded = d != null && d.isEmbedded();
 
-			if (selectionConsole.equals("R")) {
+			if (embedded || selectionConsole.equals("R")) {
 
 				if (resource != null) {
-					Map<Integer, String> map1 = findMyMarkers(resource);
-					final Map<Integer, String> map = new TreeMap<Integer, String>(map1);
+					final Map<Integer, String> map = new TreeMap<Integer, String>(findMyMarkers(resource));
+					if (map.isEmpty()) {
+						Bio7Dialog.message("Please set a breakpoint first (double-click in the ruler of the editor).");
+						return;
+					}
+					final String fileName = editor.getEditorInput().getName();
 
 					Job debugJob = new Job("R Debug Setup") {
 						@Override
 						protected IStatus run(IProgressMonitor monitor) {
-
-							for (Map.Entry<Integer, String> entry : map.entrySet()) {
-
-								final int lineNum = entry.getKey();
-								final String expression = entry.getValue();
-
-								if (lineNum > 0) {
-
-									ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
-
-									/* Suppress the R prompt during setup */
-									con.pipeToRConsole("options(prompt=\" \")");
-
-									if (expression == null) {
-										/*
-										 * browser() injection with function wrapper:
-										 * Wrapping in a function is required because R's n (next)
-										 * only steps line-by-line inside a function body.
-										 */
-										con.pipeToRConsole(".bio7tempenv <- new.env()");
-										con.pipeToRConsole(".bio7tempenv$lines <- readLines('" + loc + "')");
-										con.pipeToRConsole(".bio7tempenv$lines <- append(.bio7tempenv$lines, 'browser()', after = " + (lineNum - 1) + ")");
-										con.pipeToRConsole(".bio7tempenv$lines <- c('.bio7debugfunc <- function() {', .bio7tempenv$lines, '}')");
-										con.pipeToRConsole(".bio7tempenv$tmpFile <- tempfile(fileext = '.R')");
-										con.pipeToRConsole("writeLines(.bio7tempenv$lines, .bio7tempenv$tmpFile)");
-									} else {
-										/* Conditional breakpoint */
-										con.pipeToRConsole(".bio7tempenv <- new.env()");
-										con.pipeToRConsole(".bio7tempenv$lines <- readLines('" + loc + "')");
-										con.pipeToRConsole(".bio7tempenv$lines <- append(.bio7tempenv$lines, 'if (" + expression.replace("'", "\\'") + ") browser()', after = " + (lineNum - 1) + ")");
-										con.pipeToRConsole(".bio7tempenv$lines <- c('.bio7debugfunc <- function() {', .bio7tempenv$lines, '}')");
-										con.pipeToRConsole(".bio7tempenv$tmpFile <- tempfile(fileext = '.R')");
-										con.pipeToRConsole("writeLines(.bio7tempenv$lines, .bio7tempenv$tmpFile)");
-									}
-
-									/* Highlight the breakpoint line in the editor */
-									highlightLine(lineNum);
-
-									try {
-										Thread.sleep(200);
-									} catch (InterruptedException e) {
-										e.printStackTrace();
-									}
-
-									/* Clear the console before debugging starts */
-									Display.getDefault().asyncExec(new Runnable() {
-										public void run() {
-											IOConsole consoleForClear = ConsolePageParticipant.getConsolePageParticipantInstance().getIoc();
-											consoleForClear.clearConsole();
-										}
-									});
-									/* Mark the debug session as active */
-									DebugProgress.startSession();
-									/* Restore prompt, source the file, call the debug function */
-									con.pipeToRConsole("options(prompt=\"Browse> \")");
-									con.pipeToRConsole("source(.bio7tempenv$tmpFile)");
-									con.pipeToRConsole("environment(.bio7debugfunc) <- .GlobalEnv");
-									con.pipeToRConsole(".bio7debugfunc()");
-								}
+							/*
+							 * The debugged copy: all breakpoints in one file (browser(), conditions, hit
+							 * counts, log points), the script wrapped into .bio7debugfunc
+							 */
+							java.nio.file.Path copy;
+							try {
+								copy = DebugSession.writeDebugCopy(java.nio.file.Path.of(loc), map);
+							} catch (java.io.IOException e) {
+								Bio7Dialog.message("The script could not be prepared for debugging:\n" + e.getMessage());
+								return Status.OK_STATUS;
 							}
+							String rCopy = copy.toString().replace("\\", "/");
+							highlightLine(DebugSession.firstBreakpoint());
+							Display.getDefault().syncExec(() -> DebugVariablesView.clear());
+
+							if (embedded) {
+								/* A former session still waits in browser(): left first */
+								if (com.eco.bio7.rbridge.backend.EmbeddedR.isBrowsing()) {
+									com.eco.bio7.rbridge.backend.EmbeddedR.consoleCapture("Q", 10000, false);
+								}
+								try {
+									RBackend b = RBridge.getBackend();
+									b.voidEval(DebugSession.HELPERS);
+									b.voidEval("source(" + DebugSession.rString(rCopy) + ", keep.source = TRUE); environment(.bio7debugfunc) <- .GlobalEnv");
+								} catch (Exception e) {
+									Bio7Dialog.message("The script could not be prepared for debugging:\n" + e.getMessage());
+									return Status.OK_STATUS;
+								}
+								DebugProgress.startEmbedded(fileName);
+								return Status.OK_STATUS;
+							}
+
+							ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
+							/* Clear the console before debugging starts */
+							Display.getDefault().asyncExec(new Runnable() {
+								public void run() {
+									IOConsole consoleForClear = ConsolePageParticipant.getConsolePageParticipantInstance().getIoc();
+									consoleForClear.clearConsole();
+								}
+							});
+							DebugProgress.startSession();
+							/* Source the copy, call the debug function */
+							con.pipeToRConsole("options(prompt=\"Browse> \")");
+							con.pipeToRConsole("source('" + rCopy + "', keep.source = TRUE)");
+							con.pipeToRConsole("environment(.bio7debugfunc) <- .GlobalEnv");
+							con.pipeToRConsole(".bio7debugfunc()");
 							return Status.OK_STATUS;
 						}
 					};

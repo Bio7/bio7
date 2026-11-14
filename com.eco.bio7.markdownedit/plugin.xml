@@ -60,6 +60,18 @@
             commandId="com.eco.bio7.reditor.rmarkdown.format">
            
       </handler>
+      <handler
+            class="com.eco.bio7.markdownedit.chunks.RChunkHandler"
+            commandId="com.eco.bio7.markdownedit.chunks.run">
+      </handler>
+      <handler
+            class="com.eco.bio7.markdownedit.chunks.RChunkHandler"
+            commandId="com.eco.bio7.markdownedit.chunks.runAll">
+      </handler>
+      <handler
+            class="com.eco.bio7.markdownedit.chunks.RChunkHandler"
+            commandId="com.eco.bio7.markdownedit.chunks.clear">
+      </handler>
    </extension>
    <extension point="org.eclipse.ui.contexts">
           <context name="Markdown Editor Context"
@@ -87,6 +99,24 @@
           id="com.eco.bio7.reditor.rmarkdown.format"
           name="Format">
     </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Runs the R chunk at the cursor and shows its output below the chunk"
+          id="com.eco.bio7.markdownedit.chunks.run"
+          name="Run R Chunk">
+    </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Runs all R chunks and shows their output below the chunks"
+          id="com.eco.bio7.markdownedit.chunks.runAll"
+          name="Run All R Chunks">
+    </command>
+    <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Removes the output of the R chunks"
+          id="com.eco.bio7.markdownedit.chunks.clear"
+          name="Clear R Chunk Output">
+    </command>
    </extension>
    <extension
         id="com.eco.bio7.markdownedit.binding"
@@ -113,12 +143,44 @@
           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
           sequence="CTRL+SHIFT+F">
     </key>
+    <key
+          commandId="com.eco.bio7.markdownedit.chunks.run"
+          contextId="com.eco.bio7.markdownedit.MarkdownEditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+SHIFT+CR">
+    </key>
+    <key
+          commandId="com.eco.bio7.markdownedit.chunks.runAll"
+          contextId="com.eco.bio7.markdownedit.MarkdownEditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+ALT+R">
+    </key>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
             allPopups="true"
             locationURI="popup:#RMarkdownEditorContext?after=additions">
+         <command
+               commandId="com.eco.bio7.markdownedit.chunks.run"
+               label="Run R Chunk"
+               style="push"
+               tooltip="Runs the R chunk at the cursor, the output is shown below the chunk">
+         </command>
+         <command
+               commandId="com.eco.bio7.markdownedit.chunks.runAll"
+               label="Run All R Chunks"
+               style="push">
+         </command>
+         <command
+               commandId="com.eco.bio7.markdownedit.chunks.clear"
+               label="Clear R Chunk Output"
+               style="push">
+         </command>
+         <separator
+               name="chunks"
+               visible="true">
+         </separator>
          <command
                commandId="com.eco.bio7.reditor.rmarkdown.format"
                label="Format Selection"

@@ -78,10 +78,11 @@ public class ToggleDebugConditionalBreakpointAction extends AbstractRulerActionD
 		public void run() {
 			ConsolePageParticipant inst = ConsolePageParticipant.getConsolePageParticipantInstance();
 			inst.setRDebugToolbarActions();
+			DebugVariablesView.showDebugView();
 			String rDebugExpression = null;
 			IEditorPart editore = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 
-			InputDialog dlg = new InputDialog(Util.getShell(), "", "Enter Expressions:  e.g. 'x==5'", "", null);
+			InputDialog dlg = new InputDialog(Util.getShell(), "", "Condition, hit count or log point:\n  x == 5  (stop when TRUE)\n  #10  (stop at the 10th time)\n  log: mean(x)  (print the value, don\'t stop)", "", null);
 			if (dlg.open() == Window.OK) {
 				
 				rDebugExpression = dlg.getValue();

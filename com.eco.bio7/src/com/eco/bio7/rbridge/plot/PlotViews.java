@@ -38,8 +38,90 @@ final class PlotViews {
 
 	/* The ImageJ-Canvas view */
 	private static final String CANVAS_VIEW = "com.eco.bio7.imagej";
+	/* The console */
+	private static final String CONSOLE_VIEW = "org.eclipse.ui.console.ConsoleView";
+	/* The tag of the folder of the plot views beside the console */
+	private static final String PLOT_STACK_TAG = "bio7PlotStack";
 
 	private PlotViews() {
+	}
+
+	/**
+	 * Docks a new plot view: right beside the console (a folder of the plot views,
+	 * the console stays visible), else (no console in the perspective) in the
+	 * folder of the ImageJ-Canvas view. UI thread.
+	 */
+	static void dock(String viewId, String secondaryId) {
+		if (!dockBesideConsole(viewId, secondaryId)) {
+			dockBesideImageJCanvas(viewId, secondaryId);
+		}
+	}
+
+	/**
+	 * Moves a view (just opened in the current perspective) right beside the
+	 * console: into the folder of the plot views or into a new folder right of the
+	 * console. Like a drag and drop of the tab: later the user can move it
+	 * elsewhere. UI thread.
+	 *
+	 * @return true if the view was moved (or is already there)
+	 */
+	static boolean dockBesideConsole(String viewId, String secondaryId) {
+		try {
+			IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+			if (window == null) {
+				return false;
+			}
+			MWindow mwindow = window.getService(MWindow.class);
+			EModelService models = window.getService(EModelService.class);
+			if (mwindow == null || models == null) {
+				return false;
+			}
+			MPerspective perspective = models.getActivePerspective(mwindow);
+			if (perspective == null) {
+				return false;
+			}
+			String plotId = secondaryId == null ? viewId : viewId + ":" + secondaryId;
+			List<MPlaceholder> console = models.findElements(perspective, CONSOLE_VIEW, MPlaceholder.class, null);
+			List<MPlaceholder> plot = models.findElements(perspective, plotId, MPlaceholder.class, null);
+			if (console.isEmpty() || plot.isEmpty()) {
+				return false;
+			}
+			MPlaceholder consoleHolder = console.get(0);
+			MPlaceholder plotHolder = plot.get(0);
+			Object consoleParent = consoleHolder.getParent();
+			if (!(consoleParent instanceof MPartStack consoleStack) || !consoleHolder.isToBeRendered() || !consoleStack.isToBeRendered()) {
+				return false;
+			}
+			/* The folder of the plot views (opened before, still beside the console) */
+			MPartStack plotStack = null;
+			for (MPartStack st : models.findElements(perspective, null, MPartStack.class, List.of(PLOT_STACK_TAG))) {
+				if (st.isToBeRendered() && st != consoleStack) {
+					plotStack = st;
+					break;
+				}
+			}
+			if (plotStack != null) {
+				if ((Object) plotHolder.getParent() != plotStack) {
+					@SuppressWarnings({ "unchecked", "rawtypes" })
+					MElementContainer<MUIElement> target = (MElementContainer) plotStack;
+					models.move(plotHolder, target);
+				}
+				plotStack.setSelectedElement(plotHolder);
+				return true;
+			}
+			/* A new folder right of the console (half of its width) */
+			MPartStack stack = models.createModelElement(MPartStack.class);
+			stack.getTags().add(PLOT_STACK_TAG);
+			@SuppressWarnings({ "unchecked", "rawtypes" })
+			MElementContainer<MUIElement> target = (MElementContainer) stack;
+			models.move(plotHolder, target);
+			stack.setSelectedElement(plotHolder);
+			models.insert(stack, consoleStack, EModelService.RIGHT_OF, 0.5f);
+			return true;
+		} catch (RuntimeException e) {
+			/* The view stays where the workbench opened it */
+			return false;
+		}
 	}
 
 	/**
@@ -112,9 +194,9 @@ final class PlotViews {
 		}
 		try {
 			page.showView(viewId, secondaryId, IWorkbenchPage.VIEW_VISIBLE);
-			/* New in this perspective: the plot views go to the folder of the ImageJ-Canvas view */
+			/* New in this perspective: the plot views go beside the console (or to the ImageJ-Canvas view) */
 			if (ref == null && !CANVAS_VIEW.equals(viewId)) {
-				dockBesideImageJCanvas(viewId, secondaryId);
+				dock(viewId, secondaryId);
 			}
 			return true;
 		} catch (PartInitException | RuntimeException e) {

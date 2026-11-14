@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7: Run to Cursor (lines of a script, an arrow to the line of the cursor) -->
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <defs>
+    <linearGradient id="a" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5689b4"/>
+      <stop offset="1" stop-color="#3a435f"/>
+    </linearGradient>
+  </defs>
+  <rect x="7" y="2" width="8" height="1.6" rx="0.5" fill="#9aa3ad"/>
+  <rect x="7" y="5.4" width="6" height="1.6" rx="0.5" fill="#9aa3ad"/>
+  <rect x="6.5" y="8.6" width="9" height="2.6" rx="0.6" fill="#fce5a5" stroke="#d9a520" stroke-width="0.7"/>
+  <rect x="7" y="13" width="7" height="1.6" rx="0.5" fill="#9aa3ad"/>
+  <path d="M1.2 2.2 h1.6 v6.2 h1.6 l-2.4 3.4 l-2.4 -3.4 h1.6 z" fill="url(#a)" transform="translate(0.6,0)"/>
+</svg>

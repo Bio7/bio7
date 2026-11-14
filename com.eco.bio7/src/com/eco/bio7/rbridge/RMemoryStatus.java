@@ -32,12 +32,15 @@ import com.eco.bio7.rbridge.backend.RBackend;
  * when R is idle: within a second after an evaluation (also a short one like
  * rm(x), see RSession.getActivity) or a transfer, else at the latest every 30
  * seconds. gc() collects the garbage of R, so it is not called
- * more often. The call runs in a background thread with a time limit (the R
+ * more often. With the measurement the names of R are updated for the code
+ * analysis of the R editor (RLiveNames). The call runs in a background thread with a time limit (the R
  * session queues it), the UI never waits for R.
  */
 public final class RMemoryStatus {
 
 	private static final String CODE = "sum(gc(verbose = FALSE)[, 2])";
+	/* The names of the workspace and the attached packages (the code analysis of the R editor, see RLiveNames) */
+	private static final String NAMES = "unique(c(ls(globalenv(), all.names = TRUE), unlist(lapply(seq_along(search())[-1], function(i) ls(pos = i, all.names = TRUE)), use.names = FALSE)))";
 	private static final long POLL_MILLIS = 1000;
 	private static final long IDLE_MILLIS = 30000;
 	private static final long TIMEOUT_MILLIS = 3000;
@@ -80,6 +83,9 @@ public final class RMemoryStatus {
 			RBackend backend = RBridge.getBackend();
 			if (backend == null || !backend.isEmbedded()) {
 				/* No R or Rserve: the field is hidden */
+				if (lastBackend != null) {
+					com.eco.bio7.reditors.RLiveNames.set(null);
+				}
 				lastBackend = null;
 				show(null);
 				return;
@@ -105,6 +111,7 @@ public final class RMemoryStatus {
 			lastMeasure = now;
 			try {
 				show(backend.withTimeout(TIMEOUT_MILLIS).eval(CODE).asDouble());
+				refreshNames(backend);
 				/* After the measurement (it is an evaluation itself) */
 				lastActivity = backend.activity();
 			} catch (Exception e) {
@@ -113,6 +120,18 @@ public final class RMemoryStatus {
 			}
 		} catch (RuntimeException | LinkageError e) {
 			/* The workbench is closing (or embedded R is not available) */
+		}
+	}
+
+	/* The names which exist in R for the code analysis of the R editor (with the measurement: after an evaluation) */
+	private static void refreshNames(RBackend backend) {
+		try {
+			String[] n = backend.withTimeout(TIMEOUT_MILLIS).eval(NAMES).asStrings();
+			if (n != null) {
+				com.eco.bio7.reditors.RLiveNames.set(java.util.Set.of(java.util.Arrays.stream(n).filter(java.util.Objects::nonNull).distinct().toArray(String[]::new)));
+			}
+		} catch (Exception | LinkageError e) {
+			/* Busy: the names of the last time */
 		}
 	}
 

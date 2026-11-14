@@ -291,6 +291,18 @@ public final class EmbeddedR {
 		return Backends.embedded() instanceof EmbeddedRBackend b && b.session().isWaitingForConsoleInput();
 	}
 
+	/** Returns true if embedded R evaluates (also a step in browser()) or console input is queued. */
+	public static boolean isBusy() {
+		return Backends.embedded() instanceof EmbeddedRBackend b && b.session().isBusy() && !b.session().isWaitingForConsoleInput();
+	}
+
+	/** Called after R has evaluated a line typed in the console (see RSession.setConsoleObserver). */
+	public static void setConsoleObserver(java.util.function.BiConsumer<String, String> observer) {
+		if (Backends.embedded() instanceof EmbeddedRBackend b) {
+			b.session().setConsoleObserver(observer);
+		}
+	}
+
 	/** The session or null. */
 	public static RSession session() {
 		return Backends.embedded() instanceof EmbeddedRBackend b ? b.session() : null;

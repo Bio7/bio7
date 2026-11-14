@@ -50,6 +50,31 @@ public class DebugStopAction extends Action {
 
 		String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 
+		if (com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning()) {
+			/* Embedded R: Q leaves browser(), a running step (e.g., Continue) is interrupted */
+			DebugProgress.endSession();
+			if (com.eco.bio7.rbridge.backend.EmbeddedR.isBrowsing()) {
+				/* Shown after the Browse prompt (else the next prompt follows on the same line) */
+				Thread q = new Thread(() -> com.eco.bio7.rbridge.backend.EmbeddedR.consoleCapture("Q", 10000, true), "R Debug Stop");
+				q.setDaemon(true);
+				q.start();
+			} else {
+				com.eco.bio7.rbridge.backend.EmbeddedR.interrupt();
+			}
+			DebugVariablesView.clear();
+			DebugProgress.printToTextView("\u25A0 Debug session stopped.");
+			IEditorPart edit = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+			IResource resource = edit == null ? null : edit.getEditorInput().getAdapter(IResource.class);
+			try {
+				if (resource != null) {
+					resource.deleteMarkers("com.eco.bio7.reditor.debugrulermark", false, IResource.DEPTH_ZERO);
+				}
+			} catch (CoreException e1) {
+				e1.printStackTrace();
+			}
+			return;
+		}
+
 		if (selectionConsole.equals("R")) {
 
 			ConsolePageParticipant.pipeInputToConsole("Q", true, false);

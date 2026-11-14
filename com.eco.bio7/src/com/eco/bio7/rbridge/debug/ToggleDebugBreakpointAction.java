@@ -57,6 +57,7 @@ public class ToggleDebugBreakpointAction extends AbstractRulerActionDelegate imp
 
 			ConsolePageParticipant inst = ConsolePageParticipant.getConsolePageParticipantInstance();
 			inst.setRDebugToolbarActions();
+			DebugVariablesView.showDebugView();
 
 			if (resource != null) {
 				try {

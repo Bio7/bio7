@@ -998,6 +998,7 @@ public class CustomTheme {
 		rule(css, "#com-eco-bio7-imagej CTabFolder,\n#com-eco-bio7-imagej Composite,\n#com-eco-bio7-imagej Canvas,\n"
 				+ "#com-eco-bio7-imagej Label,\n#com-eco-bio7-RShell StyledText,\n#com-eco-bio7-RShell RShellText,\n#com-eco-bio7-RShell List,\n"
 				+ "#com-eco-bio7-rbridge-RTable Grid,\n#com-eco-bio7-rbridge-RTable CTabFolder,\n"
+				+ "#com-eco-bio7-rbridge-debug-DebugTextView StyledText,\n"
 				+ "#org-eclipse-ui-console-ConsoleView .MPart Composite,\n#org-eclipse-ui-console-ConsoleView .MPart Label",
 				"background-color: " + c("consoleBackground") + ";\n\tcolor: " + c("consoleText") + ";");
 		/*

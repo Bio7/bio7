@@ -20,6 +20,7 @@ Bundle-ClassPath: libs/flexmark-all-0.28.6-lib.jar,
  bin/
 Import-Package: org.eclipse.ui.views.contentoutline
 Export-Package: com.eco.bio7.markdownedit,
+ com.eco.bio7.markdownedit.chunks,
  com.eco.bio7.markdownedit.actions,
  com.eco.bio7.markdownedit.completion,
  com.eco.bio7.markdownedit.editors,

@@ -216,6 +216,11 @@ public class REditor extends TextEditor implements IPropertyChangeListener, Upda
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.reditor");
 		getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(listener);
 		viewer = (ProjectionViewer) getSourceViewer();
+		/*
+		 * The mouse can move into a hover after a short delay (e.g., the button "Open"
+		 * of the hover of a variable in a debug session, see RDebugHover)
+		 */
+		viewer.setHoverEnrichMode(org.eclipse.jface.text.ITextViewerExtension8.EnrichMode.AFTER_DELAY);
 
 		projectionSupport = new ProjectionSupport(viewer, getAnnotationAccess(), getSharedColors());
 		projectionSupport.install();
@@ -631,6 +636,17 @@ public class REditor extends TextEditor implements IPropertyChangeListener, Upda
 		addAction(menu, "Font Preferences");
 		menu.add(new Separator());
 		addAction(menu, "Plot Preferences");
+		menu.add(new Separator());
+		/* All hovers of the editor on or off (help, str(), quick fixes, values while debugging) */
+		IPreferenceStore hoverStore = Bio7REditorPlugin.getDefault().getPreferenceStore();
+		org.eclipse.jface.action.Action hovers = new org.eclipse.jface.action.Action("Enable Hovers", org.eclipse.jface.action.IAction.AS_CHECK_BOX) {
+			@Override
+			public void run() {
+				hoverStore.setValue("R_EDITOR_HOVERS", isChecked());
+			}
+		};
+		hovers.setChecked(hoverStore.getBoolean("R_EDITOR_HOVERS"));
+		menu.add(hovers);
 
 	}
 
