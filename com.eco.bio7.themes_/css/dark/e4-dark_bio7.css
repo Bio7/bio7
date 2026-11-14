@@ -259,6 +259,13 @@ CTabFolder Canvas,
 	color: #CCCCCC;
 }
 
+/* The output of the R debugger (Debug Text): a work area like the console, not a text field */
+#com-eco-bio7-rbridge-debug-DebugTextView StyledText,
+.MPartStack.active #com-eco-bio7-rbridge-debug-DebugTextView StyledText {
+	background-color: '#org-eclipse-ui-workbench-DARK_BACKGROUND';
+	color: #CCCCCC;
+}
+
 /* ############################## Widgets ############################## */
 
 /* The Nebula grid (e.g. the R table, more specific than the views rule)! */
