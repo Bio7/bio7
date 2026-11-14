@@ -87,7 +87,11 @@ final class ChunkHeaderAnnotation extends LineHeaderAnnotation {
 		return buttonAt(e.x, e.y) != null ? click : null;
 	}
 
-	ChunkOutput output() {
+	boolean hasBar() {
+		return bar;
+	}
+
+		ChunkOutput output() {
 		return output;
 	}
 
@@ -105,15 +109,52 @@ final class ChunkHeaderAnnotation extends LineHeaderAnnotation {
 		return getTextWidget().getLineHeight();
 	}
 
-	private int outputHeight() {
+	/*
+	 * The layout of the output: the shown text lines and the scale of the plots.
+	 * The header (with the line below it) fits into the visible editor: else the
+	 * editor scrolls to the top of the header when the cursor is in that line.
+	 */
+	private record Layout(int lines, boolean truncated, double scale, int height) {
+	}
+
+	private Layout layout() {
+		StyledText t = getTextWidget();
+		int lh = lineHeight();
 		if (output == null) {
-			return 0;
+			return new Layout(0, false, 1, 0);
 		}
-		int h = lineHeight() / 2 + PAD + output.lines.size() * lineHeight();
+		int fixed = lh / 2 + PAD + PAD + barHeight();
+		int n = output.lines.size();
+		int raw = 0;
 		for (int[] s : output.sizes) {
-			h += s[1] + GAP;
+			raw += s[1];
 		}
-		return h + PAD;
+		int gaps = output.sizes.size() * GAP;
+		int natural = fixed + n * lh + raw + gaps;
+		int client = t.getClientArea().height;
+		int avail = Math.max(lh * 6, client - 2 * lh);
+		if (client <= 0 || natural <= avail) {
+			return new Layout(n, false, 1, natural - barHeight());
+		}
+		int room = avail - fixed;
+		/* The text gets at most a third of the room if there are plots */
+		int textRoom = output.images.isEmpty() ? room : Math.min(n * lh, room / 3);
+		int shown = n == 0 ? 0 : Math.max(1, Math.min(n, textRoom / lh));
+		boolean truncated = shown < n;
+		if (truncated && shown > 1) {
+			shown--;
+		}
+		int textHeight = (shown + (truncated ? 1 : 0)) * lh;
+		double scale = raw == 0 ? 1 : Math.max(0.15, Math.min(1, (double) (room - textHeight - gaps) / raw));
+		int h = fixed - barHeight() + textHeight + gaps;
+		for (int[] s : output.sizes) {
+			h += (int) Math.round(s[1] * scale);
+		}
+		return new Layout(shown, truncated, scale, h);
+	}
+
+	private int outputHeight() {
+		return layout().height();
 	}
 
 	private int barHeight() {
@@ -136,8 +177,9 @@ final class ChunkHeaderAnnotation extends LineHeaderAnnotation {
 		Color fg = textWidget.getForeground();
 		gc.setFont(textWidget.getFont());
 		if (output != null) {
+			Layout lay = layout();
 			int top = y + lineHeight / 2;
-			int height = outputHeight() - lineHeight / 2 - 2;
+			int height = lay.height() - lineHeight / 2 - 2;
 			Color box = blend(b, f, 0.06);
 			Color err = dark ? new Color(240, 110, 100) : new Color(190, 30, 30);
 			gc.setBackground(box);
@@ -145,18 +187,33 @@ final class ChunkHeaderAnnotation extends LineHeaderAnnotation {
 			gc.setForeground(blend(b, f, 0.18));
 			gc.drawLine(left, top, left, top + height);
 			int ty = top + PAD;
-			for (String line : output.lines) {
+			for (int i = 0; i < lay.lines(); i++) {
+				String line = output.lines.get(i);
 				boolean isError = output.error || line.startsWith("Error") || line.startsWith("Warning");
 				gc.setForeground(isError ? err : fg);
 				gc.drawString(line, left + PAD + 4, ty, true);
 				ty += lineHeight;
 			}
+			if (lay.truncated()) {
+				gc.setForeground(blend(b, f, 0.55));
+				gc.drawString("... " + (output.lines.size() - lay.lines()) + " more lines (a larger editor shows more)", left + PAD + 4, ty, true);
+				ty += lineHeight;
+			}
 			for (int i = 0; i < output.images.size(); i++) {
 				Image img = output.images.get(i);
+				int[] size = output.sizes.get(i);
+				int w = (int) Math.round(size[0] * lay.scale());
+				int h = (int) Math.round(size[1] * lay.scale());
 				if (!img.isDisposed()) {
-					gc.drawImage(img, left + PAD + 4, ty);
+					if (lay.scale() >= 1) {
+						gc.drawImage(img, left + PAD + 4, ty);
+					} else {
+						/* Smaller to fit into the editor */
+						gc.setInterpolation(org.eclipse.swt.SWT.HIGH);
+						gc.drawImage(img, 0, 0, size[0], size[1], left + PAD + 4, ty, w, h);
+					}
 				}
-				ty += output.sizes.get(i)[1] + GAP;
+				ty += h + GAP;
 			}
 		}
 		buttons.clear();

@@ -64,7 +64,6 @@ public final class InlineChunkOutputs {
 	private final InlinedAnnotationSupport support = new InlinedAnnotationSupport();
 	private final List<ChunkOutput> outputs = new ArrayList<>();
 	private final List<ChunkHeaderAnnotation> headers = new ArrayList<>();
-	private String layout = "";
 	private boolean refreshPending;
 	/* The hand cursor is shown (over a button of a bar) */
 	private boolean handCursor;
@@ -365,15 +364,31 @@ public final class InlineChunkOutputs {
 		} catch (BadLocationException e) {
 			return;
 		}
-		/* Unchanged (e.g., typing within a line): the annotations stay */
+		/*
+		 * Unchanged (e.g., typing within a line): the annotations stay. Compared with
+		 * the lines where the headers are now (a new line at the start of a line moves
+		 * its header down)
+		 */
 		StringBuilder sig = new StringBuilder();
 		for (var e : lines.entrySet()) {
 			sig.append(e.getKey()).append(':').append(System.identityHashCode(e.getValue()[0])).append(e.getValue()[1] != null).append(';');
 		}
-		if (sig.toString().equals(layout)) {
+		StringBuilder now = new StringBuilder();
+		try {
+			for (ChunkHeaderAnnotation h : headers) {
+				Position p = h.getPosition();
+				if (p.isDeleted()) {
+					now.append("deleted;");
+					continue;
+				}
+				now.append(doc.getLineOfOffset(p.getOffset())).append(':').append(System.identityHashCode(h.output())).append(h.hasBar()).append(';');
+			}
+		} catch (BadLocationException e) {
+			now.append("invalid");
+		}
+		if (sig.toString().equals(now.toString())) {
 			return;
 		}
-		layout = sig.toString();
 		headers.clear();
 		try {
 			for (var e : lines.entrySet()) {
