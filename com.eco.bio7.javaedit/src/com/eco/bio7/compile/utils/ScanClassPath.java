@@ -526,13 +526,27 @@ public class ScanClassPath {
 	}
 
 	/*
-	 * Returns the class folders or jar of the SWTImageJ bundle as {path, source
+	 * Returns the class folders or jar of the SWTImageJ bundle (and of the FFM
+	 * bridges of Python and R) as {path, source
 	 * path or null}. The bundle is a jar (target platform, exported RCP) or a
 	 * project folder (workspace in development mode)!
 	 */
 	private List<String[]> getImageJLibraries() {
+		List<String[]> libs = getBundleLibraries(IMAGEJ_BUNDLE);
+		/* The APIs of the embedded Python and R (FFM bridges, optional bundles) */
+		for (String id : FFM_BUNDLES) {
+			libs.addAll(getBundleLibraries(id));
+		}
+		return libs;
+	}
+
+	/* The bundles of the embedded Python and R (classes in the jar or bin/, no Bundle-ClassPath) */
+	private static final String[] FFM_BUNDLES = { "com.eco.bio7.pyffm", "com.eco.bio7.rffm" };
+
+	/* The class folders or jar of a bundle as {path, source path or null} (see above) */
+	private List<String[]> getBundleLibraries(String bundleId) {
 		List<String[]> libs = new ArrayList<String[]>();
-		Bundle bundle = Platform.getBundle(IMAGEJ_BUNDLE);
+		Bundle bundle = Platform.getBundle(bundleId);
 		if (bundle == null) {
 			return libs;
 		}
@@ -557,7 +571,7 @@ public class ScanClassPath {
 			}
 		} else {
 			String srcPath = null;
-			Bundle source = Platform.getBundle(IMAGEJ_BUNDLE + ".source");
+			Bundle source = Platform.getBundle(bundleId + ".source");
 			if (source != null) {
 				try {
 					srcPath = FileLocator.getBundleFile(source).getAbsolutePath();
