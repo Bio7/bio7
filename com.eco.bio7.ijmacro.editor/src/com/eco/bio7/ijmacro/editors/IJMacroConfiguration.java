@@ -117,6 +117,15 @@ public class IJMacroConfiguration extends TextSourceViewerConfiguration {
 				ScriptPartitionScanner.SCRIPT_MULTILINE_COMMENT };
 	}
 
+	/* The quick fixes of the code analysis (Ctrl+1) */
+	@Override
+	public org.eclipse.jface.text.quickassist.IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
+		org.eclipse.jface.text.quickassist.QuickAssistAssistant assistant = new org.eclipse.jface.text.quickassist.QuickAssistAssistant();
+		assistant.setQuickAssistProcessor(new IJMacroQuickFixProcessor());
+		assistant.setInformationControlCreator(getInformationControlCreator(sourceViewer));
+		return assistant;
+	}
+
 	public IReconciler getReconciler(ISourceViewer sourceViewer) {
 		IJMacroReconcilingStrategy strategy = new IJMacroReconcilingStrategy();
 		strategy.setEditor(editor);

@@ -112,6 +112,7 @@ public final class RMemoryStatus {
 			try {
 				show(backend.withTimeout(TIMEOUT_MILLIS).eval(CODE).asDouble());
 				refreshNames(backend);
+				refreshCompletion(backend);
 				/* After the measurement (it is an evaluation itself) */
 				lastActivity = backend.activity();
 			} catch (Exception e) {
@@ -133,6 +134,71 @@ public final class RMemoryStatus {
 		} catch (Exception | LinkageError e) {
 			/* Busy: the names of the last time */
 		}
+	}
+
+	/* The packages which were passed to the code completion (once each: e.g., a package without functions) */
+	private static final java.util.Set<String> completionAttempted = java.util.concurrent.ConcurrentHashMap.newKeySet();
+	private static volatile boolean completionReloading;
+
+	/*
+	 * A package attached in R (library() in the console, a script or a markdown
+	 * chunk) which is not in the code completion: the functions of the attached
+	 * packages are written and the proposals reloaded (as the action "Reload
+	 * Packages Completion")
+	 */
+	private static void refreshCompletion(RBackend backend) {
+		if (completionReloading) {
+			return;
+		}
+		java.util.Set<String> known = com.eco.bio7.rpreferences.template.CalculateRProposals.knownPackages();
+		if (known.isEmpty()) {
+			/* The proposals are not loaded yet (startup) */
+			return;
+		}
+		String[] search;
+		try {
+			search = backend.withTimeout(TIMEOUT_MILLIS).eval("search()").asStrings();
+		} catch (Exception | LinkageError e) {
+			return;
+		}
+		java.util.List<String> missing = new java.util.ArrayList<>();
+		for (String s : search) {
+			if (s != null && s.startsWith("package:")) {
+				String name = s.substring(8);
+				if (!known.contains(name) && !completionAttempted.contains(name)) {
+					missing.add(name);
+				}
+			}
+		}
+		if (missing.isEmpty()) {
+			return;
+		}
+		completionAttempted.addAll(missing);
+		completionReloading = true;
+		org.eclipse.core.runtime.jobs.Job job = new org.eclipse.core.runtime.jobs.Job("Code completion of " + missing) {
+			@Override
+			protected org.eclipse.core.runtime.IStatus run(org.eclipse.core.runtime.IProgressMonitor monitor) {
+				try {
+					backend.withTimeout(60000).eval("try(.bio7WriteFunctionDef())");
+					com.eco.bio7.rpreferences.template.CalculateRProposals.setStartupTemplate(false);
+					com.eco.bio7.rpreferences.template.CalculateRProposals.loadRCodePackageTemplates();
+					com.eco.bio7.rpreferences.template.CalculateRProposals.updateCompletions();
+					var shell = com.eco.bio7.reditors.REditor.getUpdateCompletion();
+					if (shell != null) {
+						shell.trigger();
+					}
+					System.out.println("Bio7: code completion of the attached packages " + missing);
+				} catch (Exception | LinkageError e) {
+					/* R busy: the next evaluation tries the packages again */
+					completionAttempted.removeAll(missing);
+				} finally {
+					completionReloading = false;
+				}
+				return org.eclipse.core.runtime.Status.OK_STATUS;
+			}
+		};
+		job.setSystem(true);
+		job.schedule();
 	}
 
 	/* The memory in MB or null (no embedded R: the field is hidden) */

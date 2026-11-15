@@ -66,6 +66,8 @@ public class ScriptCodeScanner extends RuleBasedScanner {
 	public Token className;
 	public Token funcName;
 	public Token parenthesis;
+	/* Function calls (the names after def and class: PyWordRule) */
+	public Token functionCall;
 
 	/**
 	 * Creates a Java code scanner with the given color provider.
@@ -104,6 +106,7 @@ public class ScriptCodeScanner extends RuleBasedScanner {
 		funcName = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey10), null, isBold("BOLD_COLOURKEY10")));
 		//self = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey11), null, isBold("BOLD_COLOURKEY11")));
 		parenthesis = new Token(new TextAttribute(pythonScriptColorProvider.getColor(rgbkey12), null, isBold("BOLD_COLOURKEY12")));
+		functionCall = new Token(new TextAttribute(pythonScriptColorProvider.getColor(PreferenceConverter.getColor(store, "colourkey13")), null, isBold("BOLD_COLOURKEY13")));
 		
 		List<IRule> rules = new ArrayList<IRule>();
 		rules.add(new MultiLineRule("\"\"\"", "\"\"\"", string,'\\'));
@@ -131,6 +134,9 @@ public class ScriptCodeScanner extends RuleBasedScanner {
         for (int i = 0; i < DEFAULT_KEYWORDS.length; i++)
 			wordRule.addWord(DEFAULT_KEYWORDS[i], keyword);
 
+        /* Function calls (before the word rule): name( */
+        rules.add(new com.eco.bio7.util.FunctionRule(functionCall, null, new java.util.HashSet<>(java.util.Arrays.asList(DEFAULT_KEYWORDS)),
+        		java.util.Set.of(), java.util.Set.of("def", "class")));
         rules.add(wordRule);
         
         rules.add(new WordRule(new DecoratorDetector(), decorator));

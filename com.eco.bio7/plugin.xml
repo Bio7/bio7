@@ -34,6 +34,20 @@
             name="R">
       </perspective>
       <perspective
+            class="com.eco.bio7.pybridge.PythonPerspective"
+            fixed="false"
+            icon="icons/perspective/pythonpersp.svg"
+            id="com.eco.bio7.pybridge.PythonPerspective"
+            name="Python">
+      </perspective>
+      <perspective
+            class="com.eco.bio7.pybridge.debug.PythonDebugPerspective"
+            fixed="false"
+            icon="icons/perspective/pythondebugpersp.svg"
+            id="com.eco.bio7.pybridge.debug.PythonDebugPerspective"
+            name="Python Debug">
+      </perspective>
+      <perspective
             class="com.eco.bio7.collection.CustomPerspective"
             icon="icons/perspective/custompersp.svg"
             id="com.eco.bio7.CustomPerspective"
@@ -44,7 +58,7 @@
             fixed="false"
             icon="icons/perspective/rimageanalysispersp.svg"
             id="com.eco.bio7.rbridge.RImagePerspective"
-            name="R ImageJ Analysis">
+            name="Image Analysis">
       </perspective>
       <perspective
             class="com.eco.bio7.rbridge.perspectives.RDebugPerspective"
@@ -121,6 +135,10 @@
                 name="Bio7-R">
           </category>
           <category
+                id="com.eco.bio7.pythonapplication"
+                name="Bio7-Python">
+          </category>
+          <category
                 id="com.eco.bio7.web"
                 name="Bio7-Web">
           </category>
@@ -160,6 +178,30 @@
             icon="icons/views/rview.svg"
             id="com.eco.bio7.RShell"
             name="R-Shell"
+            restorable="true">
+      </view>
+      <view
+            category="com.eco.bio7.pythonapplication"
+            class="com.eco.bio7.pybridge.PythonShellView"
+            icon="icons/views/pythonaction.svg"
+            id="com.eco.bio7.PythonShell"
+            name="Python-Shell"
+            restorable="true">
+      </view>
+      <view
+            category="com.eco.bio7.pythonapplication"
+            class="com.eco.bio7.pybridge.PythonPackagesView"
+            icon="icons/views/pythonaction.svg"
+            id="com.eco.bio7.pybridge.PythonPackagesView"
+            name="Python Packages"
+            restorable="true">
+      </view>
+      <view
+            category="com.eco.bio7.pythonapplication"
+            class="com.eco.bio7.pybridge.debug.PythonDebugView"
+            icon="icons/rdebug/rundebug.svg"
+            id="com.eco.bio7.pybridge.debug.PythonDebugView"
+            name="Python Debug"
             restorable="true">
       </view>
       <view
@@ -921,14 +963,18 @@
             name="R Markdown"
             project="false">
       </wizard>
+      <category
+            id="com.eco.bio7.markdownCategory"
+            name="Markdown">
+      </category>
       <wizard
-            category="com.eco.bio7.RCategory"
+            category="com.eco.bio7.markdownCategory"
             class="com.eco.bio7.wizards.MarkdownPluginWizard"
             icon="icons/editor/rmarkdownfile.svg"
             id="com.eco.bio7.markdown.plain.Wizard"
             name="Markdown"
             project="false">
-         <description>A markdown file (*.md), converted to HTML without R</description>
+         <description>A markdown file (*.md)</description>
       </wizard>
       <category
             id="com.eco.bio7.javascript"

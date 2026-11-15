@@ -142,6 +142,8 @@ public class Parse {
 		}
 
 		/* Create all collected markers in a job! */
+		/* Brackets, strings, commas, semicolons (marked where they are, with quick fixes) */
+		IJCodeChecks.apply(tokens.getTokens(), li.getErrWarn());
 		ErrorWarnMarkerCreation markerJob = new ErrorWarnMarkerCreation("Create Markers", editor, li.getErrWarn());
 
 		markerJob.addJobChangeListener(new JobChangeAdapter() {

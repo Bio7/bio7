@@ -18,6 +18,7 @@ import org.eclipse.swt.graphics.FontData;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.ITextEditorExtension3;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
@@ -30,7 +31,34 @@ import com.eco.bio7.pythoneditors.ScriptCodeScanner;
 import com.eco.bio7.pythoneditors.ScriptEditorMessages;
 import com.eco.bio7.pythoneditors.TemplateMessages;
 
-public class PythonEditor extends TextEditor implements IPropertyChangeListener {
+public class PythonEditor extends TextEditor implements IPropertyChangeListener, com.eco.bio7.pythonedit.analysis.OutlineTarget {
+
+	/* The outline (classes, functions, variables, imports) and the last structure of the code */
+	private com.eco.bio7.pythonedit.analysis.PythonOutlinePage outlinePage;
+	private volatile Object lastOutline;
+
+	@Override
+	public void outlineChanged(Object outline) {
+		lastOutline = outline;
+		com.eco.bio7.pythonedit.analysis.PythonOutlinePage page = outlinePage;
+		if (page != null) {
+			page.update(outline);
+		}
+	}
+
+	@Override
+	public <T> T getAdapter(Class<T> adapter) {
+		if (org.eclipse.ui.views.contentoutline.IContentOutlinePage.class.equals(adapter)) {
+			if (outlinePage == null || outlinePage.getControl() == null || outlinePage.getControl().isDisposed()) {
+				outlinePage = new com.eco.bio7.pythonedit.analysis.PythonOutlinePage(this);
+				if (lastOutline != null) {
+					outlinePage.update(lastOutline);
+				}
+			}
+			return adapter.cast(outlinePage);
+		}
+		return super.getAdapter(adapter);
+	}
 
 	private ColorManager colorManager;
 	private static final String TEMPLATE_PROPOSALS = "template_proposals_action";
@@ -45,7 +73,7 @@ public class PythonEditor extends TextEditor implements IPropertyChangeListener 
 	public PythonEditor() {
 		configureInsertMode(ITextEditorExtension3.SMART_INSERT, false);
 		colorManager = new ColorManager();
-		setSourceViewerConfiguration(new PythonConfiguration(colorManager));
+		setSourceViewerConfiguration(new PythonConfiguration(colorManager, this));
 		setDocumentProvider(new PythonDocumentProvider());
 
 	}
@@ -180,13 +208,43 @@ public class PythonEditor extends TextEditor implements IPropertyChangeListener 
 
 	}
 
+	@Override
+	public void createPartControl(org.eclipse.swt.widgets.Composite parent) {
+		super.createPartControl(parent);
+		if (getSourceViewer() instanceof org.eclipse.jface.text.ITextViewerExtension8 v) {
+			v.setHoverEnrichMode(org.eclipse.jface.text.ITextViewerExtension8.EnrichMode.AFTER_DELAY);
+		}
+	}
+
 	protected void initializeKeyBindingScopes() {
 		setKeyBindingScopes(new String[] { "com.eco.bio7.python.editor.scope" });
+	}
+
+	@Override
+	protected void rulerContextMenuAboutToShow(IMenuManager menu) {
+		super.rulerContextMenuAboutToShow(menu);
+		addAction(menu, "Toggle Python Breakpoint");
 	}
 
 	protected void editorContextMenuAboutToShow(IMenuManager menu) {
 		super.editorContextMenuAboutToShow(menu);
 		addAction(menu, "ContentAssistProposal");
+		addAction(menu, ITextEditorActionConstants.QUICK_ASSIST);
+		addAction(menu, "Format Python Code");
+		if (com.eco.bio7.pythonedit.analysis.PythonEditorSupport.debugScript != null) {
+			menu.add(new org.eclipse.jface.action.Action("Debug Python Script") {
+				@Override
+				public void run() {
+					if (isDirty()) {
+						doSave(null);
+					}
+					Runnable r = com.eco.bio7.pythonedit.analysis.PythonEditorSupport.debugScript;
+					if (r != null) {
+						r.run();
+					}
+				}
+			});
+		}
 		menu.add(new Separator());
 		addAction(menu, "Add Block Comment");
 		addAction(menu, "Remove Block Comment");
@@ -217,6 +275,27 @@ public class PythonEditor extends TextEditor implements IPropertyChangeListener 
 
 		preferences = new com.eco.bio7.pythoneditor.actions.OpenPreferences();
 		setAction("Jython Preferences", preferences);
+		/* A click on a marker with quick fixes in the ruler: the quick fixes (as in the Java editor) */
+		setAction(ITextEditorActionConstants.RULER_CLICK, new org.eclipse.jface.action.Action("Quick Fix") {
+			@Override
+			public void run() {
+				int line = getVerticalRuler().getLineOfLastMouseButtonActivity();
+				org.eclipse.jface.text.Position p = com.eco.bio7.pythonedit.analysis.PythonFixes.fixablePositionOnLine(getSourceViewer(), line);
+				if (p != null) {
+					selectAndReveal(p.getOffset(), p.getLength());
+					org.eclipse.jface.text.ITextOperationTarget target = getAdapter(org.eclipse.jface.text.ITextOperationTarget.class);
+					if (target != null && target.canDoOperation(ISourceViewer.QUICK_ASSIST)) {
+						target.doOperation(ISourceViewer.QUICK_ASSIST);
+					}
+				}
+			}
+		});
+		/* A double click on the ruler sets or removes a breakpoint (the debugger of the embedded Python) */
+		IAction toggle = com.eco.bio7.pythonedit.analysis.PythonBreakpoints.toggleAction(this, getVerticalRuler());
+		setAction(ITextEditorActionConstants.RULER_DOUBLE_CLICK, toggle);
+		setAction("Toggle Python Breakpoint", toggle);
+		/* Formats the code with ruff or black (Ctrl+Shift+F) */
+		setAction("Format Python Code", new com.eco.bio7.pythonedit.analysis.FormatAction(this));
 
 	}
 

@@ -188,6 +188,8 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 		viewer = getSourceViewer();
 		/* The R chunks: an action bar above each chunk, the output below */
 		com.eco.bio7.markdownedit.chunks.InlineChunkOutputs.of(this, viewer);
+		/* The code analysis of the R editor for the R chunks (errors and warnings) */
+		com.eco.bio7.markdownedit.chunks.RChunkAnalysis.install(this, viewer);
         
 		/*viewer.getTextWidget().addLineStyleListener(new LineStyleListener() {
 

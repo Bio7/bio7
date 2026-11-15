@@ -54,6 +54,9 @@ public class ScriptCodeScanner extends RuleBasedScanner {
 	public Token braces;
 	public Token numbers;
 	public Token multiLineComment;
+	/* The calls and definitions of functions and methods */
+	public Token functionCall;
+	public Token functionDefinition;
 
 	/**
 	 * Creates a Java code scanner with the given color provider.
@@ -91,6 +94,8 @@ public class ScriptCodeScanner extends RuleBasedScanner {
 		operators = new Token(new TextAttribute(provider.getColor(rgbkey5), null, isBold("BOLD_COLOURKEY5")));
 		braces = new Token(new TextAttribute(provider.getColor(rgbkey6), null, isBold("BOLD_COLOURKEY6")));
 		numbers = new Token(new TextAttribute(provider.getColor(rgbkey7), null, isBold("BOLD_COLOURKEY7")));
+		functionCall = new Token(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey8")), null, isBold("BOLD_COLOURKEY8")));
+		functionDefinition = new Token(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey9")), null, isBold("BOLD_COLOURKEY9")));
 
 		/*keyword = new Token(new TextAttribute(provider.getColor(rgbkey), null, 1,new Font(Display.getCurrent(),f)));
 		type = new Token(new TextAttribute(provider.getColor(rgbkey1), null, 1,new Font(Display.getCurrent(),f1)));
@@ -125,6 +130,13 @@ public class ScriptCodeScanner extends RuleBasedScanner {
 			wordRule.addWord(fgTypes[i], type);
 		for (int i = 0; i < fgConstants.length; i++)
 			wordRule.addWord(fgConstants[i], type);
+		/* Functions (before the word rule): calls; definitions after a type, void or def (Groovy) */
+		java.util.Set<String> notFunctions = new java.util.HashSet<>(java.util.Arrays.asList(fgKeywords));
+		notFunctions.addAll(java.util.Arrays.asList(fgTypes));
+		notFunctions.addAll(java.util.Arrays.asList(fgConstants));
+		java.util.Set<String> definitionWords = new java.util.HashSet<>(java.util.Arrays.asList(fgTypes));
+		definitionWords.addAll(java.util.Set.of("void", "def", "String", "Object", "Double", "Integer", "Boolean", "List", "Map", "ImagePlus", "ImageProcessor"));
+		rules.add(new com.eco.bio7.util.FunctionRule(functionCall, functionDefinition, notFunctions, definitionWords, java.util.Set.of("new", "class", "interface")));
 		rules.add(wordRule);
 
 		IRule[] result = new IRule[rules.size()];

@@ -67,6 +67,25 @@ public class RBaseListen extends RBaseListener {
 	public Scope currentScope; // Define symbols in this scope.
 	private int scopeNumber = 0;// 0=global scope! Incremental function marker for the refactor rename action!
 
+	/* Without an editor (e.g., the R chunks of a markdown document): the document and an outline node of its own */
+	private IDocument document;
+	private REditorOutlineNode standaloneBase;
+
+	/**
+	 * A listener for a document without an R editor (e.g., the R code of the
+	 * chunks of a markdown document): no outline of an editor.
+	 */
+	public RBaseListen(CommonTokenStream tokens, IDocument document, Parser parser) {
+		this(tokens, (REditor) null, parser);
+		this.document = document;
+		this.standaloneBase = new REditorOutlineNode("File", 0, "base", null);
+	}
+
+	/* The base node of the outline (of the editor, else of this listener) */
+	private REditorOutlineNode baseNode() {
+		return editor != null ? editor.baseNode : standaloneBase;
+	}
+
 	public RBaseListen(CommonTokenStream tokens, REditor editor, Parser parser) {
 		this.tokens = tokens;
 		this.editor = editor;
@@ -226,7 +245,7 @@ public class RBaseListen extends RBaseListener {
 				/* Here we create the outline nodes in the Outline view! */
 				if (methods.size() == 0) {
 
-					methods.push(new REditorOutlineNode(name, lineMethod, "function", editor.baseNode));
+					methods.push(new REditorOutlineNode(name, lineMethod, "function", baseNode()));
 
 				} else {
 					methods.push(new REditorOutlineNode(name, lineMethod, "function", methods.peek()));
@@ -297,7 +316,7 @@ public class RBaseListen extends RBaseListener {
 				/* Here we create the outline nodes in the Outline view! */
 				if (methods.size() == 0) {
 
-					methods.push(new REditorOutlineNode(name, lineMethod, "function", editor.baseNode));
+					methods.push(new REditorOutlineNode(name, lineMethod, "function", baseNode()));
 
 				} else {
 					methods.push(new REditorOutlineNode(name, lineMethod, "function", methods.peek()));
@@ -341,7 +360,7 @@ public class RBaseListen extends RBaseListener {
 		/* Here we create the outline nodes in the Outline view! */
 		if (methods.size() == 0) {
 
-			methods.push(new REditorOutlineNode("aFun", lineMethod, "anonymousFunction", editor.baseNode));
+			methods.push(new REditorOutlineNode("aFun", lineMethod, "anonymousFunction", baseNode()));
 
 		} else {
 			methods.push(new REditorOutlineNode("aFun", lineMethod, "anonymousFunction", methods.peek()));
@@ -417,7 +436,7 @@ public class RBaseListen extends RBaseListener {
 
 				st.varDecl.add(loopVar);
 
-				new REditorOutlineNode(loopVar, line, "loopVariable", editor.baseNode);
+				new REditorOutlineNode(loopVar, line, "loopVariable", baseNode());
 			}
 
 		} else {
@@ -551,13 +570,13 @@ public class RBaseListen extends RBaseListener {
 						st.varDecl.add(name);
 
 						if (isFunc.equals("setRefClass")) {
-							new REditorOutlineNode(name, line, "refClass", editor.baseNode);
+							new REditorOutlineNode(name, line, "refClass", baseNode());
 						} else if (isFunc.equals("R6Class")) {
-							new REditorOutlineNode(name, line, "r6Class", editor.baseNode);
+							new REditorOutlineNode(name, line, "r6Class", baseNode());
 						}
 
 						else {
-							new REditorOutlineNode(name, line, "variable", editor.baseNode);
+							new REditorOutlineNode(name, line, "variable", baseNode());
 						}
 					}
 
@@ -609,7 +628,7 @@ public class RBaseListen extends RBaseListener {
 						 */
 						st.varDecl.add(name);
 
-						new REditorOutlineNode(name, line, "variable", editor.baseNode);
+						new REditorOutlineNode(name, line, "variable", baseNode());
 					}
 
 				} else {
@@ -671,13 +690,13 @@ public class RBaseListen extends RBaseListener {
 						st.varDecl.add(name);
 
 						if (isFunc.equals("setRefClass")) {
-							new REditorOutlineNode(name, line, "refClass", editor.baseNode);
+							new REditorOutlineNode(name, line, "refClass", baseNode());
 						}
 
 						else if (isFunc.equals("R6Class")) {
-							new REditorOutlineNode(name, line, "r6Class", editor.baseNode);
+							new REditorOutlineNode(name, line, "r6Class", baseNode());
 						} else {
-							new REditorOutlineNode(name, line, "variable", editor.baseNode);
+							new REditorOutlineNode(name, line, "variable", baseNode());
 						}
 					}
 
@@ -750,6 +769,17 @@ public class RBaseListen extends RBaseListener {
 	private int calculateLine(int offsetStart) {
 		IDocument document = null;
 		int line = 0;
+		if (editor == null) {
+			/* Without an editor: the document of this listener */
+			if (this.document != null && offsetStart >= 0 && offsetStart < this.document.getLength()) {
+				try {
+					line = this.document.getLineOfOffset(offsetStart) + 1;
+				} catch (BadLocationException e) {
+					/* line 0 */
+				}
+			}
+			return line;
+		}
 		if (editor.getEditorInput() != null && editor.getDocumentProvider() != null) {
 			IDocumentProvider provider = editor.getDocumentProvider();
 			document = provider.getDocument(editor.getEditorInput());
@@ -800,7 +830,7 @@ public class RBaseListen extends RBaseListener {
 				if (parenthesis.equals(")")) {
 					if (methods.size() == 0) {
 
-						new REditorOutlineNode(name, line, "library", editor.baseNode);
+						new REditorOutlineNode(name, line, "library", baseNode());
 
 					} else {
 
@@ -826,7 +856,7 @@ public class RBaseListen extends RBaseListener {
 			int line = calculateLine(lineStart);
 
 			if (methods.size() == 0) {
-				new REditorOutlineNode(name, line, "s3Class", editor.baseNode);
+				new REditorOutlineNode(name, line, "s3Class", baseNode());
 			} else {
 				new REditorOutlineNode(name, line, "s3Class", methods.peek());
 			}
@@ -844,7 +874,7 @@ public class RBaseListen extends RBaseListener {
 			int line = calculateLine(lineStart);
 
 			if (methods.size() == 0) {
-				new REditorOutlineNode(name, line, "s4Class", editor.baseNode);
+				new REditorOutlineNode(name, line, "s4Class", baseNode());
 			} else {
 				new REditorOutlineNode(name, line, "s4Class", methods.peek());
 			}
@@ -916,7 +946,7 @@ public class RBaseListen extends RBaseListener {
 								int lineStart = su.start.getStartIndex();
 
 								int line = calculateLine(lineStart);
-								new REditorOutlineNode(resultedVar, line, "methodCallField", editor.baseNode);
+								new REditorOutlineNode(resultedVar, line, "methodCallField", baseNode());
 							}
 						}
 					}

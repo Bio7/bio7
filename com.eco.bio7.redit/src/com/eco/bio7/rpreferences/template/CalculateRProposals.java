@@ -48,6 +48,48 @@ public class CalculateRProposals {
 	 * Returns true if a function of the loaded packages has this name, false if
 	 * not, null if no proposals are loaded yet.
 	 */
+	private static final java.util.List<Runnable> RELOAD_LISTENERS = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+	/** Called (in the thread of the reload) after the proposals were reloaded (e.g., the functions of a loaded package). */
+	public static void addReloadListener(Runnable listener) {
+		RELOAD_LISTENERS.add(listener);
+	}
+
+	public static void removeReloadListener(Runnable listener) {
+		RELOAD_LISTENERS.remove(listener);
+	}
+
+	private static volatile java.util.Set<String> knownPackages;
+	private static volatile long knownPackagesVersion = -1;
+
+	/**
+	 * The packages of the current proposals (e.g., "ggplot2"): a package attached
+	 * in R which is not among them is missing in the code completion.
+	 */
+	public static java.util.Set<String> knownPackages() {
+		long v = version.get();
+		java.util.Set<String> known = knownPackages;
+		if (known != null && knownPackagesVersion == v) {
+			return known;
+		}
+		java.util.Set<String> set = new java.util.HashSet<>();
+		HashMap<Integer, String> context = statContext;
+		if (context != null) {
+			java.util.regex.Pattern p = java.util.regex.Pattern.compile("package:([A-Za-z0-9._]+)");
+			for (String c : context.values()) {
+				if (c != null) {
+					java.util.regex.Matcher m = p.matcher(c);
+					if (m.find()) {
+						set.add(m.group(1));
+					}
+				}
+			}
+		}
+		knownPackages = set;
+		knownPackagesVersion = v;
+		return set;
+	}
+
 	public static Boolean isKnownFunction(String name) {
 		java.util.Set<String> names = functionNames;
 		return names == null ? null : names.contains(name);
@@ -196,6 +238,14 @@ public class CalculateRProposals {
 		CalculateRProposals.functionNames = new java.util.HashSet<>(stat.values());
 		CalculateRProposals.stat = stat;
 		version.incrementAndGet();
+		/* E.g., the R analysis of markdown documents is updated */
+		for (Runnable r : RELOAD_LISTENERS) {
+			try {
+				r.run();
+			} catch (RuntimeException e) {
+				/* The next one */
+			}
+		}
 
 		// stat = null;
 		// statContext = null;

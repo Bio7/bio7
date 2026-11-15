@@ -610,7 +610,7 @@ eof
 /// RegularExpressionLiteral ::
 ///     / RegularExpressionBody / RegularExpressionFlags
 RegularExpressionLiteral
- : {isRegexPossible()}? '/' RegularExpressionBody '/' RegularExpressionFlags
+ : '/' {isRegexPossible()}? RegularExpressionBody '/' RegularExpressionFlags
  ;
 
 /// 7.3 Line Terminators
@@ -678,7 +678,7 @@ HexIntegerLiteral
  ;
 
 OctalIntegerLiteral
- : {!strictMode}? '0' OctalDigit+
+ : '0' {!strictMode}? OctalDigit+
  ;
 
 /// 7.6.1.1 Keywords

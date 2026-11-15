@@ -172,7 +172,7 @@ public final class RPlotVectorDevice {
 
 		Composite bar = new Composite(root, SWT.NONE);
 		bar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		GridLayout barLayout = new GridLayout(6, false);
+		GridLayout barLayout = new GridLayout(7, false);
 		barLayout.marginHeight = 2;
 		bar.setLayout(barLayout);
 		/* Triangles as icons (the characters have different sizes on macOS) */
@@ -182,6 +182,7 @@ public final class RPlotVectorDevice {
 		historyLabel.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
 		button(bar, "Save...", "Save the plot (PNG, PDF or SVG; R draws it again)", this::save);
 		button(bar, "Copy", "Copy the plot as image", this::copy);
+		button(bar, "To ImageJ", "Open the plot as ImageJ image with a chosen resolution (e.g., 300 dpi for a publication)", this::toImageJ);
 		statusLabel = new Label(bar, SWT.NONE);
 		statusLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
@@ -300,6 +301,42 @@ public final class RPlotVectorDevice {
 			copy = "png, filename = '" + path + (lower.endsWith(".png") ? "" : ".png") + "', width = " + w + ", height = " + h + ", res = " + (int) DPI;
 		}
 		runInR(n -> "local({ cur <- dev.cur(); dev.set(" + n + "); on.exit(if (cur %in% dev.list()) dev.set(cur)); dev.copy(" + copy + "); dev.off() })");
+	}
+
+	/*
+	 * The plot in ImageJ with a chosen resolution: R draws it again into a PNG file
+	 * (the same size in inches, more pixels per inch), ImageJ opens it calibrated
+	 */
+	private void toImageJ() {
+		int w = (int) device.width(), h = (int) device.height();
+		int dpi = PlotResolutionDialog.ask(Display.getDefault().getActiveShell(), w, h);
+		if (dpi <= 0) {
+			return;
+		}
+		double s = dpi / DPI;
+		java.io.File file;
+		try {
+			file = java.io.File.createTempFile("bio7plot", ".png");
+		} catch (java.io.IOException e) {
+			return;
+		}
+		String path = file.getAbsolutePath().replace("\\", "/").replace("'", "\\'");
+		String title = viewName;
+		Thread t = new Thread(() -> {
+			try {
+				int n = session.deviceNumber(device);
+				if (n > 1) {
+					session.voidEval("local({ cur <- dev.cur(); dev.set(" + n + "); on.exit(if (cur %in% dev.list()) dev.set(cur)); dev.copy(png, filename = '" + path + "', width = "
+							+ Math.round(w * s) + ", height = " + Math.round(h * s) + ", res = " + dpi + "); dev.off() })");
+					PlotResolutionDialog.openInImageJ(file, title, dpi);
+				}
+			} catch (Exception e) {
+				String message = e.getMessage();
+				Display.getDefault().asyncExec(() -> org.eclipse.jface.dialogs.MessageDialog.openError(Display.getDefault().getActiveShell(), "R Plot", message));
+			}
+		}, "R plot to ImageJ");
+		t.setDaemon(true);
+		t.start();
 	}
 
 	/* Copies the plot as an image (drawn at the size of the device) */

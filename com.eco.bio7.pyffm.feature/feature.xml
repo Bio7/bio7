@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="com.eco.bio7.pyffm.feature"
+      label="Bio7 Embedded Python (FFM)"
+      version="1.0.0.qualifier"
+      provider-name="Bio7">
+
+   <description>
+      Embeds an existing CPython installation (3.8 or later) in the Java process
+with the Foreign Function and Memory API (Java 22+): no compiled native code.
+Data transfer with numpy arrays and pandas DataFrames and a plot device for
+matplotlib.
+   </description>
+
+   <license url="https://www.eclipse.org/legal/epl-2.0/">
+      Eclipse Public License 2.0
+   </license>
+
+   <plugin
+         id="com.eco.bio7.pyffm"
+         version="0.0.0"/>
+
+</feature>

@@ -53,30 +53,66 @@ public class WorkbenchPreferencebsh extends FieldEditorPreferencePage implements
 		});
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 
-		addField(new ColorFieldEditor("colourkey", "Colour Keywords:", getFieldEditorParent()));
-		addField(new BooleanFieldEditor("BOLD_COLOURKEY", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		/* The color schemes (all colors below; then a single color can be changed) */
+		addField(new org.eclipse.jface.preference.RadioGroupFieldEditor(com.eco.bio7.util.ColorSchemes.LIGHT_PREFERENCE, "Color scheme (light theme)", 4,
+				com.eco.bio7.util.ColorSchemes.comboEntries(false), getFieldEditorParent(), true));
+		addField(new org.eclipse.jface.preference.RadioGroupFieldEditor(com.eco.bio7.util.ColorSchemes.DARK_PREFERENCE, "Color scheme (dark theme)", 3,
+				com.eco.bio7.util.ColorSchemes.comboEntries(true), getFieldEditorParent(), true));
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
 
-		addField(new ColorFieldEditor("colourkey1", "Colour Type:", getFieldEditorParent()));
-		addField(new BooleanFieldEditor("BOLD_COLOURKEY1", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addStyleField(new ColorFieldEditor("colourkey", "Colour Keywords:", getFieldEditorParent()));
+		addStyleField(new BooleanFieldEditor("BOLD_COLOURKEY", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		addField(new ColorFieldEditor("colourkey2", "Colour String:", getFieldEditorParent()));
-		addField(new BooleanFieldEditor("BOLD_COLOURKEY2", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addStyleField(new ColorFieldEditor("colourkey1", "Colour Type:", getFieldEditorParent()));
+		addStyleField(new BooleanFieldEditor("BOLD_COLOURKEY1", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		addField(new ColorFieldEditor("colourkey3", "Colour Single Comment:", getFieldEditorParent()));
-		addField(new BooleanFieldEditor("BOLD_COLOURKEY3", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addStyleField(new ColorFieldEditor("colourkey2", "Colour String:", getFieldEditorParent()));
+		addStyleField(new BooleanFieldEditor("BOLD_COLOURKEY2", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		addField(new ColorFieldEditor("colourkey4", "Colour Default:", getFieldEditorParent()));
-		addField(new BooleanFieldEditor("BOLD_COLOURKEY4", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addStyleField(new ColorFieldEditor("colourkey3", "Colour Single Comment:", getFieldEditorParent()));
+		addStyleField(new BooleanFieldEditor("BOLD_COLOURKEY3", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		addField(new ColorFieldEditor("colourkey5", "Operators:", getFieldEditorParent()));
-		addField(new BooleanFieldEditor("BOLD_COLOURKEY5", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addStyleField(new ColorFieldEditor("colourkey4", "Colour Default:", getFieldEditorParent()));
+		addStyleField(new BooleanFieldEditor("BOLD_COLOURKEY4", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		addField(new ColorFieldEditor("colourkey6", "Braces:", getFieldEditorParent()));
-		addField(new BooleanFieldEditor("BOLD_COLOURKEY6", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addStyleField(new ColorFieldEditor("colourkey5", "Operators:", getFieldEditorParent()));
+		addStyleField(new BooleanFieldEditor("BOLD_COLOURKEY5", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		addField(new ColorFieldEditor("colourkey7", "Numbers:", getFieldEditorParent()));
-		addField(new BooleanFieldEditor("BOLD_COLOURKEY7", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addStyleField(new ColorFieldEditor("colourkey6", "Braces:", getFieldEditorParent()));
+		addStyleField(new BooleanFieldEditor("BOLD_COLOURKEY6", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
+		addStyleField(new ColorFieldEditor("colourkey7", "Numbers:", getFieldEditorParent()));
+		addStyleField(new BooleanFieldEditor("BOLD_COLOURKEY7", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+
+		addStyleField(new ColorFieldEditor("colourkey8", "Function calls:", getFieldEditorParent()));
+		addStyleField(new BooleanFieldEditor("BOLD_COLOURKEY8", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+
+		addStyleField(new ColorFieldEditor("colourkey9", "Function definitions:", getFieldEditorParent()));
+		addStyleField(new BooleanFieldEditor("BOLD_COLOURKEY9", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+
+	}
+
+	/* The color and bold fields (reloaded when a color scheme is selected) */
+	private final java.util.List<org.eclipse.jface.preference.FieldEditor> styleFields = new java.util.ArrayList<>();
+
+	private void addStyleField(org.eclipse.jface.preference.FieldEditor field) {
+		styleFields.add(field);
+		addField(field);
+	}
+
+	/* A color scheme was selected: all colors are set to it (the editors follow) */
+	private void applyScheme(String preference, String scheme) {
+		IPreferenceStore st = BeanshellEditorPlugin.getDefault().getPreferenceStore();
+		st.setValue(preference, scheme);
+		boolean dark = com.eco.bio7.util.Util.isDarkTheme();
+		if (preference.equals(dark ? com.eco.bio7.util.ColorSchemes.DARK_PREFERENCE : com.eco.bio7.util.ColorSchemes.LIGHT_PREFERENCE)) {
+			PreferenceInitializer.setColorDefaults(st, dark);
+			com.eco.bio7.util.ColorSchemes.resetToDefaults(st, PreferenceInitializer.COLOR_ROLES);
+			for (org.eclipse.jface.preference.FieldEditor f : styleFields) {
+				f.load();
+			}
+			updateEditorColors();
+		}
 	}
 
 	public void init(IWorkbench workbench) {
@@ -88,6 +124,11 @@ public class WorkbenchPreferencebsh extends FieldEditorPreferencePage implements
 
 	@Override
 	protected void performDefaults() {
+		/* The classic color schemes: their colors are the defaults loaded below */
+		IPreferenceStore st = BeanshellEditorPlugin.getDefault().getPreferenceStore();
+		st.setToDefault(com.eco.bio7.util.ColorSchemes.LIGHT_PREFERENCE);
+		st.setToDefault(com.eco.bio7.util.ColorSchemes.DARK_PREFERENCE);
+		PreferenceInitializer.setColorDefaults(st, com.eco.bio7.util.Util.isDarkTheme());
 
 		super.performDefaults();
 		ScopedPreferenceStore storeWorkbench = new ScopedPreferenceStore(new InstanceScope(), "org.eclipse.ui.workbench");
@@ -116,6 +157,31 @@ public class WorkbenchPreferencebsh extends FieldEditorPreferencePage implements
 
 	public void propertyChange(org.eclipse.jface.util.PropertyChangeEvent event) {
 		super.propertyChange(event);
+		if (event.getSource() instanceof org.eclipse.jface.preference.RadioGroupFieldEditor radio
+				&& org.eclipse.jface.preference.FieldEditor.VALUE.equals(event.getProperty())) {
+			applyScheme(radio.getPreferenceName(), String.valueOf(event.getNewValue()));
+			return;
+		}
+		/* The colors of the functions (live) */
+		if (event.getSource() instanceof org.eclipse.jface.preference.FieldEditor fe && fe.getPreferenceName().matches("(BOLD_COLOURKEY|colourkey)(8|9)")) {
+			IPreferenceStore st = BeanshellEditorPlugin.getDefault().getPreferenceStore();
+			String name = fe.getPreferenceName();
+			String number = name.replaceAll("\\D", "");
+			RGB rgb = name.startsWith("colourkey") ? (RGB) event.getNewValue() : PreferenceConverter.getColor(st, "colourkey" + number);
+			boolean bold = name.startsWith("BOLD") ? (boolean) event.getNewValue() : st.getBoolean("BOLD_COLOURKEY" + number);
+			ScriptCodeScanner scanner = (ScriptCodeScanner) BeanshellEditorPlugin.getDefault().getScriptCodeScanner();
+			TextAttribute attribute = new TextAttribute(BeanshellEditorPlugin.getDefault().getScriptColorProvider().getColor(rgb), null, bold ? SWT.BOLD : SWT.NORMAL);
+			switch (number) {
+			case "8" -> scanner.functionCall.setData(attribute);
+			case "9" -> scanner.functionDefinition.setData(attribute);
+			default -> {
+			}
+			}
+			for (BeanshellEditor e : com.eco.bio7.util.Util.getOpenEditors(BeanshellEditor.class)) {
+				e.invalidateText();
+			}
+			return;
+		}
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if (editor != null && editor instanceof BeanshellEditor) {
 			BeanshellEditor beanshellEditor = (BeanshellEditor) editor;
@@ -283,6 +349,8 @@ public class WorkbenchPreferencebsh extends FieldEditorPreferencePage implements
 		scanner.operators.setData(attribute.apply("colourkey5", "BOLD_COLOURKEY5"));
 		scanner.braces.setData(attribute.apply("colourkey6", "BOLD_COLOURKEY6"));
 		scanner.numbers.setData(attribute.apply("colourkey7", "BOLD_COLOURKEY7"));
+		scanner.functionCall.setData(attribute.apply("colourkey8", "BOLD_COLOURKEY8"));
+		scanner.functionDefinition.setData(attribute.apply("colourkey9", "BOLD_COLOURKEY9"));
 		for (BeanshellEditor editor : com.eco.bio7.util.Util.getOpenEditors(BeanshellEditor.class)) {
 			editor.invalidateText();
 		}

@@ -206,6 +206,8 @@ public class IJMacroEditor extends TextEditor implements IPropertyChangeListener
 		store = IJMacroEditorPlugin.getDefault().getPreferenceStore();
 		getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(listener);
 		viewer = (ProjectionViewer) getSourceViewer();
+		/* The hover of a marker becomes sticky after a moment (to click a quick fix) */
+		viewer.setHoverEnrichMode(org.eclipse.jface.text.ITextViewerExtension8.EnrichMode.AFTER_DELAY);
 
 		projectionSupport = new ProjectionSupport(viewer, getAnnotationAccess(), getSharedColors());
 		projectionSupport.install();

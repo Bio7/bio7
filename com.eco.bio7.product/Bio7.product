@@ -205,6 +205,7 @@ jdk/bin/javaw.exe
       <feature id="com.eco.bio7.libs.feature" installMode="root"/>
       <feature id="com.eco.bio7.redit.feature" installMode="root"/>
       <feature id="com.eco.bio7.rffm.feature" installMode="root"/>
+      <feature id="com.eco.bio7.pyffm.feature" installMode="root"/>
       <feature id="com.eco.bio7.util.feature"/>
       <feature id="com.eco.bio7.worldwind.feature" installMode="root"/>
       <feature id="com.eco.bio7.pythonedit.feature" installMode="root"/>

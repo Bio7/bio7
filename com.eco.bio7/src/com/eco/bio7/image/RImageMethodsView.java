@@ -45,6 +45,7 @@ import com.eco.bio7.collection.Work;
 import com.eco.bio7.image.r.IJTranserResultsTable;
 import com.eco.bio7.image.r.TransferImageStack;
 import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.pybridge.PythonImageTransfer;
 import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RServeUtil;
 import com.eco.bio7.rbridge.RState;
@@ -122,6 +123,15 @@ public class RImageMethodsView extends ViewPart {
 
 	private ScrolledComposite scrolledComposite;
 
+	/* The target of the transfers: R (default) or the embedded Python (preference) */
+	private static final String TARGET_PREFERENCE = "IMAGE_METHODS_TRANSFER_TARGET";
+	private static boolean python;
+	private CLabel lblNewLabel;
+	private CLabel lblNewLabel_1;
+	private final java.util.Map<Button, String[]> transferTexts = new java.util.LinkedHashMap<>();
+	private Image rImage;
+	private Image pythonImage;
+
 	protected static boolean createMatrix;
 
 	public void createPartControl(Composite parent) {
@@ -163,18 +173,24 @@ public class RImageMethodsView extends ViewPart {
 		scrolledComposite.setContent(top);
 		
 
-		CLabel lblNewLabel = new CLabel(top, SWT.NONE);
+		lblNewLabel = new CLabel(top, SWT.NONE);
 		lblNewLabel.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, true, false, 2, 1));
 		lblNewLabel.setText("Transfer Selected Data To R");
 
 		btnNewButton = new Button(top, SWT.NONE);
 		btnNewButton.setToolTipText("Transfers the ImageJ \"Results Table\" data\r\nas a dataframe to R (datatype double).");
-		Image rGif = Bio7Plugin.getImageDescriptor("/icons/views/raction.svg").createImage();
+		/* The R icon of the buttons (disposed with the view) */
+		rGif = Bio7Plugin.getImageDescriptor("/icons/views/raction.svg").createImage();
 		
 		btnNewButton.setImage(rGif);
 		btnNewButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				/* Python is selected in the view: the transfer to the embedded Python */
+				if (python) {
+					PythonImageTransfer.resultsTable();
+					return;
+				}
 
 				if (RServe.isAliveDialog()) {
 					if (RState.isBusy() == false) {
@@ -226,6 +242,11 @@ public class RImageMethodsView extends ViewPart {
 
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				/* Python is selected in the view: the transfer to the embedded Python */
+				if (python) {
+					PythonImageTransfer.stack();
+					return;
+				}
 				RBackend con = RBridge.getBackend();
 
 				if (con != null) {
@@ -289,6 +310,11 @@ public class RImageMethodsView extends ViewPart {
 		button2.setLayoutData(gridData);
 		button2.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
+				/* Python is selected in the view: the transfer to the embedded Python */
+				if (python) {
+					PythonImageTransfer.roi();
+					return;
+				}
 
 				if (RServe.isAliveDialog()) {
 					if (RState.isBusy() == false) {
@@ -341,6 +367,11 @@ public class RImageMethodsView extends ViewPart {
 				"Transfers a particle measurement to R.\r\nThe image has to be thresholded and in\r\nthe ImageJ \"Analyze Particles\" dialog the option\r\n\"Display results\" has to be selected.\r\nSimply automates an ImageJ \"Results\r\nTable\" transfer workflow (see \"IJ RT\" action).");
 		button4.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
 			public void widgetSelected(org.eclipse.swt.events.SelectionEvent e) {
+				/* Python is selected in the view: the transfer to the embedded Python */
+				if (python) {
+					PythonImageTransfer.particles();
+					return;
+				}
 
 				if (RServe.isAliveDialog()) {
 					if (RState.isBusy() == false) {
@@ -389,6 +420,11 @@ public class RImageMethodsView extends ViewPart {
 		// 9, SWT.BOLD));
 		selectedPixelsButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
+				/* Python is selected in the view: the transfer to the embedded Python */
+				if (python) {
+					PythonImageTransfer.pixels(transferTypeCombo.getSelectionIndex());
+					return;
+				}
 				if (RServe.isAlive()) {
 					ImagePlus imp = WindowManager.getCurrentImage();
 					if (imp != null) {
@@ -437,6 +473,11 @@ public class RImageMethodsView extends ViewPart {
 		matchingButton.addSelectionListener(new SelectionAdapter() {
 
 			public void widgetSelected(final SelectionEvent e) {
+				/* Python is selected in the view: the transfer to the embedded Python */
+				if (python) {
+					PythonImageTransfer.selectionsRoiManager();
+					return;
+				}
 
 				/*
 				 * TransferSelectionCoordsDialog dialog = new
@@ -464,6 +505,11 @@ public class RImageMethodsView extends ViewPart {
 		selectedRoiPixelButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				/* Python is selected in the view: the transfer to the embedded Python */
+				if (python) {
+					PythonImageTransfer.pixelsRoiManager(transferTypeCombo.getSelectionIndex());
+					return;
+				}
 
 				if (RServe.isAlive()) {
 					ImagePlus imp = WindowManager.getCurrentImage();
@@ -514,6 +560,11 @@ public class RImageMethodsView extends ViewPart {
 		btnPixelRoiStack.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				/* Python is selected in the view: the transfer to the embedded Python */
+				if (python) {
+					PythonImageTransfer.pixelsRoiManager(transferTypeCombo.getSelectionIndex());
+					return;
+				}
 				if (RServe.isAlive()) {
 					ImagePlus imp = WindowManager.getCurrentImage();
 					if (imp != null) {
@@ -551,7 +602,7 @@ public class RImageMethodsView extends ViewPart {
 		gd_btnPixelRoiStack.heightHint = 35;
 		btnPixelRoiStack.setLayoutData(gd_btnPixelRoiStack);
 
-		CLabel lblNewLabel_1 = new CLabel(top, SWT.NONE);
+		lblNewLabel_1 = new CLabel(top, SWT.NONE);
 		lblNewLabel_1.setLayoutData(new GridData(SWT.CENTER, SWT.FILL, true, false, 2, 1));
 		lblNewLabel_1.setText("Transfer Image Data From and To R");
 
@@ -564,6 +615,11 @@ public class RImageMethodsView extends ViewPart {
 		picToRButton.setImage(rGif);
 		picToRButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
+				/* Python is selected in the view: the transfer to the embedded Python */
+				if (python) {
+					PythonImageTransfer.imageToPython(imageMatrixNameToR.getText(), transferTypeCombo.getSelectionIndex());
+					return;
+				}
 				if (RServe.isAlive()) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
@@ -609,6 +665,11 @@ public class RImageMethodsView extends ViewPart {
 		picButton.setImage(rGif);
 		picButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
+				/* Python is selected in the view: the transfer to the embedded Python */
+				if (python) {
+					PythonImageTransfer.imageFromPython(imageMatrixNameFromR.getText(), toimageJCombo.getSelectionIndex());
+					return;
+				}
 				if (RServe.isAlive()) {
 					if (transferTypeCombo.getSelectionIndex() == 3) {
 						Bio7Dialog.message("RGB transfer to ImageJ is not supported!\n Please use e.g. byte transfer for the R ,G ,B components\n which can be merged with ImageJ!");
@@ -813,7 +874,82 @@ public class RImageMethodsView extends ViewPart {
 		pcaButton.setLayoutData(gd_pcaButton);
 
 		//initializeToolBar(); causing WindowBuilder error!
+		createTargetActions();
 
+	}
+
+	/* The view toolbar: the target of the transfers (R or Python) */
+	private void createTargetActions() {
+		rImage = rGif;
+		pythonImage = Bio7Plugin.getImageDescriptor("/icons/views/pythonaction.svg").createImage();
+		top.addListener(SWT.Dispose, _ -> {
+			rImage.dispose();
+			pythonImage.dispose();
+		});
+		for (Button b : new Button[] { btnNewButton, btnNewButton_1, button2, button4, selectedPixelsButton, matchingButton, selectedRoiPixelButton, btnPixelRoiStack,
+				picToRButton, picButton }) {
+			transferTexts.put(b, new String[] { b.getText(), b.getToolTipText() });
+		}
+		python = "Python".equals(Bio7Plugin.getDefault().getPreferenceStore().getString(TARGET_PREFERENCE));
+		org.eclipse.jface.action.Action toR = new org.eclipse.jface.action.Action("R", org.eclipse.jface.action.IAction.AS_RADIO_BUTTON) {
+			@Override
+			public void run() {
+				if (isChecked()) {
+					setTarget(false);
+				}
+			}
+		};
+		toR.setToolTipText("Transfer the data to R");
+		toR.setImageDescriptor(Bio7Plugin.getImageDescriptor("/icons/views/raction.svg"));
+		org.eclipse.jface.action.Action toPython = new org.eclipse.jface.action.Action("Python", org.eclipse.jface.action.IAction.AS_RADIO_BUTTON) {
+			@Override
+			public void run() {
+				if (isChecked()) {
+					setTarget(true);
+				}
+			}
+		};
+		toPython.setToolTipText("Transfer the data to the embedded Python (numpy, pandas)");
+		toPython.setImageDescriptor(Bio7Plugin.getImageDescriptor("/icons/views/pythonaction.svg"));
+		toR.setChecked(!python);
+		toPython.setChecked(python);
+		IToolBarManager toolBarManager = getViewSite().getActionBars().getToolBarManager();
+		toolBarManager.add(toR);
+		toolBarManager.add(toPython);
+		getViewSite().getActionBars().updateActionBars();
+		applyTarget();
+	}
+
+	private void setTarget(boolean toPython) {
+		python = toPython;
+		Bio7Plugin.getDefault().getPreferenceStore().setValue(TARGET_PREFERENCE, toPython ? "Python" : "R");
+		applyTarget();
+		/* The views of the target: the Python-Shell and packages or the R-Shell and packages */
+		com.eco.bio7.pybridge.PythonViews.exchange(toPython);
+	}
+
+	/* The icons, texts and tooltips of the transfer actions for R or Python */
+	private void applyTarget() {
+		if (top == null || top.isDisposed()) {
+			return;
+		}
+		String target = python ? "Python" : "R";
+		lblNewLabel.setText("Transfer Selected Data To " + target);
+		lblNewLabel_1.setText("Transfer Image Data From and To " + target);
+		for (java.util.Map.Entry<Button, String[]> e : transferTexts.entrySet()) {
+			Button b = e.getKey();
+			b.setImage(python ? pythonImage : rImage);
+			String text = e.getValue()[0];
+			String tip = e.getValue()[1];
+			if (python) {
+				text = text.replace("RasterStack", "Stack");
+				tip = tip == null ? null : tip.replaceAll("\\bR\\b", "Python").replace("dataframe", "DataFrame").replace("matrix list or RasterStack", "numpy array");
+			}
+			b.setText(text);
+			b.setToolTipText(tip);
+		}
+		/* The multivariate analysis runs in R */
+		top.layout(true, true);
 	}
 
 	public void setFocus() {

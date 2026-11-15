@@ -462,8 +462,16 @@ public class RRefPhaseListen extends RBaseListener {
 							}
 						}
 
-						parser.notifyErrorListeners(tok,
-								"Warn17####Variable not available?#### " + varName + " seems to be missing!", null);
+						/* Similar names of the scope: the quick fix "Did you mean ...?" */
+						com.eco.bio7.reditor.antlr.CodeFix fix = new com.eco.bio7.reditor.antlr.CodeFix();
+						for (String similar : similarNames(varName)) {
+							fix.add("Did you mean '" + similar + "'?", tok.getStartIndex(), tok.getStopIndex() + 1 - tok.getStartIndex(), similar);
+						}
+						if (fix.isEmpty()) {
+							parser.notifyErrorListeners(tok, "Warn17####Variable not available?#### " + varName + " seems to be missing!", null);
+						} else {
+							parser.notifyErrorListeners(tok, "Warn27####Variable " + varName + " not found!####" + fix.encode(), null);
+						}
 
 					} else {
 						if (var instanceof RFunctionSymbol) {
@@ -525,11 +533,80 @@ public class RRefPhaseListen extends RBaseListener {
 			boolean isNotCalled = finalVarDecl.contains(name);
 			if (isNotCalled) {
 
-				parser.notifyErrorListeners(firstToken, "Warn17####Variable " + name + " is defined but not used!",
-						null);
+				com.eco.bio7.reditor.antlr.CodeFix fix = unusedVariableFix(ctx);
+				if (fix.isEmpty()) {
+					parser.notifyErrorListeners(firstToken, "Warn17####Variable " + name + " is defined but not used!", null);
+				} else {
+					parser.notifyErrorListeners(firstToken, "Warn25####Variable " + name + " is defined but not used!####" + fix.encode(), null);
+				}
 
 			}
 		}
+	}
+
+	/*
+	 * The quick fixes of an unused variable: remove the assignment (the value is
+	 * computed, e.g., a function with side effects) or the statement
+	 */
+	private com.eco.bio7.reditor.antlr.CodeFix unusedVariableFix(RParser.E17VariableDeclarationContext ctx) {
+		com.eco.bio7.reditor.antlr.CodeFix fix = new com.eco.bio7.reditor.antlr.CodeFix();
+		try {
+			String op = ctx.getChild(1).getText();
+			if (ctx.expr().size() < 2 || !(op.equals("<-") || op.equals("=") || op.equals("<<-"))) {
+				return fix;
+			}
+			int start = ctx.getStart().getStartIndex();
+			int value = ctx.expr(1).getStart().getStartIndex();
+			/* The end of the statement: the line break or ';' outside of brackets (a call may follow the assignment in the tree) */
+			int stop = ctx.getStop().getStopIndex() + 1;
+			int depth = 0;
+			for (int i = ctx.getStart().getTokenIndex(); i < tokens.size(); i++) {
+				Token t = tokens.get(i);
+				if (t.getType() == Token.EOF) {
+					break;
+				}
+				String x = t.getText();
+				if (t.getChannel() != Token.DEFAULT_CHANNEL) {
+					continue;
+				}
+				if (depth == 0 && (x.equals(";") || x.trim().isEmpty() || x.trim().startsWith("#"))) {
+					break;
+				}
+				if (x.equals("(") || x.equals("[") || x.equals("[[") || x.equals("{")) {
+					depth++;
+				} else if (x.equals(")") || x.equals("]") || x.equals("}")) {
+					depth--;
+				}
+				stop = t.getStopIndex() + 1;
+			}
+			fix.add("Remove the assignment (keep the value)", start, value - start, "");
+			/* The statement with its line break */
+			String text = ctx.getStart().getInputStream().getText(org.antlr.v4.runtime.misc.Interval.of(stop, Math.min(stop + 1, ctx.getStart().getInputStream().size() - 1)));
+			int extra = text.startsWith("\r\n") ? 2 : text.startsWith("\n") ? 1 : 0;
+			fix.add("Remove the statement", start, stop - start + extra, "");
+		} catch (RuntimeException e) {
+			/* No quick fix */
+		}
+		return fix;
+	}
+
+	/* The names of the scope (variables, functions, arguments) which are similar to the name (at most 3) */
+	private java.util.List<String> similarNames(String name) {
+		java.util.Map<String, Double> similar = new java.util.HashMap<>();
+		for (Scope s = currentScope; s != null; s = s.getEnclosingScope()) {
+			for (String candidate : s.getArguments().keySet()) {
+				if (candidate.equals(name) || similar.containsKey(candidate)) {
+					continue;
+				}
+				double distance = com.eco.bio7.reditor.code.Levenshtein.getLevenshteinDistance(name, candidate);
+				double similarity = 1.0 - distance / Math.max(name.length(), candidate.length());
+				if (similarity >= 0.6 || distance <= 1 && name.length() > 1) {
+					similar.put(candidate, similarity);
+				}
+			}
+		}
+		return similar.entrySet().stream().sorted(java.util.Map.Entry.<String, Double>comparingByValue().reversed()).limit(3).map(java.util.Map.Entry::getKey)
+				.toList();
 	}
 
 	public void exitE17VariableDeclaration(RParser.E17VariableDeclarationContext ctx) {
@@ -663,7 +740,8 @@ public class RRefPhaseListen extends RBaseListener {
 					}
 
 				} else {
-					if (store.getBoolean("MISSING_FUNCTION")) {
+					/* A function which exists in R (e.g., of a package attached in the console or a chunk) */
+					if (store.getBoolean("MISSING_FUNCTION") && !com.eco.bio7.reditors.RLiveNames.exists(funcName)) {
 						parser.notifyErrorListeners(stop,
 								"Warn16####Function not available?#### " + funcName + " seems to be missing!", null);
 					}

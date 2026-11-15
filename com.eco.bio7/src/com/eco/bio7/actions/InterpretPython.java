@@ -93,6 +93,15 @@ public class InterpretPython extends Action {
 				}
 				String loc = aFile.getLocation().toString();
 
+				/* The embedded Python (preferences): the script runs in the process of Bio7 (data and plots) */
+				if (sel.equals("Python") && com.eco.bio7.pybridge.EmbeddedPython.isSelected()) {
+					com.eco.bio7.console.ConsoleInterpreterAction.getInstance().startPython();
+					if (com.eco.bio7.pybridge.EmbeddedPython.isRunning()) {
+						com.eco.bio7.pybridge.EmbeddedPython.runFile(loc);
+						com.eco.bio7.pybridge.EmbeddedPython.prompt();
+					}
+					return;
+				}
 				if (sel.equals("Python")) {
 
 					boolean python3x = store.getBoolean("python_3x");

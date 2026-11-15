@@ -328,6 +328,11 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 						EmbeddedR.interrupt();
 						return;
 					}
+					/* Embedded Python: KeyboardInterrupt in the running code */
+					if (interpreterSelection.equals("Python") && pythonProcess == null && com.eco.bio7.pybridge.EmbeddedPython.isRunning()) {
+						com.eco.bio7.pybridge.EmbeddedPython.interrupt();
+						return;
+					}
 
 					// Send OS signal
 					if (Bio7Dialog.getOS().equals("Windows")) {
@@ -642,13 +647,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				 */
 				String cPython = store.getString("python_pipe_path");
 				List<String> args = new ArrayList<String>();
-				if (cPython.isEmpty() == false) {
-					args.add(cPython + "/python");
-				}
-				/* Try to start from the PATH environment! */
-				else {
-					args.add("python");
-				}
+				/* The interpreter of the folder in the preferences, else a found one (PATH, installation folders) */
+				args.add(PythonFinder.executable(cPython));
 				args.add("-i");
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.environment().put("Path", builder.environment().get("Path") + cPython);
@@ -664,13 +664,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 				String cPython = store.getString("python_pipe_path");
 				List<String> args = new ArrayList<String>();
-				if (cPython.isEmpty() == false) {
-					args.add(cPython + "/python");
-				}
-				/* Try to start from the PATH environment! */
-				else {
-					args.add("python");
-				}
+				/* The interpreter of the folder in the preferences, else a found one (PATH, installation folders) */
+				args.add(PythonFinder.executable(cPython));
 				args.add("-i");
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);
@@ -685,13 +680,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
 				String cPython = store.getString("python_pipe_path");
 				List<String> args = new ArrayList<String>();
-				if (cPython.isEmpty() == false) {
-					args.add(cPython + "/python");
-				}
-				/* Try to start from the PATH environment! */
-				else {
-					args.add("python");
-				}
+				/* The interpreter of the folder in the preferences, else a found one (PATH, installation folders) */
+				args.add(PythonFinder.executable(cPython));
 				args.add("-i");
 				ProcessBuilder builder = new ProcessBuilder(args);
 				builder.redirectErrorStream(true);
@@ -705,8 +695,8 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			Bio7Dialog.message(
-					"Interpreter not available!\n\nPlease adjust the path to the interpreter in the Bio7 preferences!");
+			Bio7Dialog.message("Python could not be started!\n\nPlease select the Python folder in the preferences (Preferences Python: 'Detect Python...').\n"
+					+ "Without native Python, use the Jython shell of the console.");
 		}
 
 	}
@@ -1030,6 +1020,37 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 	}
 
+	/*
+	 * Reads a line of the console for an interpreter. Returns null for the line
+	 * which woke the reader for a switch of the interpreter (it is not sent to the
+	 * former interpreter, e.g., embedded R, whose prompt would appear in the new
+	 * console).
+	 */
+	private String readLine(String mode) throws IOException {
+		String line = in.readLine();
+		/* The line break of a switch of the interpreter: not an input (e.g., no second prompt) */
+		if (line != null && wakeLine && line.isEmpty()) {
+			wakeLine = false;
+			return null;
+		}
+		if (line != null && !mode.equals(interpreterSelection)) {
+			return null;
+		}
+		return line;
+	}
+
+	/* A line break was sent to wake the reader for a switch of the interpreter */
+	private volatile boolean wakeLine;
+
+	/**
+	 * Wakes the reader of the console after a switch of the interpreter (a line
+	 * break which is not passed to an interpreter).
+	 */
+	public void wakeReader() {
+		wakeLine = true;
+		ioc.getInputStream().appendData(System.getProperty("line.separator"));
+	}
+
 	private void interpret() {
 
 		while (!Thread.interrupted() && runThread == true) {
@@ -1040,13 +1061,15 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 				e1.printStackTrace();
 			}
-			switch (interpreterSelection) {
+			/* The interpreter of this input (a switch wakes the reader with a line break) */
+			String mode = interpreterSelection;
+			switch (mode) {
 			case "jython":
 
 				try {
 					if (in != null) {
 						System.out.print(">>>");
-						input = in.readLine();
+						input = readLine(mode);
 
 					}
 				} catch (IOException e1) {
@@ -1080,7 +1103,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				try {
 					if (in != null) {
 						System.out.print("bsh %");
-						input = in.readLine();
+						input = readLine(mode);
 					}
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
@@ -1112,7 +1135,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				try {
 					if (in != null) {
 						System.out.print("groovy>");
-						input = in.readLine();
+						input = readLine(mode);
 					}
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
@@ -1145,7 +1168,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				try {
 					if (in != null) {
 						System.out.print("javascript>");
-						input = in.readLine();
+						input = readLine(mode);
 					}
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
@@ -1176,7 +1199,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			/*
 			 * case "r": System.out.print("System>");
 			 * 
-			 * input = in.readLine(); if (input == null||input.equals("")) break; else {
+			 * input = readLine(mode); if (input == null||input.equals("")) break; else {
 			 * if(RServe.isAliveDialog()){ RServe.printJob(input);
 			 * 
 			 * }
@@ -1191,10 +1214,10 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					if (in != null) {
 						// System.out.print("Shell>");
 						if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-							input = in.readLine();
+							input = readLine(mode);
 						} else {
 							// System.out.print("$ ");
-							input = in.readLine();
+							input = readLine(mode);
 						}
 					}
 				} catch (IOException e1) {
@@ -1249,10 +1272,10 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					if (in != null) {
 
 						if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-							input = in.readLine();
+							input = readLine(mode);
 						} else {
 							// System.out.print("$ ");
-							input = in.readLine();
+							input = readLine(mode);
 						}
 					}
 				} catch (IOException e1) {
@@ -1303,7 +1326,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				try {
 					if (in != null) {
 						// System.out.print("Shell>");
-						input = in.readLine();
+						input = readLine(mode);
 					}
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
@@ -1317,7 +1340,10 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 							list.add(input);
 						}
 					}
-					if (pythonProcess != null) {
+					if (pythonProcess == null && com.eco.bio7.pybridge.EmbeddedPython.isRunning()) {
+						/* Embedded Python: the line is evaluated in the process of Bio7 */
+						com.eco.bio7.pybridge.EmbeddedPython.console(input);
+					} else if (pythonProcess != null) {
 						final OutputStream os = pythonProcess.getOutputStream();
 						final OutputStreamWriter osw = new OutputStreamWriter(os);
 						final BufferedWriter bw = new BufferedWriter(osw, 100);
@@ -1352,7 +1378,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				try {
 					if (in != null) {
 						// System.out.print("Shell>");
-						input = in.readLine();
+						input = readLine(mode);
 					}
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
@@ -1617,6 +1643,20 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 	public void setRProcess(Process rProcess) {
 		RProcess = rProcess;
+	}
+
+	/** Writes a line to a process (e.g., an empty line: a running interpreter prints its prompt again). */
+	public void writeToProcess(Process process, String line) {
+		if (process == null || !process.isAlive()) {
+			return;
+		}
+		try {
+			OutputStream os = process.getOutputStream();
+			os.write((line + System.lineSeparator()).getBytes(Charset.forName(consoleEncoding == null || consoleEncoding.isEmpty() ? "UTF-8" : consoleEncoding)));
+			os.flush();
+		} catch (IOException | IllegalArgumentException e) {
+			/* The process ended */
+		}
 	}
 
 	public void setPythonProcess(Process pythonProcess) {

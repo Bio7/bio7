@@ -117,6 +117,10 @@ public class RMarkdownSpellingReconcileStrategy implements IReconcilingStrategy,
 
 		@Override
 		public void accept(SpellingProblem problem) {
+			/* Not in code (R chunks: the R code analysis), YAML, math or links */
+			if (inCode(problem.getOffset())) {
+				return;
+			}
 			fAddAnnotations.put(new SpellingAnnotation(problem),
 					new Position(problem.getOffset(), problem.getLength()));
 		}
@@ -124,6 +128,19 @@ public class RMarkdownSpellingReconcileStrategy implements IReconcilingStrategy,
 		@Override
 		public void beginCollecting() {
 			fAddAnnotations = new HashMap<>();
+			codeRanges = MarkdownCodeRanges.of(fDocument != null ? fDocument : RMarkdownSpellingReconcileStrategy.this.fDocument);
+		}
+
+		/* The ranges which are not prose (sorted start, end pairs) */
+		private List<int[]> codeRanges = new ArrayList<>();
+
+		private boolean inCode(int offset) {
+			for (int[] r : codeRanges) {
+				if (offset >= r[0] && offset < r[1]) {
+					return true;
+				}
+			}
+			return false;
 		}
 
 		@Override

@@ -50,6 +50,8 @@
 	<module>../com.eco.bio7.redit.feature</module>
 	<module>../com.eco.bio7.rffm</module>
 	<module>../com.eco.bio7.rffm.feature</module>
+	<module>../com.eco.bio7.pyffm</module>
+	<module>../com.eco.bio7.pyffm.feature</module>
 	<module>../com.eco.bio7.targetplatform</module>
 	<module>../com.eco.bio7.themes_</module>
 	<module>../com.eco.bio7.themes.feature</module>

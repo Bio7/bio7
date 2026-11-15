@@ -400,17 +400,19 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			return;
 		}
 		java.nio.file.Path md = file.getLocation().toFile().toPath();
-		Job job = new Job("Markdown to HTML") {
+		Job job = new Job("Markdown") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				try {
-					java.nio.file.Path html = com.eco.bio7.markdownedit.MarkdownToHtml.convert(md);
+					/* The format of the YAML header (output:), default HTML */
+					String ext = Pandoc.extension(outputFormat(java.nio.file.Files.readString(md, java.nio.charset.StandardCharsets.UTF_8)));
+					java.nio.file.Path result = ext.equals("html") ? com.eco.bio7.markdownedit.MarkdownToHtml.convert(md) : Pandoc.convert(md, ext);
 					try {
 						file.getParent().refreshLocal(IResource.DEPTH_ONE, null);
 					} catch (CoreException e) {
 						/* The file exists anyway */
 					}
-					Display.getDefault().asyncExec(() -> openHtml(html.toString()));
+					Display.getDefault().asyncExec(() -> openResult(result, ext));
 				} catch (IOException | RuntimeException e) {
 					Display.getDefault().asyncExec(() -> Bio7Dialog.message("The markdown file could not be converted:\n" + e.getMessage()));
 				}
@@ -418,6 +420,31 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			}
 		};
 		job.schedule();
+	}
+
+	/* The output format of the YAML header of a markdown file (e.g., pdf_document) or "html" */
+	static String outputFormat(String markdown) {
+		java.util.regex.Matcher y = java.util.regex.Pattern.compile("\\A---\\s*\\R(.*?)\\R(?:---|\\.\\.\\.)", java.util.regex.Pattern.DOTALL).matcher(markdown);
+		if (y.find()) {
+			java.util.regex.Matcher o = java.util.regex.Pattern.compile("(?m)^output:\\s*[\"']?([\\w.-]+)").matcher(y.group(1));
+			if (o.find()) {
+				return o.group(1).toLowerCase();
+			}
+		}
+		return "html";
+	}
+
+	/* Opens a converted file: HTML and PDF in Bio7 (see the preferences), the others with the system */
+	private static void openResult(java.nio.file.Path result, String ext) {
+		switch (ext) {
+		case "html" -> openHtml(result.toString());
+		case "pdf" -> {
+			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+			RServe.openPDF(result.getParent().toString().replace("\\", "/") + "/", result.getFileName().toString(), store.getBoolean("PDF_USE_BROWSER"),
+					store.getString("BROWSER_SELECTION"), false, false);
+		}
+		default -> Program.launch(result.toString());
+		}
 	}
 
 	/* Opens an HTML file in the Bio7 browser (or the system browser, see the preferences) */

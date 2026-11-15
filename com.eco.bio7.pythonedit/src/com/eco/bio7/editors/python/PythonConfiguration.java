@@ -24,6 +24,13 @@ import com.eco.bio7.reditor.preferences.template.PythonCompletionProcessor;
 
 public class PythonConfiguration extends SourceViewerConfiguration {
 	private ColorManager colorManager;
+	/* The editor (the code analysis, completion, hover and quick fixes); null without */
+	private org.eclipse.ui.texteditor.ITextEditor editor;
+
+	public PythonConfiguration(ColorManager colorManager, org.eclipse.ui.texteditor.ITextEditor editor) {
+		this(colorManager);
+		this.editor = editor;
+	}
 
 	public PythonConfiguration(ColorManager colorManager) {
 		this.colorManager = colorManager;
@@ -103,11 +110,14 @@ public class PythonConfiguration extends SourceViewerConfiguration {
 		assistant
 				.setDocumentPartitioning(getConfiguredDocumentPartitioning(sourceViewer));
 
-		IContentAssistProcessor processor = new PythonCompletionProcessor();
+		/* The code completion (analysis, the running Python) and the templates */
+		IContentAssistProcessor processor = editor == null ? new PythonCompletionProcessor()
+				: new com.eco.bio7.pythonedit.analysis.PythonCodeCompletion(editor, new PythonCompletionProcessor());
 		assistant.setContentAssistProcessor(processor,
 				IDocument.DEFAULT_CONTENT_TYPE);
 		assistant.enableAutoActivation(true);
-		assistant.setAutoActivationDelay(500);
+		assistant.setAutoActivationDelay(300);
+		assistant.setShowEmptyList(false);
 
 		assistant
 				.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
@@ -117,4 +127,41 @@ public class PythonConfiguration extends SourceViewerConfiguration {
 		return assistant;
 	}
 
+	/* The markers of the code analysis (a moment after a change) */
+	@Override
+	public org.eclipse.jface.text.reconciler.IReconciler getReconciler(ISourceViewer sourceViewer) {
+		if (editor == null) {
+			return super.getReconciler(sourceViewer);
+		}
+		org.eclipse.jface.text.reconciler.MonoReconciler reconciler = new org.eclipse.jface.text.reconciler.MonoReconciler(
+				new com.eco.bio7.pythonedit.analysis.PythonReconcilingStrategy(editor), false);
+		reconciler.setDelay(600);
+		return reconciler;
+	}
+
+	/* The quick fixes (Ctrl+1) */
+	@Override
+	public org.eclipse.jface.text.quickassist.IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
+		org.eclipse.jface.text.quickassist.QuickAssistAssistant assistant = new org.eclipse.jface.text.quickassist.QuickAssistAssistant();
+		assistant.setQuickAssistProcessor(new com.eco.bio7.pythonedit.analysis.PythonQuickAssistProcessor());
+		assistant.setInformationControlCreator(getInformationControlCreator(sourceViewer));
+		return assistant;
+	}
+
+	/* The hover: markers with their quick fixes, the help and the values of the running Python */
+	@Override
+	public org.eclipse.jface.text.ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
+		return editor == null ? super.getTextHover(sourceViewer, contentType) : new com.eco.bio7.pythonedit.analysis.PythonTextHover(editor);
+	}
+	/* The message of a marker in the ruler (the icon left of the code) */
+	@Override
+	public org.eclipse.jface.text.source.IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
+		return new org.eclipse.jface.text.source.DefaultAnnotationHover();
+	}
+
+	/* The message of a marker in the overview ruler (right of the code) */
+	@Override
+	public org.eclipse.jface.text.source.IAnnotationHover getOverviewRulerAnnotationHover(ISourceViewer sourceViewer) {
+		return new org.eclipse.jface.text.source.DefaultAnnotationHover();
+	}
 }

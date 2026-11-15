@@ -99,7 +99,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private static StatusLineContributionItem userItem = null;
 
 	private String id[] = new String[] { "org.eclipse.ui.views.ResourceNavigator", "org.eclipse.ui.console.ConsoleView",
-			"com.eco.bio7.RShell", "com.eco.bio7.rbridge.RTable", "com.eco.bio7.imagej", "com.eco.bio7.ijtoolbar",
+			"com.eco.bio7.RShell", "com.eco.bio7.PythonShell", "com.eco.bio7.pybridge.PythonPackagesView", "com.eco.bio7.rbridge.RTable", "com.eco.bio7.imagej", "com.eco.bio7.ijtoolbar",
 			"com.eco.bio7.image_methods", "com.eco.bio7.points", "com.eco.bio7.image.TransferGeometryView",
 			"com.eco.bio7.browser.Browser", "com.eco.bio7.worldwind.WorldWindView",
 			"com.eco.bio7.worldwind.WorldWindOptionsView", "com.eco.bio7.spatial", "com.eco.bio7.discrete3d.Options3d",
@@ -162,6 +162,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private static Action counterreset;
 
 	private static Action startrserve;
+
+	private static Action startpython;
 
 	private static Action flowstop;
 
@@ -357,6 +359,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		startrserve = new StartRServe("Start R", window);
 		register(startrserve);
+
+		startpython = new com.eco.bio7.pybridge.StartPython("Start Python", window);
+		register(startpython);
 
 		printexpression = new PrintExpression("PrintExpression", window);
 		register(printexpression);
@@ -827,6 +832,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		statusLineMgr.add(userItem);
 		/* The memory of embedded R (not contained in the Java memory display) */
 		com.eco.bio7.rbridge.RMemoryStatus.install(statusLineMgr);
+		/* The memory of the embedded Python (the variables of its workspace) */
+		com.eco.bio7.pybridge.PythonMemoryStatus.install(statusLineMgr);
+		/* The Python editor: the Python for the code analysis and the variables of the running Python */
+		com.eco.bio7.pybridge.PythonEditorHooks.install();
 
 	}
 
@@ -840,6 +849,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		toolbar.add(start);
 		toolbar.add(setup);
 		toolbar.add(startrserve);
+		toolbar.add(startpython);
 		toolbar.add(toolbarCreateProjectAndFiles);
 		// toolbar.add(fastOpenScriptAction);
 
@@ -851,6 +861,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	public static Action getStartrserve() {
 		return startrserve;
+	}
+
+	public static Action getStartpython() {
+		return startpython;
 	}
 
 	public static Action getOpenofficeconnection() {

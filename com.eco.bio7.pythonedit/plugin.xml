@@ -97,6 +97,12 @@
      
    
     <key
+          commandId="com.eco.bio7.pythoneditor.format"
+          contextId="com.eco.bio7.python.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="M1+M2+F">
+    </key>
+    <key
           commandId="com.eco.bio7.pythoneditor.actions.text.zoomIn"
           contextId="com.eco.bio7.python.editor.scope"
           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
@@ -113,6 +119,12 @@
    point="org.eclipse.ui.commands">
        <command
           categoryId="org.eclipse.ui.category.textEditor"
+          description="Formats the Python code with ruff or black"
+          id="com.eco.bio7.pythoneditor.format"
+          name="Format Python Code">
+    </command>
+       <command
+          categoryId="org.eclipse.ui.category.textEditor"
           description="Zoom in text, increase default font size for text editors"
           id="com.eco.bio7.pythoneditor.actions.text.zoomIn"
           name="Zoom In">
@@ -124,6 +136,70 @@
           name="Zoom Out">
     </command>
      
+   </extension>
+   <!-- The markers of the code analysis of the Python editor (errors, warnings with quick fixes) -->
+   <extension
+         id="problem"
+         name="Python Problem"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.problemmarker"/>
+      <super type="org.eclipse.core.resources.textmarker"/>
+      <persistent value="false"/>
+   </extension>
+   <!-- The breakpoints of Python scripts (kept with the file) and the line of the stopped debugger -->
+   <extension
+         id="breakpoint"
+         name="Python Breakpoint"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.textmarker"/>
+      <persistent value="true"/>
+   </extension>
+   <extension
+         id="debugline"
+         name="Python Debug Line"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.textmarker"/>
+      <persistent value="false"/>
+   </extension>
+   <extension point="org.eclipse.ui.editors.annotationTypes">
+      <type markerType="com.eco.bio7.pythonedit.breakpoint" name="com.eco.bio7.pythonedit.breakpoint"/>
+      <type markerType="com.eco.bio7.pythonedit.debugline" name="com.eco.bio7.pythonedit.debugline"/>
+   </extension>
+   <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="com.eco.bio7.pythonedit.breakpoint"
+            colorPreferenceKey="com.eco.bio7.pythonedit.breakpoint.color"
+            colorPreferenceValue="70,130,220"
+            contributesToHeader="false"
+            highlightPreferenceKey="com.eco.bio7.pythonedit.breakpoint.highlight"
+            highlightPreferenceValue="false"
+            icon="icons/debug/brkp_obj.svg"
+            includeOnPreferencePage="true"
+            label="Python Breakpoint"
+            overviewRulerPreferenceKey="com.eco.bio7.pythonedit.breakpoint.overview"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="3"
+            textPreferenceKey="com.eco.bio7.pythonedit.breakpoint.text"
+            textPreferenceValue="false"
+            verticalRulerPreferenceKey="com.eco.bio7.pythonedit.breakpoint.ruler"
+            verticalRulerPreferenceValue="true"/>
+      <specification
+            annotationType="com.eco.bio7.pythonedit.debugline"
+            colorPreferenceKey="com.eco.bio7.pythonedit.debugline.color"
+            colorPreferenceValue="180,230,180"
+            contributesToHeader="false"
+            highlightPreferenceKey="com.eco.bio7.pythonedit.debugline.highlight"
+            highlightPreferenceValue="true"
+            icon="icons/debug/occ_match.svg"
+            includeOnPreferencePage="true"
+            label="Python Debug Line"
+            overviewRulerPreferenceKey="com.eco.bio7.pythonedit.debugline.overview"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="4"
+            textPreferenceKey="com.eco.bio7.pythonedit.debugline.text"
+            textPreferenceValue="false"
+            verticalRulerPreferenceKey="com.eco.bio7.pythonedit.debugline.ruler"
+            verticalRulerPreferenceValue="true"/>
    </extension>
    <extension point="org.eclipse.ui.contexts">
           <context name="Python Editor Context"

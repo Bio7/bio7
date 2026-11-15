@@ -16,6 +16,10 @@ public class PythonDocumentProvider extends SimpleDocumentProvider {
 
 	@Override
     protected IAnnotationModel createAnnotationModel(Object element) throws CoreException {
+		/* The markers of a workspace file (the code analysis: errors, warnings with quick fixes) */
+		if (element instanceof org.eclipse.ui.IFileEditorInput input) {
+			return new org.eclipse.ui.texteditor.ResourceMarkerAnnotationModel(input.getFile());
+		}
 		return null;
 	}
 }

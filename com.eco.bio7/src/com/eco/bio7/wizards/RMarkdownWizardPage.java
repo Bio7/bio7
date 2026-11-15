@@ -56,7 +56,7 @@ public class RMarkdownWizardPage extends WizardPage {
 		super("wizardPage");
 		this.plain = plain;
 		setTitle(plain ? "Markdown File" : "R Markdown File");
-		setDescription(plain ? "This wizard creates a new markdown file (*.md). It is converted to HTML without R."
+		setDescription(plain ? "This wizard creates a new markdown file (*.md)."
 				: "This wizard creates a new file with *.rmd extension that can be opened by the default editor.");
 		this.selection = selection;
 	}
@@ -125,16 +125,18 @@ public class RMarkdownWizardPage extends WizardPage {
 		new Label(container, SWT.NONE);
 		new Label(container, SWT.NONE);
 
-		if (plain) {
-			return;
-		}
 		lblNewLabel_2 = new Label(container, SWT.NONE);
 		lblNewLabel_2.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
 		lblNewLabel_2.setText("Format");
 
 		combo = new Combo(container, SWT.NONE);
-		combo.setItems(new String[] { "HTML", "PDF", "Word","ODT","RTF","Md","Github", "HTML (Presentation ioslides)",
-				"HTML (Presentation slidy)", "PDF (Presentation Beamer)" });
+		if (plain) {
+			/* HTML is converted in Bio7, the other formats with pandoc (no R) */
+			combo.setItems(new String[] { "HTML", "PDF", "Word", "ODT", "RTF", "EPUB" });
+		} else {
+			combo.setItems(new String[] { "HTML", "PDF", "Word", "ODT", "RTF", "Md", "Github", "HTML (Presentation ioslides)",
+					"HTML (Presentation slidy)", "PDF (Presentation Beamer)" });
+		}
 		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		combo.select(0);
 		new Label(container, SWT.NONE);

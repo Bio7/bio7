@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -290,6 +291,18 @@ public final class InlineChunkOutputs {
 
 	private void run(List<Chunk> chunks) {
 		IDocument doc = viewer.getDocument();
+		/* The code of the chunks above each chunk (the hint for a missing object) */
+		List<Chunk> all = allChunks(doc);
+		List<String> codeAbove = new ArrayList<>();
+		for (Chunk c : chunks) {
+			StringBuilder above = new StringBuilder();
+			for (Chunk a : all) {
+				if (a.endLine() < c.startLine()) {
+					above.append(a.code()).append('\n');
+				}
+			}
+			codeAbove.add(above.toString());
+		}
 		List<Position> anchors = new ArrayList<>();
 		for (Chunk c : chunks) {
 			Position p = fence(doc, c);
@@ -316,7 +329,7 @@ public final class InlineChunkOutputs {
 						continue;
 					}
 					long start = System.nanoTime();
-					RChunks.Output result = RChunks.evaluate(chunks.get(i).code(), size[0], size[1]);
+					RChunks.Output result = withHint(RChunks.evaluate(chunks.get(i).code(), size[0], size[1]), codeAbove.get(i));
 					/* A chunk without printed output (e.g., assignments, library()): it was run */
 					RChunks.Output out = result.text().isBlank() && result.plots().isEmpty() && !result.error()
 							? new RChunks.Output(String.format(java.util.Locale.ROOT, "\u2713 Done (%.1f s)", (System.nanoTime() - start) / 1e9), List.of(), false)
@@ -347,6 +360,30 @@ public final class InlineChunkOutputs {
 			}
 		};
 		job.schedule();
+	}
+
+	/*
+	 * An object which is not found but created in a chunk above: the hint to run
+	 * the chunks above first
+	 */
+	private static RChunks.Output withHint(RChunks.Output out, String codeAbove) {
+		if (!out.error() || out.text() == null) {
+			return out;
+		}
+		Matcher m = Pattern.compile("(?:object|Objekt) '([^']+)' (?:not found|nicht gefunden)").matcher(out.text());
+		if (!m.find()) {
+			return out;
+		}
+		String name = m.group(1);
+		String q = Pattern.quote(name);
+		/* An assignment at the start of a line (not an argument name), ->, assign() or data() */
+		boolean createdAbove = Pattern.compile("(?m)^\\s*" + q + "\\s*(<-|<<-|=(?!=))|->>?\\s*" + q + "(?![\\w.])|assign\\(\\s*[\"']" + q + "[\"']|data\\(\\s*[\"']?" + q
+				+ "(?![\\w.])").matcher(codeAbove).find();
+		if (!createdAbove) {
+			return out;
+		}
+		String hint = "Hint: '" + name + "' is created in a chunk above: run it first (\u25B6\u25B6 Run Above).";
+		return new RChunks.Output(out.text().stripTrailing() + "\n" + hint, out.plots(), true);
 	}
 
 	/* The output of a chunk replaces its former output */

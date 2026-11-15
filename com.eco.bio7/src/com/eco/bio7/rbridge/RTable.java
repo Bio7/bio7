@@ -79,6 +79,7 @@ public class RTable extends ViewPart {
 	private AddRemoveAction add = new AddRemoveAction();
 	private EditAction edit = new EditAction();
 	private FromSpreadAction fromSpread = new FromSpreadAction();
+	private com.eco.bio7.pybridge.PythonFromSpreadAction fromSpreadPython = new com.eco.bio7.pybridge.PythonFromSpreadAction();
 	private ScriptAction scriptAction = new ScriptAction();
 	protected String[][] sheetdata;
 	protected boolean withHead = true;
@@ -417,6 +418,7 @@ public class RTable extends ViewPart {
 		toolbarManager.add(com.eco.bio7.util.MenuButtonItem.of(edit));
 		toolbarManager.add(com.eco.bio7.util.MenuButtonItem.of(add));
 		toolbarManager.add(com.eco.bio7.util.MenuButtonItem.of(fromSpread));
+		toolbarManager.add(com.eco.bio7.util.MenuButtonItem.of(fromSpreadPython));
 		toolbarManager.add(com.eco.bio7.util.MenuButtonItem.of(scriptAction));
 		toolbarManager.add(new Separator());
 		toolbarManager.add(undoAction);

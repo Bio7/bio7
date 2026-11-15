@@ -59,6 +59,9 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		FontData[] f = JFaceResources.getFontRegistry().get("com.eco.bio7.reditor.reditor.textfont").getFontData();
 
 		
+		/* The color schemes of the light and the dark theme */
+		storeR.setDefault(com.eco.bio7.util.ColorSchemes.LIGHT_PREFERENCE, com.eco.bio7.util.ColorSchemes.defaultName(false));
+		storeR.setDefault(com.eco.bio7.util.ColorSchemes.DARK_PREFERENCE, com.eco.bio7.util.ColorSchemes.defaultName(true));
 		setColorDefaults(storeR, com.eco.bio7.util.Util.isDarkTheme());
 		/* Stored colors of a theme (not changed by the user) follow the theme! */
 		com.eco.bio7.util.Util.followThemeColors(storeR, PreferenceInitializer::setColorDefaults);
@@ -162,28 +165,24 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 	 * @param isDark true for the dark theme.
 	 */
 	public static void setColorDefaults(IPreferenceStore store, boolean isDark) {
-		if (isDark) {
-			PreferenceConverter.setDefault(store, "colourkey", new RGB(167, 236, 33));
-			PreferenceConverter.setDefault(store, "colourkey1", new RGB(177, 102, 218));
-			PreferenceConverter.setDefault(store, "colourkey2", new RGB(23, 198, 163));
-			PreferenceConverter.setDefault(store, "colourkey3", new RGB(128, 128, 128));
-			PreferenceConverter.setDefault(store, "colourkey4", new RGB(219, 176, 78));
-			PreferenceConverter.setDefault(store, "colourkey5", new RGB(230, 230, 250));
-			PreferenceConverter.setDefault(store, "colourkey6", new RGB(250, 243, 243));
-			PreferenceConverter.setDefault(store, "colourkey7", new RGB(104, 151, 187));
-			PreferenceConverter.setDefault(store, "colourkey8", new RGB(250, 243, 243));
-
-		} else {
-			PreferenceConverter.setDefault(store, "colourkey", new RGB(127, 0, 85));
-			PreferenceConverter.setDefault(store, "colourkey1", new RGB(127, 0, 85));
-			PreferenceConverter.setDefault(store, "colourkey2", new RGB(42, 0, 255));
-			PreferenceConverter.setDefault(store, "colourkey3", new RGB(128, 128, 128));
-			PreferenceConverter.setDefault(store, "colourkey4", new RGB(0, 0, 0));
-			PreferenceConverter.setDefault(store, "colourkey5", new RGB(0, 0, 0));
-			PreferenceConverter.setDefault(store, "colourkey6", new RGB(0, 0, 0));
-			PreferenceConverter.setDefault(store, "colourkey7", new RGB(0, 0, 0));
-			PreferenceConverter.setDefault(store, "colourkey8", new RGB(0, 0, 0));
+		/* The colors of the selected color scheme of the theme (see ColorSchemes) */
+		IPreferenceStore own = Bio7REditorPlugin.getDefault().getPreferenceStore();
+		String name = own.getString(isDark ? com.eco.bio7.util.ColorSchemes.DARK_PREFERENCE : com.eco.bio7.util.ColorSchemes.LIGHT_PREFERENCE);
+		com.eco.bio7.util.ColorSchemes.Scheme scheme = com.eco.bio7.util.ColorSchemes.get(name, isDark);
+		for (int i = 0; i < COLOR_ROLES.length; i++) {
+			com.eco.bio7.util.ColorSchemes.Style style = scheme.style(COLOR_ROLES[i]);
+			String key = i == 0 ? "colourkey" : "colourkey" + i;
+			PreferenceConverter.setDefault(store, key, style.color());
+			store.setDefault(i == 0 ? "BOLD_COLOURKEY" : "BOLD_COLOURKEY" + i, style.bold());
 		}
 	}
+
+	/** The roles of the color preferences colourkey, colourkey1, ... colourkey11 of the R editor. */
+	public static final com.eco.bio7.util.ColorSchemes.Role[] COLOR_ROLES = { com.eco.bio7.util.ColorSchemes.Role.KEYWORD,
+			com.eco.bio7.util.ColorSchemes.Role.CONSTANT, com.eco.bio7.util.ColorSchemes.Role.STRING, com.eco.bio7.util.ColorSchemes.Role.COMMENT,
+			com.eco.bio7.util.ColorSchemes.Role.DEFAULT, com.eco.bio7.util.ColorSchemes.Role.OPERATOR, com.eco.bio7.util.ColorSchemes.Role.BRACE,
+			com.eco.bio7.util.ColorSchemes.Role.NUMBER, com.eco.bio7.util.ColorSchemes.Role.ASSIGNMENT, com.eco.bio7.util.ColorSchemes.Role.FUNCTION_CALL,
+			com.eco.bio7.util.ColorSchemes.Role.FUNCTION_DEFINITION, com.eco.bio7.util.ColorSchemes.Role.NAMESPACE };
+
 
 }

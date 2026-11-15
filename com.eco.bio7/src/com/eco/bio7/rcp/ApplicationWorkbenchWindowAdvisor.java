@@ -719,7 +719,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		store.setDefault("POINTS_PANEL_SCROLLBAR", false);
 		store.setDefault("STARTUP_SCRIPTS", false);
-		store.setDefault("python_3x", false);
+		/* Python (not Jython) is the default: embedded in the process of Bio7 (data transfer, plots) */
+		store.setDefault("python_pipe", true);
+		store.setDefault("python_embedded", true);
+		/* The switch R/Python of the Image-Methods view closes the views of the other language */
+		store.setDefault("IMAGE_METHODS_CLOSE_VIEWS", true);
+		store.setDefault("python_select", "Python");
+		store.setDefault("python_3x", true);
 		store.setDefault("python_process_extra", true);
 		store.setDefault("blender_options", "interactive");
 		store.setDefault("before_script_blender",
@@ -1431,6 +1437,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			// configurer.getWindow());
 
 			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.rbridge.RPerspective",
+					configurer.getWindow());
+			/* The Python perspective (in the perspective bar beside R) */
+			configurer.getWorkbenchConfigurer().getWorkbench().showPerspective("com.eco.bio7.pybridge.PythonPerspective",
 					configurer.getWindow());
 			/* Disable for HighDPI bug if necessary! */
 			// boolean isLinux = getOS().equals("Linux");

@@ -75,6 +75,10 @@ public class RCodeScanner extends RuleBasedScanner {
 	public Token braces;
 	public Token numbers;
 	public Token assignment;
+	/* Function calls, the names of function definitions and package prefixes (pkg::) */
+	public Token functionCall;
+	public Token functionDefinition;
+	public Token namespace;
 
 	/**
 	 * Creates a R code scanner with the given color provider.
@@ -110,6 +114,9 @@ public class RCodeScanner extends RuleBasedScanner {
 		braces = new Token(new TextAttribute(provider.getColor(rgbkey6), null, isBold("BOLD_COLOURKEY6")));
 		numbers = new Token(new TextAttribute(provider.getColor(rgbkey7), null, isBold("BOLD_COLOURKEY7")));
 		assignment = new Token(new TextAttribute(provider.getColor(rgbkey8), null, isBold("BOLD_COLOURKEY8")));
+		functionCall = new Token(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey9")), null, isBold("BOLD_COLOURKEY9")));
+		functionDefinition = new Token(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey10")), null, isBold("BOLD_COLOURKEY10")));
+		namespace = new Token(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey11")), null, isBold("BOLD_COLOURKEY11")));
 
 		List<IRule> rules = new ArrayList<IRule>();
 		/*
@@ -150,6 +157,10 @@ public class RCodeScanner extends RuleBasedScanner {
 		 * wordRule.addWord(fgAssignmentoperators[i], assignmentOps);
 		 */
 
+		/* Functions (before the word rule): calls, definitions, pkg:: */
+		java.util.Set<String> notFunctions = new java.util.HashSet<>(java.util.Arrays.asList(fgKeywords));
+		notFunctions.addAll(java.util.Arrays.asList(fgConstants));
+		rules.add(new RFunctionRule(functionCall, functionDefinition, namespace, notFunctions));
 		rules.add(wordRule);
 		/*
 		 * Comments and multiline strings (tokens) are treated specially in the

@@ -7,6 +7,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.rosuda.REngine.REXP;
@@ -150,6 +151,8 @@ public class RQuickFixSolutions {
 			case "Warn16":
 
 				prop = calculateLevensteinSuggestions(offset, endChar, tokenText);
+				/* An installed package which has the function: library(pkg) */
+				prop = org.apache.commons.lang3.ArrayUtils.addAll(addLibraryProposals(viewer.getDocument().get(), tokenText), prop);
 
 				break;
 
@@ -207,12 +210,107 @@ public class RQuickFixSolutions {
 
 				break;
 
+			case "Err26":
+				/* An unclosed bracket: insert the closing one */
+				prop = closingBracketProposals(replacement);
+				break;
+			case "Err27", "Err28", "Err29", "Err30", "Warn24", "Warn25", "Warn26", "Warn27", "Warn28":
+				/* The fixes of the code analysis (edits, see CodeFix) */
+				prop = RQuickFixEditsProposal.of(replacement);
+				break;
 			default:
 				break;
 			}
 
 		}
 		return prop;
+	}
+
+	/**
+	 * The quick fixes of an unclosed bracket (see BracketCheck): the replacement is
+	 * "text@offset[@offset2]", the closing bracket after the last code before the
+	 * next statement and at the end of the line of the bracket.
+	 */
+	public static ICompletionProposal[] closingBracketProposals(ISourceViewer viewer, String replacement) {
+		if (replacement == null || !replacement.contains("@")) {
+			return null;
+		}
+		String[] parts = replacement.split("@");
+		String text = parts[0].replace("\\n", "\n").replace("\\r", "\r");
+		String bracket = text.trim();
+		java.util.List<ICompletionProposal> list = new java.util.ArrayList<>();
+		IDocument doc = viewer.getDocument();
+		for (int i = 1; i < parts.length; i++) {
+			try {
+				int offset = Integer.parseInt(parts[i].trim());
+				if (offset < 0 || offset > doc.getLength()) {
+					continue;
+				}
+				int line = doc.getLineOfOffset(offset) + 1;
+				String where = i == 1 ? "before the next statement (line " + line + ")" : "at the end of line " + line;
+				list.add(new RQuickFixCompletionProposal("Insert '" + bracket + "' " + where, "Inserts the missing closing bracket " + where + ".", offset, 0, text, 0,
+						null, null));
+			} catch (NumberFormatException | org.eclipse.jface.text.BadLocationException e) {
+				/* No proposal */
+			}
+		}
+		return list.isEmpty() ? null : list.toArray(new ICompletionProposal[0]);
+	}
+
+	/**
+	 * The quick fixes of a marker of the code analysis for an editor which is not
+	 * an R editor (e.g., the R chunks of a markdown document).
+	 *
+	 * @param code the R code (the offsets of the document, other text blanked)
+	 */
+	public static ICompletionProposal[] documentProposals(ISourceViewer viewer, String code, String errorCode, String tokenText, String replacement) {
+		if (errorCode == null) {
+			return null;
+		}
+		return switch (errorCode) {
+		case "Err26" -> closingBracketProposals(viewer, replacement);
+		case "Err27", "Err28", "Err29", "Err30", "Warn24", "Warn25", "Warn26", "Warn27", "Warn28" -> RQuickFixEditsProposal.of(replacement);
+		case "Warn16" -> addLibraryProposals(code, tokenText);
+		default -> null;
+		};
+	}
+
+	/*
+	 * The installed packages which document the function (their help index) for
+	 * the quick fix "Add library(pkg)": asked when the quick fix is opened (R
+	 * running, at most 5 seconds)
+	 */
+	public static ICompletionProposal[] addLibraryProposals(String code, String function) {
+		if (function == null || !function.matches("[A-Za-z.][A-Za-z0-9._]*")) {
+			return null;
+		}
+		com.eco.bio7.rbridge.REvaluator c = REditor.getEvaluator();
+		if (c == null || com.eco.bio7.rbridge.RState.isBusy()) {
+			return null;
+		}
+		try {
+			org.rosuda.REngine.REXP x = c.withTimeout(5000).eval("local({ f <- '" + function + "'; p <- .packages(all.available = TRUE); "
+					+ "hit <- vapply(p, function(x) { a <- file.path(find.package(x, quiet = TRUE), 'help', 'AnIndex'); "
+					+ "length(a) == 1 && file.exists(a) && any(startsWith(readLines(a, warn = FALSE), paste0(f, '\\t'))) }, logical(1)); "
+					+ "head(setdiff(unique(p[hit]), c('base', 'stats', 'utils', 'graphics', 'grDevices', 'methods', 'datasets')), 5) })");
+			String[] packages = x == null || x.isNull() ? new String[0] : x.asStrings();
+			if (packages == null || packages.length == 0) {
+				return null;
+			}
+			int insert = com.eco.bio7.reditor.antlr.CodeChecks.libraryInsertOffset(code);
+			java.util.List<ICompletionProposal> list = new java.util.ArrayList<>();
+			for (String p : packages) {
+				list.add(new RQuickFixEditsProposal(new com.eco.bio7.reditor.antlr.CodeFix.Proposal("Add library(" + p + ") (the package has " + function + ")",
+						java.util.List.of(new com.eco.bio7.reditor.antlr.CodeFix.Edit(insert, 0, "library(" + p + ")" + System.lineSeparator())))));
+			}
+			return list.toArray(new ICompletionProposal[0]);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	private ICompletionProposal[] closingBracketProposals(String replacement) {
+		return closingBracketProposals(viewer, replacement);
 	}
 
 	private ICompletionProposal[] calculateLevensteinSuggestions(int offset, int endChar, String tokenText) {

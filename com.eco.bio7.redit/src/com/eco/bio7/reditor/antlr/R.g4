@@ -47,8 +47,8 @@ expr:
     |   '{' exprlist '}' 	#e18// compound statement
     |   ('function'|'\\') '(' formlist? ')' expr #e19DefFunction// define function
     |   expr '(' sublist ')'   	#e20CallFunction           // call function
-    |   'if' '(' expr ')' expr	#e21
     |   'if' '(' expr ')' expr 'else' expr	#e22
+    |   'if' '(' expr ')' expr	#e21
     |   'for' '(' ID 'in' expr ')' expr	#e23ForLoop
     |   'while' '(' expr ')' expr	#e24
     |   'repeat' expr	#e25

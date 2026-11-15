@@ -20,6 +20,9 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		IPreferenceStore storePython = PythonEditorPlugin.getDefault().getPreferenceStore();
 		FontData[] f = JFaceResources.getFontRegistry().get("com.eco.bio7.pythoneditor.textfont").getFontData();
 
+		/* The color schemes of the light and the dark theme */
+		storePython.setDefault(com.eco.bio7.util.ColorSchemes.LIGHT_PREFERENCE, com.eco.bio7.util.ColorSchemes.defaultName(false));
+		storePython.setDefault(com.eco.bio7.util.ColorSchemes.DARK_PREFERENCE, com.eco.bio7.util.ColorSchemes.defaultName(true));
 		setColorDefaults(storePython, com.eco.bio7.util.Util.isDarkTheme());
 		/* Stored colors of a theme (not changed by the user) follow the theme! */
 		com.eco.bio7.util.Util.followThemeColors(storePython, PreferenceInitializer::setColorDefaults);
@@ -55,6 +58,19 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 	 * @param isDark true for the dark theme.
 	 */
 	public static void setColorDefaults(IPreferenceStore store, boolean isDark) {
+		/* The colors of the selected color scheme of the theme (see ColorSchemes) */
+		com.eco.bio7.util.ColorSchemes.Scheme scheme = com.eco.bio7.util.ColorSchemes.selected(PythonEditorPlugin.getDefault().getPreferenceStore(), isDark);
+		com.eco.bio7.util.ColorSchemes.setDefaults(store, scheme, COLOR_ROLES);
+		if (com.eco.bio7.util.ColorSchemes.isClassic(scheme)) {
+			/* The classic schemes: the former colors of the editor (the new keys of the scheme) */
+			classicDefaults(store, isDark);
+			for (int i = 0; i <= 12; i++) {
+				store.setDefault(i == 0 ? "BOLD_COLOURKEY" : "BOLD_COLOURKEY" + i, false);
+			}
+		}
+	}
+
+	private static void classicDefaults(IPreferenceStore store, boolean isDark) {
 		if (isDark) {
 
 			PreferenceConverter.setDefault(store, "colourkey", new RGB(167, 236, 33));
@@ -87,5 +103,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			PreferenceConverter.setDefault(store, "colourkey12", new RGB(0, 0, 0));
 		}
 	}
+	/** The roles of the color preferences colourkey, colourkey1, ... of the editor. */
+	public static final com.eco.bio7.util.ColorSchemes.Role[] COLOR_ROLES = { com.eco.bio7.util.ColorSchemes.Role.KEYWORD, com.eco.bio7.util.ColorSchemes.Role.BUILTIN, com.eco.bio7.util.ColorSchemes.Role.STRING, com.eco.bio7.util.ColorSchemes.Role.COMMENT, com.eco.bio7.util.ColorSchemes.Role.DEFAULT, com.eco.bio7.util.ColorSchemes.Role.OPERATOR, null, com.eco.bio7.util.ColorSchemes.Role.NUMBER, com.eco.bio7.util.ColorSchemes.Role.NAMESPACE, com.eco.bio7.util.ColorSchemes.Role.CONSTANT, com.eco.bio7.util.ColorSchemes.Role.FUNCTION_DEFINITION, null, com.eco.bio7.util.ColorSchemes.Role.BRACE, com.eco.bio7.util.ColorSchemes.Role.FUNCTION_CALL };
+
 
 }

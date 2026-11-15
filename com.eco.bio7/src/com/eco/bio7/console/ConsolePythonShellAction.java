@@ -19,6 +19,7 @@ public class ConsolePythonShellAction extends Action {
 
 	public ConsolePythonShellAction() {
 		super("Python");
+		setToolTipText("Python Shell (native Python or Jython, see the Python preferences)");
 
 		setId("Python");
 		setText("Python");
@@ -32,7 +33,12 @@ public class ConsolePythonShellAction extends Action {
 	public void run() {
 
 		ConsoleInterpreterAction inst = ConsoleInterpreterAction.getInstance();
-		inst.startPython();
+		/* Native Python if selected in the preferences ("Use Python (instead Jython)"), else Jython */
+		if (Bio7Plugin.getDefault().getPreferenceStore().getBoolean("python_pipe")) {
+			inst.startPython();
+		} else {
+			inst.startJython();
+		}
 
 	}
 

@@ -64,15 +64,7 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		menuItem1.addSelectionListener(new SelectionListener() {
 
 			public void widgetSelected(SelectionEvent e) {
-				exitShellProcess();
-				//setConsoleColor();
-				IOConsole ioConsole = participant.getIoc();
-				participant.interpreterSelection = "jython";
-				ioConsole.clearConsole();
-				participant.ignore = true;
-				ioConsole.getInputStream().appendData(System.getProperty("line.separator"));
-
-				participant.styledText.setEditable(true);
+				startJython();
 			}
 
 			public void widgetDefaultSelected(SelectionEvent e) {
@@ -91,7 +83,7 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 				participant.interpreterSelection = "groovy";
 				ioConsole.clearConsole();
 				participant.ignore = true;
-				ioConsole.getInputStream().appendData(System.getProperty("line.separator"));
+				participant.wakeReader();
 				participant.styledText.setEditable(true);
 			}
 
@@ -113,7 +105,7 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 				ioConsole.clearConsole();
 
 				participant.ignore = true;
-				ioConsole.getInputStream().appendData(System.getProperty("line.separator"));
+				participant.wakeReader();
 				participant.styledText.setEditable(true);
 			}
 
@@ -136,7 +128,7 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 				ioConsole.clearConsole();
 
 				participant.ignore = true;
-				ioConsole.getInputStream().appendData(System.getProperty("line.separator"));
+				participant.wakeReader();
 				participant.styledText.setEditable(true);
 			}
 
@@ -176,6 +168,9 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 
 			}
 		});
+		MenuItem packagesItem = new MenuItem(fMenu, SWT.PUSH);
+		packagesItem.setText("Python Packages...");
+		packagesItem.addListener(SWT.Selection, _ -> com.eco.bio7.pybridge.PythonPackagesView.show());
 		MenuItem menuItem42 = new MenuItem(fMenu, SWT.PUSH);
 		menuItem42.setText("Native R");
 
@@ -204,7 +199,7 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 				participant.interpreterSelection = "-";
 				ioConsole.clearConsole();
 				participant.ignore = true;
-				ioConsole.getInputStream().appendData(System.getProperty("line.separator"));
+				participant.wakeReader();
 
 				participant.styledText.setEditable(false);
 			}
@@ -255,7 +250,7 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		participant.interpreterSelection = "java";
 		ioConsole.clearConsole();
 		participant.ignore = true;
-		ioConsole.getInputStream().appendData(System.getProperty("line.separator"));
+		participant.wakeReader();
 
 		participant.styledText.setEditable(true);
 	}
@@ -282,7 +277,7 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 				}
 
 				participant.ignore = true;
-				ioConsole.getInputStream().appendData(System.getProperty("line.separator"));
+				participant.wakeReader();
 
 				participant.styledText.setEditable(true);
 			}
@@ -311,7 +306,8 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		}
 
 		participant.ignore = true;
-		//ioConsole.getInputStream().appendData(System.getProperty("line.separator"));
+		/* Wakes the reader of the former interpreter (the line break is not sent to it) */
+		participant.wakeReader();
 
 		participant.styledText.setEditable(true);
 		/*Add a short break for the linebreak of the prompt*/
@@ -324,6 +320,18 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		/*Add a linebreak in R*/
 		participant.pipeToRConsole("cat(\"\r\")");
 	}
+	/** The Jython shell (in the process of Bio7). */
+	public void startJython() {
+		exitShellProcess();
+		IOConsole ioConsole = participant.getIoc();
+		participant.interpreterSelection = "jython";
+		ioConsole.clearConsole();
+		participant.ignore = true;
+		/* Wakes the reader of the former interpreter (the line break is not sent to it) */
+		participant.wakeReader();
+		participant.styledText.setEditable(true);
+	}
+
 	public void startPython() {
 		//StyledText styledText = (StyledText) participant.page.getControl();
 		//Color colb = new Color(Display.getCurrent(), 0, 0, 0);
@@ -332,17 +340,39 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		//styledText.setBackground(colb);
 		//styledText.setForeground(colf);
 
+		String previous = participant.interpreterSelection;
 		participant.interpreterSelection = "Python";
 		ioConsole.clearConsole();
+		/* The embedded Python (preferences): Python in the process of Bio7 */
+		if (participant.getPythonProcess() == null && com.eco.bio7.pybridge.EmbeddedPython.isSelected()) {
+			String[] error = new String[1];
+			org.eclipse.swt.custom.BusyIndicator.showWhile(org.eclipse.swt.widgets.Display.getDefault(), () -> error[0] = com.eco.bio7.pybridge.EmbeddedPython.start());
+			participant.ignore = true;
+			/* Wakes the reader of the former interpreter (the line break is not sent to it) */
+			if (!"Python".equals(previous)) {
+				participant.wakeReader();
+			}
+			participant.styledText.setEditable(true);
+			if (error[0] != null) {
+				com.eco.bio7.pybridge.EmbeddedPython.print(error[0] + "\n", true);
+			} else {
+				com.eco.bio7.pybridge.EmbeddedPython.prompt();
+			}
+			return;
+		}
+		if (participant.getPythonProcess() != null) {
+			/* A running Python prints its prompt again */
+			participant.writeToProcess(participant.getPythonProcess(), "");
+		}
 		/* Exit an existing shell process! */
 		//exitShellProcess();
 		/* Open a new shell process! */
 		if (participant.getPythonProcess() == null) {
-		participant.processPythonCommand();
+			participant.processPythonCommand();
 		}
 
 		participant.ignore = true;
-		ioConsole.getInputStream().appendData(System.getProperty("line.separator"));
+		participant.wakeReader();
 
 		participant.styledText.setEditable(true);
 	}
@@ -364,9 +394,8 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		}
 
 		participant.ignore = true;
-		/*
-		 * Not necessary because we send startup arguments!-> ioConsole.getInputStream().appendData(System.getProperty("line.separator"));
-		 */
+		/* Wakes the reader of the former interpreter (the line break is not sent to it) */
+		participant.wakeReader();
 		participant.styledText.setEditable(true);
 		/* Reset variable to start Blender if needed in the shell! */
 		InterpretPython.setBlenderInteractive(false);

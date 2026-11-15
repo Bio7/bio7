@@ -63,6 +63,9 @@ public class ScriptCodeScanner extends RuleBasedScanner {
 	public Token braces;
 	public Token numbers;
 	public Token multiLineComment;
+	/* The calls and definitions of user functions */
+	public Token functionCall;
+	public Token functionDefinition;
 
 	/**
 	 * Creates a Java code scanner with the given color provider.
@@ -102,6 +105,8 @@ public class ScriptCodeScanner extends RuleBasedScanner {
 		braces = new Token(new TextAttribute(provider.getColor(rgbkey6), null, isBold("BOLD_COLOURKEY6")));
 		numbers = new Token(new TextAttribute(provider.getColor(rgbkey7), null, isBold("BOLD_COLOURKEY7")));
 		multiLineComment = new Token(new TextAttribute(provider.getColor(rgbkey8), null, isBold("BOLD_COLOURKEY8")));
+		functionCall = new Token(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey9")), null, isBold("BOLD_COLOURKEY9")));
+		functionDefinition = new Token(new TextAttribute(provider.getColor(PreferenceConverter.getColor(store, "colourkey10")), null, isBold("BOLD_COLOURKEY10")));
 
 		/*keyword = new Token(new TextAttribute(provider.getColor(rgbkey), null, 1,new Font(Display.getCurrent(),f)));
 		type = new Token(new TextAttribute(provider.getColor(rgbkey1), null, 1,new Font(Display.getCurrent(),f1)));
@@ -136,6 +141,11 @@ public class ScriptCodeScanner extends RuleBasedScanner {
 			wordRule.addWord(fgTypes[i], type);
 		for (int i = 0; i < fgConstants.length; i++)
 			wordRule.addWord(fgConstants[i], type);
+		/* User functions (before the word rule): calls and definitions */
+		java.util.Set<String> notFunctions = new java.util.HashSet<>(java.util.Arrays.asList(fgKeywords));
+		notFunctions.addAll(java.util.Arrays.asList(fgTypes));
+		notFunctions.addAll(java.util.Arrays.asList(fgConstants));
+		rules.add(new com.eco.bio7.util.FunctionRule(functionCall, functionDefinition, notFunctions, java.util.Set.of("function"), java.util.Set.of()));
 		rules.add(wordRule);
 
 		IRule[] result = new IRule[rules.size()];

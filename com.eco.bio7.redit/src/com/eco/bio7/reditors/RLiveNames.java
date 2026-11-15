@@ -37,9 +37,30 @@ public final class RLiveNames {
 	private RLiveNames() {
 	}
 
+	private static final java.util.List<Runnable> LISTENERS = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+	/** Called (in a background thread) when the names of R changed (e.g., a package was attached). */
+	public static void addListener(Runnable listener) {
+		LISTENERS.add(listener);
+	}
+
+	public static void removeListener(Runnable listener) {
+		LISTENERS.remove(listener);
+	}
+
 	/** The names of R (null: R is not connected, the base names are used). */
 	public static void set(Set<String> live) {
+		Set<String> old = names;
 		names = live;
+		if (old == null ? live != null : !old.equals(live)) {
+			for (Runnable r : LISTENERS) {
+				try {
+					r.run();
+				} catch (RuntimeException e) {
+					/* The next one */
+				}
+			}
+		}
 	}
 
 	/** Returns true if the name exists in R (or is a base name if R is not connected). */

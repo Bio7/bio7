@@ -10,7 +10,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.e4.ui.model.workbench,
  org.eclipse.e4.core.contexts,
  org.eclipse.e4.ui.css.swt.theme,
- org.eclipse.ui.ide
+ org.eclipse.ui.ide,
+ org.eclipse.jface.text
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Bundle-ActivationPolicy: lazy
 Import-Package: org.osgi.service.event

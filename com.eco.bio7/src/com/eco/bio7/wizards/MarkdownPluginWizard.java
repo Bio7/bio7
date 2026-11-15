@@ -35,8 +35,9 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 
 /**
- * Creates a plain markdown file (*.md): it is converted to HTML in Java, no R
- * is needed (the R Markdown wizard creates *.Rmd files with R chunks).
+ * Creates a plain markdown file (*.md) with the output format in the YAML
+ * header: HTML is converted in Bio7, PDF, Word, ODT, RTF and EPUB with pandoc.
+ * No R is needed (the R Markdown wizard creates *.Rmd files with R chunks).
  */
 public class MarkdownPluginWizard extends Wizard implements INewWizard {
 
@@ -60,6 +61,14 @@ public class MarkdownPluginWizard extends Wizard implements INewWizard {
 		String fileName = page.getFileName();
 		String title = page.getTextTitle().getText().trim();
 		String author = page.getTextAuthor().getText().trim();
+		String output = switch (page.getCombo().getText()) {
+		case "PDF" -> "pdf_document";
+		case "Word" -> "word_document";
+		case "ODT" -> "odt_document";
+		case "RTF" -> "rtf_document";
+		case "EPUB" -> "epub";
+		default -> "html_document";
+		};
 		try {
 			getContainer().run(true, false, monitor -> {
 				try {
@@ -69,7 +78,7 @@ public class MarkdownPluginWizard extends Wizard implements INewWizard {
 						throw new CoreException(new Status(IStatus.ERROR, "com.eco.bio7", "Container \"" + containerName + "\" does not exist."));
 					}
 					IFile file = container.getFile(new Path(fileName));
-					byte[] bytes = contents(title, author).getBytes(StandardCharsets.UTF_8);
+					byte[] bytes = contents(title, author, output).getBytes(StandardCharsets.UTF_8);
 					if (file.exists()) {
 						file.setContents(new ByteArrayInputStream(bytes), true, true, monitor);
 					} else {
@@ -96,7 +105,7 @@ public class MarkdownPluginWizard extends Wizard implements INewWizard {
 	}
 
 	/* A short template which shows the markdown syntax */
-	private static String contents(String title, String author) {
+	private static String contents(String title, String author, String output) {
 		String nl = System.lineSeparator();
 		StringBuilder sb = new StringBuilder();
 		sb.append("---").append(nl);
@@ -105,6 +114,8 @@ public class MarkdownPluginWizard extends Wizard implements INewWizard {
 			sb.append("author: ").append(author).append(nl);
 		}
 		sb.append("date: ").append(LocalDate.now()).append(nl);
+		/* The format of the conversion (HTML in Bio7, the others with pandoc) */
+		sb.append("output: ").append(output).append(nl);
 		sb.append("---").append(nl).append(nl);
 		String[] body = { "## Introduction", "", "Text with **bold**, *italic*, `code` and a [link](https://bio7.org).", "", "- A list item",
 				"- Another item", "  - A nested item", "", "1. First", "2. Second", "", "> A quote.", "", "| Column A | Column B |",

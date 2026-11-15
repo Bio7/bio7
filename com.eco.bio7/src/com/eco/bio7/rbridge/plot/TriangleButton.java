@@ -28,7 +28,7 @@ import org.eclipse.swt.widgets.Composite;
  * different heights. The icons have the same size, are antialiased for each
  * zoom and are created again if a theme (CSS) changes the text color.
  */
-final class TriangleButton {
+public final class TriangleButton {
 
 	private TriangleButton() {
 	}
@@ -38,7 +38,7 @@ final class TriangleButton {
 	 *
 	 * @param left true: a triangle to the left (previous), else to the right (next)
 	 */
-	static Button create(Composite parent, boolean left, String tip, Runnable action) {
+	public static Button create(Composite parent, boolean left, String tip, Runnable action) {
 		Button b = new Button(parent, SWT.PUSH);
 		b.setToolTipText(tip);
 		/*

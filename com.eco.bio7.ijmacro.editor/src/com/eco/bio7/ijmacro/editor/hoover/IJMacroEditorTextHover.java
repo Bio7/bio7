@@ -55,6 +55,14 @@ public class IJMacroEditorTextHover implements ITextHover, ITextHoverExtension, 
 
 		informationControlText = "";
 		IDocument doc = textViewer.getDocument();
+		/* A problem marker: the message and the quick fixes */
+		if (textViewer instanceof org.eclipse.jface.text.source.ISourceViewer sv) {
+			com.eco.bio7.ijmacro.editors.IJMacroQuickFixProcessor.MarkerFixes fixes = com.eco.bio7.ijmacro.editors.IJMacroQuickFixProcessor.markerAt(sv, offset);
+			if (fixes != null) {
+				hoverMarker = true;
+				return new IJMacroMarkerInformationControl.Input(fixes, doc);
+			}
+		}
 
 		while (true) {
 			char c = 0;
@@ -157,7 +165,11 @@ public class IJMacroEditorTextHover implements ITextHover, ITextHoverExtension, 
 	// just an old version of the API method that returns only strings
 	@Override
 	public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
-		return getHoverInfo2(textViewer, hoverRegion).toString();
+		Object info = getHoverInfo2(textViewer, hoverRegion);
+		if (info instanceof IJMacroMarkerInformationControl.Input in) {
+			return in.fixes().message();
+		}
+		return info == null ? null : info.toString();
 	}
 
 	// returns the region object for a given position in the text editor
@@ -181,6 +193,9 @@ public class IJMacroEditorTextHover implements ITextHover, ITextHoverExtension, 
 			 */
 			public IInformationControl createInformationControl(Shell parent) {
 
+				if (hoverMarker) {
+					return new IJMacroMarkerInformationControl(parent, false);
+				}
 				if (isHex) {
 					return new IJMacroColorInformationControl(parent);
 				}

@@ -200,7 +200,7 @@ public class RPlotCanvasDevice extends Plot {
 		historyLabel.setToolTipText("The position in the history of the plots");
 		org.eclipse.swt.widgets.Button save = button(panel, "Save...", "Save the plot as PNG, PDF or SVG (drawn again by R)", this::save);
 		org.eclipse.swt.widgets.Button copy = button(panel, "Copy", "Copy the plot image to the clipboard", this::copy);
-		org.eclipse.swt.widgets.Button toImageJ = button(panel, "To ImageJ", "Open the plot as an ImageJ image (for the ImageJ tools)", this::toImageJ);
+		org.eclipse.swt.widgets.Button toImageJ = button(panel, "To ImageJ", "Open the plot as ImageJ image with a chosen resolution (e.g., 300 dpi for a publication)", this::toImageJ);
 		installClicks(imp);
 		if (status != null) {
 			back.moveAbove(status);
@@ -393,11 +393,40 @@ public class RPlotCanvasDevice extends Plot {
 	}
 
 	/* Opens a copy of the plot as a normal ImageJ image */
+	/*
+	 * The plot in ImageJ with a chosen resolution: R draws it again into a PNG file
+	 * (the same size in inches, more pixels per inch), ImageJ opens it calibrated
+	 */
 	private void toImageJ() {
-		ImagePlus imp = imagePlus;
-		if (imp != null) {
-			new ImagePlus(getTitle() + " (image)", imp.getProcessor().duplicate()).show();
+		int w = (int) device.width(), h = (int) device.height();
+		int dpi = PlotResolutionDialog.ask(Display.getDefault().getActiveShell(), w, h);
+		if (dpi <= 0) {
+			return;
 		}
+		double s = dpi / DPI;
+		java.io.File file;
+		try {
+			file = java.io.File.createTempFile("bio7plot", ".png");
+		} catch (java.io.IOException e) {
+			return;
+		}
+		String path = file.getAbsolutePath().replace("\\", "/").replace("'", "\\'");
+		String title = getTitle();
+		Thread t = new Thread(() -> {
+			try {
+				int n = session.deviceNumber(device);
+				if (n > 1) {
+					session.voidEval("local({ cur <- dev.cur(); dev.set(" + n + "); on.exit(if (cur %in% dev.list()) dev.set(cur)); dev.copy(png, filename = '" + path + "', width = "
+							+ Math.round(w * s) + ", height = " + Math.round(h * s) + ", res = " + dpi + "); dev.off() })");
+					PlotResolutionDialog.openInImageJ(file, title, dpi);
+				}
+			} catch (Exception e) {
+				String message = e.getMessage();
+				Display.getDefault().asyncExec(() -> org.eclipse.jface.dialogs.MessageDialog.openError(Display.getDefault().getActiveShell(), "R Plot", message));
+			}
+		}, "R plot to ImageJ");
+		t.setDaemon(true);
+		t.start();
 	}
 
 	/* Evaluates code for this device in R (not in the UI thread: R may be busy) */

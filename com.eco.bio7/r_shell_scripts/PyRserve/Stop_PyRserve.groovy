@@ -1,23 +1,22 @@
-import com.eco.bio7.console.Bio7Console;
-import com.eco.bio7.rcp.StartBio7Utils;
-import  com.eco.bio7.Bio7Plugin;
-import org.eclipse.jface.preference.IPreferenceStore
-/*Sleep for a second before switch to R because Console runs in parallel and can't be controlled!*/
-Thread.sleep(1000);
-/*Activate the Bio7 console. PyDev opens a separate console!*/
-StartBio7Utils.getConsoleInstance().cons.getConsole().activate();
-/*Get the Python path from the preferences or if empty call Python interpreter without a path!*/
-IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-String pathPython = store.getString("python_pipe_path");
-/*Change the path sep. for all OS!*/
-pathPython=pathPython.replace("\\", "/");
-if(pathPython.isEmpty()==false) {
-	pathPython=pathPython+"/python -c \"import pyRserve; conn = pyRserve.connect(); conn.shutdown()\""
+/*
+ * Stops the Rserve server for Python started with Start_PyRserve (port 6312).
+ */
+import com.eco.bio7.Bio7Plugin
+import com.eco.bio7.console.PythonFinder
+
+int port = 6312
+
+String python = PythonFinder.executable(Bio7Plugin.getDefault().getPreferenceStore().getString("python_pipe_path"))
+try {
+	/* The arguments as a list: the code with spaces stays one argument */
+	Process p = new ProcessBuilder(python, "-c", "import pyRserve; conn = pyRserve.connect(port=" + port + "); conn.shutdown()").redirectErrorStream(true).start()
+	p.waitForOrKill(15000)
+	String out = p.text.trim()
+	if (p.exitValue() == 0) {
+		println "Rserve for pyRserve (port " + port + ") was stopped."
+	} else {
+		println "Rserve for pyRserve could not be stopped (not running or pyRserve not installed):\n" + out
+	}
+} catch (Exception e) {
+	println "Python was not found (" + python + "). Select it in the preferences (Preferences Python: 'Detect Python...')."
 }
-else {
-	pathPython=pathPython+"python -c \"import pyRserve; conn = pyRserve.connect(); conn.shutdown()\""
-}
-println pathPython.execute().text
-/*Write a linebreak!*/
-Bio7Console.write("\n", true, false);
-println "Disconnected pyRserve from RServe!"

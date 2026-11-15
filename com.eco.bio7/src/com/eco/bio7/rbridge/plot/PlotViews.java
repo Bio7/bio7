@@ -34,7 +34,7 @@ import org.eclipse.ui.PlatformUI;
  * devices of R come to the front with a new plot). Views are shared by the
  * perspectives of a window: the same view (with the plot) is shown.
  */
-final class PlotViews {
+public final class PlotViews {
 
 	/* The ImageJ-Canvas view */
 	private static final String CANVAS_VIEW = "com.eco.bio7.imagej";
@@ -51,7 +51,7 @@ final class PlotViews {
 	 * the console stays visible), else (no console in the perspective) in the
 	 * folder of the ImageJ-Canvas view. UI thread.
 	 */
-	static void dock(String viewId, String secondaryId) {
+	public static void dock(String viewId, String secondaryId) {
 		if (!dockBesideConsole(viewId, secondaryId)) {
 			dockBesideImageJCanvas(viewId, secondaryId);
 		}
@@ -127,7 +127,7 @@ final class PlotViews {
 	/**
 	 * Moves a view (just opened in the current perspective) into the folder of the
 	 * ImageJ-Canvas view, as another tab, if the perspective shows that view (e.g.,
-	 * "R ImageJ Analysis"). Like a drag and drop of the tab: later the user can
+	 * "Image Analysis"). Like a drag and drop of the tab: later the user can
 	 * move it elsewhere. UI thread.
 	 */
 	static void dockBesideImageJCanvas(String viewId, String secondaryId) {
@@ -174,7 +174,7 @@ final class PlotViews {
 	 *
 	 * @return true if the view is visible
 	 */
-	static boolean showInPerspective(String viewId, String secondaryId) {
+	public static boolean showInPerspective(String viewId, String secondaryId) {
 		if (!PlatformUI.isWorkbenchRunning()) {
 			return false;
 		}

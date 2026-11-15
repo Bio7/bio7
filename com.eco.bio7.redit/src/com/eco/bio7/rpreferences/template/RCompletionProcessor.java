@@ -131,6 +131,31 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 	private static String[] statisticsContext;
 	private static String[] statisticsSet;
 
+	/* Without an R editor (e.g., the R chunks of a markdown document): the scope at an offset */
+	private java.util.function.IntFunction<RRefPhaseListen> scopeParser;
+
+	/**
+	 * The code completion of R for an editor which is not an R editor (e.g., the R
+	 * chunks of a markdown document).
+	 *
+	 * @param scopeParser parses the R code and returns the scope at an offset
+	 *                    (variables, functions, a function call)
+	 */
+	public RCompletionProcessor(java.util.function.IntFunction<RRefPhaseListen> scopeParser, ContentAssistant assistant) {
+		this((REditor) null, assistant);
+		this.scopeParser = scopeParser;
+	}
+
+	/**
+	 * The code completion of R for R code which is part of another document (e.g.,
+	 * the R chunks of a markdown document): the code has the offsets of the
+	 * document (the other text replaced by spaces). Only plain types (no types of
+	 * the R parser) for other plugins.
+	 */
+	public static RCompletionProcessor forCode(java.util.function.Supplier<String> code, ContentAssistant assistant) {
+		return new RCompletionProcessor((int offset) -> com.eco.bio7.reditor.antlr.DocumentParse.parseFromOffset(code.get(), offset), assistant);
+	}
+
 	public RCompletionProcessor(REditor rEditor, ContentAssistant assistant) {
 		this.editor = rEditor;
 		/*
@@ -224,7 +249,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 		 * We parse the code form the invoked offset to detect if we are in function
 		 * calls, etc.!
 		 */
-		RRefPhaseListen ref = new Parse(editor).parseFromOffset(offset);
+		RRefPhaseListen ref = editor != null ? new Parse(editor).parseFromOffset(offset) : scopeParser.apply(offset);
 		/*
 		 * Avoid empty icons in code completion (split returns an array of size 1) from
 		 * editor defined functions and variables!

@@ -7,6 +7,7 @@ Bundle-Activator: com.eco.bio7.markdownedit.Activator
 Bundle-Vendor: ECO
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
+ org.eclipse.core.resources,
  org.eclipse.jface.text,
  org.eclipse.ui.editors,
  org.eclipse.text,

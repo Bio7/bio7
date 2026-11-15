@@ -203,7 +203,8 @@ public class Parse {
 
 		ParseTreeWalker walker = new ParseTreeWalker();
 
-		RuleContext tree = parser.prog();
+		/* Fast SLL parse first, the full LL parse only if needed */
+		RuleContext tree = TwoStageParse.prog(parser, tokens, li);
 		/* Create the listener to create the outline, etc. */
 		RBaseListen list = new RBaseListen(tokens, editor, parser);
 
@@ -250,6 +251,10 @@ public class Parse {
 
 			});
 		}
+		/* Unclosed brackets are marked where they are (not at the next token) */
+		BracketCheck.apply(tokens.getTokens(), li.getErrWarn());
+		/* Missing commas, unclosed strings, return x, 1:length(x), %>% (with quick fixes) */
+		CodeChecks.apply(tokens.getTokens(), li.getErrWarn(), currentPackageImports == null ? null : currentPackageImports.keySet());
 		/* Create all collected markers in a job! (skipped if a newer parse already scheduled its markers) */
 		long generation = markerGeneration.incrementAndGet();
 		ErrorWarnMarkerCreation markerJob = new ErrorWarnMarkerCreation("Create Markers", editor, li.getErrWarn(),
@@ -316,7 +321,8 @@ public class Parse {
 
 		ParseTreeWalker walker = new ParseTreeWalker();
 
-		RuleContext tree = parser.prog();
+		/* Fast SLL parse first, the full LL parse only if needed */
+		RuleContext tree = TwoStageParse.prog(parser, tokens, li);
 		/* Create the listener to create the outline, etc. */
 		RBaseListen list = new RBaseListen(tokens, editor, parser);
 

@@ -37,7 +37,7 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Text;
 import com.eco.bio7.util.Util;
 
-class Spread {
+public class Spread {
 	private Grid grid;
 	protected boolean down = false;
 	protected int index;

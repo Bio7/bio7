@@ -242,6 +242,11 @@ public class MarkdownConfiguration extends TextSourceViewerConfiguration {
 
 		processorRMarkdown = new RMarkdownCompletionProcessor();
 		assistant.setContentAssistProcessor(processorRMarkdown, IDocument.DEFAULT_CONTENT_TYPE);
+		/* The code completion of the R editor in the R chunks (the scope of all chunks above) */
+		assistant.setContentAssistProcessor(
+				RCompletionProcessor.forCode(() -> com.eco.bio7.markdownedit.chunks.RChunkCode.virtualCode(sourceViewer.getDocument()), assistant),
+				MarkdownPartitionScanner.MARKDOWN_R_CHUNK);
+		assistant.enablePrefixCompletion(true);
 
 		assistant.enableAutoActivation(true);
 		assistant.setAutoActivationDelay(500);
