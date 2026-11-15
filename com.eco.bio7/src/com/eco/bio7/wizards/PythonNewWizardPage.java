@@ -22,7 +22,7 @@ import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 
 
 
-public class JythonNewWizardPage extends WizardPage {
+public class PythonNewWizardPage extends WizardPage {
 	private Text containerText;
 
 	private Text fileText;
@@ -30,10 +30,10 @@ public class JythonNewWizardPage extends WizardPage {
 	private ISelection selection;
 
 	
-	public JythonNewWizardPage(ISelection selection) {
+	public PythonNewWizardPage(ISelection selection) {
 		super("wizardPage");
-		setTitle("Jython Editor File");
-		setDescription("This wizard creates a new file with *.py extension that can be opened by the Script editor.");
+		setTitle("Python File");
+		setDescription("This wizard creates a new file with *.py extension that can be opened by the Python editor.");
 		this.selection = selection;
 	}
 

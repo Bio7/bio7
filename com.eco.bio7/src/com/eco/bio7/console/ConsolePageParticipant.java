@@ -695,8 +695,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			Bio7Dialog.message("Python could not be started!\n\nPlease select the Python folder in the preferences (Preferences Python: 'Detect Python...').\n"
-					+ "Without native Python, use the Jython shell of the console.");
+			Bio7Dialog.message("Python could not be started!\n\nPlease select the Python folder in the preferences (Preferences Python: 'Detect Python...').");
 		}
 
 	}
@@ -1064,40 +1063,6 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			/* The interpreter of this input (a switch wakes the reader with a line break) */
 			String mode = interpreterSelection;
 			switch (mode) {
-			case "jython":
-
-				try {
-					if (in != null) {
-						System.out.print(">>>");
-						input = readLine(mode);
-
-					}
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				if (input == null)
-					break;
-				else {
-					if (ignore == false) {
-						if (input != null && input.equals("") == false) {
-							list.add(input);
-						}
-					}
-
-					ScriptEngine gs = ScriptEngineConnection.getScriptingEnginePython();
-
-					try {
-						gs.eval(input);
-					} catch (ScriptException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					ignore = false;
-					System.out.flush();
-
-				}
-				break;
 			case "beanshell":
 
 				try {

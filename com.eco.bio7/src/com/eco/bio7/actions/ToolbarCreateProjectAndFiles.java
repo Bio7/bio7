@@ -281,27 +281,6 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 		});
 		// new MenuItem(fMenu, SWT.SEPARATOR);
 
-		MenuItem menuItemJyhon = new MenuItem(fMenu, SWT.PUSH);
-		menuItemJyhon.setText("Project with Jython file");
-		menuItemJyhon.setImage(imageCreateProject);
-
-		// Image image =
-		// PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
-
-		// menuItem.setImage(Bio7Plugin.getImageDescriptor("/icons/views/raction.png").createImage());
-		menuItemJyhon.addSelectionListener(new SelectionListener() {
-
-			public void widgetSelected(SelectionEvent e) {
-				selection = "jython";
-				openWizard("com.eco.bio7.wizard.new.r.project.file");
-				selection = "r";
-			}
-
-			public void widgetDefaultSelected(SelectionEvent e) {
-
-			}
-
-		});
 		new MenuItem(fMenu, SWT.SEPARATOR);
 		MenuItem menuItemGroovy = new MenuItem(fMenu, SWT.PUSH);
 		menuItemGroovy.setText("Project with Groovy file");

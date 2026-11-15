@@ -31,7 +31,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rcp.StartBio7Utils;
 
@@ -41,7 +40,6 @@ public class InterpretPython extends Action {
 	protected Process proc;
 	protected Runtime rt;
 	protected boolean canceled;
-	private static boolean isBlender = false;
 
 	public InterpretPython(String text) {
 		super(text);
@@ -73,13 +71,10 @@ public class InterpretPython extends Action {
 
 			String a = doc.get();
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-			boolean cPython = store.getBoolean("python_pipe");
-			String sel = store.getString("python_select");
-			String blenderSel = store.getString("blender_options");
 			boolean extraProcess = store.getBoolean("python_process_extra");
 			String pathPython = store.getString("python_pipe_path");
 
-			if (cPython == true) {
+			{
 				String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 
 				if (editor.isDirty()) {
@@ -94,7 +89,7 @@ public class InterpretPython extends Action {
 				String loc = aFile.getLocation().toString();
 
 				/* The embedded Python (preferences): the script runs in the process of Bio7 (data and plots) */
-				if (sel.equals("Python") && com.eco.bio7.pybridge.EmbeddedPython.isSelected()) {
+				if (com.eco.bio7.pybridge.EmbeddedPython.isSelected()) {
 					com.eco.bio7.console.ConsoleInterpreterAction.getInstance().startPython();
 					if (com.eco.bio7.pybridge.EmbeddedPython.isRunning()) {
 						com.eco.bio7.pybridge.EmbeddedPython.runFile(loc);
@@ -102,7 +97,7 @@ public class InterpretPython extends Action {
 					}
 					return;
 				}
-				if (sel.equals("Python")) {
+				{
 
 					boolean python3x = store.getBoolean("python_3x");
 					if (python3x == false) {
@@ -139,44 +134,7 @@ public class InterpretPython extends Action {
 
 				}
 
-				else if (sel.equals("Blender")) {
-					if (selectionConsole.equals("shell")) {
-						String path = store.getString("path_blender");
-						String blenderArgs = store.getString("blender_args");
-						if (blenderSel.equals("pscript")) {
 
-							ConsolePageParticipant.pipeInputToConsole(
-									"\"" + path + "/blender\"" + " " + blenderArgs + " -P " + loc, true, true);
-						} else if (blenderSel.equals("interactive")) {
-							if (isBlender == false) {
-								ConsolePageParticipant.pipeInputToConsole(
-										"\"" + path + "/blender\"" + " " + blenderArgs + " --python-console", true,
-										true);
-								isBlender = true;
-							}
-							ConsolePageParticipant.pipeInputToConsole(store.getString("before_script_blender"), true,
-									true);
-							ConsolePageParticipant.pipeInputToConsole(
-									"exec(compile(open('" + loc + "').read(),'" + loc + "', 'exec'))", true, true);
-							ConsolePageParticipant.pipeInputToConsole(store.getString("after_script_blender"), true,
-									true);
-							System.out.println(
-									"Please restart the Bio7 native console for a new interactive session if you have closed Blender!");
-						} else {
-							ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs,
-									true, true);
-						}
-					} else {
-						Bio7Dialog.message("Please start the Shell in the Bio7 Console\n"
-								+ "to interpret the Python script in Blender!");
-					}
-				}
-
-			}
-
-			else {
-
-				PythonInterpreter.interpretJob(a, null);
 			}
 		}
 
@@ -280,8 +238,5 @@ public class InterpretPython extends Action {
 
 	}
 
-	public static void setBlenderInteractive(boolean isBlender) {
-		InterpretPython.isBlender = isBlender;
-	}
 
 }

@@ -249,7 +249,7 @@ public class PythonEditor extends TextEditor implements IPropertyChangeListener,
 		addAction(menu, "Add Block Comment");
 		addAction(menu, "Remove Block Comment");
 		menu.add(new Separator());
-		addAction(menu, "Jython Preferences");
+		addAction(menu, "Python Editor Preferences");
 
 	}
 
@@ -274,7 +274,7 @@ public class PythonEditor extends TextEditor implements IPropertyChangeListener,
 		setAction("Remove Block Comment", unsetComment);
 
 		preferences = new com.eco.bio7.pythoneditor.actions.OpenPreferences();
-		setAction("Jython Preferences", preferences);
+		setAction("Python Editor Preferences", preferences);
 		/* A click on a marker with quick fixes in the ruler: the quick fixes (as in the Java editor) */
 		setAction(ITextEditorActionConstants.RULER_CLICK, new org.eclipse.jface.action.Action("Quick Fix") {
 			@Override

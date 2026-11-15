@@ -58,19 +58,6 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		}
 		fMenu = new Menu(parent);
 
-		MenuItem menuItem1 = new MenuItem(fMenu, SWT.PUSH);
-		menuItem1.setText("Jython");
-
-		menuItem1.addSelectionListener(new SelectionListener() {
-
-			public void widgetSelected(SelectionEvent e) {
-				startJython();
-			}
-
-			public void widgetDefaultSelected(SelectionEvent e) {
-
-			}
-		});
 		MenuItem menuItem2 = new MenuItem(fMenu, SWT.PUSH);
 		menuItem2.setText("Groovy");
 
@@ -320,18 +307,6 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		/*Add a linebreak in R*/
 		participant.pipeToRConsole("cat(\"\r\")");
 	}
-	/** The Jython shell (in the process of Bio7). */
-	public void startJython() {
-		exitShellProcess();
-		IOConsole ioConsole = participant.getIoc();
-		participant.interpreterSelection = "jython";
-		ioConsole.clearConsole();
-		participant.ignore = true;
-		/* Wakes the reader of the former interpreter (the line break is not sent to it) */
-		participant.wakeReader();
-		participant.styledText.setEditable(true);
-	}
-
 	public void startPython() {
 		//StyledText styledText = (StyledText) participant.page.getControl();
 		//Color colb = new Color(Display.getCurrent(), 0, 0, 0);
@@ -397,8 +372,6 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		/* Wakes the reader of the former interpreter (the line break is not sent to it) */
 		participant.wakeReader();
 		participant.styledText.setEditable(true);
-		/* Reset variable to start Blender if needed in the shell! */
-		InterpretPython.setBlenderInteractive(false);
 	}
 
 

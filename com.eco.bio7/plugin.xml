@@ -884,11 +884,11 @@
             name="Java Bio7 Files">
       </category>
       <wizard
-            category="com.eco.bio7.bio7jython"
-            class="com.eco.bio7.wizards.JythonNewWizard"
+            category="com.eco.bio7.bio7python"
+            class="com.eco.bio7.wizards.PythonNewWizard"
             icon="icons/editor/python.svg"
-            id="com.eco.bio7.jythonScript"
-            name="Python/Jython Script"
+            id="com.eco.bio7.pythonScript"
+            name="Python Script"
             project="false">
       </wizard>
       <wizard
@@ -952,8 +952,8 @@
             name="BeanShell">
       </category>
       <category
-            id="com.eco.bio7.bio7jython"
-            name="Jython/Python">
+            id="com.eco.bio7.bio7python"
+            name="Python">
       </category>
       <wizard
             category="com.eco.bio7.RCategory"

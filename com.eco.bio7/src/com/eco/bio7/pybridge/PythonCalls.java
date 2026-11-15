@@ -23,6 +23,7 @@ import com.eco.bio7.pyffm.PyValue;
 import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.backend.RBackend;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.Roi;
@@ -61,13 +62,47 @@ public final class PythonCalls implements PyCallHandler {
 		case "show_image": {
 			String title = arg(args, 0);
 			ImagePlus imp = PythonConvert.toImage(value, title == null ? "Python" : title);
-			Display.getDefault().asyncExec(imp::show);
+			/* Shown before the call returns (as ImagePlus.show()): a following macro or bio7.image() finds it */
+			Display display = Display.getDefault();
+			if (display.getThread() == Thread.currentThread()) {
+				imp.show();
+			} else {
+				display.syncExec(imp::show);
+			}
 			return null;
 		}
 		case "open_url": {
 			/* The web browser of Python (plotly, bokeh, folium, webbrowser.open): the browser view of Bio7 */
 			String url = required(args, 0, "URL");
 			Display.getDefault().asyncExec(() -> com.eco.bio7.collection.BrowserUtil.setLocationWithJS(url));
+			return null;
+		}
+		case "progress": {
+			/* bio7.progress, bio7.task, tqdm: key, done, total (empty: unknown), text */
+			double total = arg(args, 2) == null ? -1 : Double.parseDouble(args[2]);
+			PythonJobs.progress(required(args, 0, "key"), Double.parseDouble(required(args, 1, "done")), total, arg(args, 3));
+			return null;
+		}
+		case "progress_end":
+			PythonJobs.finishTask(required(args, 0, "key"));
+			return null;
+		case "ij_macro":
+			/* An ImageJ macro (code, argument): the value of its return statement */
+			return runMacro(required(args, 0, "macro code"), arg(args, 1));
+		case "ij_macro_file": {
+			java.nio.file.Path file = java.nio.file.Path.of(required(args, 0, "macro file"));
+			if (!java.nio.file.Files.isRegularFile(file) && IJ.getDirectory("macros") != null) {
+				/* Relative to the macros folder of ImageJ */
+				file = java.nio.file.Path.of(IJ.getDirectory("macros"), file.toString());
+			}
+			if (!java.nio.file.Files.isRegularFile(file)) {
+				throw new IllegalArgumentException("The macro file was not found: " + args[0]);
+			}
+			return runMacro(java.nio.file.Files.readString(file), arg(args, 1));
+		}
+		case "ij_run": {
+			/* An ImageJ command with options (as run() of the macro language) on the current image */
+			IJ.run(required(args, 0, "command"), arg(args, 1) == null ? "" : arg(args, 1));
 			return null;
 		}
 		case "results_table": {
@@ -99,6 +134,10 @@ public final class PythonCalls implements PyCallHandler {
 			return null;
 		}
 		default: {
+			if (function.startsWith("java_")) {
+				/* The Java API (bio7.java): classes, objects, methods, fields */
+				return PythonJava.call(function, args, value);
+			}
 			Function f = FUNCTIONS.get(function);
 			if (f == null) {
 				throw new IllegalArgumentException("Unknown function of Bio7: " + function);
@@ -106,6 +145,33 @@ public final class PythonCalls implements PyCallHandler {
 			return f.call(args, value);
 		}
 		}
+	}
+
+	/*
+	 * Runs an ImageJ macro in this thread (as the macro jobs of Bio7): an error is
+	 * an exception with the message of ImageJ (no dialog)
+	 */
+	private static PyValue runMacro(String code, String argument) {
+		ij.macro.Interpreter interp = new ij.macro.Interpreter();
+		interp.setIgnoreErrors(true);
+		String result;
+		try {
+			result = interp.run(code, argument == null ? "" : argument);
+		} catch (RuntimeException e) {
+			/* exit() of the macro ends it (as in ImageJ) */
+			if ("Macro canceled".equals(e.getMessage())) {
+				return null;
+			}
+			throw e;
+		}
+		/* With ignored errors the message is set (wasError() stays false) */
+		String msg = interp.getErrorMessage();
+		if (msg != null || interp.wasError()) {
+			int line = interp.getLineNumber();
+			throw new IllegalStateException("ImageJ macro error" + (line > 0 ? " in line " + line : "") + ": "
+					+ (msg == null || msg.isBlank() ? "the macro was aborted" : msg));
+		}
+		return result == null ? null : PyValue.of(result);
 	}
 
 	private static String arg(String[] args, int i) {

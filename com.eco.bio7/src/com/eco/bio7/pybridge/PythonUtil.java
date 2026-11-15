@@ -26,9 +26,10 @@ import ij.WindowManager;
 import ij.measure.ResultsTable;
 
 /**
- * The API of the embedded Python of Bio7 for Java, Groovy, BeanShell and
- * Jython scripts (as RServeUtil for R). The variables are created in the
- * namespace of the Python console and of the scripts (__main__).
+ * The API of the embedded Python of Bio7 for Java, Groovy and BeanShell
+ * scripts (as RServeUtil for R; Python scripts use the module bio7). The
+ * variables are created in the namespace of the Python console and of the
+ * scripts (__main__).
  *
  * <pre>
  * PythonUtil.toPython("x", 1.0, 2.0, 3.0);           // numpy array

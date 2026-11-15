@@ -304,13 +304,34 @@ public final class PySession {
 
 	/* Queues a task; user code (console, scripts) notifies the activity listener afterwards */
 	private void submit(Callable<?> task, boolean userCode) {
+		submit(task, userCode, null);
+	}
+
+	/* label: user code shown as running (the run listener), null: not shown */
+	private void submit(Callable<?> task, boolean userCode, String label) {
 		executor.submit(() -> {
+			PyRunListener rl = label == null ? null : runListener;
+			if (rl != null) {
+				try {
+					rl.started(label);
+				} catch (Throwable e) {
+					/* The listener must not stop the queue */
+				}
+			}
 			try {
 				withGil(task);
 			} catch (PyException e) {
 				write(e.getMessage() + "\n", true);
 			} catch (Throwable e) {
 				write(e + "\n", true);
+			} finally {
+				if (rl != null) {
+					try {
+						rl.finished();
+					} catch (Throwable e) {
+						/* The listener must not stop the queue */
+					}
+				}
 			}
 			if (userCode) {
 				Runnable l = activityListener;
@@ -327,6 +348,17 @@ public final class PySession {
 	}
 
 	private volatile Runnable activityListener;
+
+	private volatile PyRunListener runListener;
+
+	/**
+	 * Sets a listener called when user code starts and ends (a console line, a
+	 * script, code of runAsync with a label), e.g., to show a job. Called in the
+	 * thread of Python (without the GIL): must return at once.
+	 */
+	public void setRunListener(PyRunListener listener) {
+		this.runListener = listener;
+	}
 
 	/**
 	 * Sets a listener called after user code ran (a console line, a script, code
@@ -447,7 +479,7 @@ public final class PySession {
 		submit(() -> {
 			run("console", line);
 			return null;
-		}, true);
+		}, true, "Console");
 	}
 
 	/** Writes the prompt of the console. */
@@ -466,11 +498,19 @@ public final class PySession {
 		submit(() -> {
 			run("file", file.toAbsolutePath().toString());
 			return null;
-		}, true);
+		}, true, String.valueOf(file.getFileName()));
 	}
 
 	/** Runs code in __main__ like a script (errors printed to the console). Returns at once. */
 	public void runAsync(String code) {
+		runAsync(code, "Script");
+	}
+
+	/**
+	 * As runAsync(code); label: the name of the run for the run listener (null:
+	 * not shown as running, e.g., a debug session waiting at breakpoints).
+	 */
+	public void runAsync(String code, String label) {
 		submit(() -> {
 			try {
 				run("exec", code);
@@ -479,7 +519,7 @@ public final class PySession {
 			}
 			nat.runSimple("__import__('_bio7')._flush()\n");
 			return null;
-		}, true);
+		}, true, label);
 	}
 
 	/**

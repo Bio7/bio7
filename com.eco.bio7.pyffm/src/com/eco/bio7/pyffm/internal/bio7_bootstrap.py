@@ -242,7 +242,60 @@ def _patch_hvplot(m):
     m.show = lambda obj, *a, **k: _show_chart(obj)
 
 
-_PATCHES = {"plotly.basedatatypes": _patch_plotly, "altair": _patch_altair, "folium": _patch_folium,
+# ---------------------------------------------------------------- progress (jobs of Bio7)
+
+_progress_sent = {}
+
+
+def _progress(key, done, total=None, text="", force=False):
+    """The progress of a task as a job of Bio7 (at most about 10 updates per second)."""
+    import time
+    now = time.monotonic()
+    last = _progress_sent.get(key)
+    finished = total is not None and total > 0 and done >= total
+    if not force and not finished and last is not None and now - last < 0.1:
+        return
+    _progress_sent[key] = now
+    try:
+        _call("progress", key, repr(float(done)), "" if not total else repr(float(total)), text or "")
+    except Exception:
+        pass
+    if finished:
+        _progress_sent.pop(key, None)
+
+
+def _progress_end(key):
+    _progress_sent.pop(key, None)
+    try:
+        _call("progress_end", key)
+    except Exception:
+        pass
+
+
+def _patch_tqdm(m):
+    """tqdm bars (also of libraries) report to a job of Bio7; the console output stays."""
+    cls = m.tqdm
+    display, close = cls.display, cls.close
+
+    def bio7_display(self, *args, **kwargs):
+        try:
+            _progress("tqdm%d" % id(self), self.n, self.total, self.desc or "tqdm")
+        except Exception:
+            pass
+        return display(self, *args, **kwargs)
+
+    def bio7_close(self, *args, **kwargs):
+        try:
+            _progress_end("tqdm%d" % id(self))
+        except Exception:
+            pass
+        return close(self, *args, **kwargs)
+
+    cls.display = bio7_display
+    cls.close = bio7_close
+
+
+_PATCHES = {"tqdm.std": _patch_tqdm, "plotly.basedatatypes": _patch_plotly, "altair": _patch_altair, "folium": _patch_folium,
             "holoviews": _patch_holoviews, "hvplot": _patch_hvplot}
 
 
@@ -283,6 +336,247 @@ class _PatchFinder:
                     spec.loader = _PatchedLoader(spec.loader, patch)
                 return spec
         return None
+
+
+# ---------------------------------------------------------------- Java objects (bio7.java)
+
+_java_released = []
+_java_members = {}
+
+
+def _jcall(function, *args, value=None):
+    """A call of the Java API; the handles of released proxies are sent first."""
+    if _java_released:
+        ids = list(_java_released)
+        del _java_released[:]
+        try:
+            _call("java_release", value=ids)
+        except Exception:
+            pass
+    return _jwrap(_call(function, *args, value=value))
+
+
+def _jwrap(v):
+    """Java handles (dicts with __java__) as proxies, also in lists and dicts."""
+    if isinstance(v, dict):
+        if "__java__" in v:
+            return _JavaObject(int(v["__java__"]), v.get("class", "java.lang.Object"))
+        return {k: _jwrap(e) for k, e in v.items()}
+    if isinstance(v, list):
+        return [_jwrap(e) for e in v]
+    return v
+
+
+def _jargs(args):
+    # By position: a list of Python numbers would be sent as one array
+    return {"args": {str(i): a for i, a in enumerate(args)}}
+
+
+def _jmembers(cls):
+    m = _java_members.get(cls)
+    if m is None:
+        d = _call("java_members", cls)
+        m = {k: set(d[k]) if isinstance(d[k], list) else ({d[k]} if isinstance(d[k], str) else d[k]) for k in d}
+        _java_members[cls] = m
+    return m
+
+
+class _JavaMethod:
+    """A method of a Java class or object (overloads are chosen by the arguments)."""
+    __slots__ = ("_target", "_cls", "_name", "_ui")
+
+    def __init__(self, target, cls, name, ui=False):
+        self._target, self._cls, self._name, self._ui = target, cls, name, ui
+
+    def __call__(self, *args):
+        value = _jargs(args)
+        value["target"] = self._target
+        return _jcall("java_call", self._cls, self._name, "ui" if self._ui else "", value=value)
+
+    def __repr__(self):
+        return "<Java method %s.%s>" % (self._cls, self._name)
+
+
+class _JavaClass:
+    """A Java class: its static methods and fields, the constructor (call it)."""
+    __slots__ = ("_name", "__weakref__")
+
+    def __init__(self, name):
+        object.__setattr__(self, "_name", name)
+
+    def __call__(self, *args):
+        return _jcall("java_new", self._name, value=_jargs(args))
+
+    def __getattr__(self, name):
+        if name.startswith("__"):
+            raise AttributeError(name)
+        if name == "class_":
+            return _jcall("java_call", "java.lang.Class", "forName", value=dict(_jargs([self._name]), target=None))
+        m = _jmembers(self._name)
+        if name in m["static_methods"]:
+            return _JavaMethod(None, self._name, name)
+        if name in m["static_fields"]:
+            return _jcall("java_get", self._name, name, value=None)
+        if name in m["classes"]:
+            return _JavaClass(self._name + "$" + name)
+        raise AttributeError("The Java class %s has no static method, field or class '%s'" % (self._name, name))
+
+    def __setattr__(self, name, value):
+        _jcall("java_set", self._name, name, value={"target": None, "value": value})
+
+    def __dir__(self):
+        m = _jmembers(self._name)
+        return sorted(m["static_methods"] | m["static_fields"] | m["classes"])
+
+    def __repr__(self):
+        return "<Java class %s>" % self._name
+
+
+class _JavaObject:
+    """A Java object: its methods and fields as attributes (released when the proxy is deleted)."""
+    __slots__ = ("_id", "_cls", "__weakref__")
+
+    def __init__(self, id_, cls):
+        object.__setattr__(self, "_id", id_)
+        object.__setattr__(self, "_cls", cls)
+
+    def __del__(self):
+        try:
+            _java_released.append(self._id)
+        except Exception:
+            pass
+
+    def __getattr__(self, name):
+        if name.startswith("__"):
+            raise AttributeError(name)
+        m = _jmembers(self._cls)
+        if name in m["methods"]:
+            return _JavaMethod(self, self._cls, name)
+        if name in m["fields"]:
+            return _jcall("java_get", self._cls, name, value=self)
+        raise AttributeError("The Java object %s has no method or field '%s'" % (self._cls, name))
+
+    def __setattr__(self, name, value):
+        _jcall("java_set", self._cls, name, value={"target": self, "value": value})
+
+    def __dir__(self):
+        m = _jmembers(self._cls)
+        return sorted(m["methods"] | m["fields"])
+
+    def __str__(self):
+        return _jcall("java_call", "java.lang.Object", "toString", value=dict(_jargs([]), target=self))
+
+    def __repr__(self):
+        text = str(self)
+        return "<Java %s: %s>" % (self._cls, text if len(text) < 200 else text[:200] + "...")
+
+    def __eq__(self, other):
+        if not isinstance(other, _JavaObject):
+            return NotImplemented
+        return other._id == self._id or bool(
+            _jcall("java_call", "java.lang.Object", "equals", value=dict(_jargs([other]), target=self)))
+
+    def __hash__(self):
+        return _jcall("java_call", "java.lang.Object", "hashCode", value=dict(_jargs([]), target=self))
+
+    def __iter__(self):
+        """An Iterable (List, Set, ...), a Map (its keys), an Iterator or an Enumeration."""
+        return iter(_jcall("java_iter", value=self))
+
+    def __bool__(self):
+        # A Java object is true (not its size, see __len__)
+        return True
+
+    def __len__(self):
+        m = _jmembers(self._cls)
+        for name in ("size", "getSize", "length", "getCount"):
+            if name in m["methods"]:
+                return int(getattr(self, name)())
+        raise TypeError("The Java object %s has no size" % self._cls)
+
+    def __getitem__(self, key):
+        m = _jmembers(self._cls)
+        if "get" in m["methods"]:
+            return self.get(key)
+        raise TypeError("The Java object %s has no get()" % self._cls)
+
+
+class _JavaUi:
+    """The methods of a Java object (or class) called in the UI thread (SWT widgets)."""
+    __slots__ = ("_obj",)
+
+    def __init__(self, obj):
+        self._obj = obj
+
+    def __getattr__(self, name):
+        if isinstance(self._obj, _JavaClass):
+            return _JavaMethod(None, self._obj._name, name, ui=True)
+        return _JavaMethod(self._obj, self._obj._cls, name, ui=True)
+
+    def __call__(self, *args):
+        """A new object of the class in the UI thread (e.g., a window or an SWT widget)."""
+        if not isinstance(self._obj, _JavaClass):
+            raise TypeError("java.ui(...)() needs a Java class")
+        return _jcall("java_new", self._obj._name, "", "ui", value=_jargs(args))
+
+
+class _JavaPackage:
+    """A Java package: java.ij.IJ is the class ij.IJ, java.ij.gui a package."""
+    __slots__ = ("_name",)
+
+    def __init__(self, name):
+        self._name = name
+
+    def __getattr__(self, name):
+        if name.startswith("__"):
+            raise AttributeError(name)
+        full = self._name + "." + name if self._name else name
+        try:
+            return _JavaClass(_call("java_type", full))
+        except Exception:
+            return _JavaPackage(full)
+
+    def __repr__(self):
+        return "<Java package %s>" % self._name
+
+
+class _Java(_JavaPackage):
+    """The Java API of Bio7 (ImageJ, Bio7, Java):
+
+        from bio7 import java
+        IJ = java.type("ij.IJ")             # a class (also java.ij.IJ)
+        imp = IJ.getImage()                 # static methods, a proxy of the object
+        imp.getProcessor().smooth()         # methods of objects
+        roi = java.new("ij.gui.OvalRoi", 10, 10, 50, 50)   # constructors
+        pixels = imp.getProcessor().getPixels()             # arrays as numpy
+        java.ui(shell).setText("Title")     # in the UI thread (SWT widgets)
+    """
+    __slots__ = ()
+
+    def __init__(self):
+        _JavaPackage.__init__(self, "")
+
+    def type(self, name):
+        """The Java class (a proxy: static methods and fields, call it for a new object)."""
+        return _JavaClass(_call("java_type", name))
+
+    def new(self, name, *args):
+        """A new Java object of a class (the constructor is chosen by the arguments)."""
+        return self.type(name)(*args)
+
+    def ui(self, obj):
+        """The methods of a Java object or class called in the UI thread."""
+        return _JavaUi(obj)
+
+    def is_java(self, obj):
+        """True for a Java object (proxy)."""
+        return isinstance(obj, _JavaObject)
+
+    def __repr__(self):
+        return "<Java API of Bio7>"
+
+
+java = _Java()
 
 
 def _register_browser():
@@ -474,6 +768,10 @@ def _export(v):
     def enc(x):
         if x is None:
             return {"t": "none"}
+        if isinstance(x, _JavaObject):
+            return {"t": "dict", "v": {"__java__": enc(x._id)}}
+        if isinstance(x, _JavaClass):
+            return {"t": "dict", "v": {"__javaclass__": enc(x._name)}}
         if np is not None:
             if isinstance(x, np.ndarray):
                 return nd(x)
@@ -808,6 +1106,9 @@ _BIO7_SOURCE = r'''
     img = bio7.image()                 # the current ImageJ image as numpy array
     bio7.show_image(img * 2, "Twice")  # a new ImageJ image
     bio7.show_html(fig)                # a plotly/altair/bokeh/folium chart in the browser view
+    bio7.ij_macro('run("Blobs (25K)");')   # an ImageJ macro (also bio7.ij_run, bio7.ij_macro_file)
+    imp = bio7.java.ij.IJ.getImage()   # the Java API (ImageJ, Bio7): proxies of Java objects
+    bio7.progress(i, n, "text")        # the progress in a job of Bio7 (also bio7.task, tqdm)
     df = bio7.results_table()          # the ImageJ results table
     x, y = bio7.roi()                  # the coordinates of the current selection
     bio7.to_r("x", [1, 2, 3])          # assign in R
@@ -825,6 +1126,99 @@ def image(title=None):
 def show_image(array, title="Python"):
     """Shows a 2-d array (or a stack, RGB uint8 (h, w, 3)) as ImageJ image."""
     return _bio7._call("show_image", title, value=array)
+
+
+java = _bio7.java
+"""The Java API (ImageJ, Bio7, Java): from bio7 import java; IJ = java.ij.IJ; imp = IJ.getImage()"""
+
+
+def progress(done, total=None, text=""):
+    """Shows the progress of the running code in Bio7 (a job in the status bar and
+    the Progress view, its stop button interrupts the code):
+
+        for i, f in enumerate(files):
+            bio7.progress(i + 1, len(files), "Processing " + f)
+
+    The job ends when done reaches total (or when the code ends).
+    """
+    _bio7._progress("progress", done, total, text)
+
+
+class task:
+    """A task with progress in Bio7 (a job of its own), also for an iterable:
+
+        with bio7.task("Segmentation", total=len(images)) as t:
+            for img in images:
+                ...
+                t.update()             # one step (t.update(n, text) for more)
+
+        for img in bio7.task("Segmentation", images):   # wraps an iterable
+            ...
+    """
+
+    _count = 0
+
+    def __init__(self, text, iterable=None, total=None):
+        task._count += 1
+        self.key = "task%d" % task._count
+        self.text = text
+        self.iterable = iterable
+        if total is None and iterable is not None:
+            try:
+                total = len(iterable)
+            except TypeError:
+                total = None
+        self.total = total
+        self.n = 0
+        _bio7._progress(self.key, 0, self.total, self.text, force=True)
+
+    def update(self, n=1, text=None):
+        self.n += n
+        if text:
+            self.text = text
+        _bio7._progress(self.key, self.n, self.total, self.text)
+
+    def close(self):
+        _bio7._progress_end(self.key)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
+        return False
+
+    def __iter__(self):
+        try:
+            for item in self.iterable:
+                yield item
+                self.update()
+        finally:
+            self.close()
+
+
+def ij_macro(code, arg=""):
+    """Runs an ImageJ macro (the macro language of ImageJ) and returns the value
+    of its return statement (a string) or None. getArgument() in the macro is arg.
+    An error of the macro raises a RuntimeError with the message of ImageJ.
+
+        n = bio7.ij_macro('run("Blobs (25K)"); return "" + nImages;')
+    """
+    return _bio7._call("ij_macro", code, arg)
+
+
+def ij_macro_file(path, arg=""):
+    """Runs an ImageJ macro file (a path, or relative to the macros folder of
+    ImageJ) and returns the value of its return statement or None."""
+    return _bio7._call("ij_macro_file", str(path), arg)
+
+
+def ij_run(command, options=""):
+    """Runs an ImageJ command on the current image, as run() in a macro:
+
+        bio7.ij_run("Gaussian Blur...", "sigma=2")
+    """
+    _bio7._call("ij_run", command, options)
 
 
 def show_html(obj):

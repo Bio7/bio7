@@ -135,7 +135,8 @@ public final class PythonDebugger {
 				+ "\nWhile stopped, the console evaluates in the frame; n (next), s (step), r (return), c (continue), q (quit).\n", false);
 		PythonDebugView.refreshAll();
 		String path = file.getLocation().toOSString().replace("\\", "\\\\").replace("'", "\\'");
-		py.runAsync("__import__('_bio7dbg').run('" + path + "', " + lines + ", " + (stopAtFirstLine ? "True" : "False") + ")");
+		/* Not shown as running job (the debug session waits at breakpoints) */
+		py.runAsync("__import__('_bio7dbg').run('" + path + "', " + lines + ", " + (stopAtFirstLine ? "True" : "False") + ")", null);
 	}
 
 	private static void register() {

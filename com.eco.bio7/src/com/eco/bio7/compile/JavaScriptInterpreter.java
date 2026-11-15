@@ -26,7 +26,7 @@ import com.eco.bio7.batch.BatchModel;
 import com.eco.bio7.scriptengines.ScriptEngineConnection;
 
 /**
- * This class provides some static methods for the interpretation of Jython source or String expressions.
+ * This class provides some static methods for the interpretation of JavaScript source or String expressions.
  * 
  * @author Bio7
  * 

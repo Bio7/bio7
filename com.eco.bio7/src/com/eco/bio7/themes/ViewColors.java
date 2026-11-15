@@ -50,6 +50,8 @@ final class ViewColors {
 		SeparatorColors.install();
 		/* Windows: the selected items of the lists in grey in a dark theme (the native selection is white) */
 		ListSelectionColors.install();
+		/* macOS 26+: the rows of the lists with the height of the font (the native rows are 24 points for every font) */
+		CompactLists.install();
 		if (installed || !PlatformUI.isWorkbenchRunning()) {
 			return;
 		}

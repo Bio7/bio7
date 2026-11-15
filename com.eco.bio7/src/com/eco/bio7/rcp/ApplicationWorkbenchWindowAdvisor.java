@@ -125,7 +125,6 @@ import com.eco.bio7.compile.BeanShellInterpreter;
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.GroovyInterpreter;
 import com.eco.bio7.compile.JavaScriptInterpreter;
-import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.compile.utils.ScanClassPath;
 import com.eco.bio7.console.ConsolePageParticipant;
@@ -706,7 +705,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		store.setDefault("CLOSE_DEVICE", "if(length(dev.list())>0) dev.off()");
 
-		store.setDefault("blender_args", "--window-geometry 0 0 600 600");
 		store.setDefault("rcmdinstall", "--build");
 		store.setDefault("REMOTE", false);
 		store.setDefault("HOST", "127.0.0.1");
@@ -719,19 +717,12 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 		store.setDefault("POINTS_PANEL_SCROLLBAR", false);
 		store.setDefault("STARTUP_SCRIPTS", false);
-		/* Python (not Jython) is the default: embedded in the process of Bio7 (data transfer, plots) */
-		store.setDefault("python_pipe", true);
+		/* The embedded Python is the default (in the process of Bio7: data transfer, plots) */
 		store.setDefault("python_embedded", true);
 		/* The switch R/Python of the Image-Methods view closes the views of the other language */
 		store.setDefault("IMAGE_METHODS_CLOSE_VIEWS", true);
-		store.setDefault("python_select", "Python");
 		store.setDefault("python_3x", true);
 		store.setDefault("python_process_extra", true);
-		store.setDefault("blender_options", "interactive");
-		store.setDefault("before_script_blender",
-				"import bpy;bpy.ops.object.select_all(action='SELECT');bpy.ops.object.delete()");
-		store.setDefault("after_script_blender",
-				"bpy.ops.render.render();bpy.ops.wm.redraw_timer(type='DRAW_WIN_SWAP', iterations=1)");
 
 		/* A default FPS setting for the 3d view! */
 		store.setDefault("fixedFps", 60);
@@ -1317,7 +1308,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 					} else if (fileName.endsWith(".py")) {
 
-						PythonInterpreter.interpretJob(null, files[i].toString());
+						com.eco.bio7.pybridge.PythonScripts.runFile(files[i].toString());
 
 					} else if (fileName.endsWith(".js")) {
 

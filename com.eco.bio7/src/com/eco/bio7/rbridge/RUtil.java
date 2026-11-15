@@ -30,7 +30,7 @@ import ij.process.ImageProcessor;
 
 /**
  * The API of the embedded R of Bio7 (the FFM bridge, no Rserve) for Java,
- * Groovy, BeanShell and Jython scripts, as {@link com.eco.bio7.pybridge.PythonUtil}
+ * Groovy and BeanShell scripts, as {@link com.eco.bio7.pybridge.PythonUtil}
  * for Python. Plain Java types: the variables are created in the global
  * environment of R (visible in the console and the R-Shell).
  *

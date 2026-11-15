@@ -49,10 +49,10 @@ public final class EmbeddedPython {
 	private EmbeddedPython() {
 	}
 
-	/** Returns true if the embedded Python is selected in the preferences (and Python, not Jython). */
+	/** Returns true if the embedded Python is selected in the preferences. */
 	public static boolean isSelected() {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		return store.getBoolean("python_pipe") && store.getBoolean(PREF_EMBEDDED);
+		return store.getBoolean(PREF_EMBEDDED);
 	}
 
 	/** Returns true if the embedded Python runs. */
@@ -121,6 +121,8 @@ public final class EmbeddedPython {
 		session.setCallHandler(new PythonCalls());
 		/* The variables of the Python-Shell after the console and scripts (as for R) */
 		session.setActivityListener(PythonShellView::refreshOpenViews);
+		/* A job while a script or a long console line runs (status bar, Progress view, stop button) */
+		session.setRunListener(new PythonJobs());
 		Display display = Display.getDefault();
 		display.syncExec(() -> PythonPlotView.initSize(session));
 		print("Embedded Python " + session.version() + " (" + exe + ")\n", false);

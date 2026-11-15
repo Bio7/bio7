@@ -13,9 +13,9 @@ public class OpenPreferences extends Action {
 
 	public OpenPreferences() {
 		super("Preferences");
-		setId("com.eco.bio7.jython_preferences");
+		setId("com.eco.bio7.python_editor_preferences");
 
-		setText("Jython Preferences");
+		setText("Python Editor Preferences");
 
 	}
 

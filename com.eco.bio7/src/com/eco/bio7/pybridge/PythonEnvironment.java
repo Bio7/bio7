@@ -239,7 +239,6 @@ public final class PythonEnvironment {
 	public static void select(Path binFolder) {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		store.setValue("python_pipe_path", binFolder.toString());
-		store.setValue("python_pipe", true);
 		store.setValue(EmbeddedPython.PREF_EMBEDDED, true);
 		store.setValue("python_3x", true);
 	}

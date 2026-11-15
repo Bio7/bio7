@@ -50,7 +50,6 @@ import com.eco.bio7.compile.BeanShellInterpreter;
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.GroovyInterpreter;
 import com.eco.bio7.compile.JavaScriptInterpreter;
-import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.compile.RScript;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.floweditor.shapes.ShapesPlugin;
@@ -112,62 +111,13 @@ public class ExecuteBatchFile {
 
 		}
 
-		/* Interprets a jython script! */
+		/* Interprets a Python script (the embedded Python or a Python process) */
 		else if (fileextension.equals("py")) {
 			BatchModel.pause();
 			fileprop = fileroot + fileprop;
 
-			String fileproper = fileprop.replace("//", "////");// Conversion
-
-			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-			boolean cPython = store.getBoolean("python_pipe");
-			String sel = store.getString("python_select");
-			/* Native execution of python if started in the Shell! */
-			if (cPython == true) {
-				String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
-				String blenderSel = store.getString("blender_options");
-				if (sel.equals("Python")) {
-
-					if (selectionConsole.equals("Python")) {
-						ConsolePageParticipant.pipeInputToConsole("execfile('" + fileproper + "')", true, true);
-					} else {
-						System.out.println("Please start the \"Native Python\" Shell in the Bio7 console!");
-					}
-				}
-
-				else if (sel.equals("Blender")) {
-					if (selectionConsole.equals("shell")) {
-						String path = store.getString("path_blender");
-						String blenderArgs = store.getString("blender_args");
-						if (blenderSel.equals("pscript")) {
-
-							ConsolePageParticipant.pipeInputToConsole(
-									"\"" + path + "/blender\"" + " " + blenderArgs + " -P " + fileproper, true, true);
-						} else if (blenderSel.equals("interactive")) {
-
-							ConsolePageParticipant.pipeInputToConsole(
-									"\"" + path + "/blender\"" + " " + blenderArgs + " --python-console", true, true);
-							ConsolePageParticipant.pipeInputToConsole(store.getString("before_script_blender"), true,
-									true);
-							ConsolePageParticipant.pipeInputToConsole(
-									"exec(compile(open('" + fileproper + "').read(),'" + fileproper + "', 'exec'))",
-									true, true);
-							ConsolePageParticipant.pipeInputToConsole(store.getString("after_script_blender"), true,
-									true);
-						} else {
-							ConsolePageParticipant.pipeInputToConsole("\"" + path + "/blender\"" + " " + blenderArgs,
-									true, true);
-						}
-					} else {
-						System.out.println("Please start the Shell in the Bio7 Console\n"
-								+ "to interpret the Python script in Blender!");
-					}
-				}
-
-			} else {
-				/* Normal execution of Jython! */
-				PythonInterpreter.interpretJob(null, fileproper);
-			}
+			/* The embedded Python or a Python process (preferences) */
+			com.eco.bio7.pybridge.PythonScripts.runFile(fileprop);
 
 		}
 		/* Interprets a R script! */

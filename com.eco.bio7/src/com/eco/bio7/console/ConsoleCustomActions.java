@@ -128,32 +128,6 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 			}
 		});
-		MenuItem menuItem8 = new MenuItem(fMenu, SWT.CASCADE);
-		menuItem8.setText("Jython Commands");
-		final Menu jythonScripts = new Menu(menuItem8);
-		menuItem8.setMenu(jythonScripts);
-		MenuItem jythonDel = new MenuItem(jythonScripts, SWT.NONE);
-
-		jythonDel.setText("Print Variables");
-
-		jythonDel.addSelectionListener(new SelectionListener() {
-
-			public void widgetSelected(SelectionEvent e) {
-				ScriptEngine se = ScriptEngineConnection.getScriptingEnginePython();
-				try {
-					se.eval("for name in vars().keys(): print(name)");
-				} catch (ScriptException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-
-			}
-
-			public void widgetDefaultSelected(SelectionEvent e) {
-
-			}
-		});
-
 		new MenuItem(fMenu, SWT.SEPARATOR);
 		MenuItem menuItem1 = new MenuItem(fMenu, SWT.PUSH);
 		menuItem1.setText("Reinitialize BeanShell");
@@ -181,20 +155,6 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 			}
 		});
-		MenuItem menuItem3 = new MenuItem(fMenu, SWT.PUSH);
-		menuItem3.setText("Reinitialize Jython");
-
-		menuItem3.addSelectionListener(new SelectionListener() {
-
-			public void widgetSelected(SelectionEvent e) {
-				ScriptEngineConnection.reinitializeJython();
-			}
-
-			public void widgetDefaultSelected(SelectionEvent e) {
-
-			}
-		});
-
 		MenuItem menuItem31 = new MenuItem(fMenu, SWT.PUSH);
 		menuItem31.setText("Reinitialize JavaScript");
 

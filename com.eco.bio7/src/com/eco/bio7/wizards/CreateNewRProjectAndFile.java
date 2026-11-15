@@ -64,9 +64,6 @@ public class CreateNewRProjectAndFile {
 					if (selection.equals("python")) {
 						fileMd = container.getFile(new Path("Untitled.py"));
 
-					} else if (selection.equals("jython")) {
-						fileMd = container.getFile(new Path("Untitled.py"));
-
 					} else if (selection.equals("r")) {
 						fileMd = container.getFile(new Path("Untitled.R"));
 					} else if (selection.equals("rmarkdown")) {
@@ -115,18 +112,6 @@ public class CreateNewRProjectAndFile {
 					});
 					monitor.worked(1);
 
-					if (selection.equals("python")) {
-
-						IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-						store.setValue("python_pipe", true);
-						System.out.println("Changed preferences and execution to Python Interpreter!");
-					} else if (selection.equals("jython")) {
-
-						IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-						store.setValue("python_pipe", false);
-						System.out.println("Changed preferences and execution to Jython Interpreter!");
-
-					}
 
 				} catch (CoreException e) {
 					// TODO Auto-generated catch block

@@ -73,6 +73,8 @@ public final class PythonChunkEvaluator {
 			PyValue status = py.eval(String.format(java.util.Locale.ROOT, "__import__('_bio7chunk').run(*_bio7_args, %d, %d, %d, %s)", widthPoints, heightPoints, dpi,
 					embed ? "True" : "False"));
 			py.exec("del _bio7_args");
+			/* The progress bars of the chunk (bio7.progress, tqdm) end with it */
+			PythonJobs.endTasks();
 			boolean error = status instanceof PyValue.Str s && "error".equals(s.asString());
 			Path outFile = dir.resolve("out.txt");
 			String text = Files.exists(outFile) ? Files.readString(outFile, StandardCharsets.UTF_8) : "";

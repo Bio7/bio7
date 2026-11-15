@@ -23,7 +23,6 @@ import com.eco.bio7.compile.GroovyInterpreter;
 import com.eco.bio7.compile.JavaScriptInterpreter;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.BeanShellInterpreter;
-import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.jobs.ImageMacroWorkspaceJob;
 import com.eco.bio7.rbridge.RServe;
@@ -97,7 +96,7 @@ public class ExecuteScriptAction extends Action {
 
 		} else if (file.getName().endsWith(".py")) {
 
-			PythonInterpreter.interpretJob(null, file.toString());
+			com.eco.bio7.pybridge.PythonScripts.runFile(file.toString());
 
 		} else if (file.getName().endsWith(".js")) {
 

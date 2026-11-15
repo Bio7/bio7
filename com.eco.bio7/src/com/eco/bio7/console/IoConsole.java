@@ -79,7 +79,7 @@ public class IoConsole extends IOConsole{
 						if(input==null)  break;
 						else {					
 							
-							ScriptEngine gs = ScriptEngineConnection.getScriptingEnginePython();
+							ScriptEngine gs = ScriptEngineConnection.getScriptingEngineGroovy();
 							try {
 								String out=(String)gs.eval(input);
 							} catch (ScriptException e) {

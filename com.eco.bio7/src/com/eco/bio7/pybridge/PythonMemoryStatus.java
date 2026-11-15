@@ -57,7 +57,23 @@ public final class PythonMemoryStatus {
 			return;
 		}
 		manager = statusLine;
-		item = new StatusLineContributionItem("com.eco.bio7.pythonMemory", 15);
+		item = new StatusLineContributionItem("com.eco.bio7.pythonMemory", 18) {
+			@Override
+			public void fill(org.eclipse.swt.widgets.Composite parent) {
+				int before = parent.getChildren().length;
+				super.fill(parent);
+				/* The created controls: a double-click stops the running Python code */
+				org.eclipse.swt.widgets.Control[] children = parent.getChildren();
+				for (int i = before; i < children.length; i++) {
+					children[i].setToolTipText("The memory of the embedded Python. While Python runs: double-click to stop (interrupt)");
+					children[i].addListener(org.eclipse.swt.SWT.MouseDoubleClick, e -> {
+						if (PythonJobs.runningLabel() != null) {
+							EmbeddedPython.interrupt();
+						}
+					});
+				}
+			}
+		};
 		item.setVisible(false);
 		statusLine.add(item);
 		timer = Executors.newSingleThreadScheduledExecutor(r -> {
@@ -81,6 +97,13 @@ public final class PythonMemoryStatus {
 			if (py.getActivity() != lastActivity) {
 				dirty = true;
 			}
+			/* A script or a long console line: the running time (double-click stops it) */
+			String running = PythonJobs.runningLabel();
+			if (running != null && PythonJobs.runningMillis() >= PythonJobs.RUN_DELAY) {
+				dirty = true;
+				showText("Py: running " + PythonJobs.time(PythonJobs.runningMillis()));
+				return;
+			}
 			if (py.isBusy()) {
 				dirty = true;
 				return;
@@ -102,6 +125,23 @@ public final class PythonMemoryStatus {
 		} catch (RuntimeException | LinkageError e) {
 			/* The workbench is closing (or the embedded Python is not available) */
 		}
+	}
+
+	private static void showText(String text) {
+		Display display = PlatformUI.getWorkbench().getDisplay();
+		if (display == null || display.isDisposed()) {
+			return;
+		}
+		display.asyncExec(() -> {
+			if (item == null || manager == null || text.equals(item.getText()) && item.isVisible()) {
+				return;
+			}
+			item.setText(text);
+			if (!item.isVisible()) {
+				item.setVisible(true);
+				manager.update(true);
+			}
+		});
 	}
 
 	private static void show(Double mb) {

@@ -14,22 +14,12 @@ package com.eco.bio7.scriptengines;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import org.python.core.Options;
 
 /**
  * @author Bio7 A class to return the Java Scripting connections of Bio7.
  */
 public class ScriptEngineConnection {
-	static {
-		/*
-		 * Jython Workaround from:
-		 * http://python.6.x6.nabble.com/2-7b3-JSR-223-ScriptEngine-null-b2-works-
-		 * td5074755.html
-		 */
-		Options.importSite = false;
-	}
 	private static ScriptEngine groovyShell = new ScriptEngineManager().getEngineByName("groovy");
-	private static ScriptEngine scriptingEnginePython = new ScriptEngineManager().getEngineByName("python");
 	private static ScriptEngine scriptingEngineBeanShell = new ScriptEngineManager().getEngineByName("beanshell");
 	private static ScriptEngine scriptingEngineJavaScript = new ScriptEngineManager().getEngineByName("Nashorn");
 
@@ -41,15 +31,6 @@ public class ScriptEngineConnection {
 	public static ScriptEngine getScriptingEngineGroovy() {
 
 		return groovyShell;
-	}
-
-	/**
-	 * Get the current Bio7 Jython connection.
-	 * 
-	 * @return the Jython connection
-	 */
-	public static ScriptEngine getScriptingEnginePython() {
-		return scriptingEnginePython;
 	}
 
 	/**
@@ -85,14 +66,7 @@ public class ScriptEngineConnection {
 	}
 
 	/**
-	 * Reinitializes the Jython interpreter.
-	 */
-	public static void reinitializeJython() {
-		scriptingEnginePython = new ScriptEngineManager().getEngineByName("python");
-	}
-
-	/**
-	 * Reinitializes the Jython interpreter.
+	 * Reinitializes the JavaScript interpreter.
 	 */
 	public static void reinitializeJavaScript() {
 		scriptingEngineJavaScript = new ScriptEngineManager().getEngineByName("JavaScript");

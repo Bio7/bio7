@@ -17,12 +17,12 @@ import org.eclipse.ui.ide.IDE;
 
 
 
-public class JythonNewWizard extends Wizard implements INewWizard {
-	private JythonNewWizardPage page;
+public class PythonNewWizard extends Wizard implements INewWizard {
+	private PythonNewWizardPage page;
 	private ISelection selection;
 
 	
-	public JythonNewWizard() {
+	public PythonNewWizard() {
 		super();
 		setNeedsProgressMonitor(true);
 	}
@@ -30,7 +30,7 @@ public class JythonNewWizard extends Wizard implements INewWizard {
 	
 
 	public void addPages() {
-		page = new JythonNewWizardPage(selection);
+		page = new PythonNewWizardPage(selection);
 		addPage(page);
 	}
 
@@ -106,7 +106,7 @@ public class JythonNewWizard extends Wizard implements INewWizard {
 	private InputStream openContentStream() {
 		
 		String linefeed="\r\n";
-		String comment="# Please enter your Jython code here!";
+		String comment="# Please enter your Python code here!";
 		
 		String contents =comment+linefeed;
 			

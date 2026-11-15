@@ -31,19 +31,19 @@
             category="prefpython"
             class="com.eco.bio7.reditor.preferences.TemplatesPreferencePage"
             id="org.eclipse.ui.examples.templateeditor.preferencepage"
-            name="Template Editor Jython/Python">
+            name="Template Editor Python">
       </page>
       <page
             category="com.eco.bio7.preferences.Bio7PreferencePage"
             class="com.eco.bio7.reditor.preferences.WorkbenchPreferencePython"
             id="prefpython"
-            name="Preferences Jython/Python"/>
+            name="Preferences Python Editor"/>
    </extension>
 
    <extension
          point="org.eclipse.ui.editors.templates">
       <contextType
-            name="Jython Templates"
+            name="Python Templates"
             class="com.eco.bio7.reditor.preferences.template.PythonContextType"
             id="py">
       </contextType>

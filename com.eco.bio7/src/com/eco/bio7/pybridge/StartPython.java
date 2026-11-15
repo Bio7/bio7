@@ -43,12 +43,11 @@ public class StartPython extends Action {
 		var store = Bio7Plugin.getDefault().getPreferenceStore();
 		if (!EmbeddedPython.isSelected()) {
 			boolean enable = MessageDialog.openQuestion(window.getShell(), "Python",
-					"The embedded Python is not selected in the preferences (Python is used as a separate process or Jython).\n\nUse the embedded Python?");
+					"The embedded Python is not selected in the preferences (Python is used as a separate process).\n\nUse the embedded Python?");
 			if (!enable) {
 				ConsoleInterpreterAction.getInstance().startPython();
 				return;
 			}
-			store.setValue("python_pipe", true);
 			store.setValue(EmbeddedPython.PREF_EMBEDDED, true);
 		}
 		ConsoleInterpreterAction.getInstance().startPython();

@@ -47,7 +47,6 @@ import com.eco.bio7.compile.BeanShellInterpreter;
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.GroovyInterpreter;
 import com.eco.bio7.compile.JavaScriptInterpreter;
-import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.jobs.ImageMacroWorkspaceJob;
 import com.eco.bio7.preferences.PreferenceConstants;
@@ -217,7 +216,7 @@ public class ScriptAction extends Action implements IMenuCreator {
 
 				} else if (file.getName().endsWith(".py")) {
 
-					PythonInterpreter.interpretJob(null, file.toString());
+					com.eco.bio7.pybridge.PythonScripts.runFile(file.toString());
 				} else if (file.getName().endsWith(".js")) {
 
 					JavaScriptInterpreter.interpretJob(null, file.toString());

@@ -3,8 +3,6 @@ package com.eco.bio7.preferences;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
-import org.eclipse.jface.preference.RadioGroupFieldEditor;
-import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -29,7 +27,6 @@ public class Python extends FieldEditorPreferencePage implements IWorkbenchPrefe
 		}
 	}
 
-	private CheckField usePython;
 	private CheckField python3;
 	private DirectoryFieldEditor pythonPath;
 
@@ -51,13 +48,11 @@ public class Python extends FieldEditorPreferencePage implements IWorkbenchPrefe
 		addField(spacer1);
 		
 		{
-			LabelFieldEditor labelFieldEditor = new LabelFieldEditor("Python/Blender:", getFieldEditorParent());
-			labelFieldEditor.setLabelText("Python/Blender:");
+			LabelFieldEditor labelFieldEditor = new LabelFieldEditor("Python:", getFieldEditorParent());
+			labelFieldEditor.setLabelText("Python:");
 			addField(labelFieldEditor);
 		}
 		
-		usePython = new CheckField("python_pipe", "Use Python (instead Jython)", getFieldEditorParent());
-		addField(usePython);
 		addField(new BooleanFieldEditor("IMAGE_METHODS_CLOSE_VIEWS", "Image-Methods: the switch R/Python closes the views of the other language (R-Shell, packages)",
 				BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		addField(new BooleanFieldEditor("python_embedded", "Embedded Python (in the Bio7 process: data transfer, plots; a change of the Python needs a restart)",
@@ -65,7 +60,6 @@ public class Python extends FieldEditorPreferencePage implements IWorkbenchPrefe
 		addField(new BooleanFieldEditor("python_process_extra", "Execute Editor Source in Seperate Python Process (not sent to Bio7 Python Shell)", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		python3 = new CheckField("python_3x", "Python 3 is used to evaluate scripts (only important if sent to Bio7 Python Shell)", getFieldEditorParent());
 		addField(python3);
-		addField(new RadioGroupFieldEditor("python_select", "Select Interpreter", 1, new String[][] { { "Python", "Python" }, { "Blender", "Blender" } }, getFieldEditorParent(), false));
 		pythonPath = new DirectoryFieldEditor("python_pipe_path", "Path Python", getFieldEditorParent());
 		addField(pythonPath);
 		addField(new ActionButtonFieldEditor("Find Python on this computer:", "Detect Python...", this::detectPython, getFieldEditorParent()));
@@ -73,20 +67,8 @@ public class Python extends FieldEditorPreferencePage implements IWorkbenchPrefe
 			com.eco.bio7.pybridge.PythonPackagesDialog.open(getShell());
 			/* A new Bio7 environment may have been selected */
 			pythonPath.load();
-			usePython.load();
 			python3.load();
 		}, getFieldEditorParent()));
-		addField(new LabelFieldEditor("Blender:", getFieldEditorParent()));
-		addField(new DirectoryFieldEditor("path_blender", "Path Blender", getFieldEditorParent()));
-
-		RadioGroupFieldEditor radioGroupFieldEditor = new RadioGroupFieldEditor("blender_options", "Blender Default Options", 1, new String[][] { { "None (-)", "pnone" },{ "Interactive Shell (--python-console)", "interactive" },
-				{ "Python Script (-P)", "pscript" } }, getFieldEditorParent(), false);
-		
-		addField(radioGroupFieldEditor);
-		addField(new StringFieldEditor("blender_args", "Blender Arguments", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
-
-		addField(new MultiLineTextFieldEditor("before_script_blender", "Before Script Execution (Interactive Shell)", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
-		addField(new MultiLineTextFieldEditor("after_script_blender", "After Script Execution (Interactive Shell)", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
 		SpacerFieldEditor spacer2 = new SpacerFieldEditor(getFieldEditorParent());
 		addField(spacer2);
 	}
@@ -117,10 +99,9 @@ public class Python extends FieldEditorPreferencePage implements IWorkbenchPrefe
 			selected = (com.eco.bio7.console.PythonFinder.Found) dialog.getResult()[0];
 		}
 		pythonPath.setStringValue(selected.folder());
-		usePython.select(true);
 		python3.select(true);
 		org.eclipse.jface.dialogs.MessageDialog.openInformation(getShell(), "Detect Python",
-				selected.version() + " was selected:\n" + selected.executable() + "\n\n'Use Python (instead Jython)' is enabled. Press 'Apply' to keep it.");
+				selected.version() + " was selected:\n" + selected.executable() + "\n\nPress 'Apply' to keep it.");
 	}
 
 	@Override

@@ -123,7 +123,6 @@ import com.eco.bio7.compile.BeanShellInterpreter;
 import com.eco.bio7.compile.CompileClassAndMultipleClasses;
 import com.eco.bio7.compile.GroovyInterpreter;
 import com.eco.bio7.compile.JavaScriptInterpreter;
-import com.eco.bio7.compile.PythonInterpreter;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.jobs.ImageMacroWorkspaceJob;
@@ -2603,7 +2602,7 @@ public class RShellView extends ViewPart {
 
 				} else if (file.getName().endsWith(".py")) {
 
-					PythonInterpreter.interpretJob(null, file.toString());
+					com.eco.bio7.pybridge.PythonScripts.runFile(file.toString());
 				} else if (file.getName().endsWith(".js")) {
 
 					JavaScriptInterpreter.interpretJob(null, file.toString());

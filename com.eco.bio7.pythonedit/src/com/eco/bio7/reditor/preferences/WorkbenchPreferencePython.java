@@ -35,7 +35,7 @@ public class WorkbenchPreferencePython extends FieldEditorPreferencePage impleme
 		super(GRID);
 		store = PythonEditorPlugin.getDefault().getPreferenceStore();
 		setPreferenceStore(PythonEditorPlugin.getDefault().getPreferenceStore());
-		setDescription("Bio7 Python/Jython Editor");
+		setDescription("Bio7 Python Editor");
 	}
 
 	public void createFieldEditors() {
