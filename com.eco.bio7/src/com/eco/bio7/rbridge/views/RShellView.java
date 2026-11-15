@@ -3000,10 +3000,42 @@ public class RShellView extends ViewPart {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		boolean updateRShellObjects = store.getBoolean("UPDATE_VAR_RSHELL");
 		if (updateRShellObjects == true) {
-
-			displayRObjectsInternal();
+			/*
+			 * An automatic update (e.g., after a transfer from Python, several in a row):
+			 * no message if R is busy (also with a former update), it follows when R is
+			 * free. Several requests meanwhile are one update.
+			 */
+			if (!refreshPending) {
+				refreshPending = true;
+				Display display = Util.getDisplay();
+				display.asyncExec(() -> refreshWhenFree(display, AUTO_REFRESH_TRIES));
+			}
 		}
 
+	}
+
+	/* An automatic update waits for R at most AUTO_REFRESH_TRIES * AUTO_REFRESH_DELAY ms */
+	private static final int AUTO_REFRESH_TRIES = 120;
+	private static final int AUTO_REFRESH_DELAY = 500;
+	private volatile boolean refreshPending;
+
+	/* UI thread */
+	private void refreshWhenFree(Display display, int tries) {
+		if (listShell == null || listShell.isDisposed()) {
+			refreshPending = false;
+			return;
+		}
+		if (RState.isBusy()) {
+			if (tries > 0) {
+				display.timerExec(AUTO_REFRESH_DELAY, () -> refreshWhenFree(display, tries - 1));
+			} else {
+				refreshPending = false;
+			}
+			return;
+		}
+		/* A request from now on needs a new update (this one may list the objects before it) */
+		refreshPending = false;
+		displayRObjectsInternal();
 	}
 
 	/*

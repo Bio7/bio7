@@ -61,7 +61,8 @@ public class MarkdownConfiguration extends TextSourceViewerConfiguration {
 	}
 
 	public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
-		return new String[] { IDocument.DEFAULT_CONTENT_TYPE, MarkdownPartitionScanner.MARKDOWN_R_CHUNK, MarkdownPartitionScanner.MARKDOWN_TAG,MarkdownPartitionScanner.MARKDOWN_OTHER_CHUNK};
+		return new String[] { IDocument.DEFAULT_CONTENT_TYPE, MarkdownPartitionScanner.MARKDOWN_R_CHUNK, MarkdownPartitionScanner.MARKDOWN_TAG,MarkdownPartitionScanner.MARKDOWN_OTHER_CHUNK,
+				MarkdownPartitionScanner.MARKDOWN_PYTHON_CHUNK};
 	}
 
 	public ITextDoubleClickStrategy getDoubleClickStrategy(ISourceViewer sourceViewer, String contentType) {
@@ -204,6 +205,16 @@ public class MarkdownConfiguration extends TextSourceViewerConfiguration {
 		DefaultDamagerRepairer other = new DefaultDamagerRepairer(comment);
 		reconciler.setDamager(other, MarkdownPartitionScanner.MARKDOWN_OTHER_CHUNK);
 		reconciler.setRepairer(other, MarkdownPartitionScanner.MARKDOWN_OTHER_CHUNK);
+
+		/* Python chunks: the syntax colors of the Python editor (else as other code blocks) */
+		DefaultDamagerRepairer python = other;
+		try {
+			python = new DefaultDamagerRepairer(com.eco.bio7.pythonedit.PythonEditorPlugin.getDefault().getScriptCodeScanner());
+		} catch (LinkageError | RuntimeException ex) {
+			/* The Python editor is not installed */
+		}
+		reconciler.setDamager(python, MarkdownPartitionScanner.MARKDOWN_PYTHON_CHUNK);
+		reconciler.setRepairer(python, MarkdownPartitionScanner.MARKDOWN_PYTHON_CHUNK);
 
 		/*
 		 * NonRuleBasedDamagerRepairer ndr = new NonRuleBasedDamagerRepairer(new TextAttribute(new Color(Display.getDefault(), rgbkey2), null, isBold("BOLD_COLOURKEY2"))); reconciler.setDamager(ndr,

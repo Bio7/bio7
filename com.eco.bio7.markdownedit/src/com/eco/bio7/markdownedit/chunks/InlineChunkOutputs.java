@@ -51,8 +51,11 @@ import org.eclipse.ui.texteditor.ITextEditor;
  */
 public final class InlineChunkOutputs {
 
-	/* The opening fence of an R chunk: ```{r}, ```{r name, echo = FALSE}, ```{R} */
-	private static final Pattern START = Pattern.compile("^\\s*(`{3,})\\s*\\{\\s*[rR](?:[\\s,}].*)?$");
+	/*
+	 * The opening fence of an R or Python chunk: ```{r}, ```{r name, echo =
+	 * FALSE}, ```{R}, ```{python}, ```{python name}
+	 */
+	private static final Pattern START = Pattern.compile("^\\s*(`{3,})\\s*\\{\\s*([rR]|python)(?:[\\s,}].*)?$");
 	private static final Pattern END = Pattern.compile("^\\s*`{3,}\\s*$");
 	/* The bars follow the document after a pause of typing */
 	private static final int REFRESH_DELAY = 400;
@@ -75,8 +78,8 @@ public final class InlineChunkOutputs {
 		refresh();
 	};
 
-	/** A chunk: its code and the lines of its fences. */
-	record Chunk(String code, int startLine, int endLine) {
+	/** A chunk: its code, the lines of its fences and the language (R or Python). */
+	record Chunk(String code, int startLine, int endLine, boolean python) {
 	}
 
 	private InlineChunkOutputs(ISourceViewer viewer) {
@@ -196,7 +199,7 @@ public final class InlineChunkOutputs {
 		return o;
 	}
 
-	/** Runs the R chunk at the cursor. UI thread. */
+	/** Runs the R or Python chunk at the cursor. UI thread. */
 	public void runChunkAtCursor(ITextSelection selection) {
 		Chunk chunk = chunkAt(viewer.getDocument(), selection.getStartLine());
 		if (chunk == null) {
@@ -206,7 +209,7 @@ public final class InlineChunkOutputs {
 		run(List.of(chunk));
 	}
 
-	/** Runs all R chunks of the document (in order). UI thread. */
+	/** Runs all R and Python chunks of the document (in order). UI thread. */
 	public void runAll() {
 		List<Chunk> chunks = allChunks(viewer.getDocument());
 		if (!chunks.isEmpty()) {
@@ -297,7 +300,7 @@ public final class InlineChunkOutputs {
 		for (Chunk c : chunks) {
 			StringBuilder above = new StringBuilder();
 			for (Chunk a : all) {
-				if (a.endLine() < c.startLine()) {
+				if (a.endLine() < c.startLine() && a.python() == c.python()) {
 					above.append(a.code()).append('\n');
 				}
 			}
@@ -320,7 +323,7 @@ public final class InlineChunkOutputs {
 		}
 		refresh();
 		int[] size = plotSize();
-		Job job = new Job("R Markdown Chunk") {
+		Job job = new Job("Markdown Chunk") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				for (int i = 0; i < chunks.size(); i++) {
@@ -329,7 +332,8 @@ public final class InlineChunkOutputs {
 						continue;
 					}
 					long start = System.nanoTime();
-					RChunks.Output result = withHint(RChunks.evaluate(chunks.get(i).code(), size[0], size[1]), codeAbove.get(i));
+					Chunk chunk = chunks.get(i);
+					RChunks.Output result = withHint(RChunks.evaluate(chunk.code(), chunk.python(), size[0], size[1]), codeAbove.get(i), chunk.python());
 					/* A chunk without printed output (e.g., assignments, library()): it was run */
 					RChunks.Output out = result.text().isBlank() && result.plots().isEmpty() && !result.error()
 							? new RChunks.Output(String.format(java.util.Locale.ROOT, "\u2713 Done (%.1f s)", (System.nanoTime() - start) / 1e9), List.of(), false)
@@ -366,9 +370,21 @@ public final class InlineChunkOutputs {
 	 * An object which is not found but created in a chunk above: the hint to run
 	 * the chunks above first
 	 */
-	private static RChunks.Output withHint(RChunks.Output out, String codeAbove) {
+	private static RChunks.Output withHint(RChunks.Output out, String codeAbove, boolean python) {
 		if (!out.error() || out.text() == null) {
 			return out;
+		}
+		if (python) {
+			Matcher m = Pattern.compile("NameError: name '([^']+)' is not defined").matcher(out.text());
+			if (!m.find()) {
+				return out;
+			}
+			String q = Pattern.quote(m.group(1));
+			/* An assignment, def, class, import or a for loop variable at the start of a line */
+			boolean createdAbove = Pattern.compile("(?m)^\\s*(?:" + q + "\\s*(?:,[^=\\n]*)?(?:=(?!=)|[+\\-*/]=)|(?:def|class)\\s+" + q + "\\b|(?:from\\s+\\S+\\s+)?import\\s.*\\b" + q
+					+ "\\b|for\\s+.*\\b" + q + "\\b.*\\sin\\s)").matcher(codeAbove).find();
+			return createdAbove ? new RChunks.Output(out.text().stripTrailing() + "\nHint: '" + m.group(1) + "' is created in a chunk above: run it first (\u25B6\u25B6 Run Above).",
+					out.plots(), true) : out;
 		}
 		Matcher m = Pattern.compile("(?:object|Objekt) '([^']+)' (?:not found|nicht gefunden)").matcher(out.text());
 		if (!m.find()) {
@@ -670,7 +686,7 @@ public final class InlineChunkOutputs {
 		}
 	}
 
-	/* The R chunk which contains the line (also its fences) */
+	/* The R or Python chunk which contains the line (also its fences) */
 	static Chunk chunkAt(IDocument doc, int line) {
 		for (Chunk c : allChunks(doc)) {
 			if (line >= c.startLine() && line <= c.endLine()) {
@@ -680,13 +696,21 @@ public final class InlineChunkOutputs {
 		return null;
 	}
 
+	/* The R chunks (the code analysis and completion of R) */
+	static List<Chunk> rChunks(IDocument doc) {
+		List<Chunk> chunks = allChunks(doc);
+		chunks.removeIf(Chunk::python);
+		return chunks;
+	}
+
 	static List<Chunk> allChunks(IDocument doc) {
 		List<Chunk> chunks = new ArrayList<>();
 		int n = doc.getNumberOfLines();
 		try {
 			for (int i = 0; i < n; i++) {
 				String text = line(doc, i);
-				if (START.matcher(text).matches()) {
+				Matcher start = START.matcher(text);
+				if (start.matches()) {
 					StringBuilder code = new StringBuilder();
 					int j = i + 1;
 					for (; j < n; j++) {
@@ -700,10 +724,10 @@ public final class InlineChunkOutputs {
 						/* Not closed */
 						break;
 					}
-					chunks.add(new Chunk(code.toString(), i, j));
+					chunks.add(new Chunk(code.toString(), i, j, start.group(2).equals("python")));
 					i = j;
 				} else if (text.trim().startsWith("```") && !END.matcher(text).matches()) {
-					/* Another fenced block (not R): skipped to its end */
+					/* Another fenced block (not R or Python): skipped to its end */
 					for (int j = i + 1; j < n; j++) {
 						if (END.matcher(line(doc, j)).matches()) {
 							i = j;

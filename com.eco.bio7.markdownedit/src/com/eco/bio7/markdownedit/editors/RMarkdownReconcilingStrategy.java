@@ -112,6 +112,9 @@ public class RMarkdownReconcilingStrategy implements IReconcilingStrategy, IReco
 			if (selSource.contains("```{r") || selSource.contains("```{R")) {
 				methods.push(new MarkdownEditorOutlineNode("{R Chunk} L"+(i + 1), i + 1, "RMarkdown", markdownEditor.baseNode));
 			}
+			else if (selSource.contains("```{python")) {
+				methods.push(new MarkdownEditorOutlineNode("{Python Chunk} L"+(i + 1), i + 1, "RMarkdown", markdownEditor.baseNode));
+			}
 			else if(selSource.contains("#")){
 				methods.push(new MarkdownEditorOutlineNode("Paragraph L+(i + 1)", i + 1, "RMarkdown", markdownEditor.baseNode));
 			}

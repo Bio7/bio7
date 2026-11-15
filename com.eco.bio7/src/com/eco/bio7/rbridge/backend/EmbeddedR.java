@@ -198,6 +198,12 @@ public final class EmbeddedR {
 		} catch (RException | LinkageError e) {
 			print("The plot devices could not be registered: " + e.getMessage() + "\n", true);
 		}
+		/* The Python chunks of knitr/rmarkdown in the embedded Python of Bio7 (without reticulate) */
+		try {
+			com.eco.bio7.pybridge.PythonKnitEngine.install(session);
+		} catch (LinkageError e) {
+			/* The embedded Python is not installed */
+		}
 		RServe.setRrunning(true);
 		RConfig.config(backend);
 		print("Embedded R " + session.version() + " in " + home + "\n", false);

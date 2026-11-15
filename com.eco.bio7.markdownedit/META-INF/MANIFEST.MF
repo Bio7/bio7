@@ -19,7 +19,9 @@ Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: libs/flexmark-all-0.28.6-lib.jar,
  libs/autolink-0.7.0.jar,
  bin/
-Import-Package: org.eclipse.ui.views.contentoutline
+Import-Package: org.eclipse.ui.views.contentoutline,
+ com.eco.bio7.pythonedit;resolution:=optional,
+ com.eco.bio7.pythoneditors;resolution:=optional
 Export-Package: com.eco.bio7.markdownedit,
  com.eco.bio7.markdownedit.chunks,
  com.eco.bio7.markdownedit.actions,

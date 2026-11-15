@@ -14,7 +14,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 /**
- * The evaluation of an R chunk of the markdown editor (the output is shown
+ * The evaluation of an R or Python chunk of the markdown editor (the output is shown
  * inline below the chunk). Bio7 installs the evaluator (the R bridge is in another bundle).
  */
 public final class RChunks {
@@ -37,6 +37,7 @@ public final class RChunks {
 	}
 
 	private static volatile Evaluator evaluator;
+	private static volatile Evaluator pythonEvaluator;
 
 	private RChunks() {
 	}
@@ -46,10 +47,15 @@ public final class RChunks {
 		evaluator = e;
 	}
 
-	static Output evaluate(String code, int widthPoints, int heightPoints) {
-		Evaluator e = evaluator;
+	/** Installs the evaluator of the Python chunks (```{python}, Bio7). */
+	public static void installPython(Evaluator e) {
+		pythonEvaluator = e;
+	}
+
+	static Output evaluate(String code, boolean python, int widthPoints, int heightPoints) {
+		Evaluator e = python ? pythonEvaluator : evaluator;
 		if (e == null) {
-			return new Output("R is not available.", List.of(), true);
+			return new Output(python ? "Python is not available." : "R is not available.", List.of(), true);
 		}
 		try {
 			return e.evaluate(code, widthPoints, heightPoints);

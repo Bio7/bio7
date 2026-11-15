@@ -836,6 +836,12 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		com.eco.bio7.pybridge.PythonMemoryStatus.install(statusLineMgr);
 		/* The Python editor: the Python for the code analysis and the variables of the running Python */
 		com.eco.bio7.pybridge.PythonEditorHooks.install();
+		/* The Python chunks of the markdown editor (```{python}) */
+		try {
+			com.eco.bio7.pybridge.PythonChunkEvaluator.install();
+		} catch (LinkageError e) {
+			/* The embedded Python is not installed */
+		}
 
 	}
 

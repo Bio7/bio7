@@ -61,7 +61,7 @@ public final class EmbeddedPython {
 	}
 
 	/* The plugin of the embedded Python is optional */
-	private static boolean isAvailable() {
+	static boolean isAvailable() {
 		try {
 			Class.forName("com.eco.bio7.pyffm.PySession");
 			return true;

@@ -22,14 +22,16 @@ public class RMarkdownCompletionProcessor implements IContentAssistProcessor {
 
 		// IDocument document = viewer.getDocument();
 
-		ICompletionProposal[] result = new ICompletionProposal[33];
-		IContextInformation[] resContext=new IContextInformation[33];
+		ICompletionProposal[] result = new ICompletionProposal[35];
+		IContextInformation[] resContext=new IContextInformation[35];
 
 		String[] textContext = {"```{r}"+System.lineSeparator()+System.lineSeparator()+"```",
 				"```{r echo=FALSE}"+System.lineSeparator()+System.lineSeparator()+"```" ,
 				"```{r eval=FALSE}"+System.lineSeparator()+System.lineSeparator()+"```" ,
 				"```{r}"+System.lineSeparator()+"source('myFile.R')"+System.lineSeparator()+"```",
 				"```{r}"+System.lineSeparator()+"source(paste(getwd(),'myFile.R',sep=\"/\"))"+System.lineSeparator()+"```",
+				"```{python}"+System.lineSeparator()+System.lineSeparator()+"```",
+				"```{python}"+System.lineSeparator()+"import matplotlib.pyplot as plt"+System.lineSeparator()+System.lineSeparator()+"```",
 				"#",
 				"##",
 				"###",
@@ -72,6 +74,8 @@ public class RMarkdownCompletionProcessor implements IContentAssistProcessor {
 				"R markdown section without evaluation and including of results",
 				"R markdown section with a referenced R file",
 				"R markdown section with a referenced R file from the current working directory",
+				"Python markdown section (embedded Python of Bio7)",
+				"Python markdown section with matplotlib",
 				"Header 1",
 				"Header 2",
 				"Header 3",

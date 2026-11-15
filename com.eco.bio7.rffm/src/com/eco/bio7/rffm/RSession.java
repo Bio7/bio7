@@ -85,6 +85,8 @@ public final class RSession implements AutoCloseable {
 	private Convert convert;
 	private DeviceBridge devices;
 	private MemorySegment deviceCallPointer;
+	private MemorySegment javaCallPointer;
+	private final Map<Integer, RFunction> functions = new java.util.concurrent.ConcurrentHashMap<>();
 	private String version;
 
 	private RSession(RStartOptions options) {
@@ -445,6 +447,18 @@ public final class RSession implements AutoCloseable {
 			    environment(f) <- env
 			    assign(name, f, envir = env)
 			  }
+			  e$defineFunction <- function(name, id, ptr) {
+			    env <- e$deviceEnv()
+			    assign(".javaCall", ptr, envir = env)
+			    f <- function(...) {
+			      r <- .Call(.javaCall, ID, list(...))
+			      if (inherits(r, "bio7JavaError")) stop(unclass(r), call. = FALSE)
+			      r
+			    }
+			    body(f) <- do.call(substitute, list(body(f), list(ID = as.integer(id))))
+			    environment(f) <- env
+			    assign(name, f, envir = env)
+			  }
 			  e$disableQuit <- function() {
 			    f <- function(save = "default", status = 0, runLast = TRUE)
 			      stop("quit() is not available in embedded R: please close R in the application", call. = FALSE)
@@ -474,7 +488,7 @@ public final class RSession implements AutoCloseable {
 		helperEnv = env;
 		c.unprotect(2);
 		for (String name : new String[] { "evalString", "evalPrint", "consoleParse", "parseError", "assign", "get", "alloc", "idle", "replay", "defineDevice",
-				"disableQuit", "historyEnable", "historyMove" }) {
+				"defineFunction", "disableQuit", "historyEnable", "historyMove" }) {
 			MemorySegment f = c.findVar(c.install(name), env);
 			c.preserve(f);
 			helpers.put(name, f);
@@ -868,6 +882,98 @@ public final class RSession implements AutoCloseable {
 			} catch (Throwable t2) {
 				return c.nil;
 			}
+		}
+	}
+
+	/* ---------------- Calls from R into Java ---------------- */
+
+	/**
+	 * A function of Java called from R (see {@link RSession#registerFunction}): the
+	 * arguments of the call in R, the result for R (null: NULL). An exception
+	 * becomes an error in R.
+	 */
+	@FunctionalInterface
+	public interface RFunction {
+		RValue call(List<RValue> args) throws Exception;
+	}
+
+	/**
+	 * Defines a function in R (in the attached environment "bio7ffm") which calls
+	 * Java: name(...) passes its arguments to the function. The function runs in
+	 * another thread; meanwhile R runs the calls of other threads (e.g., the
+	 * function may evaluate R code with this session). Console input waits.
+	 */
+	public void registerFunction(String rFunctionName, RFunction function) throws RException {
+		call(() -> {
+			if (javaCallPointer == null) {
+				MemorySegment stub = stub("javaCall", FunctionDescriptor.of(ADDRESS, ADDRESS, ADDRESS));
+				javaCallPointer = c.makeExternalPtr(stub, c.install("native symbol"));
+				c.preserve(javaCallPointer);
+			}
+			int id = functions.size() + 1;
+			functions.put(id, function);
+			MemorySegment nm = c.protect(c.mkString(rFunctionName));
+			MemorySegment idv = c.protect(c.scalarInteger(id));
+			MemorySegment full = c.protect(c.lang4(helpers.get("defineFunction"), nm, idv, javaCallPointer));
+			MemorySegment r = c.tryEval(full, c.globalEnv, true);
+			c.unprotect(3);
+			if (r == null) {
+				throw new RException(errorMessage());
+			}
+			return null;
+		});
+	}
+
+	/* .Call of a function of Java (thread of R) */
+	MemorySegment javaCall(MemorySegment id, MemorySegment args) {
+		try {
+			RFunction f = functions.get(c.data(id, RNative.INTSXP).get(JAVA_INT, 0));
+			RValue a = convert.toJava(args);
+			List<RValue> list = a instanceof RValue.List l ? l.values() : List.of(a);
+			CompletableFuture<RValue> result = new CompletableFuture<>();
+			Thread worker = Thread.ofVirtual().name("R calls Java").start(() -> {
+				try {
+					result.complete(f.call(list));
+				} catch (Throwable t) {
+					result.completeExceptionally(t);
+				}
+			});
+			/* The calls of other threads (also of the function itself) run meanwhile; console input waits */
+			List<Runnable> deferred = new ArrayList<>();
+			while (!result.isDone()) {
+				Runnable task = tasks.poll(20, TimeUnit.MILLISECONDS);
+				if (task instanceof FutureTask<?>) {
+					task.run();
+				} else if (task != null) {
+					deferred.add(task);
+				}
+			}
+			tasks.addAll(deferred);
+			worker.join();
+			RValue v;
+			try {
+				v = result.get();
+			} catch (ExecutionException e) {
+				Throwable cause = e.getCause();
+				return javaError(cause.getMessage() == null ? cause.toString() : cause.getMessage());
+			}
+			return v == null ? c.nil : unprotected(convert.toR(v));
+		} catch (Throwable t) {
+			return javaError(String.valueOf(t));
+		}
+	}
+
+	/* toR returns the value protected: returned to R at once (no allocation before) */
+	private MemorySegment unprotected(MemorySegment x) {
+		c.unprotect(1);
+		return x;
+	}
+
+	private MemorySegment javaError(String message) {
+		try {
+			return unprotected(convert.toR(new RValue.Str(new String[] { message }, Map.of("class", new RValue.Str("bio7JavaError")))));
+		} catch (Throwable t) {
+			return c.nil;
 		}
 	}
 

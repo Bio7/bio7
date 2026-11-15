@@ -30,13 +30,13 @@ public final class RChunkCode {
 
 	/** Returns true if the document has an R chunk. */
 	public static boolean hasRChunks(IDocument doc) {
-		return !InlineChunkOutputs.allChunks(doc).isEmpty();
+		return !InlineChunkOutputs.rChunks(doc).isEmpty();
 	}
 
 	/** The [start, end) offsets of the code of each R chunk (the lines between the fences). */
 	public static List<int[]> ranges(IDocument doc) {
 		List<int[]> ranges = new java.util.ArrayList<>();
-		for (InlineChunkOutputs.Chunk c : InlineChunkOutputs.allChunks(doc)) {
+		for (InlineChunkOutputs.Chunk c : InlineChunkOutputs.rChunks(doc)) {
 			try {
 				if (c.endLine() > c.startLine() + 1) {
 					int start = doc.getLineOffset(c.startLine() + 1);
@@ -58,7 +58,7 @@ public final class RChunkCode {
 			char c = text.charAt(i);
 			out[i] = c == '\n' || c == '\r' ? c : ' ';
 		}
-		List<InlineChunkOutputs.Chunk> chunks = InlineChunkOutputs.allChunks(doc);
+		List<InlineChunkOutputs.Chunk> chunks = InlineChunkOutputs.rChunks(doc);
 		for (InlineChunkOutputs.Chunk c : chunks) {
 			try {
 				/* The lines between the fences */
