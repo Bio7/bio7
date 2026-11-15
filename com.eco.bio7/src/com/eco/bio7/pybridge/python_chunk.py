@@ -16,10 +16,10 @@ _main = sys.modules["__main__"]
 
 
 def _is_artist(v):
-    """A matplotlib object (e.g., the lines of plt.plot()): not printed."""
+    """A matplotlib or seaborn object (e.g., the lines of plt.plot(), a PairGrid): not printed."""
     if isinstance(v, (list, tuple)) and v:
         return all(_is_artist(x) for x in v)
-    return type(v).__module__.startswith("matplotlib")
+    return type(v).__module__.startswith(("matplotlib", "seaborn"))
 
 
 def _figures():
@@ -29,16 +29,21 @@ def _figures():
     return {m.num: m.canvas.figure for m in Gcf.get_all_fig_managers()}
 
 
-def run(code, folder, width, height, dpi):
+def run(code, folder, width, height, dpi, embed=False):
     """Runs the code of a chunk; returns 'error' or 'ok'.
 
     The output is written to folder/out.txt, the figures to folder/plotNNN.png
-    (width and height in points of the editor, dpi for HiDPI).
+    (width and height in points of the editor, dpi for HiDPI). Interactive
+    charts (show() or the last expression): embed=True (a rendered document)
+    folder/chartNNN.html, else shown in the browser view of Bio7.
     """
     bio7 = sys.modules["_bio7"]
     before = _figures()
     out = io.StringIO()
     error = False
+    charts = []
+    sink = bio7._html_sink
+    bio7._html_sink = lambda html, kind: charts.append((html, kind))
     # plt.show() in a chunk: the figure is shown below the chunk, not in the plot view
     show_all, render = bio7._show_all, bio7._render
     bio7._show_all = lambda *a, **k: None
@@ -53,7 +58,14 @@ def run(code, folder, width, height, dpi):
                 exec(compile(tree, "<chunk>", "exec"), _main.__dict__)
                 if last is not None:
                     value = eval(compile(last, "<chunk>", "eval"), _main.__dict__)
-                    if value is not None and not _is_artist(value):
+                    if type(value).__module__.startswith("plotnine") and hasattr(value, "draw"):
+                        # A plotnine plot (as in a notebook): drawn as matplotlib figure
+                        _main.__dict__["_"] = value
+                        value.draw()
+                    elif value is not None and bio7._is_chart(value):
+                        _main.__dict__["_"] = value
+                        bio7._show_html(bio7._html_of(value), type(value).__module__.split(".")[0])
+                    elif value is not None and not _is_artist(value):
                         _main.__dict__["_"] = value
                         print(repr(value))
             except SystemExit:
@@ -70,6 +82,17 @@ def run(code, folder, width, height, dpi):
                 error = True
     finally:
         bio7._show_all, bio7._render = show_all, render
+        bio7._html_sink = sink
+    for i, (html, kind) in enumerate(charts):
+        if embed:
+            with open(os.path.join(folder, "chart%03d.html" % (i + 1)), "w", encoding="utf-8") as f:
+                f.write(html)
+        else:
+            try:
+                bio7._show_html(html, kind)
+                out.write("[Interactive %s chart: shown in the Browser view]\n" % kind)
+            except Exception as e:
+                out.write("The chart could not be shown: %s\n" % e)
     # The new figures and the changed figures of the plot view
     after = _figures()
     plots = [n for n, f in after.items() if n not in before or before[n] is not f or f.stale]

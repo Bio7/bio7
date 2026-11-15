@@ -54,6 +54,8 @@ public final class PythonKnitEngine {
 			"        stop('Python chunk ', options$label, ':\\n', r$text, call. = FALSE)", //
 			"      out <- sub('\\n+$', '', r$text)", //
 			"      res <- knitr::engine_output(options, options$code, if (nzchar(out)) out else NULL)", //
+			"      charts <- r$plots[grepl('\\\\.html$', r$plots)]", //
+			"      r$plots <- r$plots[!grepl('\\\\.html$', r$plots)]", //
 			"      if (length(r$plots) > 0 && !identical(options$fig.show, 'hide')) {", //
 			"        hook <- knitr::knit_hooks$get('plot')", //
 			"        options$fig.num <- length(r$plots)", //
@@ -71,6 +73,19 @@ public final class PythonKnitEngine {
 			"            options$out.width <- round(px / ret)", //
 			"          }", //
 			"          res <- paste0(res, hook(f, options))", //
+			"        }", //
+			"      }", //
+			"      # Interactive charts (plotly, altair, bokeh, folium, holoviews): embedded in HTML output", //
+			"      for (ch in charts) {", //
+			"        if (knitr::is_html_output()) {", //
+			"          html <- paste(readLines(ch, warn = FALSE, encoding = 'UTF-8'), collapse = '\n')", //
+			"          html <- gsub('&', '&amp;', html, fixed = TRUE)", //
+			"          html <- gsub('\"', '&quot;', html, fixed = TRUE)", //
+			"          height <- if (!is.null(options$out.height)) options$out.height else paste0(round(h * 96 + 40), 'px')", //
+			"          res <- paste0(res, '\n\n```{=html}\n<iframe srcdoc=\"', html, '\" style=\"width:100%;height:', height,", //
+			"                        ';border:none;\"></iframe>\n```\n\n')", //
+			"        } else {", //
+			"          res <- paste0(res, '\n\n*(An interactive chart: only in HTML output)*\n\n')", //
 			"        }", //
 			"      }", //
 			"      res", //
@@ -107,7 +122,7 @@ public final class PythonKnitEngine {
 		int w = (int) number(args.get(1));
 		int h = (int) number(args.get(2));
 		int dpi = (int) number(args.get(3));
-		RChunks.Output out = PythonChunkEvaluator.evaluate(code, w, h, dpi);
+		RChunks.Output out = PythonChunkEvaluator.evaluate(code, w, h, dpi, true);
 		Map<String, RValue> result = new LinkedHashMap<>();
 		result.put("text", new RValue.Str(out.text() == null ? "" : out.text()));
 		result.put("plots", new RValue.Str(out.plots().stream().map(Path::toString).map(p -> p.replace('\\', '/')).toArray(String[]::new)));

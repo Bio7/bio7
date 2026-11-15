@@ -119,6 +119,8 @@ def _init(write, reply, call, plot, figs, cfg_addr, cfg_len):
     # (the backend module is created when matplotlib imports it: matplotlib may be installed later)
     os.environ["MPLBACKEND"] = "module://bio7_backend"
     sys.meta_path.insert(0, _BackendFinder())
+    # Interactive charts (plotly, altair, folium, holoviews/hvplot): show() in the browser view of Bio7
+    sys.meta_path.insert(0, _PatchFinder())
     _install_module("bio7", _BIO7_SOURCE)
     # Bio7 is the web browser of Python: plotly, bokeh, folium, webbrowser.open show in the browser view of Bio7
     _register_browser()
@@ -143,13 +145,161 @@ class _BackendFinder:
         exec(compile(_BACKEND_SOURCE, "<bio7_backend>", "exec"), module.__dict__)
 
 
+# ---------------------------------------------------------------- interactive charts
+
+# A function(html, kind) which takes the HTML of the charts (a markdown chunk), else None: the browser view
+_html_sink = None
+
+
+def _html_of(obj):
+    """The HTML page of an interactive chart (plotly, altair, bokeh, folium, holoviews/hvplot) or None."""
+    if isinstance(obj, str):
+        return obj if "<" in obj else None
+    mod = type(obj).__module__.split(".")[0]
+    if mod == "plotly" and hasattr(obj, "to_html"):
+        return obj.to_html(include_plotlyjs="cdn", full_html=True)
+    if mod == "altair" and hasattr(obj, "to_html"):
+        return obj.to_html()
+    if mod in ("folium", "branca") and hasattr(obj, "get_root"):
+        return obj.get_root().render()
+    if mod == "holoviews":
+        import holoviews as hv
+        obj = hv.render(obj, backend="bokeh")
+        mod = "bokeh"
+    if mod == "bokeh":
+        from bokeh.embed import file_html
+        from bokeh.resources import CDN
+        return file_html(obj, CDN, "Bokeh")
+    return None
+
+
+def _is_chart(obj):
+    """An object which _html_of shows (the last expression of a chunk)."""
+    mod = type(obj).__module__.split(".")[0]
+    if mod == "plotly":
+        return hasattr(obj, "to_html") and hasattr(obj, "data")
+    if mod == "altair":
+        return hasattr(obj, "to_html") and hasattr(obj, "to_dict")
+    if mod == "folium":
+        return hasattr(obj, "get_root")
+    if mod == "holoviews":
+        return hasattr(obj, "opts")
+    if mod == "bokeh":
+        return hasattr(obj, "renderers") or type(obj).__name__ in ("Row", "Column", "GridPlot", "GridBox", "Tabs")
+    return False
+
+
+def _show_html(html, kind="chart"):
+    """Shows an HTML page in the browser view of Bio7 (or gives it to a markdown chunk)."""
+    if _html_sink is not None:
+        _html_sink(html, kind)
+        return
+    import tempfile
+    import pathlib
+    fd, path = tempfile.mkstemp(suffix=".html", prefix="bio7_")
+    with os.fdopen(fd, "w", encoding="utf-8") as f:
+        f.write(html)
+    _call("open_url", pathlib.Path(path).as_uri())
+
+
+def _show_chart(obj, *args, **kwargs):
+    html = _html_of(obj)
+    if html is None:
+        raise TypeError("Not an interactive chart: " + type(obj).__name__)
+    _show_html(html, type(obj).__module__.split(".")[0])
+
+
+def _patch_plotly(m):
+    m.BaseFigure.show = lambda self, *a, **k: _show_chart(self)
+
+
+def _patch_altair(m):
+    for name in ("TopLevelMixin", "Chart"):
+        cls = getattr(m, name, None)
+        if cls is not None:
+            cls.show = lambda self, *a, **k: _show_chart(self)
+
+
+def _patch_folium(m):
+    # A map has no show(): map.show() and map.show_in_browser() in Bio7
+    for name in ("Map", "Figure"):
+        cls = getattr(m, name, None)
+        if cls is not None:
+            cls.show = lambda self, *a, **k: _show_chart(self)
+            cls.show_in_browser = lambda self, *a, **k: _show_chart(self)
+
+
+def _patch_holoviews(m):
+    try:
+        dim = sys.modules.get("holoviews.core.dimension")
+        if dim is not None and not hasattr(dim.Dimensioned, "show"):
+            dim.Dimensioned.show = lambda self, *a, **k: _show_chart(self)
+    except Exception:
+        pass
+
+
+def _patch_hvplot(m):
+    m.show = lambda obj, *a, **k: _show_chart(obj)
+
+
+_PATCHES = {"plotly.basedatatypes": _patch_plotly, "altair": _patch_altair, "folium": _patch_folium,
+            "holoviews": _patch_holoviews, "hvplot": _patch_hvplot}
+
+
+class _PatchedLoader:
+    """The loader of a module which is patched after it is executed (other attributes as the loader)."""
+
+    def __init__(self, loader, patch):
+        self._loader = loader
+        self._patch = patch
+
+    def create_module(self, spec):
+        return self._loader.create_module(spec)
+
+    def exec_module(self, module):
+        self._loader.exec_module(module)
+        try:
+            self._patch(module)
+        except Exception:
+            pass
+
+    def __getattr__(self, name):
+        return getattr(self._loader, name)
+
+
+class _PatchFinder:
+    """Patches the show() of chart modules when they are imported."""
+
+    def find_spec(self, name, path=None, target=None):
+        patch = _PATCHES.get(name)
+        if patch is None:
+            return None
+        for finder in sys.meta_path:
+            if finder is self or not hasattr(finder, "find_spec"):
+                continue
+            spec = finder.find_spec(name, path, target)
+            if spec is not None:
+                if spec.loader is not None and hasattr(spec.loader, "exec_module"):
+                    spec.loader = _PatchedLoader(spec.loader, patch)
+                return spec
+        return None
+
+
 def _register_browser():
     import webbrowser
 
     class Bio7Browser(webbrowser.BaseBrowser):
         def open(self, url, new=0, autoraise=True):
             try:
-                if url.startswith(("http://127.0.0.1", "http://localhost")):
+                if url.startswith("file:") or (os.path.isabs(url) and url.lower().endswith((".html", ".htm"))):
+                    # a page of a file (e.g., bokeh show()): in the browser view or a markdown chunk
+                    import urllib.parse
+                    import urllib.request
+                    path = urllib.request.url2pathname(urllib.parse.urlparse(url).path) if url.startswith("file:") else url
+                    with open(path, encoding="utf-8") as f:
+                        html = f.read()
+                    _show_html(html, "bokeh" if "Bokeh" in html[:4000] else "page")
+                elif url.startswith(("http://127.0.0.1", "http://localhost")):
                     # a one-shot local server (e.g., plotly): the page is fetched here and shown as a file
                     # (Python doesn't wait for the browser, the page can be reloaded)
                     import threading
@@ -657,6 +807,7 @@ _BIO7_SOURCE = r'''
     import bio7
     img = bio7.image()                 # the current ImageJ image as numpy array
     bio7.show_image(img * 2, "Twice")  # a new ImageJ image
+    bio7.show_html(fig)                # a plotly/altair/bokeh/folium chart in the browser view
     df = bio7.results_table()          # the ImageJ results table
     x, y = bio7.roi()                  # the coordinates of the current selection
     bio7.to_r("x", [1, 2, 3])          # assign in R
@@ -674,6 +825,16 @@ def image(title=None):
 def show_image(array, title="Python"):
     """Shows a 2-d array (or a stack, RGB uint8 (h, w, 3)) as ImageJ image."""
     return _bio7._call("show_image", title, value=array)
+
+
+def show_html(obj):
+    """Shows an interactive chart (plotly, altair, bokeh, folium, holoviews/hvplot)
+    or an HTML string in the browser view of Bio7 (in a markdown chunk: below the
+    chunk, in a rendered document: embedded)."""
+    html = _bio7._html_of(obj)
+    if html is None:
+        raise TypeError("Not an interactive chart or HTML: " + type(obj).__name__)
+    _bio7._show_html(html, type(obj).__module__.split(".")[0])
 
 
 def results_table():
