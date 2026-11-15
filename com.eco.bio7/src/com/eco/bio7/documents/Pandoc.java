@@ -86,6 +86,35 @@ public final class Pandoc {
 		return v != null && !v.isBlank() ? v.replace('\\', '/') : fallback;
 	}
 
+	/**
+	 * R code which makes pandoc (and LaTeX) available to rmarkdown in R: the
+	 * existing program folders (Homebrew, Quarto, RStudio, conda, TeX, ...) are
+	 * appended to the PATH of R (an application started from the desktop has
+	 * no PATH of the shell) and RSTUDIO_PANDOC is set if R had no pandoc.
+	 */
+	public static String rSetup() {
+		StringBuilder dirs = new StringBuilder();
+		for (String d : folders()) {
+			if (new File(d).isDirectory()) {
+				dirs.append(dirs.length() > 0 ? ", " : "").append(rString(d));
+			}
+		}
+		String pandoc = find();
+		String pandocDir = pandoc == null ? null : new File(pandoc).getParent();
+		return "local({\n" //
+				+ "  none <- !nzchar(Sys.getenv('RSTUDIO_PANDOC')) && !nzchar(Sys.which('pandoc'))\n" //
+				+ "  p <- strsplit(Sys.getenv('PATH'), .Platform$path.sep, fixed = TRUE)[[1]]\n" //
+				+ "  add <- setdiff(c(" + dirs + "), p)\n" //
+				+ "  if (length(add) > 0) Sys.setenv(PATH = paste(c(p, add), collapse = .Platform$path.sep))\n" //
+				+ (pandocDir == null ? "" : "  if (none) Sys.setenv(RSTUDIO_PANDOC = " + rString(pandocDir) + ")\n") //
+				+ "  invisible(NULL)\n" //
+				+ "})";
+	}
+
+	private static String rString(String s) {
+		return "'" + s.replace('\\', '/').replace("'", "\\'") + "'";
+	}
+
 	/** The pandoc executable or null. */
 	public static String find() {
 		return findProgram("pandoc");

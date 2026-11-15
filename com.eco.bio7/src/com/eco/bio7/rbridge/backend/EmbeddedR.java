@@ -204,6 +204,12 @@ public final class EmbeddedR {
 		} catch (LinkageError e) {
 			/* The embedded Python is not installed */
 		}
+		/* pandoc (and LaTeX) for rmarkdown::render() also in the console (no PATH of a shell) */
+		try {
+			session.voidEval(com.eco.bio7.documents.Pandoc.rSetup());
+		} catch (RException e) {
+			print("The paths of pandoc could not be set: " + e.getMessage() + "\n", true);
+		}
 		RServe.setRrunning(true);
 		RConfig.config(backend);
 		print("Embedded R " + session.version() + " in " + home + "\n", false);

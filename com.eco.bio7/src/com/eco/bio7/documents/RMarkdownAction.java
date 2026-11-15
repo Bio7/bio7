@@ -219,6 +219,8 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 							}
 
 							c.eval("try(library(rmarkdown))");
+							/* pandoc (and LaTeX) for rmarkdown also without the PATH of a shell */
+							c.voidEval(Pandoc.rSetup());
 							c.eval("try(.tempCurrentWd<-getwd());");
 							c.eval("setwd('" + dirPath + "')");
 
