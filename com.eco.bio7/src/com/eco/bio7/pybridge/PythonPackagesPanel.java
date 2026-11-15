@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.io.IOException;
 
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -510,6 +511,13 @@ public class PythonPackagesPanel {
 	}
 
 	private void pipNow(String exe, List<String> args, List<String> changed) throws Exception {
+		if (!args.isEmpty() && args.get(0).equals("install")) {
+			args = checkChanges(exe, args);
+			if (args == null) {
+				appendLog("Cancelled.");
+				return;
+			}
+		}
 		appendLog("\n$ python -m pip " + String.join(" ", args));
 		PythonEnvironment.Result r = PythonEnvironment.pip(exe, args, this::appendLog, running);
 		appendLog(r.exit() == 0 ? "Done." : "pip ended with an error (" + r.exit() + ").");
@@ -535,6 +543,81 @@ public class PythonPackagesPanel {
 						"The changed packages " + loaded + " are already loaded in the running Python of Bio7.\nPlease restart Bio7 to use the new versions.");
 			}
 		});
+	}
+
+	/* The packages whose major version must not change silently (compiled packages depend on it) */
+	private static final List<String> GUARDED = List.of("numpy");
+
+	/*
+	 * The safety check of an install: pip resolves it first (dry run); the
+	 * installed packages which would change are listed, a change of the major
+	 * version of numpy needs a decision (keep it with a constraint, change it or
+	 * cancel). Returns the arguments for pip (null: cancelled).
+	 */
+	private List<String> checkChanges(String exe, List<String> args) {
+		appendLog("\nChecking the changes (pip install --dry-run) ...");
+		Map<String, String> plan;
+		Map<String, String> installed = new java.util.HashMap<>();
+		try {
+			plan = PythonEnvironment.dryRun(exe, args.subList(1, args.size()), running);
+			for (PythonEnvironment.Package p : PythonEnvironment.list(exe)) {
+				installed.put(PythonEnvironment.normalize(p.name()), p.version());
+			}
+		} catch (IOException e) {
+			plan = null;
+		}
+		if (plan == null) {
+			appendLog("(No check of the changes: pip 22.2 or later is needed, or pip can't resolve the packages.)");
+			return args;
+		}
+		List<String> changes = new ArrayList<>();
+		for (Map.Entry<String, String> e : plan.entrySet()) {
+			String old = installed.get(e.getKey());
+			if (old != null && !old.equals(e.getValue())) {
+				changes.add(e.getKey() + " " + old + " -> " + e.getValue());
+			}
+		}
+		if (!changes.isEmpty()) {
+			appendLog("Installed packages which would change: " + String.join(", ", changes));
+		}
+		List<String> result = new ArrayList<>(args);
+		for (String name : GUARDED) {
+			String old = installed.get(name), next = plan.get(name);
+			if (old == null || next == null || major(old) == major(next) || major(old) < 0) {
+				continue;
+			}
+			int[] choice = new int[1];
+			String text = "This installation changes " + name + " from " + old + " to " + next + " (a new major version).\n\n"
+					+ "Packages compiled for " + name + " " + major(old) + ".x (e.g., older scikit-image, scikit-learn, h5py, numba) "
+					+ "can stop working with " + name + " " + major(next) + " (\"binary incompatibility\" errors).\n\n"
+					+ "Keep " + name + " " + major(old) + ".x: the packages are installed with versions which work with it (if they exist).";
+			Display.getDefault().syncExec(() -> {
+				MessageDialog d = new MessageDialog(shell(), "Python Packages: " + name + " " + major(old) + " -> " + major(next), null, text,
+						MessageDialog.WARNING, 0, "Keep " + name + " " + major(old) + ".x", "Change to " + name + " " + next, "Cancel");
+				choice[0] = d.open();
+			});
+			if (choice[0] == 0) {
+				try {
+					/* A constraint for pip: the current major version */
+					java.io.File c = java.io.File.createTempFile("bio7constraints", ".txt");
+					c.deleteOnExit();
+					java.nio.file.Files.writeString(c.toPath(), name + ">=" + major(old) + "," + "<" + (major(old) + 1) + "\n");
+					result.addAll(1, List.of("-c", c.getAbsolutePath()));
+					appendLog("Keeping " + name + " " + major(old) + ".x (constraint " + name + "<" + (major(old) + 1) + ").");
+				} catch (IOException e) {
+					appendLog("The constraint could not be written: " + e.getMessage());
+					return null;
+				}
+			} else if (choice[0] != 1) {
+				return null;
+			}
+		}
+		return result;
+	}
+
+	private static int major(String version) {
+		java.util.regex.Matcher m = java.util.regex.Pattern.compile("^(\\d+)").matcher(version);
+		return m.find() ? Integer.parseInt(m.group(1)) : -1;
 	}
 
 	/* The embedded Python finds the new packages (import caches); returns the changed packages already imported */

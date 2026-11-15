@@ -125,6 +125,41 @@ public final class PythonEnvironment {
 		return new ArrayList<>(map.values());
 	}
 
+	/** The normalized name of a package (PEP 503: lower case, - for _ and .). */
+	public static String normalize(String name) {
+		return name.toLowerCase(java.util.Locale.ROOT).replaceAll("[-_.]+", "-");
+	}
+
+	/**
+	 * The packages which an install would install or change (normalized name:
+	 * version), resolved by pip without installing (pip install --dry-run
+	 * --report, pip 22.2 or later). Null if pip can't do it (old pip, no
+	 * resolution).
+	 *
+	 * @param installArgs the arguments after "install"
+	 */
+	public static Map<String, String> dryRun(String executable, List<String> installArgs, Process[] cancel) throws IOException {
+		File report = File.createTempFile("bio7pip", ".json");
+		try {
+			List<String> cmd = new ArrayList<>(List.of(executable, "-m", "pip", "install", "--dry-run", "--quiet", "--report", report.getAbsolutePath()));
+			cmd.addAll(installArgs);
+			Result r = run(cmd, null, cancel);
+			if (r.exit != 0 || report.length() == 0) {
+				return null;
+			}
+			Map<String, String> plan = new TreeMap<>();
+			for (JsonNode n : JSON.readTree(report).path("install")) {
+				JsonNode meta = n.path("metadata");
+				if (!meta.path("name").asText().isEmpty()) {
+					plan.put(normalize(meta.path("name").asText()), meta.path("version").asText());
+				}
+			}
+			return plan;
+		} finally {
+			report.delete();
+		}
+	}
+
 	/** The packages with a newer version (name: latest version); needs the internet. */
 	public static Map<String, String> outdated(String executable) throws IOException {
 		Result r = run(List.of(executable, "-m", "pip", "list", "--outdated", "--format=json", "--disable-pip-version-check"), null, null);
