@@ -985,6 +985,8 @@ public class CustomTheme {
 				"background-color: " + c("consoleBackground") + ";\n\tcolor: " + c("consoleText") + ";");
 		/* The content of the views (lists, trees, tables)! */
 		rule(css, ".MPart Tree,\n.MPart Table,\n.MPart List,\n.MPart Grid", "background-color: " + c("viewBackground") + ";\n\tcolor: " + c("text") + ";");
+		/* The column headers of the tables and trees (e.g., the Packages views of R and Python, dialogs): not the native gray header */
+		rule(css, "Table,\nTree", "swt-header-background-color: " + c("tableHeader") + ";\n\tswt-header-color: " + c("tableHeaderText") + ";");
 		/*
 		 * The work areas with the darker background of the console (after the rules
 		 * above, more specific): the ImageJ-Canvas (the tab folder of the images and the
