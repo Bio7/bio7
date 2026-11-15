@@ -331,7 +331,8 @@ public class PythonShellView extends ViewPart {
 			objectList.removeAll();
 			for (String[] r : rows) {
 				names.add(r[0]);
-				objectList.add(r[0] + "   " + r[1]);
+				/* Only the name (as in the R-Shell): the description follows the selection */
+				objectList.add(r[0]);
 			}
 			for (int i = 0; i < names.size(); i++) {
 				if (selected.contains(names.get(i))) {
