@@ -43,7 +43,7 @@ public class ToggleDebugBreakpointAction extends AbstractRulerActionDelegate imp
 		
 
 		public ToggleBreakpointAction(ITextEditor editor, IVerticalRulerInfo rulerInfo) {
-			super("Toggle line breakpoint");
+			super("Toggle Breakpoint");
 			mEditor = editor;
 			mRulerInfo = rulerInfo;
 		}
@@ -88,6 +88,18 @@ public class ToggleDebugBreakpointAction extends AbstractRulerActionDelegate imp
 						// int length = selection.getLength();
 						startline = selection.getStartLine() + 1;
 						stopline = selection.getEndLine() + 1;
+
+						/* A breakpoint in this line: removed (toggle, e.g., a double-click in the ruler) */
+						boolean removed = false;
+						for (IMarker m : resource.findMarkers("com.eco.bio7.redit.debugMarker", true, IResource.DEPTH_ZERO)) {
+							if (m.getAttribute(IMarker.LINE_NUMBER, -1) == startline) {
+								m.delete();
+								removed = true;
+							}
+						}
+						if (removed) {
+							return;
+						}
 
 						IMarker marker;
 

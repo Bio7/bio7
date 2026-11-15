@@ -160,7 +160,27 @@ public class MarkdownConfiguration extends TextSourceViewerConfiguration {
 		reconciler.setDamager(dr, MarkdownPartitionScanner.MARKDOWN_TAG);
 		reconciler.setRepairer(dr, MarkdownPartitionScanner.MARKDOWN_TAG);
 
-		DefaultDamagerRepairer dr2 = new DefaultDamagerRepairer(getMarkdownScanner());
+		getMarkdownScanner().setViewer(sourceViewer);
+		/* A changed code fence or YAML line changes the lines below it: the whole text is highlighted again */
+		DefaultDamagerRepairer dr2 = new DefaultDamagerRepairer(getMarkdownScanner()) {
+			@Override
+			public org.eclipse.jface.text.IRegion getDamageRegion(org.eclipse.jface.text.ITypedRegion partition, org.eclipse.jface.text.DocumentEvent e,
+					boolean documentPartitioningChanged) {
+				org.eclipse.jface.text.IRegion damage = super.getDamageRegion(partition, e, documentPartitioningChanged);
+				try {
+					IDocument d = e.getDocument();
+					int line = d.getLineOfOffset(e.getOffset());
+					org.eclipse.jface.text.IRegion r = d.getLineInformation(line);
+					String changed = d.get(r.getOffset(), r.getLength()) + (e.getText() == null ? "" : e.getText());
+					if (changed.contains("```") || changed.contains("~~~") || changed.contains("---")) {
+						return partition;
+					}
+				} catch (org.eclipse.jface.text.BadLocationException ex) {
+					return partition;
+				}
+				return damage;
+			}
+		};
 		reconciler.setDamager(dr2, IDocument.DEFAULT_CONTENT_TYPE);
 		reconciler.setRepairer(dr2, IDocument.DEFAULT_CONTENT_TYPE);
 

@@ -921,6 +921,15 @@
             name="R Markdown"
             project="false">
       </wizard>
+      <wizard
+            category="com.eco.bio7.RCategory"
+            class="com.eco.bio7.wizards.MarkdownPluginWizard"
+            icon="icons/editor/rmarkdownfile.svg"
+            id="com.eco.bio7.markdown.plain.Wizard"
+            name="Markdown"
+            project="false">
+         <description>A markdown file (*.md), converted to HTML without R</description>
+      </wizard>
       <category
             id="com.eco.bio7.javascript"
             name="JavaScript">
@@ -973,6 +982,21 @@
    </extension>
    <extension
          point="org.eclipse.ui.actionSetPartAssociations">
+   </extension>
+   <extension
+         point="org.eclipse.ui.editorActions">
+      <!-- A double-click in the ruler of the R editor toggles a breakpoint -->
+      <editorContribution
+            id="com.eco.bio7.reditor.debug.rulerDoubleClick"
+            targetID="com.eco.bio7.reditors.TemplateEditor">
+         <action
+               actionID="RulerDoubleClick"
+               class="com.eco.bio7.rbridge.debug.ToggleDebugBreakpointAction"
+               id="com.eco.bio7.reditor.debug.toggleBreakpoint"
+               label="Toggle Breakpoint"
+               style="push">
+         </action>
+      </editorContribution>
    </extension>
    <extension point="org.eclipse.ui.popupMenus">
       <objectContribution
@@ -1487,7 +1511,7 @@
        <action
              class="com.eco.bio7.rbridge.debug.ToggleDebugBreakpointAction"
              id="AddBreakpointAction"
-             label="Add Breakpoint"
+             label="Toggle Breakpoint (Double-Click)"
              menubarPath="debug">
        </action>
     </viewerContribution>

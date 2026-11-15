@@ -1,6 +1,7 @@
 package com.eco.bio7.documents;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.resources.IFile;
@@ -67,6 +68,12 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 	}
 
 	public void run(IAction action) {
+		/* A markdown file (*.md) is converted without R */
+		ISelection sel = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection();
+		if (sel instanceof IStructuredSelection ss && ss.size() == 1 && ss.getFirstElement() instanceof IFile f && "md".equalsIgnoreCase(f.getFileExtension())) {
+			markdownWithoutR(f);
+			return;
+		}
 
 		if (RServe.isAliveDialog() == false) {
 			return;
@@ -103,6 +110,18 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 	}
 
 	public void run() {
+		editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		if (editor == null || editor instanceof MarkdownEditor == false) {
+			return;
+		}
+		/* A markdown file (*.md) is converted without R */
+		if (editor.getEditorInput() instanceof IFileEditorInput in && "md".equalsIgnoreCase(in.getFile().getFileExtension())) {
+			if (editor.isDirty()) {
+				editor.doSave(new NullProgressMonitor());
+			}
+			markdownWithoutR(in.getFile());
+			return;
+		}
 
 		if (RServe.isAliveDialog() == false) {
 			return;
@@ -113,10 +132,6 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			/* Bring the console to the front and clear it! */
 			utils.cons.activate();
 			utils.cons.clear();
-		}
-		editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		if (editor == null || editor instanceof MarkdownEditor == false) {
-			return;
 		}
 		if (editor.isDirty()) {
 			editor.doSave(new NullProgressMonitor());
@@ -373,6 +388,46 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 				job.schedule();
 			}
 
+		}
+	}
+
+	/*
+	 * A markdown file (*.md): converted to HTML in Java (no R needed), written next
+	 * to the file and opened like the HTML of R Markdown
+	 */
+	private void markdownWithoutR(IFile file) {
+		if (file.getLocation() == null) {
+			return;
+		}
+		java.nio.file.Path md = file.getLocation().toFile().toPath();
+		Job job = new Job("Markdown to HTML") {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				try {
+					java.nio.file.Path html = com.eco.bio7.markdownedit.MarkdownToHtml.convert(md);
+					try {
+						file.getParent().refreshLocal(IResource.DEPTH_ONE, null);
+					} catch (CoreException e) {
+						/* The file exists anyway */
+					}
+					Display.getDefault().asyncExec(() -> openHtml(html.toString()));
+				} catch (IOException | RuntimeException e) {
+					Display.getDefault().asyncExec(() -> Bio7Dialog.message("The markdown file could not be converted:\n" + e.getMessage()));
+				}
+				return Status.OK_STATUS;
+			}
+		};
+		job.schedule();
+	}
+
+	/* Opens an HTML file in the Bio7 browser (or the system browser, see the preferences) */
+	private static void openHtml(String path) {
+		String url = ("file:///" + path).replace("\\", "/").replace("file:////", "file:///");
+		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		if (store.getBoolean("PDF_USE_BROWSER")) {
+			BrowserUtil.setLocationWithJS(url);
+		} else {
+			Program.launch(url);
 		}
 	}
 

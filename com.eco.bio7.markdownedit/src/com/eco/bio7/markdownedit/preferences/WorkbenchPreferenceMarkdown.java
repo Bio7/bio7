@@ -70,6 +70,9 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 		//addField(new BooleanFieldEditor("BOLD_COLOURKEY3", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
+		addField(new BooleanFieldEditor("MARKDOWN_LARGE_HEADINGS", "Larger font for headings (H1 to H3)", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addField(new BooleanFieldEditor("MARKDOWN_FORMATTING", "Show formatting (bold, italic, code, links, quotes, lists)", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new LabelFieldEditor("Other:", getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new BooleanFieldEditor("OPEN_WORD_IN_VIEW", "Open Word in Bio7 view", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));

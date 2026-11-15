@@ -33,6 +33,8 @@ final class ChunkOutput {
 	final Position fence;
 	final List<String> lines = new ArrayList<>();
 	final boolean error;
+	/* A new run of the chunk: the output is kept until its result is shown */
+	boolean running;
 	final List<Image> images = new ArrayList<>();
 	final List<int[]> sizes = new ArrayList<>();
 

@@ -45,12 +45,24 @@ public class RMarkdownWizardPage extends WizardPage {
 		return textAuthor;
 	}
 
+	/* A plain markdown file (*.md, converted without R) */
+	private final boolean plain;
+
 	public RMarkdownWizardPage(ISelection selection) {
+		this(selection, false);
+	}
+
+	public RMarkdownWizardPage(ISelection selection, boolean plain) {
 		super("wizardPage");
-		setTitle("Markdown File");
-		setDescription(
-				"This wizard creates a new file with *.rmd extension that can be opened by the default editor.");
+		this.plain = plain;
+		setTitle(plain ? "Markdown File" : "R Markdown File");
+		setDescription(plain ? "This wizard creates a new markdown file (*.md). It is converted to HTML without R."
+				: "This wizard creates a new file with *.rmd extension that can be opened by the default editor.");
 		this.selection = selection;
+	}
+
+	private String extension() {
+		return plain ? "md" : "Rmd";
 	}
 
 	public void createControl(Composite parent) {
@@ -113,6 +125,9 @@ public class RMarkdownWizardPage extends WizardPage {
 		new Label(container, SWT.NONE);
 		new Label(container, SWT.NONE);
 
+		if (plain) {
+			return;
+		}
 		lblNewLabel_2 = new Label(container, SWT.NONE);
 		lblNewLabel_2.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
 		lblNewLabel_2.setText("Format");
@@ -140,7 +155,7 @@ public class RMarkdownWizardPage extends WizardPage {
 				containerText.setText(container.getFullPath().toString());
 			}
 		}
-		fileText.setText("template.Rmd");
+		fileText.setText("template." + extension());
 	}
 
 	private void handleBrowse() {
@@ -189,8 +204,8 @@ public class RMarkdownWizardPage extends WizardPage {
 		int dotLoc = fileName.lastIndexOf('.');
 		if (dotLoc != -1) {
 			String ext = fileName.substring(dotLoc + 1);
-			if (ext.equalsIgnoreCase("Rmd") == false) {
-				updateStatus("File extension must be \"Rmd\"");
+			if (ext.equalsIgnoreCase(extension()) == false) {
+				updateStatus("File extension must be \"" + extension() + "\"");
 				return;
 			}
 		}

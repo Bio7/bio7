@@ -47,10 +47,13 @@ final class ChunkHeaderAnnotation extends LineHeaderAnnotation {
 	private static final int PAD = 6;
 	private static final int GAP = 6;
 
-	private final ChunkOutput output;
-	private final boolean bar;
+	/* Updated in place (a new annotation would leave the line without its space for a moment) */
+	private ChunkOutput output;
+	private boolean bar;
 	/* The buttons of the bar as last drawn (widget coordinates) */
 	private final List<Rectangle> buttons = new ArrayList<>();
+	/* The area of the header as last drawn (widget coordinates) */
+	private Rectangle area;
 	private final Consumer<MouseEvent> hover;
 	private final Consumer<MouseEvent> click;
 	private final Consumer<MouseEvent> out;
@@ -85,6 +88,18 @@ final class ChunkHeaderAnnotation extends LineHeaderAnnotation {
 	@Override
 	public Consumer<MouseEvent> getAction(MouseEvent e) {
 		return buttonAt(e.x, e.y) != null ? click : null;
+	}
+
+	/** Returns true if the point is in the drawn header (the output or the bar). */
+	boolean contains(org.eclipse.swt.graphics.Point p) {
+		Rectangle a = area;
+		return a != null && a.contains(p);
+	}
+
+	/** Shows another output and/or bar (the header stays in the editor). */
+	void update(ChunkOutput newOutput, boolean newBar) {
+		output = newOutput;
+		bar = newBar;
 	}
 
 	boolean hasBar() {
@@ -171,6 +186,7 @@ final class ChunkHeaderAnnotation extends LineHeaderAnnotation {
 		int lineHeight = textWidget.getLineHeight();
 		int left = textWidget.getLeftMargin() - textWidget.getHorizontalPixel();
 		int width = Math.max(200, textWidget.getClientArea().width - left - 8);
+		area = new Rectangle(0, y, textWidget.getClientArea().width, getHeight());
 		RGB b = textWidget.getBackground().getRGB();
 		RGB f = textWidget.getForeground().getRGB();
 		boolean dark = (b.red + b.green + b.blue) < 384;
@@ -187,10 +203,18 @@ final class ChunkHeaderAnnotation extends LineHeaderAnnotation {
 			gc.setForeground(blend(b, f, 0.18));
 			gc.drawLine(left, top, left, top + height);
 			int ty = top + PAD;
+			if (output.running) {
+				String label = "Running...";
+				org.eclipse.swt.graphics.Point ext = gc.textExtent(label);
+				gc.setForeground(blend(b, f, 0.55));
+				gc.drawString(label, left + width - ext.x - PAD - 4, top + PAD, true);
+			}
 			for (int i = 0; i < lay.lines(); i++) {
 				String line = output.lines.get(i);
 				boolean isError = output.error || line.startsWith("Error") || line.startsWith("Warning");
-				gc.setForeground(isError ? err : fg);
+				/* The confirmation of a chunk without output is dimmed */
+				boolean done = line.startsWith("\u2713 Done");
+				gc.setForeground(isError ? err : done ? blend(b, f, 0.55) : fg);
 				gc.drawString(line, left + PAD + 4, ty, true);
 				ty += lineHeight;
 			}

@@ -68,6 +68,7 @@ public final class InlineChunkOutputs {
 	/* The hand cursor is shown (over a button of a bar) */
 	private boolean handCursor;
 	private boolean lineRemoved;
+	private boolean scrollRedrawPending;
 	private final Runnable refresh = () -> {
 		refreshPending = false;
 		refresh();
@@ -103,6 +104,47 @@ public final class InlineChunkOutputs {
 		support.install(viewer, painter);
 		StyledText text = viewer.getTextWidget();
 		text.addDisposeListener(_ -> disposeOutputs());
+		/*
+		 * A mouse down in a header (the bar, the output) does not move the cursor: the
+		 * text widget would take a wrong line and scroll (and the button would no
+		 * longer be under the mouse when it is released)
+		 */
+		org.eclipse.swt.widgets.Listener filter = e -> {
+			if (e.widget != text || text.isDisposed()) {
+				return;
+			}
+			org.eclipse.swt.graphics.Point p = new org.eclipse.swt.graphics.Point(e.x, e.y);
+			for (ChunkHeaderAnnotation h : headers) {
+				if (h.contains(p)) {
+					e.type = org.eclipse.swt.SWT.None;
+					e.doit = false;
+					return;
+				}
+			}
+		};
+		/*
+		 * After scrolling the visible area is painted once more completely: a scrolled
+		 * view only paints the new strip, a part of a tall output or of the text below
+		 * it could stay blank
+		 */
+		viewer.addViewportListener(_ -> {
+			if (!headers.isEmpty() && !scrollRedrawPending) {
+				scrollRedrawPending = true;
+				text.getDisplay().asyncExec(() -> {
+					scrollRedrawPending = false;
+					if (!text.isDisposed()) {
+						text.redraw();
+					}
+				});
+			}
+		});
+		org.eclipse.swt.widgets.Display display = text.getDisplay();
+		display.addFilter(org.eclipse.swt.SWT.MouseDown, filter);
+		display.addFilter(org.eclipse.swt.SWT.MouseDoubleClick, filter);
+		text.addDisposeListener(_ -> {
+			display.removeFilter(org.eclipse.swt.SWT.MouseDown, filter);
+			display.removeFilter(org.eclipse.swt.SWT.MouseDoubleClick, filter);
+		});
 		IDocumentListener listener = new IDocumentListener() {
 			@Override
 			public void documentAboutToBeChanged(DocumentEvent event) {
@@ -253,7 +295,14 @@ public final class InlineChunkOutputs {
 			Position p = fence(doc, c);
 			anchors.add(p);
 			if (p != null) {
-				setOutput(p, "Running...", List.of(), false);
+				ChunkOutput old = outputAt(p);
+				if (old != null) {
+					/* The former output stays (no jump of the height) with a label */
+					old.running = true;
+					viewer.getTextWidget().redraw();
+				} else {
+					setOutput(p, "Running...", List.of(), false);
+				}
 			}
 		}
 		refresh();
@@ -266,7 +315,12 @@ public final class InlineChunkOutputs {
 					if (p == null || monitor.isCanceled()) {
 						continue;
 					}
-					RChunks.Output out = RChunks.evaluate(chunks.get(i).code(), size[0], size[1]);
+					long start = System.nanoTime();
+					RChunks.Output result = RChunks.evaluate(chunks.get(i).code(), size[0], size[1]);
+					/* A chunk without printed output (e.g., assignments, library()): it was run */
+					RChunks.Output out = result.text().isBlank() && result.plots().isEmpty() && !result.error()
+							? new RChunks.Output(String.format(java.util.Locale.ROOT, "\u2713 Done (%.1f s)", (System.nanoTime() - start) / 1e9), List.of(), false)
+							: result;
 					Display.getDefault().asyncExec(() -> {
 						if (!viewer.getTextWidget().isDisposed()) {
 							setOutput(p, out.text(), out.plots(), out.error());
@@ -309,6 +363,15 @@ public final class InlineChunkOutputs {
 			return false;
 		});
 		outputs.add(new ChunkOutput(fence, viewer.getTextWidget().getDisplay(), text, plots, error));
+	}
+
+	private ChunkOutput outputAt(Position fence) {
+		for (ChunkOutput o : outputs) {
+			if (o.fence == fence) {
+				return o;
+			}
+		}
+		return null;
 	}
 
 	private void removeOutputAt(Position fence) {
@@ -389,25 +452,139 @@ public final class InlineChunkOutputs {
 		if (sig.toString().equals(now.toString())) {
 			return;
 		}
-		headers.clear();
+		/*
+		 * The headers which stay in their line are updated in place; only new and
+		 * removed headers change the annotations of the editor (else the lines lose
+		 * their space for a moment: the editor flashes)
+		 */
+		Map<Integer, ChunkHeaderAnnotation> existing = new java.util.HashMap<>();
+		for (ChunkHeaderAnnotation h : headers) {
+			Position p = h.getPosition();
+			if (!p.isDeleted()) {
+				try {
+					existing.putIfAbsent(doc.getLineOfOffset(p.getOffset()), h);
+				} catch (BadLocationException e) {
+					/* Removed below */
+				}
+			}
+		}
+		List<ChunkHeaderAnnotation> next = new ArrayList<>();
+		boolean changed = false;
 		try {
 			for (var e : lines.entrySet()) {
 				ChunkOutput o = (ChunkOutput) e.getValue()[0];
 				boolean bar = e.getValue()[1] != null;
+				ChunkHeaderAnnotation h = existing.remove(e.getKey());
+				if (h != null) {
+					h.update(o, bar);
+					next.add(h);
+					continue;
+				}
 				IRegion r = doc.getLineInformation(e.getKey());
 				/* Not empty (the painter skips empty positions) */
 				Position p = new Position(r.getOffset(), Math.min(1, doc.getLength() - r.getOffset()));
-				headers.add(new ChunkHeaderAnnotation(p, viewer, o, bar, this::clicked, this::hover, _ -> {
+				next.add(new ChunkHeaderAnnotation(p, viewer, o, bar, this::clicked, this::hover, _ -> {
 					if (handCursor) {
 						handCursor = false;
 						text.setCursor(null);
 					}
 				}));
+				changed = true;
 			}
 		} catch (BadLocationException e) {
 			return;
 		}
+		changed |= !existing.isEmpty();
+		headers.clear();
+		headers.addAll(next);
+		if (!changed) {
+			/* The heights may have changed: set at once (the first visible line stays) */
+			int top = text.getTopIndex();
+			applyHeights(doc, text);
+			text.setTopIndex(top);
+			redrawAll(text);
+			return;
+		}
+		/* The first visible text line stays at the top (the heights above it change) */
+		int top = text.getTopIndex();
 		support.updateAnnotations(new HashSet<AbstractInlinedAnnotation>(headers));
+		resetFreedLines(doc, text);
+		applyHeights(doc, text);
+		/* The new heights at once (not only after scrolling) */
+		text.setTopIndex(top);
+		redrawAll(text);
+	}
+
+	/*
+	 * Repaints the editor with its rulers (the line numbers): the heights of lines
+	 * changed. Again a moment later, after the editor has painted the headers (else
+	 * parts of the text or the line numbers may stay blank until scrolling)
+	 */
+	private void redrawAll(StyledText text) {
+		org.eclipse.swt.widgets.Composite parent = text.getParent();
+		if (parent == null || parent.isDisposed()) {
+			return;
+		}
+		org.eclipse.swt.graphics.Rectangle r = parent.getClientArea();
+		parent.redraw(r.x, r.y, r.width, r.height, true);
+		parent.update();
+		text.getDisplay().timerExec(80, () -> {
+			if (!parent.isDisposed()) {
+				org.eclipse.swt.graphics.Rectangle r2 = parent.getClientArea();
+				parent.redraw(r2.x, r2.y, r2.width, r2.height, true);
+			}
+		});
+	}
+
+	/* The space of each header (the editor would set it only while painting) */
+	private void applyHeights(IDocument doc, StyledText text) {
+		for (ChunkHeaderAnnotation h : headers) {
+			Position p = h.getPosition();
+			if (p.isDeleted()) {
+				continue;
+			}
+			try {
+				int line = doc.getLineOfOffset(p.getOffset());
+				if (viewer instanceof org.eclipse.jface.text.ITextViewerExtension5 ext) {
+					line = ext.modelLine2WidgetLine(line);
+				}
+				int height = h.getHeight();
+				if (line >= 0 && line < text.getLineCount() && text.getLineVerticalIndent(line) != height) {
+					text.setLineVerticalIndent(line, height);
+				}
+			} catch (BadLocationException e) {
+				/* Changed meanwhile */
+			}
+		}
+	}
+
+	/*
+	 * A removed header leaves the space of its line (the vertical indent is not
+	 * reset): every line without a header gets its normal height back
+	 */
+	private void resetFreedLines(IDocument doc, StyledText text) {
+		java.util.Set<Integer> keep = new HashSet<>();
+		for (ChunkHeaderAnnotation h : headers) {
+			Position p = h.getPosition();
+			if (p.isDeleted()) {
+				continue;
+			}
+			try {
+				int line = doc.getLineOfOffset(p.getOffset());
+				if (viewer instanceof org.eclipse.jface.text.ITextViewerExtension5 ext) {
+					line = ext.modelLine2WidgetLine(line);
+				}
+				keep.add(line);
+			} catch (BadLocationException e) {
+				/* Changed meanwhile */
+			}
+		}
+		int count = text.getLineCount();
+		for (int i = 0; i < count; i++) {
+			if (text.getLineVerticalIndent(i) != 0 && !keep.contains(i)) {
+				text.setLineVerticalIndent(i, 0);
+			}
+		}
 	}
 
 	private void disposeOutputs() {
