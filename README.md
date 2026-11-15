@@ -17,9 +17,9 @@ Features:
 * Image Analysis (embedded ImageJ).
 * Fast transfer of image data from ImageJ to R and vice versa.
 * Fast communication between R and Java (with RServe) and the possibility to use R methods inside Java.
-* Interpretation of Java and script creation (BeanShell, Groovy, Jython, JavaScript).
+* Interpretation of Java and script creation (BeanShell, Groovy, Python, JavaScript).
 * Dynamic compilation of Java.
-* Creation of methods for Java, BeanShell, Groovy, Jython and R (integrated editors for Java, R, BeanShell, Groovy, Jython).
+* Creation of methods for Java, BeanShell, Groovy, Python and R (integrated editors for Java, R, BeanShell, Groovy, Python).
 * Sensitivity analysis with an embedded flowchart editor in which scripts, macros and compiled code can be dragged and executed.
 * Creation of 3d OpenGL (Jogl) models.
 * Visualizations and simulations on an embedded 3d globe (World Wind Java SDK).
