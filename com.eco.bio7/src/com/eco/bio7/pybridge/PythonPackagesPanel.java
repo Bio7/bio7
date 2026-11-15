@@ -67,8 +67,6 @@ public class PythonPackagesPanel {
 	static {
 		BUNDLES.put("Scientific", "numpy scipy pandas matplotlib");
 		BUNDLES.put("Images", "scikit-image tifffile imageio");
-		BUNDLES.put("StarDist", "stardist");
-		BUNDLES.put("Cellpose", "cellpose");
 		/* The code analysis of the Python editor: completion (jedi), rules, quick fixes and formatting (ruff) */
 		BUNDLES.put("Editor tools", "jedi ruff");
 	}
@@ -206,7 +204,7 @@ public class PythonPackagesPanel {
 		bundlesLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
 		Composite bundles = new Composite(c, SWT.NONE);
 		bundles.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1));
-		GridLayout bl = new GridLayout(2, true);
+		GridLayout bl = new GridLayout(BUNDLES.size(), true);
 		bl.marginWidth = bl.marginHeight = 0;
 		bundles.setLayout(bl);
 		for (Map.Entry<String, String> b : BUNDLES.entrySet()) {
