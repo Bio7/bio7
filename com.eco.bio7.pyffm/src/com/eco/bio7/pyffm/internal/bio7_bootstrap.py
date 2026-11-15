@@ -120,6 +120,8 @@ def _init(write, reply, call, plot, figs, cfg_addr, cfg_len):
     os.environ["MPLBACKEND"] = "module://bio7_backend"
     sys.meta_path.insert(0, _BackendFinder())
     _install_module("bio7", _BIO7_SOURCE)
+    # Bio7 is the web browser of Python: plotly, bokeh, folium, webbrowser.open show in the browser view of Bio7
+    _register_browser()
     _main.__dict__.setdefault("bio7", sys.modules["bio7"])
     _console = _Console(_main.__dict__, filename="<console>")
     _main_ident = threading.get_ident()
@@ -139,6 +141,53 @@ class _BackendFinder:
 
     def exec_module(self, module):
         exec(compile(_BACKEND_SOURCE, "<bio7_backend>", "exec"), module.__dict__)
+
+
+def _register_browser():
+    import webbrowser
+
+    class Bio7Browser(webbrowser.BaseBrowser):
+        def open(self, url, new=0, autoraise=True):
+            try:
+                if url.startswith(("http://127.0.0.1", "http://localhost")):
+                    # a one-shot local server (e.g., plotly): the page is fetched here and shown as a file
+                    # (Python doesn't wait for the browser, the page can be reloaded)
+                    import threading
+                    threading.Thread(target=_show_local_page, args=(url,), daemon=True).start()
+                else:
+                    _call("open_url", url)
+                return True
+            except Exception:
+                return False
+
+    try:
+        webbrowser.register("bio7", None, Bio7Browser("bio7"), preferred=True)
+    except Exception:
+        pass
+
+
+def _show_local_page(url):
+    import time
+    import tempfile
+    import urllib.request
+    import pathlib
+    data = None
+    for _ in range(100):
+        try:
+            data = urllib.request.urlopen(url, timeout=20).read()
+            break
+        except Exception:
+            time.sleep(0.1)
+    if data is None:
+        sys.stderr.write("The page could not be shown: " + url + "\n")
+        return
+    fd, path = tempfile.mkstemp(suffix=".html", prefix="bio7_")
+    with os.fdopen(fd, "wb") as f:
+        f.write(data)
+    try:
+        _call("open_url", pathlib.Path(path).as_uri())
+    except Exception as e:
+        sys.stderr.write("The page could not be shown: %s\n" % e)
 
 
 def _install_module(name, source):

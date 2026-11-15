@@ -181,6 +181,8 @@ public final class PythonUtil {
 	public static void pythonToR(String pythonExpression, String rName) throws Exception {
 		REXP r = PythonConvert.toR(fromPython(pythonExpression));
 		backend().assign(rName, r);
+		/* The new variable in the R-Shell */
+		com.eco.bio7.rbridge.RServeUtil.listRObjects();
 	}
 
 	/**

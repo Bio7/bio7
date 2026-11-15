@@ -130,7 +130,42 @@ public final class PythonPlotView {
 			open();
 		}
 		update();
-		PlotViews.showInPerspective(VIEW_ID, VIEW_NAME);
+		showInPerspective();
+	}
+
+	/* The ImageJ-Canvas view (its folder takes the plot in the Image Analysis perspective) */
+	private static final String IMAGEJ_CANVAS = "com.eco.bio7.imagej";
+
+	/*
+	 * The place of the view (new in a perspective): a tab in the folder of the
+	 * ImageJ-Canvas view, else of the table, else beside the console
+	 */
+	private static void place() {
+		String id = VIEW_ID + ":" + VIEW_NAME;
+		if (!PythonViews.dockInto(id, IMAGEJ_CANVAS) && !PythonViews.dockInto(id, com.eco.bio7.rbridge.RTable.ID)) {
+			PlotViews.dock(VIEW_ID, VIEW_NAME);
+		}
+	}
+
+	/* Shows the view in the current perspective (placed if it is new there) */
+	private static void showInPerspective() {
+		try {
+			org.eclipse.ui.IWorkbenchPage page = org.eclipse.ui.PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+			if (page == null) {
+				return;
+			}
+			org.eclipse.ui.IViewReference ref = page.findViewReference(VIEW_ID, VIEW_NAME);
+			org.eclipse.ui.IViewPart view = ref != null ? ref.getView(false) : null;
+			if (view != null && page.isPartVisible(view)) {
+				return;
+			}
+			page.showView(VIEW_ID, VIEW_NAME, org.eclipse.ui.IWorkbenchPage.VIEW_VISIBLE);
+			if (ref == null) {
+				place();
+			}
+		} catch (Exception e) {
+			/* Not shown */
+		}
 	}
 
 	/* Creates the content of the view */
@@ -144,10 +179,7 @@ public final class PythonPlotView {
 		if (parent == null || parent.isDisposed()) {
 			return;
 		}
-		/* A tab in the folder of the table (else beside the console) */
-		if (!PythonViews.dockInto(VIEW_ID + ":" + VIEW_NAME, com.eco.bio7.rbridge.RTable.ID)) {
-			PlotViews.dock(VIEW_ID, VIEW_NAME);
-		}
+		place();
 		root = new Composite(parent, SWT.NONE);
 		GridLayout layout = new GridLayout(1, false);
 		layout.marginWidth = layout.marginHeight = 0;

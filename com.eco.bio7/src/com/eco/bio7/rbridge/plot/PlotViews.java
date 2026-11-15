@@ -38,6 +38,8 @@ public final class PlotViews {
 
 	/* The ImageJ-Canvas view */
 	private static final String CANVAS_VIEW = "com.eco.bio7.imagej";
+	/* The table (its folder takes the plot views, e.g., in the R perspective) */
+	private static final String TABLE_VIEW = "com.eco.bio7.rbridge.RTable";
 	/* The console */
 	private static final String CONSOLE_VIEW = "org.eclipse.ui.console.ConsoleView";
 	/* The tag of the folder of the plot views beside the console */
@@ -52,7 +54,8 @@ public final class PlotViews {
 	 * folder of the ImageJ-Canvas view. UI thread.
 	 */
 	public static void dock(String viewId, String secondaryId) {
-		if (!dockBesideConsole(viewId, secondaryId)) {
+		/* A tab in the folder of the table (e.g., the R and the Image Analysis perspective), else beside the console */
+		if (!dockInto(viewId, secondaryId, TABLE_VIEW) && !dockBesideConsole(viewId, secondaryId)) {
 			dockBesideImageJCanvas(viewId, secondaryId);
 		}
 	}
@@ -131,40 +134,55 @@ public final class PlotViews {
 	 * move it elsewhere. UI thread.
 	 */
 	static void dockBesideImageJCanvas(String viewId, String secondaryId) {
+		dockInto(viewId, secondaryId, CANVAS_VIEW);
+	}
+
+	/**
+	 * Moves a view into the folder of another view (a tab after it), if the
+	 * perspective shows that view. UI thread.
+	 *
+	 * @return true if the view is in the folder of the other view
+	 */
+	static boolean dockInto(String viewId, String secondaryId, String targetViewId) {
 		try {
 			IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 			if (window == null) {
-				return;
+				return false;
 			}
 			MWindow mwindow = window.getService(MWindow.class);
 			EModelService models = window.getService(EModelService.class);
 			if (mwindow == null || models == null) {
-				return;
+				return false;
 			}
 			MPerspective perspective = models.getActivePerspective(mwindow);
 			if (perspective == null) {
-				return;
+				return false;
 			}
 			String plotId = secondaryId == null ? viewId : viewId + ":" + secondaryId;
-			List<MPlaceholder> canvas = models.findElements(perspective, CANVAS_VIEW, MPlaceholder.class, null);
+			List<MPlaceholder> canvas = models.findElements(perspective, targetViewId, MPlaceholder.class, null);
 			List<MPlaceholder> plot = models.findElements(perspective, plotId, MPlaceholder.class, null);
 			if (canvas.isEmpty() || plot.isEmpty()) {
-				return;
+				return false;
 			}
 			MPlaceholder canvasHolder = canvas.get(0);
 			MPlaceholder plotHolder = plot.get(0);
 			Object container = canvasHolder.getParent();
-			if (!(container instanceof MPartStack stack) || !canvasHolder.isToBeRendered() || !stack.isToBeRendered()
-					|| plotHolder.getParent() == container) {
-				return;
+			if (!(container instanceof MPartStack stack) || !canvasHolder.isToBeRendered() || !stack.isToBeRendered()) {
+				return false;
+			}
+			if (plotHolder.getParent() == container) {
+				stack.setSelectedElement(plotHolder);
+				return true;
 			}
 			int index = stack.getChildren().indexOf(canvasHolder) + 1;
 			@SuppressWarnings({ "unchecked", "rawtypes" })
 			MElementContainer<MUIElement> target = (MElementContainer) stack;
 			models.move(plotHolder, target, index);
 			stack.setSelectedElement(plotHolder);
+			return true;
 		} catch (RuntimeException e) {
 			/* The view stays where the workbench opened it */
+			return false;
 		}
 	}
 

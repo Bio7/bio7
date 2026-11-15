@@ -64,6 +64,12 @@ public final class PythonCalls implements PyCallHandler {
 			Display.getDefault().asyncExec(imp::show);
 			return null;
 		}
+		case "open_url": {
+			/* The web browser of Python (plotly, bokeh, folium, webbrowser.open): the browser view of Bio7 */
+			String url = required(args, 0, "URL");
+			Display.getDefault().asyncExec(() -> com.eco.bio7.collection.BrowserUtil.setLocationWithJS(url));
+			return null;
+		}
 		case "results_table": {
 			ResultsTable rt = ResultsTable.getResultsTable();
 			if (rt == null || rt.size() == 0) {
@@ -81,11 +87,15 @@ public final class PythonCalls implements PyCallHandler {
 		}
 		case "r": {
 			REXP x = r().eval(required(args, 0, "R code"));
+			/* The code may have changed the R workspace: the variables of the R-Shell */
+			com.eco.bio7.rbridge.RServeUtil.listRObjects();
 			return PythonConvert.fromR(x);
 		}
 		case "to_r": {
 			String name = required(args, 0, "name");
 			r().assign(name, PythonConvert.toR(value == null ? PyValue.None.INSTANCE : value));
+			/* The new variable in the R-Shell */
+			com.eco.bio7.rbridge.RServeUtil.listRObjects();
 			return null;
 		}
 		default: {
