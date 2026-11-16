@@ -48,7 +48,24 @@ def _type(v):
     return t
 
 
-_LIBRARY = tuple(os.path.normcase(os.path.abspath(p)) + os.sep for p in {sys.base_prefix, sys.prefix, sys.exec_prefix})
+def _library_dirs():
+    """The folders of the standard library and the installed packages (not the whole
+    prefix of Python: it is /usr on Linux or the home folder for a Python installed
+    there, where the scripts of the user are)."""
+    import sysconfig
+    dirs = set()
+    for key in ("stdlib", "platstdlib", "purelib", "platlib"):
+        for vars_ in (None, {"base": sys.base_prefix, "platbase": sys.base_exec_prefix}):
+            try:
+                p = sysconfig.get_path(key, vars=vars_) if vars_ else sysconfig.get_path(key)
+            except Exception:
+                p = None
+            if p:
+                dirs.add(os.path.normcase(os.path.abspath(p)) + os.sep)
+    return tuple(dirs)
+
+
+_LIBRARY = _library_dirs()
 
 
 def _is_library(filename):

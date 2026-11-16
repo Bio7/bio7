@@ -193,6 +193,17 @@ public final class RNative {
 				}
 			}
 		}
+		if (os.equals("Linux")) {
+			/*
+			 * The newest C++ runtime of R (e.g., conda: <prefix>/lib), the system and the
+			 * other runtimes (Python) first: only one libstdc++ can be loaded per process
+			 */
+			List<Path> own = new ArrayList<>(List.of(lib.getParent()));
+			if (home.getParent() != null) {
+				own.add(home.getParent());
+			}
+			CxxRuntime.preloadNewest(own);
+		}
 		/* The libraries of R first (found by their names when libR is loaded) */
 		preload(arena, os, lib.getParent(), libc, false);
 		dlopenGlobal(libc, os, lib);

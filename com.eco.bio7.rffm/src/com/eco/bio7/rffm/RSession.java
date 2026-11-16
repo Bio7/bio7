@@ -17,10 +17,12 @@ import static java.lang.foreign.ValueLayout.ADDRESS;
 import static java.lang.foreign.ValueLayout.JAVA_BYTE;
 import static java.lang.foreign.ValueLayout.JAVA_DOUBLE;
 import static java.lang.foreign.ValueLayout.JAVA_INT;
+import static java.lang.foreign.ValueLayout.JAVA_LONG;
 
 import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.foreign.MemorySegment;
+import java.lang.foreign.SymbolLookup;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.nio.charset.StandardCharsets;
@@ -191,6 +193,10 @@ public final class RSession implements AutoCloseable {
 		while (alive) {
 			try {
 				Runnable task = tasks.poll(100, TimeUnit.MILLISECONDS);
+				if (task instanceof Wake) {
+					/* A wake-up of a finished call of Java: no work (and no reset of an interrupt) */
+					continue;
+				}
 				if (task != null) {
 					interruptRequested = false;
 					task.run();
@@ -252,7 +258,108 @@ public final class RSession implements AutoCloseable {
 		setup.invokeExact();
 	}
 
+	/* The committed stack of the thread of R (Windows): its upper end and size, 0 if not committed */
+	private long stackHigh, stackCommitted;
+
+	/* The part of the stack of the thread of R which is committed at the start (as the stack of Rterm) */
+	private static final long R_STACK = 64L << 20;
+
+	/*
+	 * Windows: commits the upper part of the stack of the thread of R. Windows
+	 * commits a stack page by page when the guard page below the used stack is
+	 * touched; native code (R) probes its stack page by page. The upcall stubs of
+	 * the JVM (R -> Java: console output, busy, functions) probe 32 KB below the
+	 * stack pointer at once: deep in R (e.g., knitr/evaluate with rlang) that
+	 * address was reserved but not committed, an access violation which ended the
+	 * process. Committed, the probes are always valid; R gets the limit of this
+	 * region (R_CStackLimit) and stops a too deep recursion with an R error.
+	 */
+	private void commitWindowsStack() {
+		try {
+			SymbolLookup k32 = SymbolLookup.libraryLookup("kernel32", Arena.global());
+			var limits = RNative.LINKER.downcallHandle(k32.find("GetCurrentThreadStackLimits").orElseThrow(), FunctionDescriptor.ofVoid(ADDRESS, ADDRESS));
+			var virtualAlloc = RNative.LINKER.downcallHandle(k32.find("VirtualAlloc").orElseThrow(),
+					FunctionDescriptor.of(ADDRESS, ADDRESS, JAVA_LONG, JAVA_INT, JAVA_INT));
+			try (Arena a = Arena.ofConfined()) {
+				MemorySegment lo = a.allocate(JAVA_LONG);
+				MemorySegment hi = a.allocate(JAVA_LONG);
+				limits.invokeExact(lo, hi);
+				long low = lo.get(JAVA_LONG, 0);
+				long high = hi.get(JAVA_LONG, 0);
+				/* The bottom of the reservation stays as it is (the guard zones of the JVM) */
+				long size = Math.min(R_STACK, high - low - (8L << 20)) & ~0xFFFFL;
+				if (size <= 0) {
+					return;
+				}
+				MemorySegment r = (MemorySegment) virtualAlloc.invokeExact(MemorySegment.ofAddress(high - size), size, 0x1000 /* MEM_COMMIT */, 0x04 /* PAGE_READWRITE */);
+				if (r.address() == 0) {
+					return;
+				}
+				/*
+				 * The former guard page in the region: read-write (touched later it would set
+				 * the stack limit of the thread back up)
+				 */
+				var virtualProtect = RNative.LINKER.downcallHandle(k32.find("VirtualProtect").orElseThrow(),
+						FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_LONG, JAVA_INT, ADDRESS));
+				MemorySegment old = a.allocate(JAVA_INT);
+				int protectedOk = (int) virtualProtect.invokeExact(MemorySegment.ofAddress(high - size), size, 0x04 /* PAGE_READWRITE */, old);
+				/*
+				 * The stack limit of the thread (TEB NtTib.StackLimit): the unwinding of
+				 * longjmp (RtlUnwind, used by R for errors) checks the frames against it.
+				 * Windows only moves it when the guard page is touched, which doesn't happen in
+				 * a committed region: without it an R error ended the process (STATUS_BAD_STACK).
+				 */
+				MemorySegment teb = currentTeb();
+				if (protectedOk == 0 || teb == null) {
+					return;
+				}
+				teb.reinterpret(0x18).set(JAVA_LONG, 0x10, high - size);
+				stackHigh = high;
+				stackCommitted = size;
+			}
+		} catch (Throwable t) {
+			/* The stack grows as before (the stack check of R stays off) */
+		}
+	}
+
+	/* The TEB of the current thread (Windows, NtQueryInformationThread: ThreadBasicInformation), null if unknown */
+	private static MemorySegment currentTeb() {
+		try {
+			SymbolLookup ntdll = SymbolLookup.libraryLookup("ntdll", Arena.global());
+			var query = RNative.LINKER.downcallHandle(ntdll.find("NtQueryInformationThread").orElseThrow(),
+					FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT, ADDRESS, JAVA_INT, ADDRESS));
+			try (Arena a = Arena.ofConfined()) {
+				/* THREAD_BASIC_INFORMATION: ExitStatus, TebBaseAddress at 8, ClientId, AffinityMask, priorities (48 bytes) */
+				MemorySegment info = a.allocate(48, 8);
+				/* GetCurrentThread(): the pseudo handle -2 */
+				int status = (int) query.invokeExact(MemorySegment.ofAddress(-2L), 0, info, 48, MemorySegment.NULL);
+				long teb = info.get(JAVA_LONG, 8);
+				return status == 0 && teb != 0 ? MemorySegment.ofAddress(teb) : null;
+			}
+		} catch (Throwable t) {
+			return null;
+		}
+	}
+
+	/* The stack check of R for the committed stack (else off: the stack of a Java thread is unknown to R) */
+	private void setRStackLimit() {
+		if (!n.has("R_CStackLimit")) {
+			return;
+		}
+		if (stackCommitted > 0 && n.has("R_CStackStart") && n.has("R_CStackDir")) {
+			n.setLong("R_CStackStart", stackHigh);
+			/* The stack grows down */
+			n.setInt("R_CStackDir", 1);
+			/* A margin for native code between the checks of R and for the probes of the JVM */
+			n.setLong("R_CStackLimit", stackCommitted - (4L << 20));
+		} else {
+			n.setLong("R_CStackLimit", -1L);
+		}
+	}
+
 	private void startWindows() throws Throwable {
+		/* First: R may use the stack deeply already at its start */
+		commitWindowsStack();
 		Arena arena = n.arena;
 		var call = RNative.LINKER;
 		call.downcallHandle(n.symbolAddress("R_setStartTime"), FunctionDescriptor.ofVoid()).invokeExact();
@@ -283,15 +390,15 @@ public final class RSession implements AutoCloseable {
 		List<String> args = arguments();
 		MemorySegment av = argv(arena, args)[0];
 		call.downcallHandle(n.symbolAddress("R_set_command_line_arguments"), FunctionDescriptor.ofVoid(JAVA_INT, ADDRESS)).invokeExact(args.size(), av);
-		if (n.has("R_CStackLimit")) {
-			n.setLong("R_CStackLimit", -1L);
-		}
+		setRStackLimit();
 		if (n.GA_initapp != null) {
 			int unused2 = (int) n.GA_initapp.invokeExact(0, MemorySegment.NULL);
 		}
 		call.downcallHandle(n.symbolAddress("readconsolecfg"), FunctionDescriptor.ofVoid()).invokeExact();
 		n.numericLocaleC();
 		call.downcallHandle(n.symbolAddress("setup_Rmainloop"), FunctionDescriptor.ofVoid()).invokeExact();
+		/* Again after the setup (it may set the stack variables of R) */
+		setRStackLimit();
 		/* R runs in UTF-8 (LC_CTYPE=.UTF-8, see RNative.load): the console text is UTF-8 */
 		if (n.isUtf8Locale()) {
 			n.consoleCharset = java.nio.charset.StandardCharsets.UTF_8;
@@ -487,21 +594,28 @@ public final class RSession implements AutoCloseable {
 		c.preserve(env);
 		helperEnv = env;
 		c.unprotect(2);
+		/*
+		 * The helpers are called by their names (symbols), evaluated in the environment
+		 * of the helpers (helperEval): a call with the function object itself (an
+		 * inlined closure, never made by R code) crashes R when rlang makes a backtrace
+		 * of it (e.g., knitr for each error of a chunk: rlang::trace_back()).
+		 */
 		for (String name : new String[] { "evalString", "evalPrint", "consoleParse", "parseError", "assign", "get", "alloc", "idle", "replay", "defineDevice",
 				"defineFunction", "disableQuit", "historyEnable", "historyMove" }) {
-			MemorySegment f = c.findVar(c.install(name), env);
-			c.preserve(f);
-			helpers.put(name, f);
+			if (c.typeOf(c.findVar(c.install(name), env)) != RNative.CLOSXP) {
+				throw new IllegalStateException("The helper function " + name + " is missing");
+			}
+			helpers.put(name, c.install(name));
 		}
 		if (!options.allowQuit()) {
 			MemorySegment call = c.protect(c.lang1(helpers.get("disableQuit")));
-			c.tryEval(call, c.globalEnv, true);
+			c.tryEval(call, helperEnv, true);
 			c.unprotect(1);
 		}
 		/* mclapply() and other forks would copy the whole Java process: sequential by default */
 		MemorySegment mc = c.protect(c.mkString("options(mc.cores = 1L)"));
 		MemorySegment mcCall = c.protect(c.lang2(helpers.get("evalString"), mc));
-		c.tryEval(mcCall, c.globalEnv, true);
+		c.tryEval(mcCall, helperEnv, true);
 		c.unprotect(2);
 	}
 
@@ -519,7 +633,7 @@ public final class RSession implements AutoCloseable {
 		MemorySegment m = c.protect(c.mkString(mode));
 		MemorySegment len = c.protect(c.scalarReal(length));
 		MemorySegment call = c.protect(c.lang3(helpers.get("alloc"), m, len));
-		MemorySegment v = c.tryEval(call, c.globalEnv, true);
+		MemorySegment v = c.tryEval(call, helperEnv, true);
 		c.unprotect(3);
 		if (v == null) {
 			throw new IllegalStateException("R could not allocate a vector of " + length + " elements: " + errorMessage());
@@ -531,7 +645,7 @@ public final class RSession implements AutoCloseable {
 	private MemorySegment evalOnRThread(String code) throws RException {
 		MemorySegment s = c.protect(c.mkString(code));
 		MemorySegment call = c.protect(c.lang2(helpers.get("evalString"), s));
-		MemorySegment v = c.tryEval(call, c.globalEnv, true);
+		MemorySegment v = c.tryEval(call, helperEnv, true);
 		c.unprotect(2);
 		if (v == null) {
 			throw new RException(errorMessage());
@@ -563,7 +677,7 @@ public final class RSession implements AutoCloseable {
 
 	private void idle() {
 		MemorySegment call = c.protect(c.lang1(helpers.get("idle")));
-		c.tryEval(call, c.globalEnv, true);
+		c.tryEval(call, helperEnv, true);
 		c.unprotect(1);
 	}
 
@@ -872,7 +986,7 @@ public final class RSession implements AutoCloseable {
 				MemorySegment num = c.protect(c.scalarInteger(number));
 				MemorySegment mx = c.protect(c.scalarInteger(Math.max(0, spec.history())));
 				MemorySegment call = c.protect(c.lang3(helpers.get("historyEnable"), num, mx));
-				c.tryEval(call, c.globalEnv, true);
+				c.tryEval(call, helperEnv, true);
 				c.unprotect(3);
 			}
 			return c.nil;
@@ -915,7 +1029,7 @@ public final class RSession implements AutoCloseable {
 			MemorySegment nm = c.protect(c.mkString(rFunctionName));
 			MemorySegment idv = c.protect(c.scalarInteger(id));
 			MemorySegment full = c.protect(c.lang4(helpers.get("defineFunction"), nm, idv, javaCallPointer));
-			MemorySegment r = c.tryEval(full, c.globalEnv, true);
+			MemorySegment r = c.tryEval(full, helperEnv, true);
 			c.unprotect(3);
 			if (r == null) {
 				throw new RException(errorMessage());
@@ -931,25 +1045,35 @@ public final class RSession implements AutoCloseable {
 			RValue a = convert.toJava(args);
 			List<RValue> list = a instanceof RValue.List l ? l.values() : List.of(a);
 			CompletableFuture<RValue> result = new CompletableFuture<>();
+			/* Wakes the thread of R when the function has finished (else it noticed it only after the poll: about 20 ms per call) */
+			Wake wake = new Wake();
 			Thread worker = Thread.ofVirtual().name("R calls Java").start(() -> {
 				try {
 					result.complete(f.call(list));
 				} catch (Throwable t) {
 					result.completeExceptionally(t);
+				} finally {
+					tasks.offer(wake);
 				}
 			});
 			/* The calls of other threads (also of the function itself) run meanwhile; console input waits */
 			List<Runnable> deferred = new ArrayList<>();
 			while (!result.isDone()) {
 				Runnable task = tasks.poll(20, TimeUnit.MILLISECONDS);
+				if (task instanceof Wake) {
+					/* Only wakes up (this call or a finished nested one): the loop checks its result */
+					continue;
+				}
 				if (task instanceof FutureTask<?>) {
 					task.run();
 				} else if (task != null) {
 					deferred.add(task);
 				}
 			}
-			tasks.addAll(deferred);
 			worker.join();
+			/* The wake of this call if it wasn't taken (it must not reach the main loop) */
+			tasks.remove(wake);
+			tasks.addAll(deferred);
 			RValue v;
 			try {
 				v = result.get();
@@ -960,6 +1084,14 @@ public final class RSession implements AutoCloseable {
 			return v == null ? c.nil : unprotected(convert.toR(v));
 		} catch (Throwable t) {
 			return javaError(String.valueOf(t));
+		}
+	}
+
+	/* A wake-up of the thread of R waiting for a function of Java (never run) */
+	private static final class Wake implements Runnable {
+		@Override
+		public void run() {
+			/* Nothing: only wakes up the waiting thread */
 		}
 	}
 
@@ -1167,7 +1299,7 @@ public final class RSession implements AutoCloseable {
 			}
 			MemorySegment nm = c.protect(c.mkString(name));
 			MemorySegment call = c.protect(c.lang3(helpers.get("assign"), nm, x));
-			MemorySegment r = c.tryEval(call, c.globalEnv, true);
+			MemorySegment r = c.tryEval(call, helperEnv, true);
 			c.unprotect(3);
 			if (r == null) {
 				throw new RException(errorMessage());
@@ -1206,7 +1338,7 @@ public final class RSession implements AutoCloseable {
 		return call(() -> {
 			MemorySegment nm = c.protect(c.mkString(name));
 			MemorySegment call = c.protect(c.lang2(helpers.get("get"), nm));
-			MemorySegment v = c.tryEval(call, c.globalEnv, true);
+			MemorySegment v = c.tryEval(call, helperEnv, true);
 			if (v == null) {
 				c.unprotect(2);
 				throw new RException(errorMessage());
@@ -1277,7 +1409,7 @@ public final class RSession implements AutoCloseable {
 			pendingInput.append(line).append('\n');
 			MemorySegment code = c.protect(c.mkString(pendingInput.toString()));
 			MemorySegment call = c.protect(c.lang2(helpers.get("consoleParse"), code));
-			MemorySegment exprs = c.tryEval(call, c.globalEnv, true);
+			MemorySegment exprs = c.tryEval(call, helperEnv, true);
 			if (exprs == null) {
 				c.unprotect(2);
 				pendingInput.setLength(0);
@@ -1299,7 +1431,7 @@ public final class RSession implements AutoCloseable {
 				for (long i = 0; i < count; i++) {
 					MemorySegment q = c.protect(c.lang2(quote, c.vectorElt(exprs, i)));
 					MemorySegment e = c.protect(c.lang2(helpers.get("evalPrint"), q));
-					MemorySegment r = c.tryEval(e, c.globalEnv, true);
+					MemorySegment r = c.tryEval(e, helperEnv, true);
 					c.unprotect(2);
 					if (r == null) {
 						if (interruptRequested) {
@@ -1310,7 +1442,7 @@ public final class RSession implements AutoCloseable {
 				}
 			} else {
 				MemorySegment e = c.protect(c.lang2(helpers.get("parseError"), code));
-				c.tryEval(e, c.globalEnv, true);
+				c.tryEval(e, helperEnv, true);
 				c.unprotect(1);
 			}
 			c.unprotect(3);
@@ -1342,7 +1474,7 @@ public final class RSession implements AutoCloseable {
 			MemorySegment num = c.protect(c.scalarInteger(n));
 			MemorySegment mx = c.protect(c.scalarInteger(Math.max(1, max)));
 			MemorySegment call = c.protect(c.lang3(helpers.get("historyEnable"), num, mx));
-			MemorySegment r = c.tryEval(call, c.globalEnv, true);
+			MemorySegment r = c.tryEval(call, helperEnv, true);
 			c.unprotect(3);
 			if (r == null) {
 				throw new RException(errorMessage());
@@ -1367,7 +1499,7 @@ public final class RSession implements AutoCloseable {
 			MemorySegment num = c.protect(c.scalarInteger(n));
 			MemorySegment st = c.protect(c.scalarInteger(step));
 			MemorySegment call = c.protect(c.lang3(helpers.get("historyMove"), num, st));
-			MemorySegment r = c.tryEval(call, c.globalEnv, true);
+			MemorySegment r = c.tryEval(call, helperEnv, true);
 			c.unprotect(3);
 			if (r == null) {
 				throw new RException(errorMessage());
@@ -1411,7 +1543,7 @@ public final class RSession implements AutoCloseable {
 			MemorySegment nm = c.protect(c.mkString(rFunctionName));
 			MemorySegment idv = c.protect(c.scalarInteger(id));
 			MemorySegment full = c.protect(c.lang4(helpers.get("defineDevice"), nm, idv, deviceCallPointer));
-			MemorySegment r = c.tryEval(full, c.globalEnv, true);
+			MemorySegment r = c.tryEval(full, helperEnv, true);
 			c.unprotect(3);
 			if (r == null) {
 				throw new RException(errorMessage());
@@ -1513,7 +1645,7 @@ public final class RSession implements AutoCloseable {
 		}
 		MemorySegment num = c.protect(c.scalarInteger(number));
 		MemorySegment call = c.protect(c.lang2(helpers.get("replay"), num));
-		MemorySegment r = c.tryEval(call, c.globalEnv, true);
+		MemorySegment r = c.tryEval(call, helperEnv, true);
 		c.unprotect(2);
 		return r != null;
 	}

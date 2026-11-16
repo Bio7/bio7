@@ -54,7 +54,7 @@ public final class PyProbe {
 			v = sysconfig.get_config_vars()
 			d = {"version": "%d.%d.%d" % sys.version_info[:3], "major": sys.version_info[0], "minor": sys.version_info[1],
 			     "base_prefix": sys.base_prefix, "prefix": sys.prefix, "executable": sys.executable,
-			     "path": [p for p in sys.path if p], "stdlib": sysconfig.get_path("stdlib"),
+			     "path": [p for p in sys.path if p and os.path.abspath(p) != os.getcwd()], "stdlib": sysconfig.get_path("stdlib"),
 			     "LIBDIR": v.get("LIBDIR"), "LDLIBRARY": v.get("LDLIBRARY"), "INSTSONAME": v.get("INSTSONAME"),
 			     "MULTIARCH": v.get("MULTIARCH"), "FRAMEWORK": v.get("PYTHONFRAMEWORK"), "FRAMEWORKPREFIX": v.get("PYTHONFRAMEWORKPREFIX"),
 			     "SHARED": v.get("Py_ENABLE_SHARED"), "GIL_DISABLED": v.get("Py_GIL_DISABLED"), "dll": None}
@@ -74,7 +74,14 @@ public final class PyProbe {
 	public static Installation probe(Path executable) throws PyException {
 		String out;
 		try {
-			Process p = new ProcessBuilder(executable.toString(), "-c", SCRIPT).redirectErrorStream(true).start();
+			/*
+			 * The script is read from stdin: Windows removes the quotes of a script given
+			 * with -c (Java doesn't escape them on the command line)
+			 */
+			Process p = new ProcessBuilder(executable.toString(), "-").redirectErrorStream(true).start();
+			try (java.io.OutputStream in = p.getOutputStream()) {
+				in.write(SCRIPT.getBytes(StandardCharsets.UTF_8));
+			}
 			if (!p.waitFor(30, TimeUnit.SECONDS)) {
 				p.destroyForcibly();
 				throw new PyException("Python did not respond: " + executable);

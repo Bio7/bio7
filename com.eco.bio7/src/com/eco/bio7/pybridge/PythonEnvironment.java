@@ -64,7 +64,12 @@ public final class PythonEnvironment {
 	public record Info(String executable, String version, String kind, boolean externallyManaged, String pip) {
 		/** Returns true if pip can install packages into this Python. */
 		public boolean canInstall() {
-			return pip != null && !externallyManaged;
+			return hasInstaller() && !externallyManaged;
+		}
+
+		/** Returns true if the packages can be installed: pip of the Python, or uv (preferences). */
+		public boolean hasInstaller() {
+			return pip != null || useUv();
 		}
 	}
 
@@ -81,6 +86,11 @@ public final class PythonEnvironment {
 		if (s != null) {
 			return s.executable().toString();
 		}
+		return preferenceExecutable();
+	}
+
+	/** The Python of the preferences (also if another Python is running in Bio7), null if none. */
+	public static String preferenceExecutable() {
 		Bio7Plugin plugin = Bio7Plugin.getDefault();
 		String exe = PythonFinder.executable(plugin == null ? "" : plugin.getPreferenceStore().getString("python_pipe_path"));
 		return new File(exe).isAbsolute() ? exe : null;
@@ -103,7 +113,7 @@ public final class PythonEnvironment {
 
 	/** Probes a Python (runs it once). */
 	public static Info info(String executable) throws IOException {
-		Result r = run(List.of(executable, "-c", PROBE), null, null);
+		Result r = runCode(executable, PROBE, null);
 		int at = r.output.indexOf("BIO7ENV");
 		if (r.exit != 0 || at < 0) {
 			throw new IOException("Python could not be started: " + executable + "\n" + r.output.strip());
@@ -114,7 +124,7 @@ public final class PythonEnvironment {
 
 	/** The installed packages (sorted by name). */
 	public static List<Package> list(String executable) throws IOException {
-		Result r = run(List.of(executable, "-m", "pip", "list", "--format=json", "--disable-pip-version-check"), null, null);
+		Result r = pip(executable, List.of("list", "--format=json", "--disable-pip-version-check"), null, null);
 		if (r.exit != 0) {
 			throw new IOException(r.output.strip());
 		}
@@ -162,7 +172,7 @@ public final class PythonEnvironment {
 
 	/** The packages with a newer version (name: latest version); needs the internet. */
 	public static Map<String, String> outdated(String executable) throws IOException {
-		Result r = run(List.of(executable, "-m", "pip", "list", "--outdated", "--format=json", "--disable-pip-version-check"), null, null);
+		Result r = pip(executable, List.of("list", "--outdated", "--format=json", "--disable-pip-version-check"), null, null);
 		if (r.exit != 0) {
 			throw new IOException(r.output.strip());
 		}
@@ -209,6 +219,21 @@ public final class PythonEnvironment {
 	 * @param cancel a holder for the process (to cancel it), may be null
 	 */
 	public static Result run(List<String> command, Consumer<String> lines, Process[] cancel) throws IOException {
+		return run(command, null, lines, cancel);
+	}
+
+	/**
+	 * Runs Python code. The code is read from stdin (python -): Windows removes
+	 * the quotes of code given with -c (Java doesn't escape them on the command
+	 * line).
+	 *
+	 * @param cancel a holder for the process (to cancel it), may be null
+	 */
+	public static Result runCode(String executable, String code, Process[] cancel) throws IOException {
+		return run(List.of(executable, "-"), code, null, cancel);
+	}
+
+	private static Result run(List<String> command, String stdin, Consumer<String> lines, Process[] cancel) throws IOException {
 		ProcessBuilder pb = new ProcessBuilder(command).redirectErrorStream(true);
 		pb.environment().put("PYTHONUNBUFFERED", "1");
 		pb.environment().put("PIP_DISABLE_PIP_VERSION_CHECK", "1");
@@ -219,6 +244,11 @@ public final class PythonEnvironment {
 		Process p = pb.start();
 		if (cancel != null) {
 			cancel[0] = p;
+		}
+		if (stdin != null) {
+			try (java.io.OutputStream in = p.getOutputStream()) {
+				in.write(stdin.getBytes(StandardCharsets.UTF_8));
+			}
 		}
 		StringBuilder out = new StringBuilder();
 		try (BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8))) {
@@ -241,11 +271,88 @@ public final class PythonEnvironment {
 		return new Result(p.isAlive() ? -1 : p.exitValue(), out.toString());
 	}
 
-	/** pip with arguments (e.g., install numpy): the output line by line. */
+	/**
+	 * pip with arguments (e.g., install numpy): the output line by line. With the
+	 * preference 'use uv' (and uv installed): uv pip ... --python executable (the
+	 * environment needs no pip).
+	 */
 	public static Result pip(String executable, List<String> args, Consumer<String> lines, Process[] cancel) throws IOException {
+		String uv = useUv() ? uvExecutable() : null;
+		if (uv != null && !args.isEmpty()) {
+			List<String> cmd = new ArrayList<>(List.of(uv, "pip", args.get(0), "--python", executable));
+			if (args.get(0).equals("freeze") || args.get(0).equals("list")) {
+				/* Only the data: uv writes "Using Python ... environment at ..." (stderr is in the output, e.g., of requirements.txt) */
+				cmd.add("--quiet");
+			}
+			for (String a : args.subList(1, args.size())) {
+				/* Options of pip which uv doesn't know (uv uninstall doesn't ask) */
+				if (a.equals("-y") || a.equals("--yes") || a.equals("--disable-pip-version-check")) {
+					continue;
+				}
+				cmd.add(a);
+			}
+			return run(cmd, lines, cancel);
+		}
 		List<String> cmd = new ArrayList<>(List.of(executable, "-m", "pip"));
 		cmd.addAll(args);
 		return run(cmd, lines, cancel);
+	}
+
+	/* ---------------- uv ---------------- */
+
+	/** The preference: packages are installed with uv instead of pip (default: pip). */
+	public static final String PREF_USE_UV = "python_use_uv";
+
+	/** Returns true if uv is selected in the preferences (also if it is not installed). */
+	public static boolean uvSelected() {
+		Bio7Plugin plugin = Bio7Plugin.getDefault();
+		return plugin != null && plugin.getPreferenceStore().getBoolean(PREF_USE_UV);
+	}
+
+	/** Returns true if the packages are installed with uv: selected and installed. */
+	public static boolean useUv() {
+		return uvSelected() && uvExecutable() != null;
+	}
+
+	/** The command shown in the output: "uv pip" or "python -m pip". */
+	public static String pipLabel() {
+		return useUv() ? "uv pip" : "python -m pip";
+	}
+
+	/**
+	 * The executable of uv (null if not found): the PATH, then the folders of its
+	 * installers (~/.local/bin, ~/.cargo/bin, Homebrew).
+	 */
+	public static String uvExecutable() {
+		boolean win = System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).startsWith("windows");
+		String name = win ? "uv.exe" : "uv";
+		List<String> dirs = new ArrayList<>();
+		String path = System.getenv("PATH");
+		if (path == null) {
+			path = System.getenv("Path");
+		}
+		if (path != null) {
+			for (String d : path.split(File.pathSeparator)) {
+				if (!d.isBlank()) {
+					dirs.add(d.trim().replace("\"", ""));
+				}
+			}
+		}
+		String home = System.getProperty("user.home");
+		dirs.add(new File(home, ".local" + File.separator + "bin").getPath());
+		dirs.add(new File(home, ".cargo" + File.separator + "bin").getPath());
+		if (!win) {
+			dirs.add("/opt/homebrew/bin");
+			dirs.add("/usr/local/bin");
+			dirs.add("/home/linuxbrew/.linuxbrew/bin");
+		}
+		for (String d : dirs) {
+			File f = new File(d, name);
+			if (f.isFile() && f.canExecute()) {
+				return f.getAbsolutePath();
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -255,6 +362,16 @@ public final class PythonEnvironment {
 	 */
 	public static String createEnvironment(String baseExecutable, Path folder, Consumer<String> lines, Process[] cancel) throws IOException {
 		Result r = run(List.of(baseExecutable, "-m", "venv", folder.toString()), lines, cancel);
+		if (r.exit != 0 && r.output.contains("ensurepip")) {
+			/*
+			 * Debian/Ubuntu without the package python3-venv: venv can't install pip. The
+			 * environment is created without pip, pip is installed afterwards (installPip).
+			 */
+			if (lines != null) {
+				lines.accept("This Python can't install pip into a venv (ensurepip is missing): the environment is created without pip.");
+			}
+			r = run(List.of(baseExecutable, "-m", "venv", "--without-pip", folder.toString()), lines, cancel);
+		}
 		if (r.exit != 0) {
 			throw new IOException("The environment could not be created:\n" + r.output.strip());
 		}
@@ -264,6 +381,141 @@ public final class PythonEnvironment {
 		}
 		return exe;
 	}
+
+	/** Returns true if pip can be run with the Python (python -m pip). */
+	public static boolean hasPip(String executable) {
+		try {
+			return run(List.of(executable, "-m", "pip", "--version"), null, null).exit == 0;
+		} catch (IOException e) {
+			return false;
+		}
+	}
+
+	/**
+	 * Installs pip into a Python without pip (e.g., a venv of Debian/Ubuntu without
+	 * python3-venv, an environment of uv venv): ensurepip of the Python, else pip
+	 * of the base Python of the venv (pip --python), else the installer of pip
+	 * (get-pip.py of bootstrap.pypa.io) if the download is allowed.
+	 *
+	 * @param allowDownload asked before get-pip.py is downloaded (may be null: no
+	 *                      download)
+	 * @throws IOException with a hint (the packages of the system) if pip can't be
+	 *                     installed
+	 */
+	public static void installPip(String executable, java.util.function.BooleanSupplier allowDownload, Consumer<String> lines, Process[] cancel) throws IOException {
+		Consumer<String> log = lines == null ? s -> {
+		} : lines;
+		log.accept("\n$ python -m ensurepip --upgrade");
+		Result r = run(List.of(executable, "-m", "ensurepip", "--upgrade", "--default-pip"), lines, cancel);
+		if (r.exit == 0 && hasPip(executable)) {
+			log.accept("pip is installed.");
+			return;
+		}
+		/* The base Python of the venv: its pip installs pip into the venv (pip 22.3 or later) */
+		Result b = runCode(executable, "import sys\nprint('BIO7BASE' + (getattr(sys, '_base_executable', '') or ''))", cancel);
+		int at = b.output.indexOf("BIO7BASE");
+		String base = at < 0 ? "" : b.output.substring(at + 8).strip();
+		if (!base.isEmpty() && !new File(base).equals(new File(executable)) && hasPip(base)) {
+			log.accept("\n$ " + base + " -m pip --python " + executable + " install pip");
+			r = run(List.of(base, "-m", "pip", "--python", executable, "install", "pip"), lines, cancel);
+			if (r.exit == 0 && hasPip(executable)) {
+				log.accept("pip is installed.");
+				return;
+			}
+		}
+		if (allowDownload != null && allowDownload.getAsBoolean()) {
+			File script = File.createTempFile("bio7getpip", ".py");
+			try {
+				log.accept("\nDownloading the installer of pip: " + GET_PIP);
+				HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(15)).followRedirects(HttpClient.Redirect.NORMAL).build();
+				HttpRequest request = HttpRequest.newBuilder(URI.create(GET_PIP)).timeout(Duration.ofSeconds(120)).GET().build();
+				HttpResponse<Path> response = client.send(request, HttpResponse.BodyHandlers.ofFile(script.toPath()));
+				if (response.statusCode() != 200) {
+					throw new IOException("The installer of pip could not be downloaded (HTTP " + response.statusCode() + ")");
+				}
+				log.accept("$ python get-pip.py");
+				r = run(List.of(executable, script.getAbsolutePath()), lines, cancel);
+				if (r.exit == 0 && hasPip(executable)) {
+					log.accept("pip is installed.");
+					return;
+				}
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				throw new IOException("Interrupted");
+			} finally {
+				script.delete();
+			}
+		}
+		throw new IOException("pip could not be installed for " + executable + ".\n\n"
+				+ "On Debian/Ubuntu install the venv support of Python (e.g., sudo apt install python3-venv, or python3.X-venv for the version),"
+				+ " on Fedora python3-pip, then create the environment again.");
+	}
+
+	/**
+	 * The command which installs the venv support and pip of the system Python
+	 * (Linux, needs sudo: run in the Terminal), null if unknown (not Linux, an
+	 * unknown distribution).
+	 */
+	public static com.eco.bio7.rbridge.RserveInstaller.InstallCommand systemPipCommand(String executable) {
+		if (!System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).startsWith("linux")) {
+			return null;
+		}
+		String release;
+		try {
+			release = java.nio.file.Files.readString(Path.of("/etc/os-release")).toLowerCase(java.util.Locale.ROOT);
+		} catch (IOException | RuntimeException e) {
+			return null;
+		}
+		/* The version of the Python (Debian/Ubuntu: python3.X-venv) */
+		String minor = "";
+		try {
+			Result r = runCode(executable, "import sys\nprint('BIO7VER%d.%d' % sys.version_info[:2])", null);
+			int at = r.output.indexOf("BIO7VER");
+			if (at >= 0) {
+				minor = r.output.substring(at + 7).strip();
+			}
+		} catch (IOException e) {
+			/* The package without the version */
+		}
+		List<String> ids = new ArrayList<>();
+		ids.add(osReleaseValue(release, "id"));
+		ids.addAll(List.of(osReleaseValue(release, "id_like").split("\\s+")));
+		for (String id : ids) {
+			switch (id) {
+			case "debian", "ubuntu", "linuxmint", "pop", "raspbian" -> {
+				String pkg = minor.matches("3\\.\\d+") ? "python" + minor + "-venv" : "python3-venv";
+				return new com.eco.bio7.rbridge.RserveInstaller.InstallCommand("Debian/Ubuntu: venv and pip of Python " + minor,
+						"sudo apt update && sudo apt install -y " + pkg + " python3-pip");
+			}
+			case "fedora", "rhel", "centos", "rocky", "almalinux" -> {
+				return new com.eco.bio7.rbridge.RserveInstaller.InstallCommand("Fedora/RHEL: pip of Python", "sudo dnf install -y python3-pip");
+			}
+			case "opensuse", "suse", "opensuse-leap", "opensuse-tumbleweed", "sles" -> {
+				return new com.eco.bio7.rbridge.RserveInstaller.InstallCommand("openSUSE: pip of Python", "sudo zypper install -y python3-pip");
+			}
+			case "arch", "manjaro", "endeavouros" -> {
+				return new com.eco.bio7.rbridge.RserveInstaller.InstallCommand("Arch Linux: pip of Python", "sudo pacman -S --needed python-pip");
+			}
+			default -> {
+			}
+			}
+		}
+		return null;
+	}
+
+	/* A value of /etc/os-release (lower case, without quotes) or "" */
+	private static String osReleaseValue(String release, String key) {
+		for (String line : release.split("\\R")) {
+			String l = line.trim();
+			if (l.startsWith(key + "=")) {
+				return l.substring(key.length() + 1).replace("\"", "").replace("'", "").trim();
+			}
+		}
+		return "";
+	}
+
+	/** The official installer of pip (PyPA). */
+	public static final String GET_PIP = "https://bootstrap.pypa.io/get-pip.py";
 
 	/** The folder of the executables of an environment (bin, Scripts on Windows). */
 	public static Path binFolder(Path environment) {
@@ -276,6 +528,17 @@ public final class PythonEnvironment {
 		store.setValue("python_pipe_path", binFolder.toString());
 		store.setValue(EmbeddedPython.PREF_EMBEDDED, true);
 		store.setValue("python_3x", true);
+		/*
+		 * Saved at once: else the preferences are only written when Bio7 ends normally
+		 * (ended otherwise, e.g., from the IDE, the next start uses the former Python)
+		 */
+		if (store instanceof org.eclipse.jface.preference.IPersistentPreferenceStore p && store.needsSaving()) {
+			try {
+				p.save();
+			} catch (IOException e) {
+				/* Saved when Bio7 ends */
+			}
+		}
 	}
 
 	/**

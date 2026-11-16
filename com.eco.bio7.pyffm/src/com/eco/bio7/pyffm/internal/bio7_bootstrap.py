@@ -14,10 +14,30 @@ import types
 import traceback
 import code as _code
 
-try:
-    import numpy as np
-except Exception:  # numpy is optional
-    np = None
+# numpy is optional and imported when needed (_numpy): the paths of the selected
+# Python (e.g., the site-packages of a venv) are only added by _init, and an
+# environment may be added later (or numpy installed while Bio7 runs)
+np = None
+_np_tried = None
+
+
+def _numpy():
+    """numpy or None: imported again after sys.path changed (until it is found)."""
+    global np, _np_tried
+    if np is not None:
+        return np
+    m = sys.modules.get("numpy")
+    if m is None:
+        key = tuple(sys.path)
+        if key == _np_tried:
+            return None
+        _np_tried = key
+        try:
+            import numpy as m
+        except Exception:
+            m = None
+    np = m
+    return np
 
 import array as _array
 
@@ -25,6 +45,9 @@ _write_cb = _reply_cb = _call_cb = _plot_cb = _figs_cb = None
 _console = None
 _main = sys.modules["__main__"]
 _ret = None
+# The results of the calls to Java per thread (_call, _put with target 1)
+_rets = {}
+from _thread import get_ident as _get_ident
 _view = [640, 480, 1.0]
 _rendered = {}
 _open_figures = []
@@ -579,6 +602,24 @@ class _Java(_JavaPackage):
 java = _Java()
 
 
+def _file_url_path(url):
+    """The path of a file URL, also of "file://" + a Windows path (e.g., bokeh show():
+    file://C:\\Users\\...\\x.html, where urlparse takes the path as host)."""
+    import re
+    import urllib.parse
+    import urllib.request
+    rest = url[len("file:"):]
+    m = re.match(r"^/*([A-Za-z]:[\\/].*)$", rest)
+    if m and "\\" in m.group(1):
+        # A Windows path, not URL-encoded
+        return m.group(1)
+    p = urllib.parse.urlparse(url)
+    if p.netloc and re.match(r"^[A-Za-z]:$", p.netloc):
+        # file://C:/Users/... (the drive as host)
+        return urllib.request.url2pathname(p.netloc + p.path)
+    return urllib.request.url2pathname(p.path)
+
+
 def _register_browser():
     import webbrowser
 
@@ -587,9 +628,7 @@ def _register_browser():
             try:
                 if url.startswith("file:") or (os.path.isabs(url) and url.lower().endswith((".html", ".htm"))):
                     # a page of a file (e.g., bokeh show()): in the browser view or a markdown chunk
-                    import urllib.parse
-                    import urllib.request
-                    path = urllib.request.url2pathname(urllib.parse.urlparse(url).path) if url.startswith("file:") else url
+                    path = _file_url_path(url) if url.startswith("file:") else url
                     with open(path, encoding="utf-8") as f:
                         html = f.read()
                     _show_html(html, "bokeh" if "Bokeh" in html[:4000] else "page")
@@ -739,6 +778,7 @@ def _np_code(a):
 
 def _export(v):
     """The value as header (JSON) and buffers [(address, length)]; hold keeps the memory."""
+    _numpy()
     hold, bufs = [], []
 
     def add(obj, address, length):
@@ -858,7 +898,7 @@ def _build(h, ptrs):
         address, length = ptrs[h["b"]]
         shape = tuple(h["shape"])
         dtype = h["dtype"]
-        if np is not None:
+        if _numpy() is not None:
             a = np.empty(shape, dtype=np.dtype("?" if dtype == "b1" else dtype))
             if length:
                 ctypes.memmove(a.ctypes.data, address, length)
@@ -904,12 +944,12 @@ def _put(name, hdr_addr, hdr_len, bufs_addr, nbuf, target):
         ptrs = [(raw[2 * i], raw[2 * i + 1]) for i in range(nbuf)]
         value = _build(h, ptrs)
         if target == 1:
-            _ret = value
+            _rets[_get_ident()] = value
         else:
             _main.__dict__[name] = value
     except BaseException as e:
         if target == 1:
-            _ret = e
+            _rets[_get_ident()] = e
         else:
             _reply_error(_error_text(e))
 
@@ -926,7 +966,9 @@ def _call(function, *args, value=_NOVALUE):
         ptrs = _pointers(bufs)
         status = _call_cb(request, len(request), h, len(h), ctypes.addressof(ptrs), len(bufs))
         del hold
-    result, _ret = _ret, None
+    # The result of this thread: Java delivers it in the calling thread (_put); the
+    # GIL is released during the call, other threads may call at the same time
+    result = _rets.pop(_get_ident(), None)
     if isinstance(result, BaseException):
         raise result
     if status != 0:
@@ -1015,7 +1057,7 @@ def _render(num):
     fig.set_dpi(96.0 * scale)
     m.canvas.draw()
     rgba = memoryview(m.canvas.buffer_rgba())
-    if np is not None:
+    if _numpy() is not None:
         a = np.ascontiguousarray(np.asarray(rgba))
         height, width = a.shape[0], a.shape[1]
         address = a.ctypes.data

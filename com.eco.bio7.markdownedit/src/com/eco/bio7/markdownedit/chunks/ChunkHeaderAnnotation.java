@@ -33,9 +33,13 @@ import org.eclipse.swt.graphics.Rectangle;
  */
 final class ChunkHeaderAnnotation extends LineHeaderAnnotation {
 
-	/** The actions of the bar. */
+	/**
+	 * The actions of the bar. The icons are drawn as shapes: a symbol of the text
+	 * (e.g., ▶) is missing in many fonts and drawString of Windows doesn't take it
+	 * from another font.
+	 */
 	enum BarAction {
-		RUN("▶ Run"), RUN_ABOVE("▶▶ Run Above"), CLEAR("✕ Clear");
+		RUN("Run"), RUN_ABOVE("Run Above"), CLEAR("Clear");
 
 		final String label;
 
@@ -205,9 +209,9 @@ final class ChunkHeaderAnnotation extends LineHeaderAnnotation {
 			int ty = top + PAD;
 			if (output.running) {
 				String label = "Running...";
-				org.eclipse.swt.graphics.Point ext = gc.textExtent(label);
+				Point ext = textExtent(gc, label);
 				gc.setForeground(blend(b, f, 0.55));
-				gc.drawString(label, left + width - ext.x - PAD - 4, top + PAD, true);
+				drawText(gc, label, left + width - ext.x - PAD - 4, top + PAD);
 			}
 			for (int i = 0; i < lay.lines(); i++) {
 				String line = output.lines.get(i);
@@ -215,12 +219,12 @@ final class ChunkHeaderAnnotation extends LineHeaderAnnotation {
 				/* The confirmation of a chunk without output is dimmed */
 				boolean done = line.startsWith("\u2713 Done");
 				gc.setForeground(isError ? err : done ? blend(b, f, 0.55) : fg);
-				gc.drawString(line, left + PAD + 4, ty, true);
+				drawText(gc, line, left + PAD + 4, ty);
 				ty += lineHeight;
 			}
 			if (lay.truncated()) {
 				gc.setForeground(blend(b, f, 0.55));
-				gc.drawString("... " + (output.lines.size() - lay.lines()) + " more lines (a larger editor shows more)", left + PAD + 4, ty, true);
+				drawText(gc, "... " + (output.lines.size() - lay.lines()) + " more lines (a larger editor shows more)", left + PAD + 4, ty);
 				ty += lineHeight;
 			}
 			for (int i = 0; i < output.images.size(); i++) {
@@ -232,9 +236,14 @@ final class ChunkHeaderAnnotation extends LineHeaderAnnotation {
 					if (lay.scale() >= 1) {
 						gc.drawImage(img, left + PAD + 4, ty);
 					} else {
-						/* Smaller to fit into the editor */
+						/*
+						 * Smaller to fit into the editor. The interpolation switches the GC to advanced
+						 * graphics (GDI+ on Windows): it is restored for the following drawing.
+						 */
+						boolean advanced = gc.getAdvanced();
 						gc.setInterpolation(org.eclipse.swt.SWT.HIGH);
 						gc.drawImage(img, 0, 0, size[0], size[1], left + PAD + 4, ty, w, h);
+						gc.setAdvanced(advanced);
 					}
 				}
 				ty += h + GAP;
@@ -245,18 +254,86 @@ final class ChunkHeaderAnnotation extends LineHeaderAnnotation {
 			int by = y + outputHeight() + 1;
 			Color link = dark ? new Color(110, 170, 240) : new Color(30, 100, 190);
 			int bx = left + 2;
+			/* The icon: about the height of the capital letters */
+			int icon = Math.max(6, lineHeight * 9 / 20);
 			for (BarAction a : BarAction.values()) {
-				Point ext = gc.textExtent(a.label);
-				Rectangle r = new Rectangle(bx - 3, by, ext.x + 6, lineHeight + 2);
+				Point ext = textExtent(gc, a.label);
+				int iconWidth = a == BarAction.RUN_ABOVE ? icon * 2 - icon / 4 : icon;
+				int contentWidth = iconWidth + 5 + ext.x;
+				Rectangle r = new Rectangle(bx - 3, by, contentWidth + 6, lineHeight + 2);
 				gc.setBackground(blend(b, f, 0.08));
 				gc.fillRoundRectangle(r.x, r.y, r.width, r.height, 6, 6);
+				int iy = by + 1 + (lineHeight - icon) / 2;
+				drawIcon(gc, a, bx, iy, icon, link);
 				gc.setForeground(link);
-				gc.drawString(a.label, bx, by + 1, true);
+				drawText(gc, a.label, bx + iconWidth + 5, by + 1);
 				buttons.add(r);
-				bx += ext.x + 14;
+				bx += contentWidth + 14;
 			}
 		}
 		gc.setForeground(fg);
+	}
+
+	/* The icon of an action as shapes (the same in all fonts and systems) */
+	private static void drawIcon(GC gc, BarAction a, int x, int y, int size, Color color) {
+		boolean advanced = gc.getAdvanced();
+		int antialias = gc.getAntialias();
+		gc.setAntialias(org.eclipse.swt.SWT.ON);
+		gc.setBackground(color);
+		gc.setForeground(color);
+		switch (a) {
+		case RUN -> gc.fillPolygon(triangle(x, y, size));
+		case RUN_ABOVE -> {
+			gc.fillPolygon(triangle(x, y, size));
+			gc.fillPolygon(triangle(x + size - size / 4, y, size));
+		}
+		case CLEAR -> {
+			int lw = gc.getLineWidth();
+			gc.setLineWidth(Math.max(1, size / 5));
+			int m = size / 6;
+			gc.drawLine(x + m, y + m, x + size - m, y + size - m);
+			gc.drawLine(x + size - m, y + m, x + m, y + size - m);
+			gc.setLineWidth(lw);
+		}
+		}
+		/* The text of the editor is drawn as before (antialias and advanced graphics restored) */
+		gc.setAntialias(antialias);
+		gc.setAdvanced(advanced);
+	}
+
+	/* A triangle which points to the right */
+	private static int[] triangle(int x, int y, int size) {
+		int w = size * 7 / 8;
+		return new int[] { x, y, x + w, y + size / 2, x, y + size };
+	}
+
+	/*
+	 * Draws text with a TextLayout: characters missing in the font of the editor
+	 * (e.g., ✓, box drawing of R) are taken from another font. drawString doesn't
+	 * do this on Windows (GDI) unless the GC uses advanced graphics.
+	 */
+	private static void drawText(GC gc, String text, int x, int y) {
+		org.eclipse.swt.graphics.TextLayout layout = new org.eclipse.swt.graphics.TextLayout(gc.getDevice());
+		try {
+			layout.setFont(gc.getFont());
+			layout.setText(text);
+			layout.draw(gc, x, y);
+		} finally {
+			layout.dispose();
+		}
+	}
+
+	/* The size of a text as drawn by drawText */
+	private static Point textExtent(GC gc, String text) {
+		org.eclipse.swt.graphics.TextLayout layout = new org.eclipse.swt.graphics.TextLayout(gc.getDevice());
+		try {
+			layout.setFont(gc.getFont());
+			layout.setText(text);
+			Rectangle r = layout.getBounds();
+			return new Point(r.width, r.height);
+		} finally {
+			layout.dispose();
+		}
 	}
 
 	private static Color blend(RGB b, RGB f, double t) {

@@ -55,8 +55,9 @@ public class Python extends FieldEditorPreferencePage implements IWorkbenchPrefe
 		
 		addField(new BooleanFieldEditor("IMAGE_METHODS_CLOSE_VIEWS", "Image-Methods: the switch R/Python closes the views of the other language (R-Shell, packages)",
 				BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
-		addField(new BooleanFieldEditor("python_embedded", "Embedded Python (in the Bio7 process: data transfer, plots; a change of the Python needs a restart)",
-				BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		BooleanFieldEditor embedded = new BooleanFieldEditor("python_embedded", "Embedded Python (in the Bio7 process: data transfer, plots; a change of the Python needs a restart)",
+				BooleanFieldEditor.DEFAULT, getFieldEditorParent());
+		addField(embedded);
 		addField(new BooleanFieldEditor("python_process_extra", "Execute Editor Source in Seperate Python Process (not sent to Bio7 Python Shell)", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		python3 = new CheckField("python_3x", "Python 3 is used to evaluate scripts (only important if sent to Bio7 Python Shell)", getFieldEditorParent());
 		addField(python3);
@@ -65,10 +66,13 @@ public class Python extends FieldEditorPreferencePage implements IWorkbenchPrefe
 		addField(new ActionButtonFieldEditor("Find Python on this computer:", "Detect Python...", this::detectPython, getFieldEditorParent()));
 		addField(new ActionButtonFieldEditor("Install, upgrade, uninstall packages:", "Python Packages...", () -> {
 			com.eco.bio7.pybridge.PythonPackagesDialog.open(getShell());
-			/* A new Bio7 environment may have been selected */
+			/* A new Bio7 environment may have been selected (else 'Apply' writes the former values back) */
 			pythonPath.load();
 			python3.load();
+			embedded.load();
 		}, getFieldEditorParent()));
+		addField(new BooleanFieldEditor(com.eco.bio7.pybridge.PythonEnvironment.PREF_USE_UV,
+				"Install packages with uv instead of pip (if uv is installed: faster, the environment needs no pip)", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		SpacerFieldEditor spacer2 = new SpacerFieldEditor(getFieldEditorParent());
 		addField(spacer2);
 	}
@@ -77,9 +81,11 @@ public class Python extends FieldEditorPreferencePage implements IWorkbenchPrefe
 	private void detectPython() {
 		java.util.List<com.eco.bio7.console.PythonFinder.Found> found = new java.util.ArrayList<>();
 		org.eclipse.swt.custom.BusyIndicator.showWhile(getShell().getDisplay(), () -> found.addAll(com.eco.bio7.console.PythonFinder.detect()));
+		/* The preferences store a folder: versioned executables (e.g., /usr/bin/python3.12) can't be selected here */
+		found.removeIf(f -> !com.eco.bio7.console.PythonFinder.selectableAsFolder(f));
 		if (found.isEmpty()) {
 			org.eclipse.jface.dialogs.MessageDialog.openInformation(getShell(), "Detect Python",
-					"No Python 3 interpreter was found (PATH, installation folders of Python, Homebrew, pyenv, conda).\n\n"
+					"No Python 3 interpreter was found (PATH, registry, installation folders of Python, Homebrew, pyenv, uv, conda).\n\n"
 							+ "Install Python 3 (e.g., from python.org) or select the folder of the interpreter.");
 			return;
 		}

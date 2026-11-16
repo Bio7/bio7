@@ -171,6 +171,8 @@ public final class EmbeddedR {
 				print(warning, text, true);
 			}
 		});
+		/* Linux: the C++ runtime of the selected Python too (the newest is loaded first) */
+		com.eco.bio7.pybridge.NativeLibDirs.addPython(com.eco.bio7.pybridge.PythonEnvironment.preferenceExecutable());
 		RSession session;
 		try {
 			session = RSession.start(options);

@@ -92,6 +92,12 @@ public class PythonPackagesPanel {
 	private final List<Control> actions = new ArrayList<>();
 	private final Process[] running = new Process[1];
 	private volatile boolean busy;
+	/* The name of the running task (for the hint if another one is started) */
+	private volatile String busyTask;
+	/* Why the Python could not be read (null if it was read) */
+	private volatile String infoError;
+	/* The Python of the preferences when the panel last looked (a change selects it) */
+	private volatile String preferenceSeen = PythonEnvironment.preferenceExecutable();
 
 	public PythonPackagesPanel(Composite parent) {
 		root = new Composite(parent, SWT.NONE);
@@ -321,8 +327,10 @@ public class PythonPackagesPanel {
 	/* Runs a task in a thread (one at a time) */
 	private void task(String name, ThrowingRunnable r) {
 		if (busy) {
+			appendLog("Please wait: '" + busyTask + "' is running (or press 'Cancel').");
 			return;
 		}
+		busyTask = name;
 		setBusy(true);
 		Thread t = new Thread(() -> {
 			try {
@@ -347,17 +355,45 @@ public class PythonPackagesPanel {
 
 	/** Reads the installed packages again (with the updates of PyPI if selected). */
 	public void refresh(boolean withUpdates) {
+		/*
+		 * The Python may have been changed in the preferences (e.g., 'Detect
+		 * Python...'). Only a change of the preference counts: the running Python of
+		 * Bio7 may be another one (it is used after a restart).
+		 */
+		String pref = PythonEnvironment.preferenceExecutable();
+		if (!busy && !java.util.Objects.equals(pref, preferenceSeen)) {
+			preferenceSeen = pref;
+			if (pref != null) {
+				executable = pref;
+				info = null;
+				infoError = null;
+			}
+		}
 		if (executable == null) {
 			pythonLabel.setText("Python: not found");
 			warningLabel.setText("No Python 3 was found. Select it in the Python preferences ('Detect Python...') or create a Bio7 environment.");
 			return;
 		}
 		String exe = executable;
-		task("Python", () -> {
-			PythonEnvironment.Info i = PythonEnvironment.info(exe);
-			List<PythonEnvironment.Package> list = i.pip() == null ? List.of() : PythonEnvironment.list(exe);
+		task("Reading the packages", () -> {
+			PythonEnvironment.Info i;
+			try {
+				i = PythonEnvironment.info(exe);
+				infoError = null;
+			} catch (IOException e) {
+				infoError = e.getMessage();
+				Display.getDefault().asyncExec(() -> {
+					if (isOpen()) {
+						warningLabel.setText("The Python could not be read (see the output). Select another Python in the preferences or create a Bio7 environment.");
+						warningLabel.setForeground(root.getDisplay().getSystemColor(SWT.COLOR_RED));
+						root.layout(true, true);
+					}
+				});
+				throw e;
+			}
+			List<PythonEnvironment.Package> list = !i.hasInstaller() ? List.of() : PythonEnvironment.list(exe);
 			Map<String, String> updates = new HashMap<>();
-			if (withUpdates && i.pip() != null) {
+			if (withUpdates && i.hasInstaller()) {
 				appendLog("Checking for updates (PyPI) ...");
 				updates = PythonEnvironment.outdated(exe);
 				appendLog(updates.isEmpty() ? "All packages are up to date." : updates.size() + " packages can be upgraded.");
@@ -385,15 +421,22 @@ public class PythonPackagesPanel {
 		case "conda" -> "conda environment";
 		default -> "system Python";
 		};
-		pythonLabel.setText("Python " + info.version() + " (" + kind + (EmbeddedPython.isRunning() ? ", running in Bio7" : "") + "): " + info.executable());
+		boolean uv = PythonEnvironment.useUv();
+		pythonLabel.setText("Python " + info.version() + " (" + kind + (EmbeddedPython.isRunning() ? ", running in Bio7" : "") + (uv ? ", packages with uv" : "") + "): "
+				+ info.executable());
 		String warning = "";
-		if (info.pip() == null) {
-			warning = "pip is not available for this Python. Create a Bio7 environment (it includes pip).";
+		if (PythonEnvironment.uvSelected() && !uv) {
+			warning = "uv is selected in the Python preferences but was not found (PATH, ~/.local/bin, ~/.cargo/bin): pip is used. ";
+		}
+		if (!info.hasInstaller() && !info.externallyManaged() && !info.kind().equals("system")) {
+			warning += "pip is not installed in this environment: 'Install' offers to install it (or create a Bio7 environment).";
+		} else if (!info.hasInstaller()) {
+			warning += "pip is not available for this Python. Create a Bio7 environment (it includes pip).";
 		} else if (info.externallyManaged()) {
-			warning = "The packages of this Python are managed by the system (e.g., Homebrew or Linux): pip can't install into it. "
+			warning += "The packages of this Python are managed by the system (e.g., Homebrew or Linux): " + (uv ? "uv" : "pip") + " can't install into it. "
 					+ "Create a Bio7 environment (a virtual environment with this or another Python).";
 		} else if (info.kind().equals("conda")) {
-			warning = "A conda environment: pip installs the packages which conda doesn't provide.";
+			warning += "A conda environment: " + (uv ? "uv" : "pip") + " installs the packages which conda doesn't provide.";
 		}
 		warningLabel.setText(warning);
 		warningLabel.setForeground(info.canInstall() ? null : root.getDisplay().getSystemColor(SWT.COLOR_RED));
@@ -427,8 +470,92 @@ public class PythonPackagesPanel {
 
 	/* ---------------- pip ---------------- */
 
+	/*
+	 * Installs pip into the Python if it is missing (in a task thread): the download
+	 * of the installer of pip is asked first
+	 */
+	private void ensurePip(String exe) throws IOException {
+		if (PythonEnvironment.hasPip(exe)) {
+			return;
+		}
+		appendLog("\npip is missing in " + exe + ": it is installed.");
+		/* Linux: the package of the system (sudo) can be installed in the Terminal of Bio7 */
+		com.eco.bio7.rbridge.RserveInstaller.InstallCommand system = PythonEnvironment.systemPipCommand(exe);
+		boolean terminal = system != null && org.eclipse.core.runtime.Platform.getBundle("org.eclipse.terminal.view.ui") != null;
+		boolean[] terminalStarted = new boolean[1];
+		try {
+			PythonEnvironment.installPip(exe, () -> {
+				int[] choice = { -1 };
+				Display.getDefault().syncExec(() -> {
+					if (!isOpen()) {
+						return;
+					}
+					String text = "pip could not be installed from this Python (ensurepip is missing, e.g., Debian/Ubuntu without python3-venv).\n\n";
+					if (terminal) {
+						text += "Install the package of the system in the Terminal of Bio7 (sudo asks for your password there):\n\n    " + system.command() + "\n\n"
+								+ "Or download the official installer of pip and run it in the environment (no sudo):\n    " + PythonEnvironment.GET_PIP;
+						choice[0] = new MessageDialog(shell(), "Python Packages: pip", null, text, MessageDialog.QUESTION, 0, "Run in Terminal",
+								"Download pip Installer", "Cancel").open();
+					} else {
+						text += "Download the official installer of pip and run it in the environment?\n" + PythonEnvironment.GET_PIP;
+						choice[0] = MessageDialog.openQuestion(shell(), "Python Packages: pip", text) ? 1 : 2;
+					}
+				});
+				if (choice[0] == 0 && runInTerminal(system)) {
+					terminalStarted[0] = true;
+				}
+				return choice[0] == 1;
+			}, this::appendLog, running);
+		} catch (IOException e) {
+			if (terminalStarted[0]) {
+				throw new IOException("The package of the system is installed in the Terminal. When it has finished, press 'Install' again "
+						+ "(or create the Bio7 environment again).");
+			}
+			throw e;
+		}
+	}
+
+	/*
+	 * Runs a command (with sudo) in the Terminal of Bio7 (not in the UI thread); the
+	 * user confirmed it in the dialog which shows the command
+	 */
+	private boolean runInTerminal(com.eco.bio7.rbridge.RserveInstaller.InstallCommand command) {
+		try {
+			java.io.File script = com.eco.bio7.rbridge.RserveInstaller.writeTerminalScript(command,
+					"Finished. Press 'Install' in the Python Packages again (or create the Bio7 environment again).");
+			new com.eco.bio7.console.ShellUtil().execShellCommand("Install pip", "/bin/bash", script.getAbsolutePath());
+			appendLog("Started in the Terminal: " + command.command() + "\nEnter your password there if asked.");
+			return true;
+		} catch (Exception e) {
+			appendLog("The Terminal could not be started: " + e.getMessage() + "\nRun the command in a terminal: " + command.command());
+			return false;
+		}
+	}
+
 	private boolean checkInstallable() {
 		if (info == null) {
+			if (executable == null && !busy) {
+				/* A Python may have been selected in the preferences in the meantime */
+				refresh(false);
+			}
+			if (executable == null) {
+				MessageDialog.openInformation(shell(), "Python Packages", "No Python 3 was found. Select it in the Python preferences ('Detect Python...') or create a Bio7 environment.");
+			} else if (busy) {
+				MessageDialog.openInformation(shell(), "Python Packages", "Please wait: the packages of Python are being read.");
+			} else {
+				MessageDialog.openInformation(shell(), "Python Packages", "The Python could not be read:\n" + executable
+						+ (infoError == null ? "" : "\n\n" + infoError) + "\n\nIt is read again now (see the output).");
+				refresh(false);
+			}
+			return false;
+		}
+		if (!info.hasInstaller() && !info.externallyManaged() && !info.kind().equals("system")) {
+			/* A venv or conda environment without pip (e.g., Debian/Ubuntu without python3-venv, uv venv) */
+			if (MessageDialog.openQuestion(shell(), "Python Packages", "pip is not installed in this environment:\n" + info.executable() + "\n\nInstall pip now?")) {
+				String exe = info.executable();
+				task("Installing pip", () -> ensurePip(exe));
+				refreshAfterTask();
+			}
 			return false;
 		}
 		if (!info.canInstall()) {
@@ -442,9 +569,19 @@ public class PythonPackagesPanel {
 
 	private void install(String text) {
 		List<String> args = PythonEnvironment.packageArgs(text);
-		if (args.isEmpty() || !checkInstallable()) {
+		if (args.isEmpty()) {
+			MessageDialog.openInformation(shell(), "Python Packages", "Please enter the packages to install (e.g., numpy pandas).");
+			installText.setFocus();
 			return;
 		}
+		if (busy) {
+			appendLog("Please wait: '" + busyTask + "' is running (or press 'Cancel').");
+			return;
+		}
+		if (!checkInstallable()) {
+			return;
+		}
+		appendLog("\nInstalling: " + String.join(" ", args));
 		List<String> pip = new ArrayList<>(List.of("install"));
 		pip.addAll(args);
 		runPip(pip, args);
@@ -518,7 +655,7 @@ public class PythonPackagesPanel {
 				return;
 			}
 		}
-		appendLog("\n$ python -m pip " + String.join(" ", args));
+		appendLog("\n$ " + PythonEnvironment.pipLabel() + " " + String.join(" ", args));
 		PythonEnvironment.Result r = PythonEnvironment.pip(exe, args, this::appendLog, running);
 		appendLog(r.exit() == 0 ? "Done." : "pip ended with an error (" + r.exit() + ").");
 		boolean modified = r.output().contains("Successfully installed") || r.output().contains("Successfully uninstalled");
@@ -567,7 +704,8 @@ public class PythonPackagesPanel {
 			plan = null;
 		}
 		if (plan == null) {
-			appendLog("(No check of the changes: pip 22.2 or later is needed, or pip can't resolve the packages.)");
+			appendLog(PythonEnvironment.useUv() && !PythonEnvironment.hasPip(exe) ? "(No check of the changes: it needs pip in the environment, uv has no report of a dry run.)"
+					: "(No check of the changes: pip 22.2 or later is needed, or pip can't resolve the packages.)");
 			return args;
 		}
 		List<String> changes = new ArrayList<>();
@@ -624,11 +762,19 @@ public class PythonPackagesPanel {
 	private List<String> afterChange(List<String> changed) {
 		PySession s = EmbeddedPython.session();
 		List<String> loaded = new ArrayList<>();
-		if (s == null || !s.executable().toString().equals(executable)) {
+		if (s == null) {
 			return loaded;
 		}
 		try {
+			/* Also for an environment added to the running Python (EmbeddedPython.addEnvironment) */
 			s.exec("import importlib as _il; _il.invalidate_caches(); del _il");
+		} catch (Exception e) {
+			return loaded;
+		}
+		if (!s.executable().toString().equals(executable)) {
+			return loaded;
+		}
+		try {
 			PyValue v = s.eval("sorted({m.split('.')[0].lower() for m in list(__import__('sys').modules)})");
 			if (v instanceof PyValue.Str names) {
 				java.util.Set<String> modules = new java.util.HashSet<>(java.util.Arrays.asList(names.values()));
@@ -682,7 +828,7 @@ public class PythonPackagesPanel {
 			StringBuilder code = new StringBuilder("import importlib.metadata as m\nfor n in " + pythonList(names) + ":\n");
 			code.append("    try:\n        t = (m.distribution(n).read_text('top_level.txt') or '').split()\n    except Exception:\n        t = []\n");
 			code.append("    t = [x for x in t if not x.startswith('_')] or [n.replace('-', '_').lower()]\n    print(t[0])\n");
-			PythonEnvironment.Result r = PythonEnvironment.run(List.of(exe, "-c", code.toString()), null, running);
+			PythonEnvironment.Result r = PythonEnvironment.runCode(exe, code.toString(), running);
 			StringBuilder imports = new StringBuilder();
 			for (String line : r.output().strip().split("\\R")) {
 				if (line.matches("[A-Za-z_][A-Za-z0-9_]*")) {
@@ -860,19 +1006,37 @@ public class PythonPackagesPanel {
 			}
 			PythonEnvironment.select(PythonEnvironment.binFolder(folder));
 			executable = exe;
+			preferenceSeen = PythonEnvironment.preferenceExecutable();
 			appendLog("Selected in the Python preferences: " + PythonEnvironment.binFolder(folder));
+			/* An environment without pip (e.g., Debian/Ubuntu without python3-venv): pip is installed */
+			if (!PythonEnvironment.useUv()) {
+				ensurePip(exe);
+			}
 			if (bundle) {
-				appendLog("\n$ python -m pip install " + BUNDLES.get("Scientific"));
+				appendLog("\n$ " + PythonEnvironment.pipLabel() + " install " + BUNDLES.get("Scientific"));
 				PythonEnvironment.Result r = PythonEnvironment.pip(exe, PythonEnvironment.packageArgs(BUNDLES.get("Scientific")), this::appendLog, running);
 				appendLog(r.exit() == 0 ? "Done." : "pip ended with an error (" + r.exit() + ").");
 			}
+			/* The running Python imports the packages of the new environment at once (same base Python), else after a restart */
+			boolean added = EmbeddedPython.isRunning() && EmbeddedPython.addEnvironment(exe);
+			if (added) {
+				appendLog("The packages of the environment can be imported in the running Python of Bio7 now.");
+			}
 			Display.getDefault().asyncExec(() -> {
 				if (EmbeddedPython.isRunning() && isOpen()) {
-					MessageDialog.openInformation(shell(), "Bio7 Environment", "The new environment is selected. The running Python of Bio7 uses it after a restart of Bio7.");
+					MessageDialog.openInformation(shell(), "Bio7 Environment", added
+							? "The new environment is selected (it is used after a restart of Bio7).\n\nIts packages can already be imported in the running Python of Bio7 "
+									+ "(the same Python version). A package which was already imported from the former Python stays loaded until a restart."
+							: "The new environment is selected. The running Python of Bio7 uses it after a restart of Bio7.");
 				}
 			});
 		});
 		/* The list of the new environment (after the task) */
+		refreshAfterTask();
+	}
+
+	/* Reads the Python and its packages again when the running task has ended */
+	private void refreshAfterTask() {
 		Thread t = new Thread(() -> {
 			while (busy) {
 				try {

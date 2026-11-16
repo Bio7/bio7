@@ -76,6 +76,19 @@ public final class PyNative {
 	public static PyNative load(Path library, String home) throws PyException {
 		String os = os();
 		try {
+			if (os.equals("Linux")) {
+				/*
+				 * The newest C++ runtime of Python (e.g., Anaconda: <prefix>/lib), the system
+				 * and the other runtimes (R) first: only one libstdc++ can be loaded per process
+				 * (numpy loads it)
+				 */
+				java.util.List<Path> own = new java.util.ArrayList<>();
+				own.add(Path.of(home, "lib"));
+				if (library.getParent() != null) {
+					own.add(library.getParent());
+				}
+				CxxRuntime.preloadNewest(own);
+			}
 			if (!os.equals("Windows")) {
 				MethodHandle dlopen = LINKER.downcallHandle(LINKER.defaultLookup().find("dlopen").orElseThrow(), FunctionDescriptor.of(ADDRESS, ADDRESS, JAVA_INT));
 				int flags = os.equals("Mac") ? 0x2 | 0x8 : 0x2 | 0x100; /* RTLD_NOW | RTLD_GLOBAL */
@@ -103,6 +116,7 @@ public final class PyNative {
 						throw new PyException("PYTHONHOME could not be set");
 					}
 				}
+				preloadWindows(library);
 			}
 			SymbolLookup py = SymbolLookup.libraryLookup(library, Arena.global());
 			return new PyNative(os, py);
@@ -110,6 +124,29 @@ public final class PyNative {
 			throw e;
 		} catch (Throwable e) {
 			throw new PyException("The library of Python could not be loaded: " + library + " (" + e + ")", e);
+		}
+	}
+
+	/*
+	 * Loads the DLL with its folder in the search path of its dependencies
+	 * (LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS): the
+	 * DLLs beside python3xx.dll (e.g., of Anaconda) aren't found by LoadLibrary,
+	 * which SymbolLookup.libraryLookup uses. The lookup then gets the loaded DLL.
+	 */
+	private static void preloadWindows(Path library) throws Throwable {
+		SymbolLookup kernel32 = SymbolLookup.libraryLookup("kernel32", Arena.global());
+		Linker.Option lastError = Linker.Option.captureCallState("GetLastError");
+		java.lang.foreign.StructLayout state = Linker.Option.captureStateLayout();
+		MethodHandle loadLibraryEx = LINKER.downcallHandle(kernel32.find("LoadLibraryExW").orElseThrow(), FunctionDescriptor.of(ADDRESS, ADDRESS, ADDRESS, JAVA_INT),
+				lastError);
+		try (Arena a = Arena.ofConfined()) {
+			MemorySegment error = a.allocate(state);
+			MemorySegment handle = (MemorySegment) loadLibraryEx.invokeExact(error, wide(a, library.toString()), MemorySegment.NULL, 0x00001000 | 0x00000100);
+			if (handle.address() == 0) {
+				int code = (int) state.varHandle(java.lang.foreign.MemoryLayout.PathElement.groupElement("GetLastError")).get(error, 0L);
+				throw new PyException("The library of Python could not be loaded: " + library + " (Windows error " + code
+						+ (code == 126 ? ": the DLL or a DLL it needs was not found" : code == 193 ? ": not a 64-bit DLL" : "") + ")");
+			}
 		}
 	}
 

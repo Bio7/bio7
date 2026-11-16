@@ -598,9 +598,18 @@ public final class RserveInstaller {
 	 * @return the script (a path without spaces)
 	 */
 	public static File writeTerminalScript(InstallCommand command) throws IOException {
+		return writeTerminalScript(command, "Finished. Click 'Search Again' in the R and Rserve Setup.");
+	}
+
+	/**
+	 * As above, with the message shown when the command has finished successfully
+	 * (e.g., what to do next in Bio7).
+	 */
+	public static File writeTerminalScript(InstallCommand command, String finished) throws IOException {
 		String script = "#!/bin/bash\n" + "echo 'Bio7: " + command.label().replace("'", "") + "'\n" + "cat <<'BIO7_COMMAND'\n" + command.command() + "\nBIO7_COMMAND\n"
 				+ "echo\n" + "(\n" + command.command() + "\n)\n" + "status=$?\n" + "echo\n"
-				+ "if [ $status -eq 0 ]; then echo \"Finished. Click 'Search Again' in the R and Rserve Setup.\"; else echo \"The command ended with the exit code $status.\"; fi\n"
+				+ "if [ $status -eq 0 ]; then echo \"" + finished.replace("\\", "\\\\").replace("\"", "\\\"").replace("$", "\\$").replace("`", "\\`")
+				+ "\"; else echo \"The command ended with the exit code $status.\"; fi\n"
 				+ "exec \"${SHELL:-/bin/bash}\" -l\n";
 		File dir = new File(System.getProperty("java.io.tmpdir"));
 		/* The Terminal gets the path as an argument: no spaces */

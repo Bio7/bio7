@@ -383,7 +383,7 @@ public final class InlineChunkOutputs {
 			/* An assignment, def, class, import or a for loop variable at the start of a line */
 			boolean createdAbove = Pattern.compile("(?m)^\\s*(?:" + q + "\\s*(?:,[^=\\n]*)?(?:=(?!=)|[+\\-*/]=)|(?:def|class)\\s+" + q + "\\b|(?:from\\s+\\S+\\s+)?import\\s.*\\b" + q
 					+ "\\b|for\\s+.*\\b" + q + "\\b.*\\sin\\s)").matcher(codeAbove).find();
-			return createdAbove ? new RChunks.Output(out.text().stripTrailing() + "\nHint: '" + m.group(1) + "' is created in a chunk above: run it first (\u25B6\u25B6 Run Above).",
+			return createdAbove ? new RChunks.Output(out.text().stripTrailing() + "\nHint: '" + m.group(1) + "' is created in a chunk above: run it first ('Run Above').",
 					out.plots(), true) : out;
 		}
 		Matcher m = Pattern.compile("(?:object|Objekt) '([^']+)' (?:not found|nicht gefunden)").matcher(out.text());
@@ -398,7 +398,7 @@ public final class InlineChunkOutputs {
 		if (!createdAbove) {
 			return out;
 		}
-		String hint = "Hint: '" + name + "' is created in a chunk above: run it first (\u25B6\u25B6 Run Above).";
+		String hint = "Hint: '" + name + "' is created in a chunk above: run it first ('Run Above').";
 		return new RChunks.Output(out.text().stripTrailing() + "\n" + hint, out.plots(), true);
 	}
 
