@@ -194,7 +194,6 @@ public final class PythonUtil {
 		REXP r = backend().eval(rExpression);
 		py().assign(pythonName, PythonConvert.fromR(r));
 		PythonShellView.refreshOpenViews();
-		PythonShellView.refreshOpenViews();
 	}
 
 	/** Alias of {@link #pythonToR}. */

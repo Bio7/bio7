@@ -133,6 +133,15 @@ public class FileRoot {
 	}
 
 	/**
+	 * Returns the Python shell script path from the preferences.
+	 * 
+	 * @return the path as a string.
+	 */
+	public static String getPythonShellScriptLocation() {
+		return Bio7Plugin.getDefault().getPreferenceStore().getString(PreferenceConstants.D_PYTHON_SHELL_SCRIPTS);
+	}
+
+	/**
 	 * Returns the workspace path.
 	 * 
 	 * @return the path as a string.

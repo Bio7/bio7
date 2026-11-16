@@ -12,6 +12,7 @@
  *******************************************************************************/
 package com.eco.bio7.pybridge;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -47,6 +48,7 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.part.ViewPart;
 
 import com.eco.bio7.Bio7Plugin;
+import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.pyffm.PyException;
 import com.eco.bio7.pyffm.PySession;
 import com.eco.bio7.pyffm.PyValue;
@@ -446,7 +448,41 @@ public class PythonShellView extends ViewPart {
 		});
 		new MenuItem(menu, SWT.SEPARATOR);
 		item(menu, "Delete", this::delete);
+		/* The scripts of the folder of the preferences (as in the R-Shell): created each time the menu opens */
+		int fixed = menu.getItemCount();
+		menu.addListener(SWT.Show, _ -> {
+			MenuItem[] items = menu.getItems();
+			for (int i = fixed; i < items.length; i++) {
+				items[i].dispose();
+			}
+			File folder = new File(Bio7Plugin.getDefault().getPreferenceStore().getString(PreferenceConstants.D_PYTHON_SHELL_SCRIPTS));
+			if (PythonShellScripts.hasScripts(folder)) {
+				new MenuItem(menu, SWT.SEPARATOR);
+				PythonShellScripts.createMenus(menu, folder, this::runScript);
+			}
+		});
 		return menu;
+	}
+
+	/*
+	 * Runs a script of the menu: the names of the selected objects are in the
+	 * list bio7_shell_vars (Python scripts), the other script types run with their
+	 * interpreter.
+	 */
+	private void runScript(File file) {
+		if (!file.getName().endsWith(".py")) {
+			PythonShellScripts.run(file);
+			return;
+		}
+		List<PyValue> sel = new ArrayList<>();
+		for (String n : selectedNames()) {
+			sel.add(PyValue.of(n));
+		}
+		async(() -> {
+			python().assign("bio7_shell_vars", new PyValue.PyList(sel));
+			EmbeddedPython.runFile(file.getAbsolutePath());
+			EmbeddedPython.prompt();
+		});
 	}
 
 	private static void item(Menu menu, String text, Runnable action) {

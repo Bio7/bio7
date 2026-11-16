@@ -28,6 +28,7 @@ public class Bio7PreferencePage extends FieldEditorPreferencePage implements IWo
 		addField(new DirectoryFieldEditor(PreferenceConstants.D_STRING, "&Path to startup Scripts:", getFieldEditorParent()));
 		addField(new DirectoryFieldEditor(PreferenceConstants.D_SCRIPT_GENERAL, "&Path to main menu scripts:", getFieldEditorParent()));
 		addField(new DirectoryFieldEditor(PreferenceConstants.D_RSHELL_SCRIPTS, "&Path to 'R-Shell' context menu scripts:", getFieldEditorParent()));
+		addField(new DirectoryFieldEditor(PreferenceConstants.D_PYTHON_SHELL_SCRIPTS, "&Path to 'Python-Shell' context menu scripts:", getFieldEditorParent()));
 		addField(new DirectoryFieldEditor(PreferenceConstants.D_GRID_SCRIPTS, "&Path to 'Table' menu scripts:", getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new BooleanFieldEditor("SAVE_ALL_EDITORS", "Save all editors on close", getFieldEditorParent()));

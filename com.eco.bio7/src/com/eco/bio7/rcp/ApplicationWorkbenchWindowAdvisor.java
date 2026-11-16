@@ -509,6 +509,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		File fileStartupScripts = new File(path + "/startup_scripts");
 		File fileGeneralScripts = new File(path + "/scripts");
 		File fileRShellScripts = new File(path + "/r_shell_scripts");
+		File filePythonShellScripts = new File(path + "/python_shell_scripts");
 		File fileGridScripts = new File(path + "/grid_scripts");
 
 		/* Folder for the temp *.RData file! */
@@ -597,6 +598,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault(PreferenceConstants.D_STRING, fileStartupScripts.getAbsolutePath());
 		store.setDefault(PreferenceConstants.D_SCRIPT_GENERAL, fileGeneralScripts.getAbsolutePath());
 		store.setDefault(PreferenceConstants.D_RSHELL_SCRIPTS, fileRShellScripts.getAbsolutePath());
+		store.setDefault(PreferenceConstants.D_PYTHON_SHELL_SCRIPTS, filePythonShellScripts.getAbsolutePath());
 		store.setDefault(PreferenceConstants.D_GRID_SCRIPTS, fileGridScripts.getAbsolutePath());
 		store.setDefault("SAVE_R_WORKSPACE_ON_QUIT", false);
 		store.setDefault("ON_QUIT_COMMAND", "save.image(file='session.RData')");

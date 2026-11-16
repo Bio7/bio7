@@ -30,6 +30,8 @@ public class PreferenceConstants {
 
 	public static final String D_RSHELL_SCRIPTS = "r_shell_scripts";
 
+	public static final String D_PYTHON_SHELL_SCRIPTS = "python_shell_scripts";
+
 	//public static String D_ENABLE_HEAD_REPLACE="enableHeadReplace";
 	
 	

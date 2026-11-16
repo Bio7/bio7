@@ -1,0 +1,23 @@
+The scripts of the Python-Shell context menu (as in the R-Shell). All scripts which
+are found in the scripts location are displayed in the context menu of the object list.
+
+The names of the selected objects are available in Python scripts in the
+list 'bio7_shell_vars', e.g.:
+
+    for name in bio7_shell_vars:
+        print(name, type(globals()[name]))
+
+Supported scripts: Python (*.py, the embedded Python), R (*.R), ImageJ macros (*.ijm),
+Groovy (*.groovy), BeanShell (*.bsh), JavaScript (*.js) and text files (*.txt, opened in an editor).
+
+Folders and nested folders with scripts are added as submenus.
+
+The base location of the scripts can be changed in the preferences (Bio7 > Path to
+'Python-Shell' context menu scripts).
+
+Rules for the context menu text:
+
+1. Files and folders which start with a point '.' or with an underscore '_' are not displayed
+   (e.g., for helper modules).
+
+2. Underscores in folder and file names are replaced by spaces.

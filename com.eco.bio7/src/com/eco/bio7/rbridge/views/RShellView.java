@@ -2186,6 +2186,10 @@ public class RShellView extends ViewPart {
 			}
 		}, com.eco.bio7.plot.PlotData.of(java.util.List.of(listShell.getSelection()))));
 
+		final MenuItem toPythonMenuItem = new MenuItem(menu, SWT.PUSH);
+		toPythonMenuItem.setText("To Python");
+		toPythonMenuItem.addListener(SWT.Selection, _ -> toPython(listShell.getSelection()));
+
 		final MenuItem newSubmenuMenuItem_1 = new MenuItem(menu, SWT.CASCADE);
 		newSubmenuMenuItem_1.setText("Transfer to Table");
 
@@ -3145,6 +3149,65 @@ public class RShellView extends ViewPart {
 			Bio7Dialog.message("R is busy!");
 		}
 
+	}
+
+	/*
+	 * Transfers the selected R objects to Python (starts Python if necessary):
+	 * vectors and matrices become numpy arrays, data frames pandas DataFrames,
+	 * named lists dicts. Names which are not valid in Python get a '_'.
+	 */
+	private void toPython(String[] selected) {
+		if (selected == null || selected.length == 0) {
+			Bio7Dialog.message("Please select one or more objects!");
+			return;
+		}
+		if (!RServe.isAliveDialog()) {
+			return;
+		}
+		if (RState.isBusy()) {
+			Bio7Dialog.message("R is busy!");
+			return;
+		}
+		if (!com.eco.bio7.pybridge.PythonImageTransfer.ensurePython()) {
+			return;
+		}
+		Job job = new Job("Transfer to Python") {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				monitor.beginTask("Transfer Data ...", IProgressMonitor.UNKNOWN);
+				RState.setBusy(true);
+				StringBuilder done = new StringBuilder();
+				try {
+					for (String name : selected) {
+						String py = pythonName(name);
+						String expr = name.matches("[A-Za-z.][A-Za-z0-9._]*") ? name : "`" + name.replace("`", "\\`") + "`";
+						com.eco.bio7.pybridge.PythonUtil.rToPython(expr, py);
+						done.append(done.isEmpty() ? "" : ", ").append(name.equals(py) ? name : name + " -> " + py);
+					}
+					com.eco.bio7.pybridge.EmbeddedPython.print("\nTransferred to Python: " + done + "\n", false);
+					com.eco.bio7.pybridge.EmbeddedPython.prompt();
+				} catch (Exception ex) {
+					Bio7Dialog.message("Transfer to Python failed:\n" + ex.getMessage());
+				} finally {
+					RState.setBusy(false);
+					monitor.done();
+				}
+				return Status.OK_STATUS;
+			}
+		};
+		job.setUser(true);
+		job.schedule();
+	}
+
+	/* A valid Python name for an R name (e.g., my.data -> my_data) */
+	static String pythonName(String rName) {
+		String n = rName.replaceAll("[^A-Za-z0-9_]", "_");
+		if (n.isEmpty() || Character.isDigit(n.charAt(0))) {
+			n = "_" + n;
+		}
+		return java.util.Set.of("False", "None", "True", "and", "as", "assert", "async", "await", "break", "class", "continue", "def", "del", "elif", "else",
+				"except", "finally", "for", "from", "global", "if", "import", "in", "is", "lambda", "nonlocal", "not", "or", "pass", "raise", "return", "try",
+				"while", "with", "yield").contains(n) ? n + "_" : n;
 	}
 
 	/* The variables of the workspace and the columns of the data frames (df$col) for the plot view */
