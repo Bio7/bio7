@@ -36,7 +36,7 @@ import com.eco.bio7.rcp.ApplicationActionBarAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
 import com.eco.bio7.time.Time;
 
-class PcaJob extends WorkspaceJob {
+public class PcaJob extends WorkspaceJob {
 	private static int cluster = 1;
 	private static String[] imagesToCluster;
 	private static boolean doCluster = false;
@@ -159,6 +159,8 @@ class PcaJob extends WorkspaceJob {
 					
 					printInR("summary(pcaData)");
 					System.out.println("\n");
+					/* The plots of the variance and the loadings (embedded R) */
+					RImageAnalysisPlots.pca(c, cluster, imagesToCluster);
 					c.eval("try(remove(pcaData));gc();");
 				} catch (RserveException e1) {
 
@@ -205,6 +207,28 @@ class PcaJob extends WorkspaceJob {
 			RShellView.setTextConsole(rout);
 		}
 
+	}
+
+
+	/* The choices of the dialog (also for the analysis in Python) */
+	public static boolean doAnalysis() {
+		return doCluster;
+	}
+
+	public static int number() {
+		return cluster;
+	}
+
+	public static String[] images() {
+		return imagesToCluster == null ? new String[0] : imagesToCluster.clone();
+	}
+
+	public static boolean onlyTransfer() {
+		return onlyTransferImages;
+	}
+
+	public static String options() {
+		return textOptions == null ? "" : textOptions;
 	}
 
 	public static void setCluster(int selection) {

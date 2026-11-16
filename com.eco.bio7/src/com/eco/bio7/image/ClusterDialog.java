@@ -51,6 +51,18 @@ public class ClusterDialog extends Dialog {
 		super(parentShell);
 	}
 
+	/* The analysis in Python: the algorithms and arguments of scikit-learn */
+	private boolean python;
+
+	/** The dialog for the analysis in the embedded Python (scikit-learn). */
+	public ClusterDialog(Shell parentShell, boolean python) {
+		super(parentShell);
+		this.python = python;
+		if (python) {
+			selectedAlgor = "minibatch";
+		}
+	}
+
 	/**
 	 * Create contents of the dialog
 	 * 
@@ -87,12 +99,18 @@ public class ClusterDialog extends Dialog {
 		Button btnClara = new Button(group, SWT.RADIO);
 		btnClara.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
 		btnClara.setSelection(true);
-		btnClara.setText("clara");
+		btnClara.setText(python ? "minibatch" : "clara");
+		if (python) {
+			btnClara.setToolTipText("MiniBatchKMeans of scikit-learn: fast for large images (as clara with samples)");
+		}
 		btnClara.addSelectionListener(selectionListener);
 
 		Button btnKmeans = new Button(group, SWT.RADIO);
 		btnKmeans.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
 		btnKmeans.setText("kmeans");
+		if (python) {
+			btnKmeans.setToolTipText("KMeans of scikit-learn (all pixels; numpy if scikit-learn is not installed)");
+		}
 		btnKmeans.addSelectionListener(selectionListener);
 
 		new Label(container, SWT.NONE);
@@ -119,6 +137,10 @@ public class ClusterDialog extends Dialog {
 		GridData gd_text = new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1);
 		text.setLayoutData(gd_text);
 		text.setEnabled(false);
+		if (python) {
+			text.setMessage("Python arguments, e.g.: n_init=10, random_state=0, scale=True");
+			text.setToolTipText("Keyword arguments for KMeans/MiniBatchKMeans of scikit-learn;\nscale=True standardizes the images (columns) first");
+		}
 
 		final Button euclideanButton = new Button(container, SWT.CHECK);
 		GridData gd_euclideanButton = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
@@ -223,7 +245,7 @@ public class ClusterDialog extends Dialog {
 
 	protected void configureShell(Shell newShell) {
 		super.configureShell(newShell);
-		newShell.setText("Cluster Images");
+		newShell.setText(python ? "Cluster Images (Python)" : "Cluster Images");
 	}
 
 	protected void buttonPressed(int buttonId) {

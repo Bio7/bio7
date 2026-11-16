@@ -76,6 +76,29 @@ public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements I
 
 	}
 
+	/**
+	 * The class signature chosen in the dialog (also used by the transfer to
+	 * Python): "fixed", "increasing", "name", "group" or "none".
+	 */
+	public static String signatureMode() {
+		return doSignature ? "fixed" : doIncreasingSignature ? "increasing" : doSignatureFromName ? "name" : doSignatureFromGroup ? "group" : "none";
+	}
+
+	/** The custom class signature of the dialog. */
+	public static int signatureNumber() {
+		return setSigNumber;
+	}
+
+	/** The first slice of the dialog. */
+	public static int minStackSlice() {
+		return minStackSlice;
+	}
+
+	/** The last slice of the dialog. */
+	public static int maxStackSlice() {
+		return maxStackSlice;
+	}
+
 	public static void setSignatureNumber(int input2) {
 		ImageStackRoiSelectionTransferJob.setSigNumber = input2;
 	}

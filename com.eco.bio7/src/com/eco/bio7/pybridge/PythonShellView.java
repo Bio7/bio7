@@ -420,10 +420,30 @@ public class PythonShellView extends ViewPart {
 		new MenuItem(menu, SWT.SEPARATOR);
 		item(menu, "To R", this::toR);
 		item(menu, "To ImageJ", this::toImageJ);
+		/* Plots of the selected variables (several together), with attributes in a dialog (as in the R-Shell) */
 		Menu plot = submenu(menu, "Plot");
-		item(plot, "Line", () -> plot("line"));
-		item(plot, "Histogram", () -> plot("hist"));
+		for (String[] k : com.eco.bio7.plot.PlotOptions.KINDS) {
+			item(plot, k[1], () -> plotSelected(com.eco.bio7.plot.PlotOptions.last().withKind(k[0])));
+		}
 		item(plot, "Image", () -> plot("image"));
+		new MenuItem(plot, SWT.SEPARATOR);
+		item(plot, "Plot with Options...", () -> {
+			List<String> sel = selectedNames();
+			/* The plot view (Python): the data of the workspace for the roles of the plot type, the options, the source */
+			com.eco.bio7.plot.PlotView.open("Python", new com.eco.bio7.plot.PlotView.Target() {
+				public List<String> variables() {
+					return plotWorkspaceVariables();
+				}
+
+				public void plot(com.eco.bio7.plot.PlotOptions o, com.eco.bio7.plot.PlotData d) {
+					runShow(PythonShellPlots.code(d, o) + "del bio7_plot\n");
+				}
+
+				public String source(com.eco.bio7.plot.PlotOptions o, com.eco.bio7.plot.PlotData d) {
+					return PythonShellPlots.code(d, o);
+				}
+			}, com.eco.bio7.plot.PlotData.of(sel));
+		});
 		new MenuItem(menu, SWT.SEPARATOR);
 		item(menu, "Delete", this::delete);
 		return menu;
@@ -517,6 +537,44 @@ public class PythonShellView extends ViewPart {
 		if (name != null) {
 			async(() -> PythonUtil.imageFromPython(name, name));
 		}
+	}
+
+	/* The objects of the workspace and the columns of the DataFrames (df['col']) for the plot view */
+	private List<String> plotWorkspaceVariables() {
+		List<String> list = new ArrayList<>();
+		try {
+			PyValue v = call("plot_variables");
+			if (v instanceof PyValue.Str s) {
+				list.addAll(List.of(s.values()));
+			} else if (v instanceof PyValue.PyList l) {
+				for (PyValue e : l.values()) {
+					if (e instanceof PyValue.Str s) {
+						list.add(s.asString());
+					}
+				}
+			}
+		} catch (Exception e) {
+			/* Python busy: the names of the list */
+		}
+		if (list.isEmpty()) {
+			list.addAll(names);
+		}
+		return list;
+	}
+
+	/* Plots the selected objects (matplotlib, the plot view) */
+	private void plotSelected(com.eco.bio7.plot.PlotOptions o) {
+		List<String> sel = selectedNames();
+		if (sel.isEmpty()) {
+			MessageDialog.openInformation(getSite().getShell(), "Python-Shell", "Please select one or more objects in the list.");
+			return;
+		}
+		plotObjects(sel, o);
+	}
+
+	/* The source of the plot in __main__ (output and errors in the shell); the function of the source is removed */
+	private void plotObjects(List<String> sel, com.eco.bio7.plot.PlotOptions o) {
+		runShow(PythonShellPlots.code(sel, o) + "del bio7_plot\n");
 	}
 
 	private void plot(String kind) {

@@ -50,15 +50,8 @@ public class StartPython extends Action {
 			}
 			store.setValue(EmbeddedPython.PREF_EMBEDDED, true);
 		}
+		/* Python starts in the current perspective (the Python perspective: Window > Perspective) */
 		ConsoleInterpreterAction.getInstance().startPython();
-		if (EmbeddedPython.isRunning()) {
-			/* The Python perspective (Python-Shell, packages, console, table) */
-			try {
-				window.getWorkbench().showPerspective(PythonPerspective.ID, window);
-			} catch (org.eclipse.ui.WorkbenchException e) {
-				PythonShellView.show();
-			}
-		}
 		if (!EmbeddedPython.isRunning()) {
 			boolean open = MessageDialog.openQuestion(window.getShell(), "Python",
 					"Python could not be started (see the console).\n\nOpen the Python preferences ('Detect Python...')?");

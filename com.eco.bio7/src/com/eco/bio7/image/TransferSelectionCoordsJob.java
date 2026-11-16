@@ -128,6 +128,24 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 	 * georeferenced file with GDAL. Throws a LinkageError if the native libraries
 	 * of GDAL are not available!
 	 */
+	/**
+	 * The georeference of a file with GDAL: {double[6] transform (as
+	 * GetGeoTransform), String projection (Proj4)} or null if GDAL can't read the
+	 * file. Throws a LinkageError if the native libraries of GDAL are not
+	 * available (also used by the transfer to Python).
+	 */
+	public static Object[] gdalGeoreference(String file) {
+		Dataset ds = (Dataset) gdal.Open(file, gdalconst.GA_ReadOnly);
+		if (ds == null) {
+			return null;
+		}
+		double[] transform = new double[6];
+		ds.GetGeoTransform(transform);
+		SpatialReference srs = new SpatialReference();
+		srs.ImportFromWkt(ds.GetProjectionRef());
+		return new Object[] { transform, srs.ExportToProj4() };
+	}
+
 	private boolean readGeoreferenceWithGdal(File f) {
 		Dataset poDataset = (Dataset) gdal.Open(f.getAbsolutePath(), gdalconst.GA_ReadOnly);
 		if (poDataset == null) {

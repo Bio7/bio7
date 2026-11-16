@@ -62,6 +62,14 @@ public final class PythonCalls implements PyCallHandler {
 		case "show_image": {
 			String title = arg(args, 0);
 			ImagePlus imp = PythonConvert.toImage(value, title == null ? "Python" : title);
+			/* The display range (contrast): given (min, max), "auto" (the range of the data) or the default of ImageJ */
+			String min = arg(args, 1), max = arg(args, 2);
+			if ("auto".equals(min)) {
+				ij.process.ImageStatistics st = new ij.process.StackStatistics(imp);
+				imp.setDisplayRange(st.min, st.max);
+			} else if (min != null && max != null) {
+				imp.setDisplayRange(Double.parseDouble(min), Double.parseDouble(max));
+			}
 			/* Shown before the call returns (as ImagePlus.show()): a following macro or bio7.image() finds it */
 			Display display = Display.getDefault();
 			if (display.getThread() == Thread.currentThread()) {

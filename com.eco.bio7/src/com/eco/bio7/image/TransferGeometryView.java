@@ -46,6 +46,16 @@ public class TransferGeometryView extends ViewPart {
 	private Button btnTransferAsCentroid;
 	protected boolean transferCentroid;
 	private ScrolledComposite scrolledComposite;
+	/* The target of the transfer (shared with the Image-Methods view): R or Python */
+	private static final String TARGET_PREFERENCE = "IMAGE_METHODS_TRANSFER_TARGET";
+	private boolean python;
+	private Button btnSelectionCoordinatesAs;
+	private Button btnRadioButton;
+	private org.eclipse.jface.action.Action toR;
+	private org.eclipse.jface.action.Action toPython;
+	private org.eclipse.swt.graphics.Image rImage;
+	private org.eclipse.swt.graphics.Image pythonImage;
+	private org.eclipse.jface.util.IPropertyChangeListener targetListener;
 
 	public TransferGeometryView() {
 	}
@@ -75,7 +85,7 @@ public class TransferGeometryView extends ViewPart {
 		gl_container.verticalSpacing = 6;
 		container.setLayout(gl_container);
 
-		Button btnSelectionCoordinatesAs = new Button(container, SWT.RADIO);
+		btnSelectionCoordinatesAs = new Button(container, SWT.RADIO);
 		GridData gd_btnSelectionCoordinatesAs = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		btnSelectionCoordinatesAs.setLayoutData(gd_btnSelectionCoordinatesAs);
 		btnSelectionCoordinatesAs.addSelectionListener(new SelectionAdapter() {
@@ -101,7 +111,7 @@ public class TransferGeometryView extends ViewPart {
 		btnSelectionCoordinatesAs.setSelection(true);
 		btnSelectionCoordinatesAs.setText("Selection coordinates as a list");
 
-		Button btnRadioButton = new Button(container, SWT.RADIO);
+		btnRadioButton = new Button(container, SWT.RADIO);
 		GridData gd_btnRadioButton = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
 		btnRadioButton.setLayoutData(gd_btnRadioButton);
 		btnRadioButton.addSelectionListener(new SelectionAdapter() {
@@ -155,6 +165,19 @@ public class TransferGeometryView extends ViewPart {
 				combo_1.removeAll();
 				combo_1.add("-Select-", 0);
 				combo_1.select(0);
+				if (python) {
+					/* The pandas DataFrames of the embedded Python */
+					if (!com.eco.bio7.pybridge.EmbeddedPython.isRunning()) {
+						Bio7Dialog.message("Python is not running (please start Python)!");
+					} else {
+						int i = 1;
+						for (String name : com.eco.bio7.pybridge.PythonGeometryTransfer.dataFrames()) {
+							combo_1.add(name, i++);
+						}
+					}
+					combo_1.select(0);
+					return;
+				}
 				if (RServe.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						String[] v = null;
@@ -280,6 +303,13 @@ public class TransferGeometryView extends ViewPart {
 		btnTransfer.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
+				if (python) {
+					/* The embedded Python: lists of numpy arrays or a GeoDataFrame */
+					String df = isDoSetDataframe() && selDataframe != null && !selDataframe.equals("-Select-") ? selDataframe : null;
+					com.eco.bio7.pybridge.PythonGeometryTransfer.transfer(transferAsList(), getGeometrySelectionSelection(), isDoSetCrs(), getCrsText(), df,
+							isTransferCentroid());
+					return;
+				}
 				// if (dialog.open() == Window.OK) {
 				if (RServe.isAliveDialog()) {
 					int selection = getGeometrySelectionSelection();
@@ -336,8 +366,99 @@ public class TransferGeometryView extends ViewPart {
 			}
 		};
 		scrolledComposite.addListener(SWT.Resize, _ -> fit.run());
+		createTargetActions();
 		fit.run();
 
+	}
+
+	/* The view toolbar: the target of the transfer (R or Python, as in the Image-Methods view) */
+	private void createTargetActions() {
+		rImage = com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/views/raction.svg").createImage();
+		pythonImage = com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/views/pythonaction.svg").createImage();
+		org.eclipse.jface.preference.IPreferenceStore store = com.eco.bio7.Bio7Plugin.getDefault().getPreferenceStore();
+		python = "Python".equals(store.getString(TARGET_PREFERENCE));
+		toR = new org.eclipse.jface.action.Action("R", org.eclipse.jface.action.IAction.AS_RADIO_BUTTON) {
+			@Override
+			public void run() {
+				if (isChecked()) {
+					setTarget(false);
+				}
+			}
+		};
+		toR.setToolTipText("Transfer the selections to R (lists or sp objects)");
+		toR.setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/views/raction.svg"));
+		toPython = new org.eclipse.jface.action.Action("Python", org.eclipse.jface.action.IAction.AS_RADIO_BUTTON) {
+			@Override
+			public void run() {
+				if (isChecked()) {
+					setTarget(true);
+				}
+			}
+		};
+		toPython.setToolTipText("Transfer the selections to the embedded Python (numpy arrays or a GeoDataFrame)");
+		toPython.setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/views/pythonaction.svg"));
+		IToolBarManager toolBar = getViewSite().getActionBars().getToolBarManager();
+		toolBar.add(toR);
+		toolBar.add(toPython);
+		getViewSite().getActionBars().updateActionBars();
+		/* A switch in the Image-Methods view changes this view, too */
+		targetListener = event -> {
+			if (TARGET_PREFERENCE.equals(event.getProperty())) {
+				boolean p = "Python".equals(String.valueOf(event.getNewValue()));
+				org.eclipse.swt.widgets.Display.getDefault().asyncExec(() -> {
+					if (p != python) {
+						python = p;
+						applyTarget();
+					}
+				});
+			}
+		};
+		store.addPropertyChangeListener(targetListener);
+		applyTarget();
+	}
+
+	private void setTarget(boolean toPythonTarget) {
+		if (toPythonTarget == python) {
+			return;
+		}
+		python = toPythonTarget;
+		com.eco.bio7.Bio7Plugin.getDefault().getPreferenceStore().setValue(TARGET_PREFERENCE, toPythonTarget ? "Python" : "R");
+		applyTarget();
+		/* The views of the target (Python-Shell or R-Shell), as the Image-Methods view */
+		com.eco.bio7.pybridge.PythonViews.exchange(toPythonTarget);
+	}
+
+	/* The texts of the options for R or Python */
+	private void applyTarget() {
+		if (btnTransfer == null || btnTransfer.isDisposed()) {
+			return;
+		}
+		toR.setChecked(!python);
+		toPython.setChecked(python);
+		btnRadioButton.setText(python ? "Spatial Data (Python packages 'shapely' and 'geopandas')" : "Spatial Data (R package 'sp' required!)");
+		int index = Math.max(0, combo.getSelectionIndex());
+		combo.setItems(python ? new String[] { "Polygons", "Lines", "Points" } : new String[] { "SpatialPolygons", "SpatialLines", "SpatialPoints" });
+		combo.select(index);
+		btnAddDataframe.setText(python ? "Add selected DataFrame (pandas, reselect for a refresh!)" : "Add selected dataframe (reselect for a refresh!)");
+		/* The data frames of the other language are not valid */
+		combo_1.setItems(new String[] { "-Select-" });
+		combo_1.select(0);
+		selDataframe = null;
+		btnTransfer.setText(python ? "Transfer to Python!" : "Transfer to R!");
+		btnTransfer.setImage(python ? pythonImage : rImage);
+		btnTransfer.getParent().layout(true, true);
+	}
+
+	@Override
+	public void dispose() {
+		if (targetListener != null) {
+			com.eco.bio7.Bio7Plugin.getDefault().getPreferenceStore().removePropertyChangeListener(targetListener);
+		}
+		if (rImage != null) {
+			rImage.dispose();
+			pythonImage.dispose();
+		}
+		super.dispose();
 	}
 
 	public boolean transferAsList() {

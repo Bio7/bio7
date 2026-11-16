@@ -33,7 +33,7 @@ import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rcp.ApplicationActionBarAdvisor;
 import com.eco.bio7.time.Time;
 
-class ClusterJob extends WorkspaceJob {
+public class ClusterJob extends WorkspaceJob {
 	private static int cluster = 2;
 	private static String[] imagesToCluster;
 	private static boolean doCluster = false;
@@ -147,8 +147,6 @@ class ClusterJob extends WorkspaceJob {
 								"Executing: clara_result <- clara(clusterData," + cluster + "," + textOptions + ")");
 						c.eval("try(clara_result <- clara(clusterData," + cluster + "," + textOptions + "))");
 						c.eval("try(imageCluster<-as.raw(clara_result$cluster))");
-						c.eval("remove(clusterData)");
-						c.eval("gc();");
 					} catch (RserveException e1) {
 
 						e1.printStackTrace();
@@ -159,13 +157,21 @@ class ClusterJob extends WorkspaceJob {
 								"Executing: kmeans_result <- kmeans(clusterData," + cluster + "," + textOptions + ")");
 						c.eval("try(kmeans_result <- kmeans(clusterData," + cluster + "," + textOptions + "))");
 						c.eval("try(imageCluster<-as.raw(kmeans_result$cluster))");
-						c.eval("remove(clusterData)");
-						c.eval("gc();");
 					} catch (RserveException e1) {
 
 						e1.printStackTrace();
 					}
-				} 
+				}
+				/* The plots of the clusters (embedded R), then the data are removed */
+				monitor.setTaskName("Plot the clusters");
+				if (imp != null) {
+					RImageAnalysisPlots.clusters(c, "imageCluster", cluster, imp.getWidth(), imp.getHeight(), imagesToCluster);
+				}
+				try {
+					c.eval("try(remove(clusterData));gc();");
+				} catch (RserveException e1) {
+					e1.printStackTrace();
+				}
 				monitor.worked(1);
 				monitor.setTaskName("Create image from transferred data");
 				// Transfer back as short and byte transfer!
@@ -187,6 +193,32 @@ class ClusterJob extends WorkspaceJob {
 			}
 		}
 
+	}
+
+
+	/* The choices of the dialog (also for the analysis in Python) */
+	public static boolean doAnalysis() {
+		return doCluster;
+	}
+
+	public static int number() {
+		return cluster;
+	}
+
+	public static String[] images() {
+		return imagesToCluster == null ? new String[0] : imagesToCluster.clone();
+	}
+
+	public static boolean onlyTransfer() {
+		return onlyTransferImages;
+	}
+
+	public static String options() {
+		return textOptions == null ? "" : textOptions;
+	}
+
+	public static String algorithm() {
+		return clusterAlgor;
 	}
 
 	public static void setCluster(int selection) {

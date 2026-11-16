@@ -562,7 +562,7 @@ public class RImageMethodsView extends ViewPart {
 			public void widgetSelected(SelectionEvent e) {
 				/* Python is selected in the view: the transfer to the embedded Python */
 				if (python) {
-					PythonImageTransfer.pixelsRoiManager(transferTypeCombo.getSelectionIndex());
+					PythonImageTransfer.pixelsRoiManagerStack(transferTypeCombo.getSelectionIndex());
 					return;
 				}
 				if (RServe.isAlive()) {
@@ -785,6 +785,11 @@ public class RImageMethodsView extends ViewPart {
 		// SWT.BOLD));
 		clusterImageButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
+				/* Python is selected in the view: the analysis in the embedded Python */
+				if (python) {
+					com.eco.bio7.pybridge.PythonImageAnalysis.cluster();
+					return;
+				}
 
 				if (RBridge.getBackend() != null) {
 					CTabItem[] items = CanvasView.getCanvas_view().tabFolder.getItems();
@@ -835,6 +840,11 @@ public class RImageMethodsView extends ViewPart {
 		// pcaButton.setFont(SWTResourceManager.getFont("", 9, SWT.BOLD));
 		pcaButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
+				/* Python is selected in the view: the analysis in the embedded Python */
+				if (python) {
+					com.eco.bio7.pybridge.PythonImageAnalysis.pca();
+					return;
+				}
 				if (RBridge.getBackend() != null) {
 					CTabItem[] items = CanvasView.getCanvas_view().tabFolder.getItems();
 					if (items.length > 0) {
@@ -891,7 +901,7 @@ public class RImageMethodsView extends ViewPart {
 			transferTexts.put(b, new String[] { b.getText(), b.getToolTipText() });
 		}
 		python = "Python".equals(Bio7Plugin.getDefault().getPreferenceStore().getString(TARGET_PREFERENCE));
-		org.eclipse.jface.action.Action toR = new org.eclipse.jface.action.Action("R", org.eclipse.jface.action.IAction.AS_RADIO_BUTTON) {
+		toR = new org.eclipse.jface.action.Action("R", org.eclipse.jface.action.IAction.AS_RADIO_BUTTON) {
 			@Override
 			public void run() {
 				if (isChecked()) {
@@ -901,7 +911,7 @@ public class RImageMethodsView extends ViewPart {
 		};
 		toR.setToolTipText("Transfer the data to R");
 		toR.setImageDescriptor(Bio7Plugin.getImageDescriptor("/icons/views/raction.svg"));
-		org.eclipse.jface.action.Action toPython = new org.eclipse.jface.action.Action("Python", org.eclipse.jface.action.IAction.AS_RADIO_BUTTON) {
+		toPython = new org.eclipse.jface.action.Action("Python", org.eclipse.jface.action.IAction.AS_RADIO_BUTTON) {
 			@Override
 			public void run() {
 				if (isChecked()) {
@@ -917,8 +927,28 @@ public class RImageMethodsView extends ViewPart {
 		toolBarManager.add(toR);
 		toolBarManager.add(toPython);
 		getViewSite().getActionBars().updateActionBars();
+		/* A switch in the Geometry Selections view changes this view, too */
+		org.eclipse.jface.util.IPropertyChangeListener listener = event -> {
+			if (TARGET_PREFERENCE.equals(event.getProperty())) {
+				boolean p = "Python".equals(String.valueOf(event.getNewValue()));
+				org.eclipse.swt.widgets.Display.getDefault().asyncExec(() -> {
+					if (p != python && top != null && !top.isDisposed()) {
+						python = p;
+						toR.setChecked(!p);
+						toPython.setChecked(p);
+						applyTarget();
+					}
+				});
+			}
+		};
+		Bio7Plugin.getDefault().getPreferenceStore().addPropertyChangeListener(listener);
+		top.addListener(SWT.Dispose, _ -> Bio7Plugin.getDefault().getPreferenceStore().removePropertyChangeListener(listener));
 		applyTarget();
 	}
+
+	/* The actions of the target (R, Python) */
+	private org.eclipse.jface.action.Action toR;
+	private org.eclipse.jface.action.Action toPython;
 
 	private void setTarget(boolean toPython) {
 		python = toPython;
@@ -948,7 +978,11 @@ public class RImageMethodsView extends ViewPart {
 			b.setText(text);
 			b.setToolTipText(tip);
 		}
-		/* The multivariate analysis runs in R */
+		/* The multivariate analysis: in R or in Python (scikit-learn, plots in the plot view) */
+		clusterImageButton.setToolTipText(python ? "Performs a cluster analysis (k-means, scikit-learn) in Python,\ncreates a new image from the assigned pixels\nand plots the clusters"
+				: "Performs a cluster analysis and creates\na new image from the assigned pixels");
+		pcaButton.setToolTipText(python ? "Performs a principal components analysis in Python,\ncreates new image(s) from the components\nand plots the explained variance and loadings"
+				: "Performs a Principal components analysis\nand creates new image(s) from the components");
 		top.layout(true, true);
 	}
 

@@ -246,3 +246,17 @@ def cells(name, mode):
     if mode == "rows":
         return [[text(e)] for e in seq]
     return [[text(e) for e in seq]]
+
+
+def plot_variables():
+    """The objects for the plot view: arrays, lists, Series, DataFrames and their columns (df['col'])."""
+    out = []
+    for n, v in sorted(_main.__dict__.items()):
+        if n.startswith("_") or isinstance(v, _HIDDEN_TYPES) or (callable(v) and not hasattr(v, "shape")):
+            continue
+        if hasattr(v, "columns") and hasattr(v, "dtypes"):
+            out.append(n)
+            out.extend("%s[%r]" % (n, c) for c in v.columns)
+        elif hasattr(v, "shape") or isinstance(v, (list, tuple)):
+            out.append(n)
+    return out

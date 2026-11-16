@@ -42,7 +42,6 @@ public class RImagePerspective implements IPerspectiveFactory {
 		topLeft.addView("com.eco.bio7.reditor.database.view.DatabaseView");
 
 		bottomLeft.addView("org.eclipse.ui.console.ConsoleView");
-		bottomLeft.addView("com.eco.bio7.rbridge.RPlotView");
 		bottomLeft.addView("com.eco.bio7.rbridge.views.RTemplatesView");
 
 		viewRight.addView("com.eco.bio7.imagej");

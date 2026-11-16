@@ -1165,9 +1165,19 @@ def image(title=None):
     return _bio7._call("image", title or "")
 
 
-def show_image(array, title="Python"):
-    """Shows a 2-d array (or a stack, RGB uint8 (h, w, 3)) as ImageJ image."""
-    return _bio7._call("show_image", title, value=array)
+def show_image(array, title="Python", display_range=None):
+    """Shows a 2-d array (or a stack, RGB uint8 (h, w, 3)) as ImageJ image.
+
+    display_range: the contrast, (min, max) or "auto" (the range of the values,
+    e.g., for labels 1..k in uint8 which look black with the range 0..255);
+    None: the default of ImageJ.
+    """
+    if display_range is None:
+        return _bio7._call("show_image", title, value=array)
+    if isinstance(display_range, str):
+        return _bio7._call("show_image", title, display_range, "", value=array)
+    lo, hi = display_range
+    return _bio7._call("show_image", title, repr(float(lo)), repr(float(hi)), value=array)
 
 
 java = _bio7.java

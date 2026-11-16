@@ -43,6 +43,15 @@ public class PcaDialog extends Dialog {
 	 * 
 	 * @param parentShell
 	 */
+	/* The analysis in Python (scikit-learn or numpy) */
+	private boolean python;
+
+	/** The dialog for the analysis in the embedded Python. */
+	public PcaDialog(Shell parentShell, boolean python) {
+		this(parentShell);
+		this.python = python;
+	}
+
 	public PcaDialog(Shell parentShell) {
 		super(parentShell);
 	}
@@ -80,6 +89,10 @@ public class PcaDialog extends Dialog {
 		text = new Text(container, SWT.BORDER);
 		text.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 4, 1));
 		text.setEnabled(false);
+		if (python) {
+			text.setMessage("Python arguments, e.g.: scale=True, whiten=False");
+			text.setToolTipText("Keyword arguments for PCA of scikit-learn;\nscale=True standardizes the images (columns) first (as scale.=TRUE of prcomp)");
+		}
 		final Button euclideanButton = new Button(container, SWT.CHECK);
 		GridData gd_euclideanButton = new GridData(SWT.FILL, SWT.FILL, true,
 				false, 1, 1);
@@ -188,7 +201,7 @@ public class PcaDialog extends Dialog {
 
 	protected void configureShell(Shell newShell) {
 		super.configureShell(newShell);
-		newShell.setText("Cluster Images");
+		newShell.setText(python ? "PCA of Images (Python)" : "PCA of Images");
 	}
 
 	protected void buttonPressed(int buttonId) {

@@ -80,6 +80,19 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 		ImageRoiSelectionTransferJob.input = input;
 	}
 
+	/**
+	 * The class signature chosen in the dialog (also used by the transfer to
+	 * Python): "fixed", "increasing", "name", "group" or "none".
+	 */
+	public static String signatureMode() {
+		return doSignature ? "fixed" : doIncreasingSignature ? "increasing" : doSignatureFromName ? "name" : doSignatureFromGroup ? "group" : "none";
+	}
+
+	/** The custom class signature of the dialog. */
+	public static int signatureNumber() {
+		return setSigNumber;
+	}
+
 	public static void setSignatureNumber(int input2) {
 		ImageRoiSelectionTransferJob.setSigNumber = input2;
 	}

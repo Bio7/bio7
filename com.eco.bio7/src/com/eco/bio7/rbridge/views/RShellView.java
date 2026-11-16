@@ -2151,6 +2151,41 @@ public class RShellView extends ViewPart {
 		});
 		newItemMenuItem_13.setText("To Character");
 
+		/* Plots of the selected variables (several together), with attributes in a dialog */
+		final MenuItem plotMenuItem = new MenuItem(menu, SWT.CASCADE);
+		plotMenuItem.setText("Plot");
+		final Menu plotMenu = new Menu(plotMenuItem);
+		plotMenuItem.setMenu(plotMenu);
+		for (String[] k : com.eco.bio7.plot.PlotOptions.KINDS) {
+			MenuItem item = new MenuItem(plotMenu, SWT.PUSH);
+			item.setText(k[1]);
+			item.addListener(SWT.Selection, _ -> plotSelected(com.eco.bio7.plot.PlotOptions.last().withKind(k[0])));
+		}
+		new MenuItem(plotMenu, SWT.SEPARATOR);
+		MenuItem plotOptions = new MenuItem(plotMenu, SWT.PUSH);
+		plotOptions.setText("Plot with Options...");
+		/* The plot view (R): the data of the workspace for the roles of the plot type, the options, the source */
+		plotOptions.addListener(SWT.Selection, _ -> com.eco.bio7.plot.PlotView.open("R", new com.eco.bio7.plot.PlotView.Target() {
+			public java.util.List<String> variables() {
+				return plotWorkspaceVariables();
+			}
+
+			public void plot(com.eco.bio7.plot.PlotOptions o, com.eco.bio7.plot.PlotData d) {
+				if (!RServe.isAliveDialog()) {
+					return;
+				}
+				if (RState.isBusy()) {
+					Bio7Dialog.message("R is busy!");
+					return;
+				}
+				RServe.printJob(RShellPlots.code(d, o));
+			}
+
+			public String source(com.eco.bio7.plot.PlotOptions o, com.eco.bio7.plot.PlotData d) {
+				return RShellPlots.code(d, o);
+			}
+		}, com.eco.bio7.plot.PlotData.of(java.util.List.of(listShell.getSelection()))));
+
 		final MenuItem newSubmenuMenuItem_1 = new MenuItem(menu, SWT.CASCADE);
 		newSubmenuMenuItem_1.setText("Transfer to Table");
 
@@ -3110,6 +3145,48 @@ public class RShellView extends ViewPart {
 			Bio7Dialog.message("R is busy!");
 		}
 
+	}
+
+	/* The variables of the workspace and the columns of the data frames (df$col) for the plot view */
+	private java.util.List<String> plotWorkspaceVariables() {
+		java.util.List<String> names = new java.util.ArrayList<>();
+		try {
+			if (RBridge.getBackend() != null && !RState.isBusy()) {
+				REXP x = RBridge.getBackend().eval("local({ out <- character(); for (n in ls(globalenv())) { x <- get(n, envir = globalenv()); "
+						+ "if (is.data.frame(x)) { cn <- names(x); q <- ifelse(make.names(cn) == cn, cn, paste0('`', cn, '`')); out <- c(out, n, paste0(n, '$', q)) } "
+						+ "else if (is.atomic(x) && length(x) > 0) out <- c(out, n) }; out })");
+				if (x != null && !x.isNull()) {
+					names.addAll(java.util.List.of(x.asStrings()));
+				}
+			}
+		} catch (Exception e) {
+			/* R busy: the names of the list */
+		}
+		if (names.isEmpty()) {
+			names.addAll(java.util.List.of(listShell.getItems()));
+		}
+		return names;
+	}
+
+	/* Plots the selected variables with the graphics of R (the plot view of Bio7) */
+	private void plotSelected(com.eco.bio7.plot.PlotOptions options) {
+		String[] sel = listShell.getSelection();
+		if (sel.length == 0) {
+			Bio7Dialog.message("Please select one or more variables in the list.");
+			return;
+		}
+		plotVariables(sel, options);
+	}
+
+	private void plotVariables(String[] sel, com.eco.bio7.plot.PlotOptions options) {
+		if (!RServe.isAliveDialog()) {
+			return;
+		}
+		if (RState.isBusy()) {
+			Bio7Dialog.message("R is busy!");
+			return;
+		}
+		RServe.printJob(RShellPlots.code(sel, options));
 	}
 
 	private void removeSelectedVars() {
