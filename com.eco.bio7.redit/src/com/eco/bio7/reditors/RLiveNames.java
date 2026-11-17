@@ -32,6 +32,11 @@ public final class RLiveNames {
 			"InsectSprays", "Loblolly", "Indometh", "Puromycin", "Theoph", "CO2", "DNase", "BOD", "Formaldehyde", "freeny", "eurodist",
 			"euro", "UKgas", "USAccDeaths", "WorldPhones", "VADeaths", "uspop", "presidents", "discoveries", "nhtemp", "lh", "randu");
 
+	/* The API of Bio7 for R (attached environment "bio7" of the embedded R, see bio7_r_api.R) */
+	private static final Set<String> BIO7_API = Set.of("bio7_image", "bio7_show_image", "bio7_ij_macro", "bio7_ij_macro_file", "bio7_ij_run",
+			"bio7_results_table", "bio7_roi", "bio7_browse", "bio7_python", "bio7_to_python", "J", "bio7_java_new", "bio7_java_ui", "is_java",
+			"bio7_api");
+
 	private static volatile Set<String> names;
 
 	private RLiveNames() {
@@ -66,6 +71,6 @@ public final class RLiveNames {
 	/** Returns true if the name exists in R (or is a base name if R is not connected). */
 	public static boolean exists(String name) {
 		Set<String> live = names;
-		return live != null ? live.contains(name) || BASE.contains(name) : BASE.contains(name);
+		return live != null ? live.contains(name) || BASE.contains(name) || BIO7_API.contains(name) : BASE.contains(name) || BIO7_API.contains(name);
 	}
 }

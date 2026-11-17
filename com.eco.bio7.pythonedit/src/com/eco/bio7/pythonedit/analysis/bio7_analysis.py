@@ -352,7 +352,14 @@ PIP_NAMES = {
 _spec_cache = {}
 
 
+# The modules which Bio7 installs in the embedded Python at its start (not in the
+# packages of the Python of this analysis)
+_BIO7_MODULES = {"bio7", "_bio7"}
+
+
 def module_exists(name, folder):
+    if name in _BIO7_MODULES:
+        return True
     if folder and folder not in sys.path:
         sys.path.insert(0, folder)
     if name in _spec_cache:

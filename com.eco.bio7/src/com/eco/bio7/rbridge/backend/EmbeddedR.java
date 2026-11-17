@@ -217,6 +217,13 @@ public final class EmbeddedR {
 		} catch (LinkageError e) {
 			/* The embedded Python is not installed */
 		}
+		/* The API of Bio7 for R: bio7_image(), bio7_ij_macro(), bio7_python(), J("ij.IJ"), ... */
+		try {
+			com.eco.bio7.rbridge.RCalls.install(session);
+		} catch (LinkageError e) {
+			/* The embedded Python (its value types) is not installed */
+			print("The Bio7 API for R is not available: " + e.getMessage() + "\n", true);
+		}
 		/* pandoc (and LaTeX) for rmarkdown::render() also in the console (no PATH of a shell) */
 		try {
 			session.voidEval(com.eco.bio7.documents.Pandoc.rSetup());
