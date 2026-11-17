@@ -684,6 +684,25 @@ public class RRefPhaseListen extends RBaseListener {
 
 	}
 
+	/*
+	 * The callee is x$name or x@name: the right operand is followed (the callee of
+	 * "y <- x$f()" is "y <- x$f" in the grammar)
+	 */
+	private static boolean isMemberCall(org.antlr.v4.runtime.tree.ParseTree callee) {
+		org.antlr.v4.runtime.tree.ParseTree c = callee;
+		while (c.getChildCount() == 3) {
+			String op = c.getChild(1).getText();
+			if (op.equals("$") || op.equals("@")) {
+				return true;
+			}
+			if (!(c.getChild(2) instanceof org.antlr.v4.runtime.ParserRuleContext)) {
+				return false;
+			}
+			c = c.getChild(2);
+		}
+		return false;
+	}
+
 	public void enterE20CallFunction(RParser.E20CallFunctionContext ctx) {
 		/* For code completion detect the parentheses! */
 		Token parenth = ((TerminalNodeImpl) ctx.getChild(1)).getSymbol();
@@ -711,6 +730,13 @@ public class RRefPhaseListen extends RBaseListener {
 
 		/* Ignore functions without assigned names! */
 		if (funcName.equals("function") || funcName.equals("\\")) {
+			return;
+		}
+		/*
+		 * A member called with $ or @ (a method of a Java object of the Bio7 API, R6,
+		 * Reference classes or a function in a list): not a function of R or the file
+		 */
+		if (isMemberCall(ctx.expr())) {
 			return;
 		}
 

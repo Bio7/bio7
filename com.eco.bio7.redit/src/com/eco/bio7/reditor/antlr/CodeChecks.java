@@ -192,9 +192,19 @@ public final class CodeChecks {
 	 */
 	private static void multiLineStrings(List<Token> code, List<ErrorWarnStore> errors) {
 		Pattern codeLine = Pattern.compile("^\\s*(#|[A-Za-z_.][\\w.]*\\s*(<-|=(?!=)|\\())");
-		for (Token t : code) {
+		for (int k = 0; k < code.size(); k++) {
+			Token t = code.get(k);
 			String x = t.getText();
 			if (!type(t).equals("STRING") || x.indexOf('\n') < 0 || x.length() < 2) {
+				continue;
+			}
+			/*
+			 * Code in a string on purpose (an ImageJ macro, Python code, HTML): the string
+			 * ends the argument or the expression. With a missing quote the string ends at
+			 * the next quote of the file and is followed by its text (e.g., a name).
+			 */
+			Token after = k + 1 < code.size() ? code.get(k + 1) : null;
+			if (after == null || isLineBreak(after) || ENDS_STRING_ARGUMENT.contains(after.getText())) {
 				continue;
 			}
 			String[] lines = x.split("\\R", -1);
@@ -218,6 +228,9 @@ public final class CodeChecks {
 					+ " lines (to line " + lastLine + "): is the closing " + quote + " missing?####" + fix.encode()));
 		}
 	}
+
+	/* The tokens after a complete string argument or expression */
+	private static final java.util.Set<String> ENDS_STRING_ARGUMENT = java.util.Set.of(")", ",", "]", "}", ";", "<EOF>");
 
 	/* return x -> return(x) */
 	private static void returnWithoutParentheses(List<Token> code, List<ErrorWarnStore> errors) {
