@@ -268,7 +268,7 @@ public class MavenDownloadDialog extends Dialog {
 		// Platform and cache info
 		Label infoLabel = new Label(container, SWT.WRAP);
 		infoLabel.setText("Platform: " + platformClassifier + "  |  Cache: " + cacheDisplayName);
-		infoLabel.setForeground(container.getDisplay().getSystemColor(SWT.COLOR_DARK_BLUE));
+		infoLabel.setForeground(com.eco.bio7.util.Util.themeColor(new org.eclipse.swt.graphics.RGB(0, 0, 128), new org.eclipse.swt.graphics.RGB(120, 175, 255)));
 		GridData infoData = new GridData(GridData.FILL_HORIZONTAL);
 		infoData.horizontalSpan = 4;
 		infoLabel.setLayoutData(infoData);
@@ -459,7 +459,7 @@ public class MavenDownloadDialog extends Dialog {
 	private void createStatusSection(Composite container) {
 		statusLabel = new Label(container, SWT.WRAP);
 		statusLabel.setText("Enter coordinates, select a library, or paste dependencies above.");
-		statusLabel.setForeground(container.getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY));
+		statusLabel.setForeground(com.eco.bio7.util.Util.themeColor(new org.eclipse.swt.graphics.RGB(128, 128, 128), new org.eclipse.swt.graphics.RGB(170, 170, 170)));
 		GridData stData = new GridData(GridData.FILL_HORIZONTAL);
 		stData.horizontalSpan = 4;
 		statusLabel.setLayoutData(stData);
@@ -1406,7 +1406,8 @@ public class MavenDownloadDialog extends Dialog {
 		if (statusLabel == null || statusLabel.isDisposed())
 			return;
 		statusLabel
-				.setForeground(statusLabel.getDisplay().getSystemColor(isError ? SWT.COLOR_RED : SWT.COLOR_DARK_GRAY));
+				.setForeground(isError ? statusLabel.getDisplay().getSystemColor(SWT.COLOR_RED)
+						: com.eco.bio7.util.Util.themeColor(new org.eclipse.swt.graphics.RGB(128, 128, 128), new org.eclipse.swt.graphics.RGB(170, 170, 170)));
 		statusLabel.setText(message);
 	}
 

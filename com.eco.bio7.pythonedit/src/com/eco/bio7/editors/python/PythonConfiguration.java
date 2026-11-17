@@ -59,6 +59,21 @@ public class PythonConfiguration extends SourceViewerConfiguration {
 		return PyPartitionScanner.PYTHON_PARTITION_TYPE;
 	}
 	
+	/*
+	 * The scanner of the strings in triple quotes: the string token of the code
+	 * scanner (its color is set by the preferences and the theme)
+	 */
+	private ITokenScanner stringScanner() {
+		RuleBasedScanner scanner = new RuleBasedScanner();
+		RuleBasedScanner code = com.eco.bio7.pythonedit.PythonEditorPlugin.getDefault().getScriptCodeScanner();
+		if (code instanceof com.eco.bio7.pythoneditors.ScriptCodeScanner s && s.getString() != null) {
+			scanner.setDefaultReturnToken(s.getString());
+		} else {
+			scanner.setDefaultReturnToken(new Token(new TextAttribute(colorManager.getColor(IPythonColorConstants.MULTILINE_STRING))));
+		}
+		return scanner;
+	}
+
 	private ITokenScanner createSimpleTokenScanner(RGB color) {
 		RuleBasedScanner scanner = new RuleBasedScanner();
 		scanner.setDefaultReturnToken(
@@ -80,7 +95,8 @@ public class PythonConfiguration extends SourceViewerConfiguration {
 		
 		
         
-		DefaultDamagerRepairer dr= new DefaultDamagerRepairer(createSimpleTokenScanner(IPythonColorConstants.MULTILINE_STRING));
+		/* Strings in triple quotes: the string color of the preferences (follows the theme and the color scheme) */
+		DefaultDamagerRepairer dr = new DefaultDamagerRepairer(stringScanner());
 		reconciler.setDamager(dr, PyPartitionScanner.PY_MULTILINE_STRING1);
 		reconciler.setRepairer(dr, PyPartitionScanner.PY_MULTILINE_STRING1);
 		reconciler.setDamager(dr, PyPartitionScanner.PY_MULTILINE_STRING2);

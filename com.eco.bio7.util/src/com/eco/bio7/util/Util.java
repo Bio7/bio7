@@ -314,6 +314,37 @@ public class Util {
 	 * 
 	 * @return a boolean value.
 	 */
+	/**
+	 * Readable colors for a read-only text (e.g., a log) in the light and the dark
+	 * theme: in dialogs and own windows no CSS rule of the theme sets the colors
+	 * (a dark text on the dark background). In views the CSS of the theme can set
+	 * its colors afterwards.
+	 *
+	 * @param control the text.
+	 */
+	public static void setReadableTextColors(org.eclipse.swt.widgets.Control control) {
+		if (isDarkTheme()) {
+			control.setBackground(new org.eclipse.swt.graphics.Color(43, 43, 43));
+			control.setForeground(new org.eclipse.swt.graphics.Color(221, 221, 221));
+		} else {
+			control.setBackground(control.getDisplay().getSystemColor(org.eclipse.swt.SWT.COLOR_LIST_BACKGROUND));
+			control.setForeground(control.getDisplay().getSystemColor(org.eclipse.swt.SWT.COLOR_LIST_FOREGROUND));
+		}
+	}
+
+	/**
+	 * A color of a label for the theme: the given color in the light theme, a
+	 * lighter one in the dark theme (e.g., dark blue is not readable there).
+	 *
+	 * @param light the color in the light theme.
+	 * @param dark  the color in the dark theme.
+	 * @return the color.
+	 */
+	public static org.eclipse.swt.graphics.Color themeColor(org.eclipse.swt.graphics.RGB light, org.eclipse.swt.graphics.RGB dark) {
+		org.eclipse.swt.graphics.RGB c = isDarkTheme() ? dark : light;
+		return new org.eclipse.swt.graphics.Color(c.red, c.green, c.blue);
+	}
+
 	public static boolean isDarkTheme() {
 		String id = Platform.getPreferencesService().getString("org.eclipse.e4.ui.css.swt.theme", "themeid", null, null);
 		if (id == null || id.isEmpty()) {

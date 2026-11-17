@@ -136,6 +136,8 @@ public class PythonPackagesPanel {
 		log = new Text(out, SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL | SWT.H_SCROLL);
 		log.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 		log.setFont(org.eclipse.jface.resource.JFaceResources.getTextFont());
+		/* Readable in the dark theme (also in the dialog: no CSS rule there) */
+		com.eco.bio7.util.Util.setReadableTextColors(log);
 		sash.setWeights(70, 30);
 
 		/* The Python and its environment (below the tabs, as in the R packages view) */

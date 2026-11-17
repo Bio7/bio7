@@ -33,6 +33,8 @@ public class MavenDownloadProgressWindow {
             logText = new Text(shell, SWT.MULTI | SWT.READ_ONLY | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
             logText.setLayoutData(new GridData(GridData.FILL_BOTH));
             logText.setFont(JFaceResources.getTextFont());
+            /* Readable in the dark theme (an own window: no CSS rule there) */
+            com.eco.bio7.util.Util.setReadableTextColors(logText);
 
             Button closeButton = new Button(shell, SWT.PUSH);
             closeButton.setText("Close");
