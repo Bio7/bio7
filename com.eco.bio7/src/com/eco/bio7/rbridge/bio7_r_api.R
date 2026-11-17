@@ -148,8 +148,11 @@ local({
 
   method <- function(target, cls, name, ui) {
     force(target); force(cls); force(name); force(ui)
-    function(...) jcall("java_call", c(cls, name, if (ui) "ui" else ""),
-                        list(args = jargs(list(...)), target = target))
+    function(...) {
+      r <- jcall("java_call", c(cls, name, if (ui) "ui" else ""), list(args = jargs(list(...)), target = target))
+      # void (or null): no output of NULL in the console
+      if (is.null(r)) invisible(NULL) else r
+    }
   }
 
   env$J <- function(name) {
@@ -237,6 +240,14 @@ local({
   env$.DollarNames.bio7JavaClass <- function(x, pattern = "") {
     m <- members(slot(x, "name"))
     grep(pattern, sort(unique(c("new", m$static_methods, m$static_fields, m$classes))), value = TRUE)
+  }
+
+  # The S3 methods registered: R (since 4.0) doesn't look for methods in the
+  # attached environments (only the global environment, base and the registered ones)
+  for (m in grep("\\.bio7Java(Class|Object)$", ls(env, all.names = TRUE), value = TRUE)) {
+    cls <- sub("^.*\\.(bio7Java(Class|Object))$", "\\1", m)
+    generic <- sub(paste0("\\.", cls, "$"), "", m)
+    registerS3method(generic, cls, get(m, envir = env), envir = env)
   }
 
   # ------------------------------------------------------------------ Overview
