@@ -429,6 +429,12 @@
             id="com.eco.bio7.browser.knitrAction"
             name="LaTeX Action">
       </command>
+      <command
+            defaultHandler="com.eco.bio7.popup.actions.StartShinyAppHandler"
+            description="Starts the Shiny app of the R file (app.R, ui.R, server.R or a file with shinyApp(...))"
+            id="com.eco.bio7.startshinyapp.editor"
+            name="Start Shiny App">
+      </command>
       <keyBinding
             commandId="com.eco.bio7.browser.knitrAction"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
@@ -1684,6 +1690,33 @@
                      </with>
           </visibleWhen>
         </command>
+        <!-- Start a Shiny app: only for an R file of a Shiny app (app.R, ui.R, server.R, shinyApp(...)) -->
+        <command
+              commandId="com.eco.bio7.startshinyapp.editor"
+              disabledIcon="icons/editor/shinyapp.svg"
+              icon="icons/editor/shinyapp.svg"
+              id="bio7toolbar.startshinyapp"
+              label="Start Shiny App"
+              style="push"
+              tooltip="Start Shiny App (app.R, ui.R, server.R or a file with shinyApp(...))">
+           <visibleWhen>
+              <and>
+                 <with
+                       variable="activePartId">
+                    <equals
+                          value="com.eco.bio7.reditors.TemplateEditor">
+                    </equals>
+                 </with>
+                 <with
+                       variable="activeEditorInput">
+                    <test
+                          forcePluginActivation="true"
+                          property="com.eco.bio7.shiny.isApp">
+                    </test>
+                 </with>
+              </and>
+           </visibleWhen>
+        </command>
         <command
               commandId="com.eco.bio7.compilejavaaction"
               disabledIcon="icons/editor/javacompile.svg"
@@ -2048,5 +2081,16 @@
                menubarPath="JavaProfileMenu.menu/group1">
          </action>
       </viewerContribution>
+   </extension>
+   <!-- The R file of the active editor is a Shiny app (the toolbar button "Start Shiny App") -->
+   <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="com.eco.bio7.popup.actions.ShinyAppTester"
+            id="com.eco.bio7.shiny.tester"
+            namespace="com.eco.bio7.shiny"
+            properties="isApp"
+            type="org.eclipse.ui.IEditorInput">
+      </propertyTester>
    </extension>
 </plugin>

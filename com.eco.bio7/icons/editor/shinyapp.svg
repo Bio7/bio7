@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <!-- Start Shiny App: a browser window with a start arrow -->
+  <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" fill="#ffffff" stroke="#2a6db0"/>
+  <rect x="1.5" y="2.5" width="13" height="3" rx="1.5" fill="#2a6db0"/>
+  <circle cx="3.5" cy="4" r="0.6" fill="#ffffff"/>
+  <circle cx="5.3" cy="4" r="0.6" fill="#ffffff"/>
+  <path d="M6.5 7.2 L10.8 9.6 L6.5 12 Z" fill="#2e9e44"/>
+</svg>

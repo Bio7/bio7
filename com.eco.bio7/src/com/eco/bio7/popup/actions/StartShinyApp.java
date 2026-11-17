@@ -65,71 +65,10 @@ public class StartShinyApp extends Action implements IObjectActionDelegate {
 
 				}
 
-				String cleanedPath = loc.replace("\\", "/");
-
-				int shinyPort = store.getInt("SHINY_PORT");
-				String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
-				if (selectionConsole.equals("R")) {
-
-					Job job = new Job("Shiny Server") {
-						@Override
-						protected IStatus run(IProgressMonitor monitor) {
-
-							monitor.beginTask("Start Shiny Server...", IProgressMonitor.UNKNOWN);
-
-							// if (RState.isBusy() == false) {
-
-							// RBackend con = RBridge.getBackend();
-							// try {
-
-							// con.eval("try(setwd(\"" + cleanedPath + "\"))");
-							// con.eval("try(library(shiny))");
-							ConsolePageParticipant.pipeInputToConsole(".tempCurrentWd<-getwd()", true, false);
-							ConsolePageParticipant.pipeInputToConsole("setwd(\"" + cleanedPath
-									+ "\");library(shiny);runApp(port=" + shinyPort + ",launch.browser =FALSE)", true,
-									true);
-							System.out.println("runApp(port=" + shinyPort + ",launch.browser =FALSE)");
-							ConsolePageParticipant.pipeInputToConsole("setwd(.tempCurrentWd);", true, false);
-							// con.eval("try(runApp(port=5099,launch.browser =FALSE))");
-							/*
-							 * } catch (RException e) { // TODO Auto-generated catch block
-							 * e.printStackTrace(); }
-							 */
-
-							// }
-							/* Add timeout for the startup of the server! */
-							try {
-								Thread.sleep(1000);
-							} catch (InterruptedException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-							startBrowser(shinyPort);
-
-							monitor.done();
-							return Status.OK_STATUS;
-						}
-
-					};
-					job.addJobChangeListener(new JobChangeAdapter() {
-						public void done(IJobChangeEvent event) {
-							if (event.getResult().isOK()) {
-								/* Activate the editor again after the job! */
-								// Util.activateEditorPage(editor);
-							} else {
-
-							}
-						}
-					});
-					job.schedule();
-
-				} else {
-					Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
-				}
+				/* The same start as the toolbar button of the R editor */
+				ShinyApps.start(loc);
 			}
-
 		}
-
 	}
 
 	private void startBrowser(int shinyPort) {
