@@ -38,6 +38,24 @@
             class="com.eco.bio7.reditor.preferences.WorkbenchPreferencePython"
             id="prefpython"
             name="Preferences Python Editor"/>
+      <page
+            category="prefpython"
+            class="com.eco.bio7.reditor.preferences.PythonCodePreferences"
+            id="com.eco.bio7.pythonedit.code"
+            name="Preferences Python Editor Code">
+      </page>
+      <page
+            category="prefpython"
+            class="com.eco.bio7.reditor.preferences.PythonCodeAnalysisPreferences"
+            id="com.eco.bio7.pythonedit.analysis"
+            name="Preferences Python Editor Code Analysis">
+      </page>
+      <page
+            category="prefpython"
+            class="com.eco.bio7.reditor.preferences.PythonFormatPreferences"
+            id="com.eco.bio7.pythonedit.formatting"
+            name="Preferences Python Editor Formatting">
+      </page>
    </extension>
 
    <extension

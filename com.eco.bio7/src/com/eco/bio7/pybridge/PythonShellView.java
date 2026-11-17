@@ -84,7 +84,7 @@ public class PythonShellView extends ViewPart {
 		input = new com.eco.bio7.rbridge.views.RShellText(parent, SWT.SINGLE | SWT.BORDER);
 		GridData gdInput = new GridData(SWT.FILL, SWT.FILL, true, false, 6, 1);
 		input.setLayoutData(gdInput);
-		input.setToolTipText("Python code (Enter: evaluate, Up/Down: history, " + com.eco.bio7.rbridge.completion.ShellCompletion.getActivationKeystroke().format() + ": code completion)");
+		input.setToolTipText("Python code (Enter: evaluate, Up/Down: history, " + PythonShellCompletion.activationKey().format() + ": code completion)");
 		/* Before the key listener: an open popup takes Return and the arrow keys */
 		completion = new PythonShellCompletion(input);
 		input.addListener(SWT.KeyDown, e -> {

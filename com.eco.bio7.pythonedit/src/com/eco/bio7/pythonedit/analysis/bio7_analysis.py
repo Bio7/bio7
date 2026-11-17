@@ -434,7 +434,11 @@ def _comment_start(line):
 # ---------------------------------------------------------------- analysis
 
 
-def analyze(source_text, path, known):
+def analyze(source_text, path, known, options=None):
+    """options (the preferences of Bio7): warnings (False: only errors of the
+    compiler), ruff (False: the own checks), select/ignore (rule codes of ruff),
+    line_length, missing_modules (False: no check of the imports)."""
+    options = options or {}
     source = Source(source_text)
     folder = os.path.dirname(os.path.abspath(path)) if path else None
     importlib.invalidate_caches()
@@ -500,9 +504,13 @@ def analyze(source_text, path, known):
     candidates = set(_BUILTINS) | set(known or ())
     for s in checker.all_scopes():
         candidates.update(s.defs)
-    use_ruff = tools().get("ruff") is not None
+    warnings = options.get("warnings", True)
+    if not warnings:
+        # Only the errors of the compiler (above)
+        return {"diagnostics": diags, "tools": tools(), "outline": tree_outline}
+    use_ruff = tools().get("ruff") is not None and options.get("ruff", True)
     if use_ruff:
-        ruff_diags = run_ruff(source_text, path)
+        ruff_diags = run_ruff(source_text, path, options)
         if ruff_diags is None:
             use_ruff = False
         else:
@@ -523,8 +531,8 @@ def analyze(source_text, path, known):
                 span = source.span(node)
                 diags.append(diag("warning", "undefined-name", "Undefined name '" + name + "'", span, undefined_fixes(name, span, candidates, tree, source)))
         own_unused(checker, source, diags, path)
-    # Modules which are not installed (always: neither ruff nor pyflakes check this)
-    for node in ast.walk(tree):
+    # Modules which are not installed (neither ruff nor pyflakes check this)
+    for node in (ast.walk(tree) if options.get("missing_modules", True) else ()):
         names = []
         if isinstance(node, ast.Import):
             names = [(a.name.split(".")[0], a) for a in node.names]
@@ -578,9 +586,22 @@ def own_unused(checker, source, diags, path):
                 diags.append(diag("warning", "unused-variable", "Local variable '" + name + "' is assigned but never used", span, fixes))
 
 
-def run_ruff(source_text, path):
+def _ruff_options(options):
+    """The command line options of ruff from the preferences (else the defaults or the configuration of the project)."""
+    args = []
+    if options.get("select"):
+        args += ["--select", options["select"].replace(" ", "")]
+    if options.get("ignore"):
+        args += ["--ignore", options["ignore"].replace(" ", "")]
+    if options.get("line_length"):
+        args += ["--line-length", str(int(options["line_length"]))]
+    return args
+
+
+def run_ruff(source_text, path, options=None):
     try:
-        out = subprocess.run([sys.executable, "-m", "ruff", "check", "--output-format=json", "--no-cache", "--stdin-filename", path or "script.py", "-"],
+        out = subprocess.run([sys.executable, "-m", "ruff", "check", "--output-format=json", "--no-cache"] + _ruff_options(options or {})
+                             + ["--stdin-filename", path or "script.py", "-"],
                              input=source_text, capture_output=True, text=True, timeout=30)
         data = json.loads(out.stdout or "[]")
     except Exception:
@@ -657,16 +678,45 @@ def outline(tree, source):
 # ---------------------------------------------------------------- formatting
 
 
-def format_code(source_text, path):
+def format_code(source_text, path, options=None):
+    """options (the preferences of Bio7): formatter (auto, ruff, black), line_length,
+    quote_style (double, single, preserve), indent_tabs, sort_imports (ruff)."""
+    options = options or {}
     t = tools()
-    if t.get("ruff"):
-        out = subprocess.run([sys.executable, "-m", "ruff", "format", "--stdin-filename", path or "script.py", "-"], input=source_text, capture_output=True,
+    formatter = options.get("formatter", "auto")
+    if formatter == "ruff" and not t.get("ruff"):
+        return {"error": "ruff is not installed (Python Packages: the bundle 'Editor tools')."}
+    if formatter == "black" and not t.get("black"):
+        return {"error": "black is not installed (Python Packages: the bundle 'Editor tools')."}
+    line_length = int(options.get("line_length") or 0)
+    quotes = options.get("quote_style") or "double"
+    if t.get("ruff") and formatter in ("auto", "ruff"):
+        if options.get("sort_imports"):
+            # The imports sorted first (isort rules of ruff)
+            out = subprocess.run([sys.executable, "-m", "ruff", "check", "--select", "I", "--fix-only", "--no-cache", "--exit-zero",
+                                  "--stdin-filename", path or "script.py", "-"], input=source_text, capture_output=True, text=True, timeout=60)
+            if out.returncode == 0 and out.stdout:
+                source_text = out.stdout
+        args = [sys.executable, "-m", "ruff", "format", "--no-cache"]
+        if line_length:
+            args += ["--line-length", str(line_length)]
+        if quotes != "double":
+            args += ["--config", "format.quote-style = '" + quotes + "'"]
+        if options.get("indent_tabs"):
+            args += ["--config", "format.indent-style = 'tab'"]
+        out = subprocess.run(args + ["--stdin-filename", path or "script.py", "-"], input=source_text, capture_output=True,
                              text=True, timeout=60)
         if out.returncode == 0:
             return {"text": out.stdout, "tool": "ruff"}
         return {"error": (out.stderr or out.stdout).strip()}
-    if t.get("black"):
-        out = subprocess.run([sys.executable, "-m", "black", "-q", "-"], input=source_text, capture_output=True, text=True, timeout=60)
+    if t.get("black") and formatter in ("auto", "black"):
+        args = [sys.executable, "-m", "black", "-q"]
+        if line_length:
+            args += ["--line-length", str(line_length)]
+        if quotes != "double":
+            # black: only the quotes of the code (no single quotes)
+            args += ["--skip-string-normalization"]
+        out = subprocess.run(args + ["-"], input=source_text, capture_output=True, text=True, timeout=60)
         if out.returncode == 0:
             return {"text": out.stdout, "tool": "black"}
         return {"error": (out.stderr or out.stdout).strip()}
@@ -1704,13 +1754,13 @@ def main():
         try:
             cmd = req.get("cmd")
             if cmd == "analyze":
-                result = analyze(req["source"], req.get("path"), req.get("known"))
+                result = analyze(req["source"], req.get("path"), req.get("known"), req.get("options"))
             elif cmd == "complete":
                 result = complete(req["source"], req.get("path"), req["line"], req["col"])
             elif cmd == "help":
                 result = help_at(req["source"], req.get("path"), req["line"], req["col"])
             elif cmd == "format":
-                result = format_code(req["source"], req.get("path"))
+                result = format_code(req["source"], req.get("path"), req.get("options"))
             elif cmd == "refactor":
                 result = refactor(req)
             elif cmd == "tools":

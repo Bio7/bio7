@@ -120,8 +120,9 @@ public class PythonConfiguration extends SourceViewerConfiguration {
 				: new com.eco.bio7.pythonedit.analysis.PythonCodeCompletion(editor, new PythonCompletionProcessor());
 		assistant.setContentAssistProcessor(processor,
 				IDocument.DEFAULT_CONTENT_TYPE);
-		assistant.enableAutoActivation(true);
-		assistant.setAutoActivationDelay(300);
+		org.eclipse.jface.preference.IPreferenceStore prefs = com.eco.bio7.pythonedit.analysis.PythonPreferences.store();
+		assistant.enableAutoActivation(prefs.getBoolean(com.eco.bio7.pythonedit.analysis.PythonPreferences.TYPED_COMPLETION));
+		assistant.setAutoActivationDelay(prefs.getInt(com.eco.bio7.pythonedit.analysis.PythonPreferences.ACTIVATION_DELAY));
 		assistant.setShowEmptyList(false);
 
 		assistant

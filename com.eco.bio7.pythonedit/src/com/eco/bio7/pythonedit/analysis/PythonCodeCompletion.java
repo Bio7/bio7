@@ -41,12 +41,26 @@ import org.eclipse.ui.texteditor.ITextEditor;
  */
 public class PythonCodeCompletion implements IContentAssistProcessor {
 
-	private final ITextEditor editor;
+	/* The code for the analysis (null: the document) and the path of the file (null: none) */
+	private final java.util.function.Supplier<String> code;
+	private final java.util.function.Supplier<String> path;
 	private final IContentAssistProcessor templates;
 	private String error;
 
 	public PythonCodeCompletion(ITextEditor editor, IContentAssistProcessor templates) {
-		this.editor = editor;
+		this(null, () -> editor.getEditorInput() instanceof IFileEditorInput fi && fi.getFile().getLocation() != null ? fi.getFile().getLocation().toOSString() : null,
+				templates);
+	}
+
+	/**
+	 * The completion for code in another document (e.g., the Python chunks of a
+	 * markdown document): the code of the analysis has the lines and columns of
+	 * the document (the other lines empty), the path is the one of the file (for the
+	 * modules of its folder).
+	 */
+	public PythonCodeCompletion(java.util.function.Supplier<String> code, java.util.function.Supplier<String> path, IContentAssistProcessor templates) {
+		this.code = code;
+		this.path = path;
 		this.templates = templates;
 	}
 
@@ -65,7 +79,7 @@ public class PythonCodeCompletion implements IContentAssistProcessor {
 			int start = offset - prefix.length();
 			Set<String> seen = new LinkedHashSet<>();
 			/* The attributes of a variable of the running Python (e.g., the columns of a DataFrame) */
-			Function<String, List<String[]>> live = PythonEditorSupport.liveCompletion;
+			Function<String, List<String[]>> live = PythonPreferences.store().getBoolean(PythonPreferences.LIVE_COMPLETION) ? PythonEditorSupport.liveCompletion : null;
 			if (live != null) {
 				String base = expr.contains(".") ? expr.substring(0, expr.lastIndexOf('.')) : "";
 				List<String[]> names = live.apply(base);
@@ -79,8 +93,8 @@ public class PythonCodeCompletion implements IContentAssistProcessor {
 			}
 			/* The code analysis */
 			Map<String, Object> args = new LinkedHashMap<>();
-			args.put("source", doc.get());
-			args.put("path", editor.getEditorInput() instanceof IFileEditorInput fi && fi.getFile().getLocation() != null ? fi.getFile().getLocation().toOSString() : null);
+			args.put("source", code != null ? code.get() : doc.get());
+			args.put("path", path != null ? path.get() : null);
 			args.put("line", line + 1);
 			args.put("col", offset - lineStart);
 			Map<String, Object> r = AnalysisClient.get().request("complete", args, 6000);
@@ -159,7 +173,9 @@ public class PythonCodeCompletion implements IContentAssistProcessor {
 
 	@Override
 	public char[] getCompletionProposalAutoActivationCharacters() {
-		return new char[] { '.' };
+		/* The preferences (Preferences Python Editor Code) */
+		String chars = PythonPreferences.store().getString(PythonPreferences.ACTIVATION_CHARS);
+		return chars.isEmpty() ? null : chars.toCharArray();
 	}
 
 	@Override

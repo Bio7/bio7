@@ -682,6 +682,22 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("CODE_COMPLETION_POPUP_SIZE_X", 600);
 		store.setDefault("CODE_COMPLETION_POPUP_SIZE_Y", 400);
 		store.setDefault("RSHELL_CODE_COMPLETION_ACTIVATOR_ALTERED", "STRG");
+		/* R and Python at the startup of Bio7 (the console shows R) */
+		store.setDefault(AutoStart.START_R, false);
+		store.setDefault(AutoStart.START_PYTHON, false);
+		store.setDefault(AutoStart.CONSOLE, "R");
+		/* The Python plot view */
+		store.setDefault("PY_PLOT_FIT", true);
+		store.setDefault("PY_PLOT_HIDPI", true);
+		store.setDefault("PY_PLOT_STYLE", "");
+		store.setDefault("PY_PLOT_FONT_SIZE", 0);
+		store.setDefault("PY_PLOT_SAVE_DPI", 0);
+		/* The code completion of the Python-Shell */
+		store.setDefault("PYSHELL_TYPED_CODE_COMPLETION", true);
+		store.setDefault("PYSHELL_ACTIVATION_CHARS", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz._");
+		store.setDefault("PYSHELL_CODE_COMPLETION_ACTIVATOR_ALTERED", "STRG");
+		store.setDefault("PYSHELL_POPUP_SIZE_X", 600);
+		store.setDefault("PYSHELL_POPUP_SIZE_Y", 400);
 
 		store.setDefault("LATEX_CLEAN_FILES", false);
 		store.setDefault("LATEX_FILES_EXT_DELETE", "out,log,nav,aux,bbl,blg,dvi,toc,.synctex.gz,snm");
@@ -703,7 +719,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("DEFAULT_DIGITS", 15);
 		store.setDefault("TRANSFER_METHOD", false);
 
-		store.setDefault("POINTS_PANEL_SCROLLBAR", false);
 		store.setDefault("STARTUP_SCRIPTS", false);
 		/* The embedded Python is the default (in the process of Bio7: data transfer, plots) */
 		store.setDefault("python_embedded", true);
@@ -1389,6 +1404,8 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		new StartBio7Utils();
 		// Start console and output!!
 		StartBio7Utils.getConsoleInstance().startutils();
+		/* R and/or Python started at startup (preferences), after the console exists */
+		AutoStart.schedule(getWindowConfigurer().getWindow().getShell().getDisplay());
 		// *************************************************
 		/* Set the Bio7-Toobar menu in the ImageJ plugin! */
 		ImageJWindowAction.setBio7RCP(true);

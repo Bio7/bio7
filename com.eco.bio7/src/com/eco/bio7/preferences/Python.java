@@ -3,6 +3,9 @@ package com.eco.bio7.preferences;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.IntegerFieldEditor;
+import org.eclipse.jface.preference.RadioGroupFieldEditor;
+import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -73,6 +76,15 @@ public class Python extends FieldEditorPreferencePage implements IWorkbenchPrefe
 		}, getFieldEditorParent()));
 		addField(new BooleanFieldEditor(com.eco.bio7.pybridge.PythonEnvironment.PREF_USE_UV,
 				"Install packages with uv instead of pip (if uv is installed: faster, the environment needs no pip)", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
+		/* As the R-Shell code completion (Preferences > R) */
+		addField(new LabelFieldEditor("Python-Shell code completion (close and reopen the Python-Shell view or restart to apply):", getFieldEditorParent()));
+		addField(new BooleanFieldEditor("PYSHELL_TYPED_CODE_COMPLETION", "Open code completion when typing", getFieldEditorParent()));
+		addField(new StringFieldEditor("PYSHELL_ACTIVATION_CHARS", "Activation chars", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));
+		addField(new RadioGroupFieldEditor("PYSHELL_CODE_COMPLETION_ACTIVATOR_ALTERED", "Key combination for code completion activation", 3,
+				new String[][] { { "Strg+Space", "STRG" }, { "Alt+Space", "ALT" }, { "Cmd+Space", "CMD" } }, getFieldEditorParent(), false));
+		addField(new IntegerFieldEditor("PYSHELL_POPUP_SIZE_X", "Popup size width", getFieldEditorParent()));
+		addField(new IntegerFieldEditor("PYSHELL_POPUP_SIZE_Y", "Popup size height", getFieldEditorParent()));
 		SpacerFieldEditor spacer2 = new SpacerFieldEditor(getFieldEditorParent());
 		addField(spacer2);
 	}

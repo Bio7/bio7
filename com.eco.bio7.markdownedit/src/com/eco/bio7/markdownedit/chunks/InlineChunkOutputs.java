@@ -703,6 +703,13 @@ public final class InlineChunkOutputs {
 		return chunks;
 	}
 
+	/* The Python chunks (the code analysis and completion of Python) */
+	static List<Chunk> pythonChunks(IDocument doc) {
+		List<Chunk> chunks = allChunks(doc);
+		chunks.removeIf(c -> !c.python());
+		return chunks;
+	}
+
 	static List<Chunk> allChunks(IDocument doc) {
 		List<Chunk> chunks = new ArrayList<>();
 		int n = doc.getNumberOfLines();

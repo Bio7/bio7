@@ -28,13 +28,17 @@ public class Bio7PaintPreferences extends FieldEditorPreferencePage
 	public Bio7PaintPreferences() {
 		super(GRID);
 		setPreferenceStore(Bio7Plugin.getDefault().getPreferenceStore());
-		setDescription("Preferences Bio7 Panels, Values, Scripts:");
+		setDescription("Startup of Bio7: R, Python, startup scripts and commands");
 
 	}
 
 	public void createFieldEditors() {
-		addField(new BooleanFieldEditor("POINTS_PANEL_SCROLLBAR", "Show the scrollbar in the Points panel", getFieldEditorParent()));
-		
+		/* Started one after the other in a job (the user interface stays usable) */
+		addField(new LabelFieldEditor("Start at the startup of Bio7 (in the background):", getFieldEditorParent()));
+		addField(new BooleanFieldEditor(com.eco.bio7.rcp.AutoStart.START_R, "Start R", getFieldEditorParent()));
+		addField(new BooleanFieldEditor(com.eco.bio7.rcp.AutoStart.START_PYTHON, "Start Python", getFieldEditorParent()));
+		addField(new org.eclipse.jface.preference.RadioGroupFieldEditor(com.eco.bio7.rcp.AutoStart.CONSOLE, "The console shows (if both are started):", 2,
+				new String[][] { { "R", "R" }, { "Python", "Python" } }, getFieldEditorParent(), false));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new BooleanFieldEditor("STARTUP_SCRIPTS", "Enable startup scripts", getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));

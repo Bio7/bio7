@@ -257,6 +257,16 @@ public class MarkdownConfiguration extends TextSourceViewerConfiguration {
 		assistant.setContentAssistProcessor(
 				RCompletionProcessor.forCode(() -> com.eco.bio7.markdownedit.chunks.RChunkCode.virtualCode(sourceViewer.getDocument()), assistant),
 				MarkdownPartitionScanner.MARKDOWN_R_CHUNK);
+		/* The code completion of the Python editor in the Python chunks (the code of all Python chunks) */
+		try {
+			assistant.setContentAssistProcessor(new com.eco.bio7.pythonedit.analysis.PythonCodeCompletion(
+					() -> com.eco.bio7.markdownedit.chunks.PythonChunkCode.virtualCode(sourceViewer.getDocument()),
+					() -> com.eco.bio7.markdownedit.chunks.PythonChunkCode.analysisPath(
+							markdownEditor == null ? null : markdownEditor.getEditorInput().getAdapter(org.eclipse.core.resources.IResource.class)),
+					null), MarkdownPartitionScanner.MARKDOWN_PYTHON_CHUNK);
+		} catch (LinkageError e) {
+			/* The Python editor is not installed */
+		}
 		assistant.enablePrefixCompletion(true);
 
 		assistant.enableAutoActivation(true);

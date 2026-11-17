@@ -51,9 +51,7 @@ public class WorkbenchPreferencePython extends FieldEditorPreferencePage impleme
 
 			}
 		});
-		addField(new SpacerFieldEditor(getFieldEditorParent()));
-		addField(new BooleanFieldEditor(com.eco.bio7.pythonedit.analysis.PythonEditorSupport.HOVERS,
-				"Enable Hovers (all, also in the context menu of the editor)", getFieldEditorParent()));
+		/* The hovers: Preferences Python Editor Code */
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 
 		/* The color schemes (all colors below; then a single color can be changed) */

@@ -55,6 +55,7 @@ public class FormatAction extends Action {
 		Map<String, Object> args = new LinkedHashMap<>();
 		args.put("source", text);
 		args.put("path", editor.getEditorInput() instanceof IFileEditorInput fi && fi.getFile().getLocation() != null ? fi.getFile().getLocation().toOSString() : null);
+		args.put("options", PythonPreferences.formatOptions());
 		@SuppressWarnings("unchecked")
 		Map<String, Object>[] result = new Map[1];
 		BusyIndicator.showWhile(Display.getCurrent(), () -> result[0] = AnalysisClient.get().request("format", args, 60000));

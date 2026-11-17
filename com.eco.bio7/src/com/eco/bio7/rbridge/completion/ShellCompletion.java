@@ -110,11 +110,16 @@ public class ShellCompletion implements UpdateCompletion {
 		return allChars.toCharArray();
 	}
 
-	/** The key of the code completion (preferences of the R-Shell, also used by the Python-Shell). */
+	/** The key of the code completion of the R-Shell (preferences). */
 	public static KeyStroke getActivationKeystroke() {
+		return getActivationKeystroke("RSHELL_CODE_COMPLETION_ACTIVATOR_ALTERED");
+	}
+
+	/** The key of the code completion of a preference (STRG, ALT or CMD with Space), e.g., of the Python-Shell. */
+	public static KeyStroke getActivationKeystroke(String preference) {
 		IPreferenceStore storeLocal = Bio7Plugin.getDefault().getPreferenceStore();
 		KeyStroke instance;
-		String useAlt = storeLocal.getString("RSHELL_CODE_COMPLETION_ACTIVATOR_ALTERED");
+		String useAlt = storeLocal.getString(preference);
 		if (useAlt.equals("CMD")) {
 			instance = KeyStroke.getInstance(new Integer(SWT.COMMAND).intValue(), new Integer(' ').intValue());
 		}

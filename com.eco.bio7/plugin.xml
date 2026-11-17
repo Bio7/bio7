@@ -579,7 +579,7 @@
             category="com.eco.bio7.preferences.Bio7PreferencePage"
             class="com.eco.bio7.preferences.Bio7PaintPreferences"
             id="com.eco.bio7.PreferencesPanels"
-            name="Preferences Custom">
+            name="Preferences Startup">
       </page>
       <page
             category="com.eco.bio7.R"
@@ -622,6 +622,12 @@
             class="com.eco.bio7.preferences.Python"
             id="com.eco.bio7.python"
             name="Preferences Python">
+      </page>
+      <page
+            category="prefpython"
+            class="com.eco.bio7.preferences.PythonPlotPreferences"
+            id="com.eco.bio7.python.plot"
+            name="Preferences Python Plot">
       </page>
    </extension>
    <extension

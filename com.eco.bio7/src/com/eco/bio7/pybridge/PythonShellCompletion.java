@@ -71,21 +71,29 @@ final class PythonShellCompletion {
 		}
 	}
 
+	/* The preferences of the code completion of the Python-Shell */
+	static final String TYPED = "PYSHELL_TYPED_CODE_COMPLETION";
+	static final String ACTIVATION_CHARS = "PYSHELL_ACTIVATION_CHARS";
+	static final String ACTIVATION_KEY = "PYSHELL_CODE_COMPLETION_ACTIVATOR_ALTERED";
+	static final String POPUP_WIDTH = "PYSHELL_POPUP_SIZE_X";
+	static final String POPUP_HEIGHT = "PYSHELL_POPUP_SIZE_Y";
+
+	/** The key of the code completion of the Python-Shell. */
+	static org.eclipse.jface.bindings.keys.KeyStroke activationKey() {
+		return ShellCompletion.getActivationKeystroke(ACTIVATION_KEY);
+	}
+
 	PythonShellCompletion(RShellText control) {
 		this.control = control;
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		/* The preferences of the Python-Shell (Preferences > Python) */
 		char[] auto = null;
-		if (store.getBoolean("RSHELL_TYPED_CODE_COMPLETION")) {
-			StringBuilder chars = new StringBuilder("._");
-			for (char c : store.getString("RSHELL_ACTIVATION_CHARS").toCharArray()) {
-				if (Character.isLetter(c) && chars.indexOf(String.valueOf(c)) < 0) {
-					chars.append(c);
-				}
-			}
-			auto = chars.toString().toCharArray();
+		String chars = store.getString(ACTIVATION_CHARS);
+		if (store.getBoolean(TYPED) && !chars.isEmpty()) {
+			auto = chars.toCharArray();
 		}
-		adapter = new ContentProposalAdapter(control, new StyledTextContentAdapter(), this::proposals, ShellCompletion.getActivationKeystroke(), auto);
-		adapter.setPopupSize(new Point(store.getInt("CODE_COMPLETION_POPUP_SIZE_X"), store.getInt("CODE_COMPLETION_POPUP_SIZE_Y")));
+		adapter = new ContentProposalAdapter(control, new StyledTextContentAdapter(), this::proposals, activationKey(), auto);
+		adapter.setPopupSize(new Point(store.getInt(POPUP_WIDTH), store.getInt(POPUP_HEIGHT)));
 		adapter.setPropagateKeys(true);
 		adapter.setLabelProvider(new LabelProvider() {
 			@Override
@@ -100,6 +108,20 @@ final class PythonShellCompletion {
 		});
 		adapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_IGNORE);
 		adapter.addContentProposalListener((org.eclipse.jface.fieldassist.IContentProposalListener) this::accept);
+		/*
+		 * The cache only while the popup is open (typing filters it): a new completion
+		 * asks Python again (e.g., for the variables created since)
+		 */
+		adapter.addContentProposalListener(new com.eco.bio7.rbridge.completion.IContentProposalListener2() {
+			@Override
+			public void proposalPopupOpened(ContentProposalAdapter a) {
+			}
+
+			@Override
+			public void proposalPopupClosed(ContentProposalAdapter a) {
+				cachedContext = null;
+			}
+		});
 	}
 
 	/** True while the popup of the proposals is open (it takes Return and the arrow keys). */
@@ -212,7 +234,7 @@ final class PythonShellCompletion {
 		case "class" -> "icons/s3.svg";
 		case "function" -> "icons/brkp_obj.svg";
 		case "keyword" -> "/icons/settings_obj.svg";
-		case "variable" -> "/icons/goto_input.svg";
+		/* The variables of the workspace (and other values): the image of the variables of the R-Shell */
 		default -> "icons/types.svg";
 		};
 		return ResourceManager.getPluginImage(Bio7Plugin.getDefault(), path);

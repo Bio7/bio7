@@ -90,11 +90,7 @@ public class PythonReconcilingStrategy implements IReconcilingStrategy, IReconci
 		}
 		long gen = generation.incrementAndGet();
 		String text = doc.get();
-		Map<String, Object> args = new LinkedHashMap<>();
-		args.put("source", text);
-		args.put("path", file.getLocation() == null ? file.getName() : file.getLocation().toOSString());
-		args.put("known", new ArrayList<>(PythonEditorSupport.liveNames()));
-		Map<String, Object> result = AnalysisClient.get().request("analyze", args, TIMEOUT_MILLIS);
+		Map<String, Object> result = analyze(text, file.getLocation() == null ? file.getName() : file.getLocation().toOSString());
 		if (result == null || gen != generation.get() || !text.equals(doc.get())) {
 			/* No Python, or the text changed in the meantime (the next analysis follows) */
 			return;
@@ -103,33 +99,7 @@ public class PythonReconcilingStrategy implements IReconcilingStrategy, IReconci
 		if (result.get("outline") != null && editor instanceof OutlineTarget target) {
 			target.outlineChanged(result.get("outline"));
 		}
-		List<Map<String, Object>> markers = new ArrayList<>();
-		if (result.get("diagnostics") instanceof List<?> diags) {
-			for (Object o : diags) {
-				Map<String, Object> d = (Map<String, Object>) o;
-				try {
-					int start = PythonFixes.offset(doc, num(d, "line"), num(d, "col"));
-					int end = PythonFixes.offset(doc, num(d, "endLine"), num(d, "endCol"));
-					if (end <= start) {
-						end = Math.min(doc.getLength(), start + 1);
-					}
-					Map<String, Object> m = new HashMap<>();
-					m.put(IMarker.CHAR_START, start);
-					m.put(IMarker.CHAR_END, end);
-					m.put(IMarker.LINE_NUMBER, num(d, "line"));
-					String severity = String.valueOf(d.get("severity"));
-					m.put(IMarker.SEVERITY, severity.equals("error") ? IMarker.SEVERITY_ERROR : severity.equals("info") ? IMarker.SEVERITY_INFO : IMarker.SEVERITY_WARNING);
-					String code = String.valueOf(d.getOrDefault("code", ""));
-					m.put(IMarker.MESSAGE, String.valueOf(d.get("message")) + (code.matches("[A-Z]+[0-9]+") ? " (" + code + ")" : ""));
-					m.put("bio7.code", code);
-					Object fixes = d.get("fixes");
-					m.put(PythonFixes.FIXES, fixes instanceof List<?> l && !l.isEmpty() ? Json.write(fixes) : "");
-					markers.add(m);
-				} catch (BadLocationException e) {
-					/* The document changed */
-				}
-			}
-		}
+		List<Map<String, Object>> markers = markers(doc, result, java.util.Set.of());
 		WorkspaceJob job = new WorkspaceJob("Python code analysis") {
 			@Override
 			public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
@@ -146,6 +116,62 @@ public class PythonReconcilingStrategy implements IReconcilingStrategy, IReconci
 		job.setRule(file);
 		job.setSystem(true);
 		job.schedule();
+	}
+
+	/**
+	 * The code analysis of Python code (ruff or pyflakes, the compiler, the modules
+	 * which are not installed): null if Python is not available. The path of the
+	 * file (its folder: the own modules). Not in the UI thread.
+	 */
+	public static Map<String, Object> analyze(String code, String path) {
+		if (!AnalysisClient.isAvailable()) {
+			return null;
+		}
+		Map<String, Object> args = new LinkedHashMap<>();
+		args.put("source", code);
+		args.put("path", path);
+		args.put("known", new ArrayList<>(PythonEditorSupport.liveNames()));
+		args.put("options", PythonPreferences.analysisOptions());
+		return AnalysisClient.get().request("analyze", args, TIMEOUT_MILLIS);
+	}
+
+	/**
+	 * The attributes of the markers of the diagnostics of {@link #analyze} (lines
+	 * and columns of the document), without the given codes (e.g., E402).
+	 */
+	@SuppressWarnings("unchecked")
+	public static List<Map<String, Object>> markers(IDocument doc, Map<String, Object> result, java.util.Set<String> without) {
+		List<Map<String, Object>> markers = new ArrayList<>();
+		if (result != null && result.get("diagnostics") instanceof List<?> diags) {
+			for (Object o : diags) {
+				Map<String, Object> d = (Map<String, Object>) o;
+				try {
+					int start = PythonFixes.offset(doc, num(d, "line"), num(d, "col"));
+					int end = PythonFixes.offset(doc, num(d, "endLine"), num(d, "endCol"));
+					if (end <= start) {
+						end = Math.min(doc.getLength(), start + 1);
+					}
+					Map<String, Object> m = new HashMap<>();
+					m.put(IMarker.CHAR_START, start);
+					m.put(IMarker.CHAR_END, end);
+					m.put(IMarker.LINE_NUMBER, num(d, "line"));
+					String severity = String.valueOf(d.get("severity"));
+					m.put(IMarker.SEVERITY, severity.equals("error") ? IMarker.SEVERITY_ERROR : severity.equals("info") ? IMarker.SEVERITY_INFO : IMarker.SEVERITY_WARNING);
+					String code = String.valueOf(d.getOrDefault("code", ""));
+					if (without.contains(code)) {
+						continue;
+					}
+					m.put(IMarker.MESSAGE, String.valueOf(d.get("message")) + (code.matches("[A-Z]+[0-9]+") ? " (" + code + ")" : ""));
+					m.put("bio7.code", code);
+					Object fixes = d.get("fixes");
+					m.put(PythonFixes.FIXES, fixes instanceof List<?> l && !l.isEmpty() ? Json.write(fixes) : "");
+					markers.add(m);
+				} catch (BadLocationException e) {
+					/* The document changed */
+				}
+			}
+		}
+		return markers;
 	}
 
 	private static int num(Map<String, Object> d, String key) {

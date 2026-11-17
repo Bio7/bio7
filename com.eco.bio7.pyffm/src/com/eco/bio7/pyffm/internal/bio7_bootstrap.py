@@ -318,7 +318,7 @@ def _patch_tqdm(m):
     cls.close = bio7_close
 
 
-_PATCHES = {"tqdm.std": _patch_tqdm, "plotly.basedatatypes": _patch_plotly, "altair": _patch_altair, "folium": _patch_folium,
+_PATCHES = {"matplotlib": lambda m: _apply_mpl_style(m), "tqdm.std": _patch_tqdm, "plotly.basedatatypes": _patch_plotly, "altair": _patch_altair, "folium": _patch_folium,
             "holoviews": _patch_holoviews, "hvplot": _patch_hvplot}
 
 
@@ -1026,6 +1026,42 @@ def _set_view(w, h, scale):
     _view[:] = [w, h, scale]
 
 
+# The preferences of the plot view (Preferences Python Plot): fit (the figures in
+# the size of the view, else their figsize), hidpi (the resolution of the screen,
+# else 1x), style (a matplotlib style, "" the default), font_size (0 the default)
+_plot_options = {"fit": True, "hidpi": True, "style": "", "font_size": 0}
+_style_applied = [False]
+
+
+def _set_plot_options(options):
+    """New preferences: the style for new figures, the open figures drawn again."""
+    _plot_options.update(options)
+    if "matplotlib" in sys.modules:
+        _apply_mpl_style()
+    if "matplotlib.pyplot" in sys.modules:
+        _rendered.clear()
+        _flush()
+
+
+def _apply_mpl_style(module=None):
+    """The style and the font size of the preferences (for the figures created after)."""
+    try:
+        import matplotlib
+        style = _plot_options.get("style") or ""
+        if style:
+            matplotlib.style.use(style)
+            _style_applied[0] = True
+        elif _style_applied[0]:
+            # Back to the defaults of matplotlib (the backend is kept)
+            matplotlib.style.use("default")
+            _style_applied[0] = False
+        size = float(_plot_options.get("font_size") or 0)
+        if size > 0:
+            matplotlib.rcParams["font.size"] = size
+    except Exception as e:
+        sys.stderr.write("The matplotlib style could not be set: %s\n" % e)
+
+
 def _figure_numbers():
     if "matplotlib.pyplot" not in sys.modules:
         return []
@@ -1053,7 +1089,15 @@ def _render(num):
         return False
     fig = m.canvas.figure
     w, h, scale = _view
-    fig.set_size_inches(max(w, 50) / 96.0, max(h, 50) / 96.0, forward=False)
+    if not _plot_options.get("hidpi", True):
+        scale = 1.0
+    # The size of the figure (figsize) before it is fitted to the view
+    if not hasattr(fig, "_bio7_figsize"):
+        fig._bio7_figsize = tuple(fig.get_size_inches())
+    if _plot_options.get("fit", True):
+        fig.set_size_inches(max(w, 50) / 96.0, max(h, 50) / 96.0, forward=False)
+    else:
+        fig.set_size_inches(*fig._bio7_figsize, forward=False)
     fig.set_dpi(96.0 * scale)
     m.canvas.draw()
     rgba = memoryview(m.canvas.buffer_rgba())

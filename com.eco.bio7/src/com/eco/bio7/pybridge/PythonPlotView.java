@@ -100,6 +100,49 @@ public final class PythonPlotView {
 		};
 	}
 
+	/* ---------------- The preferences (Preferences Python Plot) ---------------- */
+
+	static final String FIT = "PY_PLOT_FIT";
+	static final String HIDPI = "PY_PLOT_HIDPI";
+	static final String STYLE = "PY_PLOT_STYLE";
+	static final String FONT_SIZE = "PY_PLOT_FONT_SIZE";
+	static final String SAVE_DPI = "PY_PLOT_SAVE_DPI";
+	private static boolean listening;
+
+	private static org.eclipse.jface.preference.IPreferenceStore store() {
+		return com.eco.bio7.Bio7Plugin.getDefault().getPreferenceStore();
+	}
+
+	/**
+	 * Sends the preferences of the plot view to Python (at the start and after a
+	 * change: the open figures are drawn again, the style applies to new figures).
+	 */
+	static void applyOptions(PySession session) {
+		if (!listening) {
+			listening = true;
+			store().addPropertyChangeListener(e -> {
+				if (e.getProperty().startsWith("PY_PLOT_") && !e.getProperty().equals(SAVE_DPI)) {
+					PySession s = EmbeddedPython.session();
+					if (s != null) {
+						Thread t = new Thread(() -> applyOptions(s), "Python plot preferences");
+						t.setDaemon(true);
+						t.start();
+					}
+					Display.getDefault().asyncExec(PythonPlotView::update);
+				}
+			});
+		}
+		org.eclipse.jface.preference.IPreferenceStore s = store();
+		String style = s.getString(STYLE).strip().replace("\\", "\\\\").replace("'", "\\'");
+		String code = "import sys\nsys.modules['_bio7']._set_plot_options({'fit': " + (s.getBoolean(FIT) ? "True" : "False") + ", 'hidpi': "
+				+ (s.getBoolean(HIDPI) ? "True" : "False") + ", 'style': '" + style + "', 'font_size': " + Math.max(0, s.getInt(FONT_SIZE)) + "})";
+		try {
+			session.exec(code);
+		} catch (Exception e) {
+			EmbeddedPython.print("The plot preferences could not be applied: " + e.getMessage() + "\n", true);
+		}
+	}
+
 	/** The size for the first plots (UI thread): the size of an open view, else a default. */
 	static void initSize(PySession session) {
 		double scale = scale();
@@ -299,7 +342,13 @@ public final class PythonPlotView {
 			return;
 		}
 		Rectangle b = image.getBounds();
-		if (b.width == area.width && b.height == area.height) {
+		if (!store().getBoolean(FIT)) {
+			/* The size of the figure (figsize): centered, made smaller if it doesn't fit */
+			double f = Math.min(1.0, Math.min((double) area.width / b.width, (double) area.height / b.height));
+			int w = (int) Math.round(b.width * f), h = (int) Math.round(b.height * f);
+			gc.setInterpolation(SWT.HIGH);
+			gc.drawImage(image, 0, 0, b.width, b.height, (area.width - w) / 2, (area.height - h) / 2, w, h);
+		} else if (b.width == area.width && b.height == area.height) {
 			gc.drawImage(image, 0, 0);
 		} else {
 			/* Until matplotlib has drawn the figure in the new size */
@@ -383,7 +432,8 @@ public final class PythonPlotView {
 		int figure = current;
 		Thread t = new Thread(() -> {
 			try {
-				s.saveFigure(figure, Path.of(path), format, 0);
+				/* The resolution of the preferences (0: the resolution of the figure) */
+				s.saveFigure(figure, Path.of(path), format, format.equals("png") ? Math.max(0, store().getInt(SAVE_DPI)) : 0);
 			} catch (Exception e) {
 				EmbeddedPython.print("The figure could not be saved: " + e.getMessage() + "\n", true);
 			}

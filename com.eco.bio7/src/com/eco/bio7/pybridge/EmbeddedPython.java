@@ -139,6 +139,8 @@ public final class EmbeddedPython {
 		session.setRunListener(new PythonJobs());
 		Display display = Display.getDefault();
 		display.syncExec(() -> PythonPlotView.initSize(session));
+		/* The preferences of the plot view (Preferences Python Plot) */
+		PythonPlotView.applyOptions(session);
 		print("Embedded Python " + session.version() + " (" + exe + ")\n", false);
 		return null;
 	}

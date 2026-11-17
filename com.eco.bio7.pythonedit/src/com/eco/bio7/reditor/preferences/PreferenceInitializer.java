@@ -35,6 +35,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 
 		/* All hovers of the editor (the context menu of the editor) */
 		storePython.setDefault(com.eco.bio7.pythonedit.analysis.PythonEditorSupport.HOVERS, true);
+		/* Code completion, code analysis and formatting */
+		com.eco.bio7.pythonedit.analysis.PythonPreferences.setDefaults(storePython);
 
 		PreferenceConverter.setDefault(storePython, "colourkeyfont", f);
 		PreferenceConverter.setDefault(storePython, "colourkeyfont1", f);
