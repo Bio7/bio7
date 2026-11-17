@@ -12,7 +12,7 @@ public class ActionUtil {
 			public void run() {
 				try {
 					IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-					page.showView("com.eco.bio7.browser.Browser");
+					page.bringToTop(page.showView("com.eco.bio7.browser.Browser", null, IWorkbenchPage.VIEW_VISIBLE));
 				} catch (PartInitException e) {
 					// TODO Auto-generated catch
 					// block
