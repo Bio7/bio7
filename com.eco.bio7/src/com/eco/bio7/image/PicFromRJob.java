@@ -22,14 +22,14 @@ import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.rosuda.REngine.REXPLogical;
-import org.rosuda.REngine.REXPMismatchException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 class PicFromRJob extends WorkspaceJob {
 
@@ -39,13 +39,13 @@ class PicFromRJob extends WorkspaceJob {
 	private ImageProcessor ip;
 	private String name;
 	private int transferDataType;
-	private REXPLogical bolExists;
-	private REXPLogical bolXExists;
-	private REXPLogical bolYExists;
-	private REXPLogical bolRawExists;
-	private REXPLogical bolDoubleExists;
+	private RValue bolExists;
+	private RValue bolXExists;
+	private RValue bolYExists;
+	private RValue bolRawExists;
+	private RValue bolDoubleExists;
 	private RBackend c;
-	private REXPLogical isNumeric;
+	private RValue isNumeric;
 
 	public PicFromRJob(int type, String matrixName, int tranferDoubleType) {
 		super("Transfer image from R");
@@ -69,28 +69,28 @@ class PicFromRJob extends WorkspaceJob {
     */
 
 	private void picFromR() {
-		if (RServe.isAliveDialog()) {
+		if (RTools.isAliveDialog()) {
 			if (name.isEmpty() == false && name != null) {
 				try {
-					bolExists = (REXPLogical) c.eval("try(exists(\"" + name + "\"))");
+					bolExists = c.eval("try(exists(\"" + name + "\"))");
 
-				} catch (RserveException e1) {
+				} catch (RException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				boolean[] bolE = bolExists.isTrue();
+				boolean[] bolE = bolExists.booleans();
 				/*
 				 * if(bolE[0]){
 				 */
 				if (bolE[0] && name.equals("image") == false) {
 					try {
-						isNumeric = (REXPLogical) c.eval("try(is.numeric(" + name + ")||is.raw(" + name + "))");
-					} catch (RserveException e) {
+						isNumeric = c.eval("try(is.numeric(" + name + ")||is.raw(" + name + "))");
+					} catch (RException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 
-					boolean[] bolNumeric = isNumeric.isTrue();
+					boolean[] bolNumeric = isNumeric.booleans();
 
 					if (bolNumeric[0]) {
 
@@ -98,22 +98,22 @@ class PicFromRJob extends WorkspaceJob {
 						/* Transfer doubles! */
 						if (transferDataType == 0) {
 
-							REXPLogical bol = null;
+							RValue bol = null;
 							try {
-								bol = (REXPLogical) c.eval("try(is.matrix(" + name + "))");
-							} catch (RserveException e1) {
+								bol = c.eval("try(is.matrix(" + name + "))");
+							} catch (RException e1) {
 
 								e1.printStackTrace();
 							}
-							boolean[] bo = bol.isTrue();
+							boolean[] bo = bol.booleans();
 							/************************ as matrix! **************************/
 							if (bo[0]) {
 								try {
-									matrix = c.eval("try(" + name + ")").asDoubleMatrix();
-								} catch (REXPMismatchException e) {
+									matrix = c.eval("try(" + name + ")").matrix();
+								} catch (RTypeException e) {
 
 									e.printStackTrace();
-								} catch (RserveException e) {
+								} catch (RException e) {
 
 									e.printStackTrace();
 								}
@@ -182,37 +182,37 @@ class PicFromRJob extends WorkspaceJob {
 							/************************ as list! **************************/
 							else {
 								try {
-									bolXExists = (REXPLogical) c.eval("try(exists(\"imageSizeX\"))");
-									bolYExists = (REXPLogical) c.eval("try(exists(\"imageSizeY\"))");
-								} catch (RserveException e1) {
+									bolXExists = c.eval("try(exists(\"imageSizeX\"))");
+									bolYExists = c.eval("try(exists(\"imageSizeY\"))");
+								} catch (RException e1) {
 
 									e1.printStackTrace();
 								}
-								boolean[] bolX = bolXExists.isTrue();
-								boolean[] bolY = bolYExists.isTrue();
+								boolean[] bolX = bolXExists.booleans();
+								boolean[] bolY = bolYExists.booleans();
 								if (bolX[0] == true && bolY[0] == true) {
 									double[] imageData = null;
 									int imagesSizeY;
 									try {
-										imagesSizeY = (int) c.eval("try(imageSizeY)").asDouble();
+										imagesSizeY = (int) c.eval("try(imageSizeY)").firstDouble();
 
-										int imagesSizeX = (int) c.eval("try(imageSizeX)").asDouble();
+										int imagesSizeX = (int) c.eval("try(imageSizeX)").firstDouble();
 										/*
 										 * We can proof for integer as transfer
 										 * data type so we don't have to proof
 										 * for byte, too! integers can be
 										 * transfered as doubles!
 										 */
-										bolDoubleExists = (REXPLogical) c.eval("try(is.double(" + name + "))");
-										boolean[] bolInteger = bolDoubleExists.isTrue();
+										bolDoubleExists = c.eval("try(is.double(" + name + "))");
+										boolean[] bolInteger = bolDoubleExists.booleans();
 										if (bolInteger[0]) {
-											imageData = c.eval("try(" + name + ")").asDoubles();
+											imageData = c.eval("try(" + name + ")").doubles();
 										} else {
 											/*
 											 * Again we only need to convert the
 											 * data to integers!
 											 */
-											imageData = c.eval("try(as.integer(" + name + "))").asDoubles();
+											imageData = c.eval("try(as.integer(" + name + "))").doubles();
 										}
 
 										if (imageData != null) {
@@ -283,10 +283,10 @@ class PicFromRJob extends WorkspaceJob {
 
 										}
 
-									} catch (REXPMismatchException e) {
+									} catch (RTypeException e) {
 
 										e.printStackTrace();
-									} catch (RserveException e) {
+									} catch (RException e) {
 
 										e.printStackTrace();
 									}
@@ -301,27 +301,27 @@ class PicFromRJob extends WorkspaceJob {
 						} else if (transferDataType == 1) {
 
 							try {
-								bolXExists = (REXPLogical) c.eval("try(exists(\"imageSizeX\"))");
-								bolYExists = (REXPLogical) c.eval("try(exists(\"imageSizeY\"))");
-							} catch (RserveException e1) {
+								bolXExists = c.eval("try(exists(\"imageSizeX\"))");
+								bolYExists = c.eval("try(exists(\"imageSizeY\"))");
+							} catch (RException e1) {
 
 								e1.printStackTrace();
 							}
-							boolean[] bolX = bolXExists.isTrue();
-							boolean[] bolY = bolYExists.isTrue();
+							boolean[] bolX = bolXExists.booleans();
+							boolean[] bolY = bolYExists.booleans();
 							if (bolX[0] == true && bolY[0] == true) {
 								int[] imageData = null;
 								int imagesSizeY;
 								try {
-									imagesSizeY = (int) c.eval("try(imageSizeY)").asDouble();
+									imagesSizeY = (int) c.eval("try(imageSizeY)").firstDouble();
 
-									int imagesSizeX = (int) c.eval("try(imageSizeX)").asDouble();
-									bolDoubleExists = (REXPLogical) c.eval("try(is.integer(" + name + "))");
-									boolean[] bolInteger = bolDoubleExists.isTrue();
+									int imagesSizeX = (int) c.eval("try(imageSizeX)").firstDouble();
+									bolDoubleExists = c.eval("try(is.integer(" + name + "))");
+									boolean[] bolInteger = bolDoubleExists.booleans();
 									if (bolInteger[0]) {
-										imageData = c.eval("try(" + name + ")").asIntegers();
+										imageData = c.eval("try(" + name + ")").ints();
 									} else {
-										imageData = c.eval("try(as.integer(" + name + "))").asIntegers();
+										imageData = c.eval("try(as.integer(" + name + "))").ints();
 									}
 
 									if (imageData != null) {
@@ -392,10 +392,10 @@ class PicFromRJob extends WorkspaceJob {
 
 									}
 
-								} catch (REXPMismatchException e) {
+								} catch (RTypeException e) {
 
 									e.printStackTrace();
-								} catch (RserveException e) {
+								} catch (RException e) {
 
 									e.printStackTrace();
 								}
@@ -411,23 +411,23 @@ class PicFromRJob extends WorkspaceJob {
 							byte[] imageData;
 							int imagesSizeY;
 							try {
-								bolRawExists = (REXPLogical) c.eval("try(is.raw(" + name + "))");
-								bolXExists = (REXPLogical) c.eval("try(exists(\"imageSizeX\"))");
-								bolYExists = (REXPLogical) c.eval("try(exists(\"imageSizeY\"))");
+								bolRawExists = c.eval("try(is.raw(" + name + "))");
+								bolXExists = c.eval("try(exists(\"imageSizeX\"))");
+								bolYExists = c.eval("try(exists(\"imageSizeY\"))");
 
-							} catch (RserveException e1) {
+							} catch (RException e1) {
 								e1.printStackTrace();
 							}
-							boolean[] bolRaw = bolRawExists.isTrue();
-							boolean[] bolX = bolXExists.isTrue();
-							boolean[] bolY = bolYExists.isTrue();
+							boolean[] bolRaw = bolRawExists.booleans();
+							boolean[] bolX = bolXExists.booleans();
+							boolean[] bolY = bolYExists.booleans();
 							if (bolRaw[0] == true) {
 								if (bolX[0] == true && bolY[0] == true) {
 									try {
-										imagesSizeY = (int) c.eval("try(imageSizeY)").asDouble();
+										imagesSizeY = (int) c.eval("try(imageSizeY)").firstDouble();
 
-										int imagesSizeX = (int) c.eval("try(imageSizeX)").asDouble();
-										imageData = c.eval("try(" + name + ")").asBytes();
+										int imagesSizeX = (int) c.eval("try(imageSizeX)").firstDouble();
+										imageData = c.eval("try(" + name + ")").bytes();
 
 										if (imageData != null) {
 											if (type == 0) {
@@ -496,10 +496,10 @@ class PicFromRJob extends WorkspaceJob {
 											imp.show();
 
 										}
-									} catch (REXPMismatchException e) {
+									} catch (RTypeException e) {
 
 										Bio7Dialog.message("An transfer error occured!\n" + "Please select the correct image type!\n" + "For a byte transfer a list has to be present!\n");
-									} catch (RserveException e) {
+									} catch (RException e) {
 
 										e.printStackTrace();
 									}

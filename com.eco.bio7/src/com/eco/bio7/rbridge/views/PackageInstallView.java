@@ -55,12 +55,7 @@ import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.jsoup.Jsoup;
-import org.rosuda.REngine.REXP;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.REngineException;
-import org.rosuda.REngine.RList;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
@@ -69,9 +64,9 @@ import com.eco.bio7.collection.Work;
 import com.eco.bio7.rbridge.InstallRPackagesJob;
 import com.eco.bio7.rbridge.ListRPackagesJob;
 import com.eco.bio7.rbridge.LoadRLibrarysJob;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
-import com.eco.bio7.rbridge.RServeUtil;
+import com.eco.bio7.rbridge.REval;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.RemoveRLibrarysJob;
 import com.eco.bio7.rbridge.UpdateREnvironmentTableJob;
@@ -84,6 +79,9 @@ import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.custom.SashForm;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class PackageInstallView extends ViewPart {
 
@@ -111,7 +109,6 @@ public class PackageInstallView extends ViewPart {
 	private Button btnUpdateSelectedPackage;
 	private Button btnCheckSelectedPackageButton;
 	private Label emptyLabel;
-	protected RList out;
 	private Tree table;
 	private TreeColumn columnEnvironment1;
 	private TreeColumn columnEnvironment2;
@@ -147,7 +144,7 @@ public class PackageInstallView extends ViewPart {
 					packageInstallUpdateJob();
 					// }
 				} else if (tabFolder.getSelectionIndex() == 2) {
-					if (RServe.isAlive()) {
+					if (RTools.isAlive()) {
 						createAttachedPackageTree();
 					}
 
@@ -265,7 +262,7 @@ public class PackageInstallView extends ViewPart {
 		updateButton.setLayoutData(gd_updateButton);
 		updateButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (RServe.isAliveDialog() == false) {
+				if (RTools.isAliveDialog() == false) {
 					return;
 				}
 				if (RState.isBusy() == false) {
@@ -381,7 +378,7 @@ public class PackageInstallView extends ViewPart {
 		btnUpdate.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 
 					packageInstallUpdateJob();
 				}
@@ -405,14 +402,9 @@ public class PackageInstallView extends ViewPart {
 				String[] selectePackages = new String[tableItems.length];
 				for (int i = 0; i < tableItems.length; i++) {
 					selectePackages[i] = tableItems[i].getText(0);
-					if (selectePackages[i].equals("Rserve")) {
-						Bio7Dialog.message(
-								"The update of the Rserve package is disabled for Bio7.\nPlease deselect the Rserve package!");
-						return;
-					}
 				}
 
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
 						UpdateSelectedRPackagesJob Do = new UpdateSelectedRPackagesJob(selectePackages);
@@ -457,7 +449,7 @@ public class PackageInstallView extends ViewPart {
 				.setToolTipText("Removes installed packages/bundles and updates index information as necessary. ");
 		uninstallButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (RServe.isAlive()) {
+				if (RTools.isAlive()) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
 						RemoveRLibrarysJob Do = new RemoveRLibrarysJob();
@@ -530,7 +522,7 @@ public class PackageInstallView extends ViewPart {
 			}
 
 			public void mouseDoubleClick(final MouseEvent e) {
-				if (RServe.isAlive()) {
+				if (RTools.isAlive()) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
 						LoadRLibrarysJob Do = new LoadRLibrarysJob(editor);
@@ -618,7 +610,7 @@ public class PackageInstallView extends ViewPart {
 				if (tree.getSelection().length > 0) {
 					String selectedPackage = tree.getSelection()[0].getText();
 					inBackground("Detach R package", () -> {
-						RServeUtil.evalR("try(detach(package:" + selectedPackage + ", unload=TRUE))", null);
+						REval.evalR("try(detach(package:" + selectedPackage + ", unload=TRUE))", null);
 						createAttachedPackageTree();
 					});
 
@@ -746,12 +738,12 @@ public class PackageInstallView extends ViewPart {
 					if (text.isEmpty() == false) {
 						/* Open function body on click! */
 						if (showFunc) {
-							// RServeUtil.evalR("print(force(" + text + "))", null);
-							// RServeUtil.listRObjects();
+							// REval.evalR("print(force(" + text + "))", null);
+							// REval.listRObjects();
 						}
 						/* Load data on click! */
 						else {
-							// RServeUtil.evalR("try(force(" + text + "))", null);
+							// REval.evalR("try(force(" + text + "))", null);
 							int ind = text.indexOf("(");
 							if (ind > -1) {
 								text = text.substring(0, ind - 1);
@@ -764,17 +756,17 @@ public class PackageInstallView extends ViewPart {
 								try {
 									String evalHead = "tryCatch({class(" + name
 											+ ")},error=function(error_message) {return(\"Dataset not available!\")})";
-									REXP h = RServeUtil.fromR(evalHead);
+									RValue h = REval.fromR(evalHead);
 									if (h != null) {
-										head = h.asString();
+										head = h.firstString();
 									}
 									String evalStr = "try(capture.output(tryCatch({str(" + name
 											+ ")},error=function(error_message) {return(\"Load data first!\")})))";
-									REXP s = RServeUtil.fromR(evalStr);
+									RValue s = REval.fromR(evalStr);
 									if (s != null) {
-										str = s.asString();
+										str = s.firstString();
 									}
-								} catch (REXPMismatchException e1) {
+								} catch (RTypeException e1) {
 									e1.printStackTrace();
 								}
 								String[] row = { head, str };
@@ -806,8 +798,8 @@ public class PackageInstallView extends ViewPart {
 						/* Open function body on click! */
 						if (showFunc) {
 							String function = text;
-							inBackground("Print R function", () -> RServeUtil.evalR("print(force(" + function + "))", null));
-							// RServeUtil.listRObjects();
+							inBackground("Print R function", () -> REval.evalR("print(force(" + function + "))", null));
+							// REval.listRObjects();
 						}
 						/* Load data on click! */
 						else {
@@ -825,9 +817,9 @@ public class PackageInstallView extends ViewPart {
 							String dataset = text;
 							/* In a job, one after another (the UI doesn't wait for R) */
 							inBackground("Load R dataset", () -> {
-								RServeUtil.evalR("try(data(" + dataset + "))", null);
-								RServeUtil.evalR("try(print(summary(" + dataset + ")))", null);
-								RServeUtil.listRObjects();
+								REval.evalR("try(data(" + dataset + "))", null);
+								REval.evalR("try(print(summary(" + dataset + ")))", null);
+								REval.listRObjects();
 							});
 						}
 					}
@@ -955,7 +947,7 @@ public class PackageInstallView extends ViewPart {
 	}
 
 	public void packageInstallUpdateJob() {
-		if (RServe.isAlive()) {
+		if (RTools.isAlive()) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
 				Job job = new Job("Update R Package View") {
@@ -975,7 +967,7 @@ public class PackageInstallView extends ViewPart {
 						if (event.getResult().isOK()) {
 
 							RState.setBusy(false);
-							RServeUtil.listRObjects();
+							REval.listRObjects();
 						} else {
 
 							RState.setBusy(false);
@@ -1004,25 +996,25 @@ public class PackageInstallView extends ViewPart {
 		 * rcompletion/bio7Packages.R; the first download takes some seconds)!
 		 */
 		try {
-			if (c.eval("as.integer(exists(\".bio7PackageVersions\"))").asInteger() == 1) {
-				REXP installed = c.eval("try(.bio7InstalledPackages())");
+			if (c.eval("as.integer(exists(\".bio7PackageVersions\"))").firstInt() == 1) {
+				RValue installed = c.eval("try(.bio7InstalledPackages())");
 				fillInstalledPackagesTable(installed, false);
-				REXP versions = c.eval("try(.bio7PackageVersions(\"" + server + "\"))");
+				RValue versions = c.eval("try(.bio7PackageVersions(\"" + server + "\"))");
 				fillInstalledPackagesTable(versions, true);
 				return;
 			}
-		} catch (REXPMismatchException | RserveException e) {
+		} catch (RTypeException | RException e) {
 			/* The R code of Bio7 is not loaded: the former calculation */
 		}
 		try {
-			REXP result = c.eval("try(local({\n" + "  new_versions <- old.packages(repos = \"" + server + "\")\n"
+			RValue result = c.eval("try(local({\n" + "  new_versions <- old.packages(repos = \"" + server + "\")\n"
 					+ "  ip <- installed.packages()\n" + "  o <- order(ip[, \"Package\"])\n"
 					+ "  df <- data.frame(Name = as.character(ip[o, \"Package\"]), Current_Version = as.character(ip[o, \"Version\"]), stringsAsFactors = FALSE)\n"
 					+ "  latest <- df$Current_Version\n"
 					+ "  if (!is.null(new_versions)) { m <- match(df$Name, new_versions[, \"Package\"]); latest[!is.na(m)] <- as.character(new_versions[m[!is.na(m)], \"ReposVer\"]) }\n"
 					+ "  df$Latest_Version <- latest\n" + "  df\n" + "}))");
 			fillInstalledPackagesTable(result, true);
-		} catch (RserveException e) {
+		} catch (RException e) {
 			e.printStackTrace();
 		}
 	}
@@ -1032,7 +1024,7 @@ public class PackageInstallView extends ViewPart {
 	 * Current_Version and, with the versions, Latest_Version). Newer versions are
 	 * marked. Keeps the selection and the scroll position.
 	 */
-	private void fillInstalledPackagesTable(REXP table, boolean withVersions) {
+	private void fillInstalledPackagesTable(RValue table, boolean withVersions) {
 		String[] packageNames;
 		String[] currentVersions;
 		String[] latestVersions;
@@ -1040,11 +1032,10 @@ public class PackageInstallView extends ViewPart {
 			if (table == null || !table.isList()) {
 				return;
 			}
-			org.rosuda.REngine.RList list = table.asList();
-			packageNames = list.at(0).asStrings();
-			currentVersions = list.at(1).asStrings();
-			latestVersions = withVersions && list.size() > 2 ? list.at(2).asStrings() : null;
-		} catch (REXPMismatchException e) {
+			packageNames = table.element(0).strings();
+			currentVersions = table.element(1).strings();
+			latestVersions = withVersions && table.length() > 2 ? table.element(2).strings() : null;
+		} catch (RTypeException e) {
 			e.printStackTrace();
 			return;
 		}
@@ -1125,7 +1116,7 @@ public class PackageInstallView extends ViewPart {
 	}
 
 	/*
-	 * Runs R calls (e.g., RServeUtil.evalR/fromR, which wait for their job) in a
+	 * Runs R calls (e.g., REval.evalR/fromR, which wait for their job) in a
 	 * background job: the UI thread doesn't wait for R. UI updates: asyncExec.
 	 */
 	private static void inBackground(String name, Runnable r) {
@@ -1143,7 +1134,7 @@ public class PackageInstallView extends ViewPart {
 	/* Updates the tree of the attached packages (R in a job, the tree afterwards) */
 	public void createAttachedPackageTree() {
 		inBackground("List attached R packages", () -> {
-			if (RServe.isAliveDialog() == false) {
+			if (RTools.isAliveDialog() == false) {
 				return;
 			}
 			String[] v = attachedPackages();
@@ -1153,20 +1144,20 @@ public class PackageInstallView extends ViewPart {
 
 	/* The attached packages (R; not in the UI thread) or null */
 	private static String[] attachedPackages() {
-		RServeUtil.evalR(
+		REval.evalR(
 				".bio7TempVarEnvironment <- new.env();try(.bio7TempVarEnvironment$workspaceRPackages<-.packages())",
 				null);
-		REXP pack = RServeUtil.fromR("try(.bio7TempVarEnvironment$workspaceRPackages)");
+		RValue pack = REval.fromR("try(.bio7TempVarEnvironment$workspaceRPackages)");
 		if (pack == null) {
 			return null;
 		}
 		String[] v = null;
 		try {
-			v = pack.asStrings();
-		} catch (REXPMismatchException e1) {
+			v = pack.strings();
+		} catch (RTypeException e1) {
 			e1.printStackTrace();
 		}
-		RServeUtil.evalR("try(rm(workspaceRPackages,envir=.bio7TempVarEnvironment))", null);
+		REval.evalR("try(rm(workspaceRPackages,envir=.bio7TempVarEnvironment))", null);
 		return v;
 	}
 

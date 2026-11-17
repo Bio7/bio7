@@ -116,7 +116,8 @@ public class PythonDebugView extends ViewPart {
 		IToolBarManager tm = getViewSite().getActionBars().getToolBarManager();
 		tm.add(action("Debug the script of the editor (to the first breakpoint, without breakpoints from the first line)", "/icons/rdebug/rundebug.svg",
 				() -> PythonDebugger.startActiveEditor(false)));
-		tm.add(action("Stop the debugging", "/icons/rdebug/terminatedlaunch_obj.svg", PythonDebugger::terminate));
+		stopAction = action("Stop the debugging", "/icons/rdebug/terminatedlaunch_obj.svg", PythonDebugger::terminate);
+		tm.add(stopAction);
 		tm.add(new Separator());
 		tm.add(action("Next (n) - the next line (over function calls)", "/icons/rdebug/stepover_co.svg", PythonDebugger::next));
 		tm.add(action("Step Into (s) - into a function call", "/icons/rdebug/stepinto_co.svg", PythonDebugger::stepInto));
@@ -153,6 +154,9 @@ public class PythonDebugView extends ViewPart {
 		b.addListener(SWT.Selection, _ -> r.run());
 	}
 
+	/* The stop button (disabled without a debug session) */
+	private Action stopAction;
+
 	private static Action action(String tip, String icon, Runnable r) {
 		Action a = new Action() {
 			@Override
@@ -185,6 +189,8 @@ public class PythonDebugView extends ViewPart {
 		if (!isOpen()) {
 			return;
 		}
+		/* Stop only while a script is debugged (running or stopped) */
+		stopAction.setEnabled(PythonDebugger.isRunning());
 		PythonDebugger.Stop s = PythonDebugger.stop();
 		if (s == null) {
 			status.setText(PythonDebugger.isRunning() ? "Running ..." : "Not debugging. Set breakpoints with a double click on the ruler of the Python editor.");

@@ -34,14 +34,14 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Shell;
 import org.osgi.framework.Bundle;
-import org.rosuda.REngine.REXPMismatchException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.Console;
 import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class PlotJob extends WorkspaceJob {
 
@@ -121,7 +121,7 @@ public class PlotJob extends WorkspaceJob {
 		if (pdf) {
 			finalpath = path + "temp_plot" + number + ".pdf";
 
-			plot = toplot.replace('\r', ' ');// replace LineFeed for RServe
+			plot = toplot.replace('\r', ' ');// replace LineFeed for RTools
 			// !
 			ploter = plot.replace(';', '\n');// replace semicolon !
 
@@ -143,7 +143,7 @@ public class PlotJob extends WorkspaceJob {
 
 		else {
 
-			plot = toplot.replace('\r', ' ');// replace LineFeed for RServe
+			plot = toplot.replace('\r', ' ');// replace LineFeed for RTools
 			ploter = plot.replace(';', '\n');// replace semicolon !
 			// ploter = plot.replace('#', ' ');// replace comment !
 
@@ -166,7 +166,7 @@ public class PlotJob extends WorkspaceJob {
 		if (Bio7Dialog.getOS().equals("Windows")) {
 			try {
 				c.eval("try(\ndev.off());");
-			} catch (RserveException e) {
+			} catch (RException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -381,8 +381,8 @@ public class PlotJob extends WorkspaceJob {
 			/* Call the custom Rscript ! */
 			String rout = null;
 			try {
-				rout = RBridge.getBackend().eval("" + "try(paste(capture.output(source(fileroot,echo=T)),collapse=\"\\n\"))").asString();
-			} catch (REXPMismatchException e) {
+				rout = RBridge.getBackend().eval("" + "try(paste(capture.output(source(fileroot,echo=T)),collapse=\"\\n\"))").firstString();
+			} catch (RTypeException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -400,7 +400,7 @@ public class PlotJob extends WorkspaceJob {
 			
 			
 
-		} catch (RserveException e) {
+		} catch (RException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

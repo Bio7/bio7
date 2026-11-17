@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.swt.widgets.Display;
-import org.rosuda.REngine.REXP;
 
 import com.eco.bio7.pyffm.PyCallHandler;
 import com.eco.bio7.pyffm.PyValue;
@@ -28,6 +27,7 @@ import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.Roi;
 import ij.measure.ResultsTable;
+import com.eco.bio7.rffm.RValue;
 
 /**
  * The functions of Bio7 for the embedded Python (the module bio7): the data of
@@ -129,16 +129,16 @@ public final class PythonCalls implements PyCallHandler {
 			return PythonConvert.roi(roi);
 		}
 		case "r": {
-			REXP x = r().eval(required(args, 0, "R code"));
+			RValue x = r().eval(required(args, 0, "R code"));
 			/* The code may have changed the R workspace: the variables of the R-Shell */
-			com.eco.bio7.rbridge.RServeUtil.listRObjects();
+			com.eco.bio7.rbridge.REval.listRObjects();
 			return PythonConvert.fromR(x);
 		}
 		case "to_r": {
 			String name = required(args, 0, "name");
 			r().assign(name, PythonConvert.toR(value == null ? PyValue.None.INSTANCE : value));
 			/* The new variable in the R-Shell */
-			com.eco.bio7.rbridge.RServeUtil.listRObjects();
+			com.eco.bio7.rbridge.REval.listRObjects();
 			return null;
 		}
 		default: {

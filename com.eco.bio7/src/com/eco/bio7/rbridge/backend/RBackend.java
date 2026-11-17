@@ -13,66 +13,30 @@
 
 package com.eco.bio7.rbridge.backend;
 
-import org.rosuda.REngine.REXP;
-import org.rosuda.REngine.REngineException;
-import org.rosuda.REngine.Rserve.RConnection;
-import org.rosuda.REngine.Rserve.RserveException;
+import com.eco.bio7.rffm.RException;
 
 /**
- * The connection of Bio7 to R: embedded R (default) or Rserve.
- * The methods and exceptions are those of RConnection which Bio7 uses, so the
- * code works with both.
+ * The connection of Bio7 to R: embedded R, in the process of Bio7.
+ * Evaluations return an RValue (plugin com.eco.bio7.rffm), errors of R are an
+ * RException.
  *
- * @see com.eco.bio7.rbridge.RServe#getBackend()
+ * @see com.eco.bio7.rbridge.RBridge#getBackend()
  */
 public interface RBackend extends com.eco.bio7.rbridge.REvaluator {
-
-	/** Evaluates R code and returns the result. */
-	REXP eval(String code) throws RserveException;
-
-	/** Evaluates R code without transferring the result. */
-	void voidEval(String code) throws RserveException;
-
-	/** Assigns a string (a character vector of length 1). */
-	void assign(String name, String value) throws RserveException;
-
-	void assign(String name, REXP value) throws RserveException;
-
-	void assign(String name, double[] values) throws REngineException;
-
-	void assign(String name, int[] values) throws REngineException;
-
-	void assign(String name, String[] values) throws REngineException;
-
-	void assign(String name, byte[] values) throws REngineException;
-
-	/** Assigns a value in an environment (null: the global environment). */
-	void assign(String name, REXP value, REXP env) throws REngineException;
 
 	/** Closes the connection (embedded R keeps running). */
 	boolean close();
 
-	/** Stops the server (Rserve) or does nothing (embedded R runs until Bio7 ends). */
-	void shutdown() throws RserveException;
+	/** Does nothing for embedded R (it runs until Bio7 ends). */
+	void shutdown() throws RException;
 
 	boolean isConnected();
 
-	/** Returns true for embedded R. */
-	boolean isEmbedded();
-
 	/**
-	 * A counter which changes after every evaluation of R (embedded R), or -1 if
-	 * not available (Rserve).
+	 * A counter which changes after every evaluation of R, or -1 if not
+	 * available.
 	 */
 	default long activity() {
 		return -1;
-	}
-
-	/** The Rserve connection or null (embedded R). */
-	RConnection rserveConnection();
-
-	/** A backend for an Rserve connection (for code which still has an RConnection). */
-	static RBackend of(RConnection connection) {
-		return connection == null ? null : new RserveBackend(connection);
 	}
 }

@@ -25,12 +25,11 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
-import org.rosuda.REngine.REngineException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
+import com.eco.bio7.rffm.RException;
 
 class TransferPicJob extends WorkspaceJob {
 
@@ -66,7 +65,7 @@ class TransferPicJob extends WorkspaceJob {
 		byte[] pByte = null;
 		int y = 0;
 		int x = 0;
-		if (RServe.isAliveDialog()) {
+		if (RTools.isAliveDialog()) {
 			RBackend c = RBridge.getBackend();
 			/* Get the active image ! */
 			ImagePlus imp = WindowManager.getCurrentImage();
@@ -98,7 +97,7 @@ class TransferPicJob extends WorkspaceJob {
 
 					c.eval("imageSizeX<-" + w);
 					c.eval("imageDataName<-'" + name + "'");
-				} catch (RserveException e1) {
+				} catch (RException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
@@ -165,7 +164,7 @@ class TransferPicJob extends WorkspaceJob {
 
 					try {
 						c.assign(name, pDouble);
-					} catch (REngineException e) {
+					} catch (RException e) {
 
 						e.printStackTrace();
 					}
@@ -192,7 +191,7 @@ class TransferPicJob extends WorkspaceJob {
 
 					try {
 						c.assign(name, pInt);
-					} catch (REngineException e) {
+					} catch (RException e) {
 
 						e.printStackTrace();
 					}
@@ -225,7 +224,7 @@ class TransferPicJob extends WorkspaceJob {
 
 					try {
 						c.assign(name, pByte);
-					} catch (REngineException e) {
+					} catch (RException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -270,7 +269,7 @@ class TransferPicJob extends WorkspaceJob {
 						
 						//or the transpose c.eval("try(" + name + "<-matrix(" + name + "," + h + "," + w + ", byrow = TRUE))");
 
-					} catch (RserveException e) {
+					} catch (RException e) {
 
 						e.printStackTrace();
 					}

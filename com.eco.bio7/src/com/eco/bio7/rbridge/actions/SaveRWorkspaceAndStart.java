@@ -15,8 +15,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.osgi.framework.Bundle;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RConnection;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
@@ -25,6 +23,7 @@ import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
+import com.eco.bio7.rffm.RException;
 
 public class SaveRWorkspaceAndStart extends Action {
 
@@ -58,11 +57,6 @@ public class SaveRWorkspaceAndStart extends Action {
 
 		}
 
-	}
-
-	/** For an Rserve connection (compatibility). */
-	public void saver(RConnection d) {
-		saver(RBackend.of(d));
 	}
 
 	public void saver(RBackend d) {
@@ -103,7 +97,7 @@ public class SaveRWorkspaceAndStart extends Action {
 
 				try {
 					d.voidEval("try(save.image(file =" + "\"" + selected + "\"" + ", version = NULL, ascii = FALSE))");
-				} catch (RserveException e) {
+				} catch (RException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -121,7 +115,7 @@ public class SaveRWorkspaceAndStart extends Action {
 
 				try {
 					d.voidEval("save.image(" + "\"" + selected + "\"" + ", version = NULL, ascii = FALSE)");
-				} catch (RserveException e) {
+				} catch (RException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -140,7 +134,7 @@ public class SaveRWorkspaceAndStart extends Action {
 
 				try {
 					d.voidEval("save.image(" + "\"" + selected + "\"" + ", version = NULL, ascii = FALSE)");
-				} catch (RserveException e) {
+				} catch (RException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}

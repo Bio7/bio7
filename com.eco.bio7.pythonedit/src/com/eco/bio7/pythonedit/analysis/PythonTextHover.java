@@ -32,9 +32,10 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 /**
- * The hover of the Python editor: a marker with its quick fixes, else the help
- * of the name (signature, documentation) and the value of a variable of the
- * running Python.
+ * The hover of the Python editor: a marker with its quick fixes, the value of
+ * an expression while the debugger is stopped (with actions), a color, else
+ * the help of the name (signature, documentation) and the value of a variable
+ * of the running Python.
  */
 public class PythonTextHover implements ITextHover, ITextHoverExtension, ITextHoverExtension2 {
 
@@ -57,12 +58,17 @@ public class PythonTextHover implements ITextHover, ITextHoverExtension, ITextHo
 	@Override
 	public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion) {
 		Object info = getHoverInfo2(textViewer, hoverRegion);
-		return info instanceof FixesInformationControl.Input in ? in.fixes().message() : (String) info;
+		return info instanceof FixesInformationControl.Input in ? in.fixes().message()
+				: info instanceof FixesInformationControl.DebugValue dv ? dv.value() : info instanceof PythonColors.Color c ? c.hex() : (String) info;
 	}
 
 	@Override
 	public Object getHoverInfo2(ITextViewer textViewer, IRegion region) {
 		marker = false;
+		/* All hovers switched off (the context menu of the editor, the preferences) */
+		if (!PythonEditorSupport.hoversEnabled()) {
+			return null;
+		}
 		int offset = region.getOffset();
 		IDocument doc = textViewer.getDocument();
 		if (textViewer instanceof ISourceViewer sv) {
@@ -73,6 +79,22 @@ public class PythonTextHover implements ITextHover, ITextHoverExtension, ITextHo
 			}
 		}
 		try {
+			/* The debugger stopped: the value of the selected expression or of the name (with actions) */
+			Function<String, String> debug = PythonEditorSupport.debugHover;
+			if (debug != null) {
+				String expression = region.getLength() > 0 ? doc.get(region.getOffset(), region.getLength()).strip() : dottedWord(doc, offset);
+				if (!expression.isEmpty()) {
+					String value = debug.apply(expression);
+					if (value != null) {
+						return new FixesInformationControl.DebugValue(expression, value);
+					}
+				}
+			}
+			/* A color in a string ('#2B5C8F', 'tab:blue', 'steelblue') */
+			PythonColors.Color color = PythonColors.at(doc, offset);
+			if (color != null) {
+				return color;
+			}
 			StringBuilder text = new StringBuilder();
 			String word = dottedWord(doc, offset);
 			if (word.isEmpty()) {

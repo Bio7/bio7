@@ -41,6 +41,10 @@ public class FixesInformationControl extends AbstractInformationControl implemen
 	public record Input(PythonFixes.MarkerFixes fixes, IDocument document) {
 	}
 
+	/** The input of the debugger: the expression and its description (the first line: type and size). */
+	public record DebugValue(String expression, String value) {
+	}
+
 	private Composite content;
 	private Object input;
 
@@ -62,7 +66,8 @@ public class FixesInformationControl extends AbstractInformationControl implemen
 
 	@Override
 	public void setInput(Object value) {
-		input = value instanceof Input || value instanceof String s && !s.isBlank() ? value : null;
+		input = value instanceof Input || value instanceof DebugValue || value instanceof PythonColors.Color || value instanceof String s && !s.isBlank() ? value
+				: null;
 		for (Control c : content.getChildren()) {
 			c.dispose();
 		}
@@ -80,6 +85,14 @@ public class FixesInformationControl extends AbstractInformationControl implemen
 			t.setForeground(content.getForeground());
 			t.setBackground(content.getBackground());
 			content.layout(true, true);
+			return;
+		}
+		if (input instanceof DebugValue dv) {
+			debugValue(dv);
+			return;
+		}
+		if (input instanceof PythonColors.Color c) {
+			color(c);
 			return;
 		}
 		Input in = (Input) input;
@@ -113,6 +126,69 @@ public class FixesInformationControl extends AbstractInformationControl implemen
 		content.layout(true, true);
 	}
 
+	/* The value of the debugger: the expression with type and size, the value, the actions (in the enriched hover) */
+	private void debugValue(DebugValue dv) {
+		String v = dv.value();
+		int nl = v.indexOf('\n');
+		String head = nl < 0 ? v : v.substring(0, nl);
+		String body = nl < 0 ? "" : v.substring(nl + 1);
+		Label title = new Label(content, SWT.NONE);
+		title.setText(dv.expression() + " : " + head);
+		title.setFont(org.eclipse.jface.resource.JFaceResources.getFontRegistry().getBold(org.eclipse.jface.resource.JFaceResources.DIALOG_FONT));
+		title.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		if (!body.isEmpty()) {
+			org.eclipse.swt.widgets.Text t = new org.eclipse.swt.widgets.Text(content, SWT.MULTI | SWT.READ_ONLY);
+			t.setText(body);
+			t.setFont(org.eclipse.jface.resource.JFaceResources.getTextFont());
+			t.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+		}
+		Composite links = new Composite(content, SWT.NONE);
+		org.eclipse.swt.layout.RowLayout row = new org.eclipse.swt.layout.RowLayout();
+		row.spacing = 14;
+		row.marginLeft = row.marginRight = row.marginTop = 0;
+		links.setLayout(row);
+		links.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
+		for (String[] a : new String[][] { { "workspace", "Copy to Python Workspace" }, { "table", "Open in Table" }, { "imagej", "Open in ImageJ" } }) {
+			Link link = new Link(links, SWT.NONE);
+			link.setText("<a>" + a[1] + "</a>");
+			link.setToolTipText(dv.expression().matches("[A-Za-z_][A-Za-z0-9_]*") ? "As '" + dv.expression() + "' in the workspace of Python"
+					: "As 'debug_value' in the workspace of Python");
+			link.addListener(SWT.Selection, _ -> {
+				java.util.function.BiConsumer<String, String> action = PythonEditorSupport.debugAction;
+				dispose();
+				if (action != null) {
+					action.accept(a[0], dv.expression());
+				}
+			});
+		}
+		colors(content);
+		colors(links);
+		content.layout(true, true);
+	}
+
+	/* A color: a field with the color, the hex value and the RGB values */
+	private void color(PythonColors.Color c) {
+		int r = Integer.parseInt(c.hex().substring(1, 3), 16), g = Integer.parseInt(c.hex().substring(3, 5), 16), b = Integer.parseInt(c.hex().substring(5, 7), 16);
+		Label field = new Label(content, SWT.BORDER);
+		GridData gd = new GridData(SWT.LEFT, SWT.CENTER, false, false);
+		gd.widthHint = 56;
+		gd.heightHint = 32;
+		field.setLayoutData(gd);
+		Label text = new Label(content, SWT.NONE);
+		text.setText(c.text() + "\n" + c.hex() + "   RGB " + r + ", " + g + ", " + b + (c.alpha() < 255 ? "   alpha " + c.alpha() : ""));
+		colors(content);
+		/* After colors(): the field keeps its color */
+		field.setBackground(new org.eclipse.swt.graphics.Color(r, g, b));
+		content.layout(true, true);
+	}
+
+	private void colors(Composite parent) {
+		for (Control c : parent.getChildren()) {
+			c.setForeground(content.getForeground());
+			c.setBackground(content.getBackground());
+		}
+	}
+
 	@Override
 	public void setInformation(String information) {
 		setInput(information);
@@ -127,7 +203,7 @@ public class FixesInformationControl extends AbstractInformationControl implemen
 	public Point computeSizeHint() {
 		Point size = content.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
 		Rectangle trim = computeTrim();
-		return new Point(Math.min(size.x + trim.width, 640), size.y + trim.height);
+		return new Point(Math.min(size.x + trim.width, input instanceof DebugValue ? 900 : 640), size.y + trim.height);
 	}
 
 	@Override

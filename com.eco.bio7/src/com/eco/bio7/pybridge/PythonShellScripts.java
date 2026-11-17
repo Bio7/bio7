@@ -32,7 +32,7 @@ import com.eco.bio7.compile.GroovyInterpreter;
 import com.eco.bio7.compile.JavaScriptInterpreter;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.jobs.ImageMacroWorkspaceJob;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RState;
 
 /**
@@ -93,7 +93,7 @@ final class PythonShellScripts {
 		String name = file.getName();
 		String path = file.getAbsolutePath();
 		if (name.endsWith(".R") || name.endsWith(".r")) {
-			if (!RServe.isAliveDialog()) {
+			if (!RTools.isAliveDialog()) {
 				return;
 			}
 			if (RState.isBusy()) {
@@ -105,8 +105,8 @@ final class PythonShellScripts {
 			job.addJobChangeListener(new JobChangeAdapter() {
 				public void done(IJobChangeEvent event) {
 					RState.setBusy(false);
-					if (RServe.getDisplayNumber() > 0) {
-						RServe.closeAndDisplay();
+					if (RTools.getDisplayNumber() > 0) {
+						RTools.closeAndDisplay();
 					}
 				}
 			});

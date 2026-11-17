@@ -212,8 +212,12 @@ def convert(name, to):
 
 
 def cells(name, mode):
-    """The data for the table of Bio7 as rows of strings (mode: head, frame, matrix, rows, columns)."""
+    """The data for the table of Bio7 as rows of strings (mode: head, frame, matrix, rows, columns;
+    auto: the column names of DataFrames and dicts, a vector as a column)."""
     v = _main.__dict__[name]
+    auto = mode == "auto"
+    if auto:
+        mode = "head"
     np, pd = _np(), _pd()
 
     def text(e):
@@ -243,9 +247,76 @@ def cells(name, mode):
         seq = [seq]
     if seq and isinstance(seq[0], (list, tuple)):
         return [[text(e) for e in r] for r in seq]
-    if mode == "rows":
+    if mode == "rows" or auto:
         return [[text(e)] for e in seq]
     return [[text(e) for e in seq]]
+
+
+def _cell_text(e):
+    if e is None:
+        return ""
+    if isinstance(e, float) and e != e:
+        return "NA"
+    return str(e)
+
+
+def _flat_strings(v):
+    """The values of an object as strings (arrays, Series, DataFrames, nested lists flattened)."""
+    np, pd = _np(), _pd()
+    if v is None:
+        return []
+    if pd is not None and isinstance(v, (pd.Series, pd.Index)):
+        v = v.tolist()
+    elif pd is not None and isinstance(v, pd.DataFrame):
+        v = v.to_numpy().ravel().tolist()
+    elif np is not None and isinstance(v, np.ndarray):
+        v = v.ravel().tolist()
+    if isinstance(v, (str, bytes)) or not hasattr(v, "__iter__"):
+        return [_cell_text(v)]
+    if isinstance(v, dict):
+        v = list(v.values())
+    out = []
+    for e in v:
+        if isinstance(e, (list, tuple, dict)) or (np is not None and isinstance(e, np.ndarray)) or (pd is not None and isinstance(e, (pd.Series, pd.DataFrame))):
+            out.extend(_flat_strings(e))
+        else:
+            out.append(_cell_text(e))
+    return out
+
+
+def _elements(v):
+    """The elements of a list-like object with their names: a dict (the keys), a DataFrame
+    (the columns), a 2-d array (the rows), a list or tuple (V1, V2, ...); None: no list."""
+    np, pd = _np(), _pd()
+    if isinstance(v, dict):
+        return [(str(k), x) for k, x in v.items()]
+    if pd is not None and isinstance(v, pd.DataFrame):
+        return [(str(c), v[c]) for c in v.columns]
+    if np is not None and isinstance(v, np.ndarray) and v.ndim >= 2:
+        return [("V%d" % (i + 1), v[i]) for i in range(v.shape[0])]
+    if isinstance(v, (list, tuple)):
+        return [("V%d" % (i + 1), x) for i, x in enumerate(v)]
+    return None
+
+
+def cells_many(names, mode):
+    """Several objects (columns: one column each, rows: one row each; names separated by
+    line breaks) or the elements of a list (list_columns, list_rows) as rows of strings for
+    the table, with the names as header (the first row or the first column)."""
+    if mode.startswith("list"):
+        v = _main.__dict__[names]
+        items = _elements(v)
+        if items is None:
+            raise ValueError("%s is not a list, tuple, dict, DataFrame or 2-d array" % names)
+    else:
+        items = [(n, _main.__dict__[n]) for n in names.split("\n") if n]
+    cols = [(n, _flat_strings(x)) for n, x in items]
+    if mode.endswith("rows"):
+        return [[n] + vals for n, vals in cols]
+    length = max((len(vals) for _, vals in cols), default=0)
+    rows = [[n for n, _ in cols]]
+    rows += [[vals[i] if i < len(vals) else "" for _, vals in cols] for i in range(length)]
+    return rows
 
 
 def plot_variables():
@@ -260,3 +331,212 @@ def plot_variables():
         elif hasattr(v, "shape") or isinstance(v, (list, tuple)):
             out.append(n)
     return out
+
+
+# ---------------- Code completion of the text field ----------------
+
+_SEP = "\x1f"
+_MAX = 400
+_DOC_MAX = 120
+
+
+def _doc_line(obj, name):
+    """The signature and the first line of the documentation (short)."""
+    import inspect
+    text = ""
+    try:
+        if callable(obj):
+            text = name + str(inspect.signature(obj))
+    except Exception:
+        pass
+    try:
+        d = inspect.getdoc(obj)
+        if d and not isinstance(obj, (int, float, complex, str, bytes, bool)):
+            first = d.strip().split("\n\n")[0].replace("\n", " ")
+            text = (text + "\n\n" if text else "") + first[:400]
+    except Exception:
+        pass
+    return text
+
+
+def _kind_of(obj):
+    if isinstance(obj, types.ModuleType):
+        return "module"
+    if isinstance(obj, type):
+        return "class"
+    if callable(obj):
+        return "function"
+    return "instance"
+
+
+def _with_jedi(text, cursor):
+    """The completions of jedi (if installed): (start, [(name, kind, doc)])."""
+    try:
+        import jedi
+    except Exception:
+        return None
+    try:
+        script = jedi.Interpreter(text[:cursor], [_main.__dict__])
+        comps = script.complete()
+    except Exception:
+        return None
+    if not comps:
+        return cursor, []
+    base = _object_before(text[:cursor])
+    first = comps[0]
+    start = cursor - (len(first.name) - len(first.complete))
+    items = []
+    for i, c in enumerate(comps[:_MAX]):
+        doc = ""
+        kind = c.type
+        if kind in ("instance", "statement"):
+            # A callable object (e.g., numpy.sin, a ufunc): with parentheses
+            try:
+                obj = getattr(base, c.name) if base is not None else _main.__dict__.get(c.name)
+                if callable(obj) and not isinstance(obj, type):
+                    kind = "function"
+            except Exception:
+                pass
+        if i < _DOC_MAX:
+            try:
+                sigs = c.get_signatures()
+                doc = sigs[0].to_string() if sigs else ""
+                d = c.docstring(raw=True)
+                if d:
+                    doc = (doc + "\n\n" if doc else "") + d.strip().split("\n\n")[0].replace("\n", " ")[:400]
+            except Exception:
+                pass
+        items.append((c.name, kind, doc))
+    return start, items
+
+
+def _object_before(line):
+    """The object before ".name" at the end (only names, no calls), else None."""
+    import re
+    import builtins
+    m = re.search(r"([A-Za-z_][\w]*(?:\.[A-Za-z_]\w*)*)\.\w*$", line)
+    if not m:
+        return None
+    parts = m.group(1).split(".")
+    try:
+        ns = _main.__dict__
+        obj = ns[parts[0]] if parts[0] in ns else getattr(builtins, parts[0])
+        for p in parts[1:]:
+            obj = getattr(obj, p)
+        return obj
+    except Exception:
+        return None
+
+
+def _modules(prefix):
+    """Top-level modules or the submodules of a package (import statements)."""
+    import pkgutil
+    import importlib
+    if "." in prefix:
+        package, _, rest = prefix.rpartition(".")
+        try:
+            path = importlib.import_module(package).__path__
+        except Exception:
+            return []
+        names = [m.name for m in pkgutil.iter_modules(path)]
+    else:
+        rest = prefix
+        names = list(sys.builtin_module_names) + [m.name for m in pkgutil.iter_modules()]
+    return sorted({n for n in names if n.startswith(rest) and not n.startswith("_")})
+
+
+def _simple(text, cursor):
+    """Completions without jedi: names, attributes of objects (no calls), keywords and modules."""
+    import re
+    import keyword
+    import builtins
+    line = text[:cursor]
+    m = re.search(r"^\s*(?:import|from)\s+([\w.]*)$", line)
+    if m:
+        token = m.group(1)
+        start = cursor - len(token.rpartition(".")[2])
+        return start, [(n, "module", "") for n in _modules(token)]
+    m = re.search(r"^\s*from\s+([\w.]+)\s+import\s+(?:.*,\s*)?(\w*)$", line)
+    if m:
+        prefix = m.group(2)
+        try:
+            import importlib
+            mod = importlib.import_module(m.group(1))
+            names = [n for n in dir(mod) if n.startswith(prefix) and not n.startswith("_")]
+            return cursor - len(prefix), [(n, _kind_of(getattr(mod, n, None)), "") for n in sorted(names)]
+        except Exception:
+            return cursor - len(prefix), []
+    m = re.search(r"([A-Za-z_][\w]*(?:\.[A-Za-z_]\w*)*)\.(\w*)$", line)
+    if m:
+        expr, prefix = m.group(1), m.group(2)
+        parts = expr.split(".")
+        try:
+            ns = _main.__dict__
+            obj = ns[parts[0]] if parts[0] in ns else getattr(builtins, parts[0])
+            for p in parts[1:]:
+                obj = getattr(obj, p)
+        except Exception:
+            return cursor - len(prefix), []
+        names = sorted(set(dir(obj)), key=lambda n: (n.startswith("_"), n.lower()))
+        if not prefix.startswith("_"):
+            names = [n for n in names if not n.startswith("_")]
+        items = []
+        for n in names:
+            if not n.startswith(prefix):
+                continue
+            try:
+                a = getattr(obj, n)
+            except Exception:
+                a = None
+            items.append((n, _kind_of(a), a))
+        return cursor - len(prefix), items
+    m = re.search(r"(\w*)$", line)
+    prefix = m.group(1)
+    found = {}
+    for n in keyword.kwlist:
+        if n.startswith(prefix):
+            found[n] = ("keyword", None)
+    for n, v in _main.__dict__.items():
+        if n.startswith(prefix) and (prefix.startswith("_") or not n.startswith("_")):
+            found[n] = (_kind_of(v), v)
+    for n in dir(builtins):
+        if n.startswith(prefix) and not n.startswith("_") and n not in found:
+            found[n] = (_kind_of(getattr(builtins, n)), getattr(builtins, n))
+    items = [(n, k, v) for n, (k, v) in sorted(found.items(), key=lambda kv: kv[0].lower())]
+    return cursor - len(prefix), items
+
+
+def complete(text, cursor):
+    """The completions at the cursor: [start, "name<US>kind<US>doc", ...] (jedi if installed)."""
+    cursor = int(cursor)
+    result = _with_jedi(text, cursor)
+    if result is None:
+        start, raw = _simple(text, cursor)
+        items = []
+        for i, (n, k, obj) in enumerate(raw[:_MAX]):
+            items.append((n, k, _doc_line(obj, n) if obj is not None and i < _DOC_MAX else ""))
+    else:
+        start, items = result
+    items = _workspace_first(text, cursor, start, items)
+    return [str(start)] + [n + _SEP + k + _SEP + d.replace(_SEP, " ") for n, k, d in items]
+
+
+def _workspace_first(text, cursor, start, items):
+    """A name (not an attribute, not an import): the objects of the workspace first
+    (data as "variable" with a short description, e.g. "ndarray int64 5")."""
+    import re
+    before = text[:start]
+    if before.rstrip().endswith(".") or re.search(r"^\s*(?:import|from)\b", before) or re.search(r"\bimport\s+(?:.*,\s*)?$", before):
+        return items
+    prefix = text[start:cursor]
+    ws = []
+    for n, v in sorted(_main.__dict__.items(), key=lambda kv: kv[0].lower()):
+        if not n.startswith(prefix) or (n.startswith("_") and not prefix.startswith("_")) or n == "bio7":
+            continue
+        k = _kind_of(v)
+        if k == "instance":
+            ws.append((n, "variable", _short(v)))
+        else:
+            ws.append((n, k, _doc_line(v, n) if k != "module" else (n + " (module)")))
+    names = {n for n, _, _ in ws}
+    return ws + [it for it in items if it[0] not in names]

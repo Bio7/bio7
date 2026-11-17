@@ -18,8 +18,8 @@ public class InstallRPackage extends Action {
 
 	public InstallRPackage(String text, IWorkbenchWindow window) {
 		super(text);
-		setActionDefinitionId("com.eco.bio7.rserve_installRPackage");
-		setId("com.eco.bio7.rserve_installRPackage");
+		setActionDefinitionId("com.eco.bio7.r_installRPackage");
+		setId("com.eco.bio7.r_installRPackage");
 		
 	}
 

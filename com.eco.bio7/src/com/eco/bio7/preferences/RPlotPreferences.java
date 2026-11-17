@@ -33,7 +33,7 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 
 import com.eco.bio7.Bio7Plugin;
 
-public class RServePlotPrefs extends FieldEditorPreferencePage implements IWorkbenchPreferencePage, PropertyChangeListener {
+public class RPlotPreferences extends FieldEditorPreferencePage implements IWorkbenchPreferencePage, PropertyChangeListener {
 
 	
 	
@@ -43,9 +43,9 @@ public class RServePlotPrefs extends FieldEditorPreferencePage implements IWorkb
 	public RadioGroupFieldEditor selectionDevice;
 	public RadioGroupFieldEditor selectLinuxShell;
 	private RadioGroupFieldEditor selectPDFReader;
-	private static RServePlotPrefs instance;
+	private static RPlotPreferences instance;
 
-	public static RServePlotPrefs getInstance() {
+	public static RPlotPreferences getInstance() {
 		return instance;
 	}
 	
@@ -53,7 +53,7 @@ public class RServePlotPrefs extends FieldEditorPreferencePage implements IWorkb
 		return getFieldEditorParent();
 	}
 
-	public RServePlotPrefs() {
+	public RPlotPreferences() {
 		super(GRID);
 		setPreferenceStore(Bio7Plugin.getDefault().getPreferenceStore());
         instance=this;

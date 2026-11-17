@@ -109,12 +109,7 @@ import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.osgi.framework.Bundle;
-import org.rosuda.REngine.REXP;
-import org.rosuda.REngine.REXPLogical;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.REngineException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.collection.BrowserUtil;
@@ -130,9 +125,9 @@ import com.eco.bio7.markdownedit.editors.MarkdownEditor;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RCompletionShell;
 import com.eco.bio7.rbridge.RFunctions;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
-import com.eco.bio7.rbridge.RServeUtil;
+import com.eco.bio7.rbridge.REval;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.RTable;
 import com.eco.bio7.rbridge.TransferDataframeToGridJob;
@@ -156,6 +151,9 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.NotEnabledException;
 import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.commands.common.NotDefinedException;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class RShellView extends ViewPart {
 
@@ -172,14 +170,14 @@ public class RShellView extends ViewPart {
 	// private KeyStroke stroke2;
 	private String[] history;
 	private String[] tempHistory;
-	protected REXPLogical isDataframe;
-	protected REXPLogical isMatrix;
+	protected RValue isDataframe;
+	protected RValue isMatrix;
 	private KeyStroke strokeCompletion;
 	private static RCompletionShell shellInstance = null;
 	// private String t;
 	private String url;
 	protected String htmlHelpText;
-	protected REXPLogical isVector;
+	protected RValue isVector;
 	private Button objectsButton;
 	private Button iButton;
 	private Button xButton;
@@ -324,7 +322,7 @@ public class RShellView extends ViewPart {
 		/* Return evaluates the input (see the key listener below, after the completion adapters) */
 		evaluateInput = new Listener() {
 			public void handleEvent(Event e) {
-				if (RServe.isAlive()) {
+				if (RTools.isAlive()) {
 					if (cmdError == false) {
 						evaluate();
 					} else {
@@ -398,7 +396,7 @@ public class RShellView extends ViewPart {
 						 * add them to the templates! Update completion porposals if a new package has
 						 * been loaded!
 						 */
-						if (RServe.isAliveDialog()) {
+						if (RTools.isAliveDialog()) {
 							shellCompletion.update();
 							System.out.println("\nReloaded code completion!");
 
@@ -465,7 +463,7 @@ public class RShellView extends ViewPart {
 						 * add them to the templates! Update completion porposals if a new package has
 						 * been loaded!
 						 */
-						if (RServe.isAliveDialog()) {
+						if (RTools.isAliveDialog()) {
 							shellCompletion.update();
 							System.out.println("Reloaded code completion!");
 
@@ -604,7 +602,7 @@ public class RShellView extends ViewPart {
 		btnEvaluate.setText("Eval");
 		btnEvaluate.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				if (RServe.isAlive()) {
+				if (RTools.isAlive()) {
 					if (cmdError == false) {
 						evaluate();
 					} else {
@@ -687,7 +685,7 @@ public class RShellView extends ViewPart {
 		rhelpButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
 						Job job = new Job("Html help") {
@@ -699,7 +697,7 @@ public class RShellView extends ViewPart {
 									RBridge.getBackend()
 											.eval("try(help.start(remote=paste(\"file://\", R.home(), sep=\"\")))");
 
-								} catch (RserveException e1) {
+								} catch (RException e1) {
 
 									e1.printStackTrace();
 								}
@@ -741,7 +739,7 @@ public class RShellView extends ViewPart {
 			public void widgetSelected(SelectionEvent e) {
 
 				htmlHelpText = null;
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
 						Job job = new Job("Html help") {
@@ -778,7 +776,7 @@ public class RShellView extends ViewPart {
 									try {
 										c.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".html\", sep=\"\"))")
 												.toString();
-									} catch (RserveException e2) {
+									} catch (RException e2) {
 										// TODO Auto-generated catch block
 										e2.printStackTrace();
 									}
@@ -789,14 +787,14 @@ public class RShellView extends ViewPart {
 										// String css = Util.fileToString(path);
 										try {
 											c.assign(".pathcss", cssPath);
-										} catch (RserveException e) {
+										} catch (RException e) {
 											// TODO Auto-generated catch block
 											e.printStackTrace();
 										}
 										try {
 											c.eval("try(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText
 													+ "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\"),stylesheet = .pathcss))");
-										} catch (RserveException e) {
+										} catch (RException e) {
 											// TODO Auto-generated catch block
 											e.printStackTrace();
 										}
@@ -808,7 +806,7 @@ public class RShellView extends ViewPart {
 										try {
 											c.eval("try(tools::Rd2HTML(utils:::.getHelpFile(?" + htmlHelpText
 													+ "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\")))");
-										} catch (RserveException e) {
+										} catch (RException e) {
 											// TODO Auto-generated catch block
 											e.printStackTrace();
 										}
@@ -816,12 +814,12 @@ public class RShellView extends ViewPart {
 									}
 									try {
 										try {
-											out = (String) c.eval("try(.bio7TempHtmlHelpFile)").asString();
-										} catch (RserveException e) {
+											out = (String) c.eval("try(.bio7TempHtmlHelpFile)").firstString();
+										} catch (RException e) {
 											// TODO Auto-generated catch block
 											e.printStackTrace();
 										}
-									} catch (REXPMismatchException e) {
+									} catch (RTypeException e) {
 
 										e.printStackTrace();
 									}
@@ -969,7 +967,7 @@ public class RShellView extends ViewPart {
 		objectsButton.setToolTipText("List the current R workspace objects (command 'ls')");
 		objectsButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					displayRObjectsInternal();
 
 					// createAttachedPackageTree();
@@ -998,7 +996,7 @@ public class RShellView extends ViewPart {
 		 * loadButton_1.
 		 * setToolTipText("Saves the current workspace to \nthe temporary location");
 		 * loadButton_1.addSelectionListener(new SelectionAdapter() { public void
-		 * widgetSelected(final SelectionEvent e) { if (RServe.isAliveDialog()) {
+		 * widgetSelected(final SelectionEvent e) { if (RTools.isAliveDialog()) {
 		 * fastSaveRWorkspace(); } }
 		 * 
 		 * }); loadButton_1.setImage(Bio7Plugin.getImageDescriptor(
@@ -1012,10 +1010,10 @@ public class RShellView extends ViewPart {
 		gcButton.setToolTipText("Causes a garbage collection to take place");
 		gcButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 
-						RServe.printJob("gc()");
+						RTools.printJob("gc()");
 
 					} else {
 						Bio7Dialog.message("R is busy!");
@@ -1176,17 +1174,17 @@ public class RShellView extends ViewPart {
 				 * if (RState.isBusy() == false) { boolean[] bolExists = null; String selected =
 				 * list_8.getItem(list_8.getSelectionIndex());
 				 * 
-				 * if (e.button != 3) { if (RServe.isAliveDialog()) { RBackend c =
+				 * if (e.button != 3) { if (RTools.isAliveDialog()) { RBackend c =
 				 * RBridge.getBackend();
 				 * 
-				 * try { REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected
-				 * + "\")"); bolExists = bolDataExists.isTrue(); } catch (RserveException e2) {
+				 * try { RValue bolDataExists = c.eval("exists(\"" + selected
+				 * + "\")"); bolExists = bolDataExists.booleans(); } catch (RException e2) {
 				 * 
 				 * e2.printStackTrace(); }
 				 * 
 				 * if (bolExists[0]) {
 				 * 
-				 * RServe.printJob("" + selected + ""); } else {
+				 * RTools.printJob("" + selected + ""); } else {
 				 * Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" +
 				 * "Please refresh the list!"); }
 				 * 
@@ -1194,16 +1192,16 @@ public class RShellView extends ViewPart {
 				 * 
 				 * } else {
 				 * 
-				 * if (RServe.isAliveDialog()) { RBackend c = RBridge.getBackend();
+				 * if (RTools.isAliveDialog()) { RBackend c = RBridge.getBackend();
 				 * 
-				 * try { REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected
-				 * + "\")"); bolExists = bolDataExists.isTrue(); } catch (RserveException e2) {
+				 * try { RValue bolDataExists = c.eval("exists(\"" + selected
+				 * + "\")"); bolExists = bolDataExists.booleans(); } catch (RException e2) {
 				 * 
 				 * e2.printStackTrace(); }
 				 * 
 				 * if (bolExists[0]) {
 				 * 
-				 * RServe.printJob("summary(" + selected + ")"); } else {
+				 * RTools.printJob("summary(" + selected + ")"); } else {
 				 * Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n" +
 				 * "Please refresh the list!"); }
 				 * 
@@ -1223,12 +1221,12 @@ public class RShellView extends ViewPart {
 					if (in >= 0) {
 						String selected = listShell.getItem(listShell.getSelectionIndex());
 						RBackend c = RBridge.getBackend();
-						if (RServe.isAliveDialog()) {
+						if (RTools.isAliveDialog()) {
 
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("try(exists(\"" + selected + "\"))");
-								bolExists = bolDataExists.isTRUE();
-							} catch (RserveException e2) {
+								RValue bolDataExists = c.eval("try(exists(\"" + selected + "\"))");
+								bolExists = bolDataExists.booleans();
+							} catch (RException e2) {
 
 								e2.printStackTrace();
 							}
@@ -1244,16 +1242,16 @@ public class RShellView extends ViewPart {
 								buf.append("(");
 								try {
 
-									cl = c.eval("class(" + selected + ")").asString();
-									type = c.eval("typeof(" + selected + ")").asString();
+									cl = c.eval("class(" + selected + ")").firstString();
+									type = c.eval("typeof(" + selected + ")").firstString();
 
-									REXPLogical bolRawExists = (REXPLogical) c.eval("is.null(dim(" + selected + "))");
-									bolRaw = bolRawExists.isTRUE();
+									RValue bolRawExists = c.eval("is.null(dim(" + selected + "))");
+									bolRaw = bolRawExists.booleans();
 									if (bolRaw[0]) {
-										sizeList = c.eval("length(" + selected + ")").asString();
+										sizeList = c.eval("length(" + selected + ")").firstString();
 									} else {
 
-										size = c.eval("dim(" + selected + ")").asStrings();
+										size = c.eval("dim(" + selected + ")").strings();
 										for (int i = 0; i < size.length; i++) {
 											if (i < size.length - 1) {
 												buf.append(size[i] + ":");
@@ -1272,12 +1270,12 @@ public class RShellView extends ViewPart {
 
 									}
 									// "{length("+selected+")}else
-									// {dim("+selected+")}").asStrings();
-								} catch (REXPMismatchException e1) {
+									// {dim("+selected+")}").strings();
+								} catch (RTypeException e1) {
 									// TODO Auto-generated catch block
 									textConsole.setText("Data class and type can't be displayed!");
 									// e1.printStackTrace();
-								} catch (RserveException e1) {
+								} catch (RException e1) {
 									// TODO Auto-generated catch block
 									textConsole.setText("Data class and type can't be displayed!");
 									// e1.printStackTrace();
@@ -1295,7 +1293,7 @@ public class RShellView extends ViewPart {
 							/* Transfer selected names to the R workspace! */
 							try {
 								c.assign(".r_shell_vars", listShell.getSelection());
-							} catch (REngineException e1) {
+							} catch (RException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
@@ -1379,20 +1377,20 @@ public class RShellView extends ViewPart {
 					if (selIndex != -1) {
 						String selected = listShell.getItem(selIndex);
 
-						if (RServe.isAliveDialog()) {
+						if (RTools.isAliveDialog()) {
 							RBackend c = RBridge.getBackend();
 
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected + "\")");
-								bolExists = bolDataExists.isTRUE();
-							} catch (RserveException e2) {
+								RValue bolDataExists = c.eval("exists(\"" + selected + "\")");
+								bolExists = bolDataExists.booleans();
+							} catch (RException e2) {
 
 								e2.printStackTrace();
 							}
 
 							if (bolExists[0]) {
 
-								RServe.printJob("" + selected + "");
+								RTools.printJob("" + selected + "");
 								System.out.println();
 							} else {
 								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n"
@@ -1412,7 +1410,7 @@ public class RShellView extends ViewPart {
 		final MenuItem newItemMenuItem = new MenuItem(menu, SWT.NONE);
 		newItemMenuItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					RBackend c = RBridge.getBackend();
 
 					if (RState.isBusy() == false) {
@@ -1421,16 +1419,16 @@ public class RShellView extends ViewPart {
 						if (selIndex != -1) {
 							String selected = listShell.getItem(selIndex);
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected + "\")");
-								bolExists = bolDataExists.isTRUE();
-							} catch (RserveException e2) {
+								RValue bolDataExists = c.eval("exists(\"" + selected + "\")");
+								bolExists = bolDataExists.booleans();
+							} catch (RException e2) {
 
 								e2.printStackTrace();
 							}
 
 							if (bolExists[0]) {
 
-								RServe.printJob("summary(" + selected + ")");
+								RTools.printJob("summary(" + selected + ")");
 								System.out.println();
 							} else {
 								Bio7Dialog.message("Data not existent in\n" + "the current workspace.\n"
@@ -1455,10 +1453,10 @@ public class RShellView extends ViewPart {
 		final MenuItem newItemMenuItem_11 = new MenuItem(menu_81, SWT.NONE);
 		newItemMenuItem_11.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				REXP x = null;
+				RValue x = null;
 				listShell.removeAll();
 
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						String[] v = null;
 						// List all variables in the R workspace!
@@ -1474,14 +1472,14 @@ public class RShellView extends ViewPart {
 							x = RBridge.getBackend().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
-									v = x.asStrings();
-								} catch (REXPMismatchException e1) {
+									v = x.strings();
+								} catch (RTypeException e1) {
 
 									e1.printStackTrace();
 								}
 							}
 							con.eval("try(rm(workspVar,envir=.bio7TempVarEnvironment))");
-						} catch (RserveException e1) {
+						} catch (RException e1) {
 
 							e1.printStackTrace();
 						}
@@ -1506,10 +1504,10 @@ public class RShellView extends ViewPart {
 		final MenuItem newItemMenuItem_10 = new MenuItem(menu_81, SWT.NONE);
 		newItemMenuItem_10.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				REXP x = null;
+				RValue x = null;
 				listShell.removeAll();
 
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						String[] v = null;
 						// List all variables in the R workspace!
@@ -1523,14 +1521,14 @@ public class RShellView extends ViewPart {
 							x = RBridge.getBackend().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
-									v = x.asStrings();
-								} catch (REXPMismatchException e1) {
+									v = x.strings();
+								} catch (RTypeException e1) {
 
 									e1.printStackTrace();
 								}
 							}
 							con.eval("try(rm(workspVar,envir=.bio7TempVarEnvironment))");
-						} catch (RserveException e1) {
+						} catch (RException e1) {
 
 							e1.printStackTrace();
 						}
@@ -1556,10 +1554,10 @@ public class RShellView extends ViewPart {
 		final MenuItem newItemMenuItem_9 = new MenuItem(menu_81, SWT.NONE);
 		newItemMenuItem_9.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				REXP x = null;
+				RValue x = null;
 				listShell.removeAll();
 
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						String[] v = null;
 						// List all variables in the R workspace!
@@ -1573,14 +1571,14 @@ public class RShellView extends ViewPart {
 							x = RBridge.getBackend().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
-									v = x.asStrings();
-								} catch (REXPMismatchException e1) {
+									v = x.strings();
+								} catch (RTypeException e1) {
 
 									e1.printStackTrace();
 								}
 							}
 							con.eval("try(rm(workspVar,envir=.bio7TempVarEnvironment))");
-						} catch (RserveException e1) {
+						} catch (RException e1) {
 
 							e1.printStackTrace();
 						}
@@ -1605,10 +1603,10 @@ public class RShellView extends ViewPart {
 		final MenuItem newItemMenuItem_12 = new MenuItem(menu_81, SWT.NONE);
 		newItemMenuItem_12.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				REXP x = null;
+				RValue x = null;
 				listShell.removeAll();
 
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						String[] v = null;
 						// List all variables in the R workspace!
@@ -1622,14 +1620,14 @@ public class RShellView extends ViewPart {
 							x = RBridge.getBackend().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
-									v = x.asStrings();
-								} catch (REXPMismatchException e1) {
+									v = x.strings();
+								} catch (RTypeException e1) {
 
 									e1.printStackTrace();
 								}
 							}
 							con.eval("try(rm(workspVar,envir=.bio7TempVarEnvironment))");
-						} catch (RserveException e1) {
+						} catch (RException e1) {
 
 							e1.printStackTrace();
 						}
@@ -1654,10 +1652,10 @@ public class RShellView extends ViewPart {
 		final MenuItem newItemMenuItem_4 = new MenuItem(menu_81, SWT.NONE);
 		newItemMenuItem_4.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				REXP x = null;
+				RValue x = null;
 				listShell.removeAll();
 
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						String[] v = null;
 						// List all variables in the R workspace!
@@ -1671,14 +1669,14 @@ public class RShellView extends ViewPart {
 							x = RBridge.getBackend().eval(".bio7TempVarEnvironment$workspVar");
 							if (x.isNull() == false) {
 								try {
-									v = x.asStrings();
-								} catch (REXPMismatchException e1) {
+									v = x.strings();
+								} catch (RTypeException e1) {
 
 									e1.printStackTrace();
 								}
 							}
 							con.eval("try(rm(workspVar,envir=.bio7TempVarEnvironment))");
-						} catch (RserveException e1) {
+						} catch (RException e1) {
 
 							e1.printStackTrace();
 						}
@@ -1709,7 +1707,7 @@ public class RShellView extends ViewPart {
 		final MenuItem newItemMenuItem_1 = new MenuItem(menu_1, SWT.NONE);
 		newItemMenuItem_1.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					RBackend c = RBridge.getBackend();
 
 					if (RState.isBusy() == false) {
@@ -1719,9 +1717,9 @@ public class RShellView extends ViewPart {
 						if (selected.length == 1) {
 
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected[0] + "\")");
-								bolExists = bolDataExists.isTRUE();
-							} catch (RserveException e2) {
+								RValue bolDataExists = c.eval("exists(\"" + selected[0] + "\")");
+								bolExists = bolDataExists.booleans();
+							} catch (RException e2) {
 
 								e2.printStackTrace();
 							}
@@ -1733,7 +1731,7 @@ public class RShellView extends ViewPart {
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
-									RServe.printJob("" + input + "<-as.data.frame(" + selected[0] + ")");
+									RTools.printJob("" + input + "<-as.data.frame(" + selected[0] + ")");
 								}
 
 							} else {
@@ -1742,9 +1740,9 @@ public class RShellView extends ViewPart {
 							}
 						} else if (selected.length > 1) {
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected[0] + "\")");
-								bolExists = bolDataExists.isTRUE();
-							} catch (RserveException e2) {
+								RValue bolDataExists = c.eval("exists(\"" + selected[0] + "\")");
+								bolExists = bolDataExists.booleans();
+							} catch (RException e2) {
 
 								e2.printStackTrace();
 							}
@@ -1758,19 +1756,19 @@ public class RShellView extends ViewPart {
 									String input = inp.getValue();
 									try {
 										c.eval("" + input + "<-data.frame(" + selected[0] + ")");
-									} catch (RserveException e1) {
+									} catch (RException e1) {
 
 										e1.printStackTrace();
 									}
 									for (int i = 1; i < selected.length; i++) {
 										try {
 											c.eval("" + input + "<-cbind(" + input + "," + selected[i] + ")");
-										} catch (RserveException e1) {
+										} catch (RException e1) {
 
 											e1.printStackTrace();
 										}
 									}
-									RServe.printJob("" + input + "");
+									RTools.printJob("" + input + "");
 								}
 
 							} else {
@@ -1791,7 +1789,7 @@ public class RShellView extends ViewPart {
 		final MenuItem newItemMenuItem_2 = new MenuItem(menu_1, SWT.NONE);
 		newItemMenuItem_2.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					RBackend c = RBridge.getBackend();
 
 					if (RState.isBusy() == false) {
@@ -1801,9 +1799,9 @@ public class RShellView extends ViewPart {
 						if (selected.length == 1) {
 
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected[0] + "\")");
-								bolExists = bolDataExists.isTRUE();
-							} catch (RserveException e2) {
+								RValue bolDataExists = c.eval("exists(\"" + selected[0] + "\")");
+								bolExists = bolDataExists.booleans();
+							} catch (RException e2) {
 
 								e2.printStackTrace();
 							}
@@ -1815,7 +1813,7 @@ public class RShellView extends ViewPart {
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
-									RServe.printJob("" + input + "<-as.matrix(" + selected[0] + ")");
+									RTools.printJob("" + input + "<-as.matrix(" + selected[0] + ")");
 								}
 
 							} else {
@@ -1824,9 +1822,9 @@ public class RShellView extends ViewPart {
 							}
 						} else if (selected.length > 1) {
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected[0] + "\")");
-								bolExists = bolDataExists.isTRUE();
-							} catch (RserveException e2) {
+								RValue bolDataExists = c.eval("exists(\"" + selected[0] + "\")");
+								bolExists = bolDataExists.booleans();
+							} catch (RException e2) {
 
 								e2.printStackTrace();
 							}
@@ -1841,19 +1839,19 @@ public class RShellView extends ViewPart {
 									try {
 										c.eval("" + input + "<-NULL");
 										c.eval("" + input + "<-cbind(" + input + "," + selected[0] + ")");
-									} catch (RserveException e1) {
+									} catch (RException e1) {
 
 										e1.printStackTrace();
 									}
 									for (int i = 1; i < selected.length; i++) {
 										try {
 											c.eval("" + input + "<-cbind(" + input + "," + selected[i] + ")");
-										} catch (RserveException e1) {
+										} catch (RException e1) {
 
 											e1.printStackTrace();
 										}
 									}
-									RServe.printJob("" + input + "");
+									RTools.printJob("" + input + "");
 								}
 
 							} else {
@@ -1876,7 +1874,7 @@ public class RShellView extends ViewPart {
 		mntmToList.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					RBackend c = RBridge.getBackend();
 
 					if (RState.isBusy() == false) {
@@ -1886,9 +1884,9 @@ public class RShellView extends ViewPart {
 						if (selected.length == 1) {
 
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected[0] + "\")");
-								bolExists = bolDataExists.isTRUE();
-							} catch (RserveException e2) {
+								RValue bolDataExists = c.eval("exists(\"" + selected[0] + "\")");
+								bolExists = bolDataExists.booleans();
+							} catch (RException e2) {
 
 								e2.printStackTrace();
 							}
@@ -1903,12 +1901,12 @@ public class RShellView extends ViewPart {
 									try {
 										c.eval("try(" + input + "<-list())");
 										c.eval("try(" + input + "[[1]]<-" + selected[0] + ")");
-									} catch (RserveException e1) {
+									} catch (RException e1) {
 
 										e1.printStackTrace();
 									}
 
-									RServe.printJob("" + input + "");
+									RTools.printJob("" + input + "");
 								}
 
 							} else {
@@ -1917,9 +1915,9 @@ public class RShellView extends ViewPart {
 							}
 						} else if (selected.length > 1) {
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected[0] + "\")");
-								bolExists = bolDataExists.isTRUE();
-							} catch (RserveException e2) {
+								RValue bolDataExists = c.eval("exists(\"" + selected[0] + "\")");
+								bolExists = bolDataExists.booleans();
+							} catch (RException e2) {
 
 								e2.printStackTrace();
 							}
@@ -1933,19 +1931,19 @@ public class RShellView extends ViewPart {
 									String input = inp.getValue();
 									try {
 										c.eval("try(" + input + "<-list())");
-									} catch (RserveException e1) {
+									} catch (RException e1) {
 
 										e1.printStackTrace();
 									}
 									for (int i = 0; i < selected.length; i++) {
 										try {
 											c.eval("try(" + input + "[[" + (i + 1) + "]]<-" + selected[i] + ")");
-										} catch (RserveException e1) {
+										} catch (RException e1) {
 
 											e1.printStackTrace();
 										}
 									}
-									RServe.printJob("" + input + "");
+									RTools.printJob("" + input + "");
 								}
 
 							} else {
@@ -1967,7 +1965,7 @@ public class RShellView extends ViewPart {
 		final MenuItem newItemMenuItem_3 = new MenuItem(menu_1, SWT.NONE);
 		newItemMenuItem_3.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					RBackend c = RBridge.getBackend();
 
 					if (RState.isBusy() == false) {
@@ -1977,9 +1975,9 @@ public class RShellView extends ViewPart {
 						if (selected.length == 1) {
 
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected[0] + "\")");
-								bolExists = bolDataExists.isTRUE();
-							} catch (RserveException e2) {
+								RValue bolDataExists = c.eval("exists(\"" + selected[0] + "\")");
+								bolExists = bolDataExists.booleans();
+							} catch (RException e2) {
 
 								e2.printStackTrace();
 							}
@@ -1991,7 +1989,7 @@ public class RShellView extends ViewPart {
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
-									RServe.printJob("" + input + "<-as.vector(" + selected[0] + ")");
+									RTools.printJob("" + input + "<-as.vector(" + selected[0] + ")");
 								}
 
 							} else {
@@ -2013,7 +2011,7 @@ public class RShellView extends ViewPart {
 		final MenuItem newItemMenuItem_19 = new MenuItem(menu_1, SWT.NONE);
 		newItemMenuItem_19.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					RBackend c = RBridge.getBackend();
 
 					if (RState.isBusy() == false) {
@@ -2023,9 +2021,9 @@ public class RShellView extends ViewPart {
 						if (selected.length == 1) {
 
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected[0] + "\")");
-								bolExists = bolDataExists.isTRUE();
-							} catch (RserveException e2) {
+								RValue bolDataExists = c.eval("exists(\"" + selected[0] + "\")");
+								bolExists = bolDataExists.booleans();
+							} catch (RException e2) {
 
 								e2.printStackTrace();
 							}
@@ -2037,7 +2035,7 @@ public class RShellView extends ViewPart {
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
-									RServe.printJob("" + input + "<-as.numeric(" + selected[0] + ")");
+									RTools.printJob("" + input + "<-as.numeric(" + selected[0] + ")");
 								}
 
 							} else {
@@ -2060,7 +2058,7 @@ public class RShellView extends ViewPart {
 		final MenuItem menuItem = new MenuItem(menu_1, SWT.NONE);
 		menuItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					RBackend c = RBridge.getBackend();
 
 					if (RState.isBusy() == false) {
@@ -2070,9 +2068,9 @@ public class RShellView extends ViewPart {
 						if (selected.length == 1) {
 
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected[0] + "\")");
-								bolExists = bolDataExists.isTRUE();
-							} catch (RserveException e2) {
+								RValue bolDataExists = c.eval("exists(\"" + selected[0] + "\")");
+								bolExists = bolDataExists.booleans();
+							} catch (RException e2) {
 
 								e2.printStackTrace();
 							}
@@ -2084,7 +2082,7 @@ public class RShellView extends ViewPart {
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
-									RServe.printJob("" + input + "<-as.factor(" + selected[0] + ")");
+									RTools.printJob("" + input + "<-as.factor(" + selected[0] + ")");
 								}
 
 							} else {
@@ -2107,7 +2105,7 @@ public class RShellView extends ViewPart {
 		final MenuItem newItemMenuItem_13 = new MenuItem(menu_1, SWT.NONE);
 		newItemMenuItem_13.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					RBackend c = RBridge.getBackend();
 
 					if (RState.isBusy() == false) {
@@ -2117,9 +2115,9 @@ public class RShellView extends ViewPart {
 						if (selected.length == 1) {
 
 							try {
-								REXPLogical bolDataExists = (REXPLogical) c.eval("exists(\"" + selected[0] + "\")");
-								bolExists = bolDataExists.isTRUE();
-							} catch (RserveException e2) {
+								RValue bolDataExists = c.eval("exists(\"" + selected[0] + "\")");
+								bolExists = bolDataExists.booleans();
+							} catch (RException e2) {
 
 								e2.printStackTrace();
 							}
@@ -2131,7 +2129,7 @@ public class RShellView extends ViewPart {
 
 								if (inp.open() == Dialog.OK) {
 									String input = inp.getValue();
-									RServe.printJob("" + input + "<-as.character(" + selected[0] + ")");
+									RTools.printJob("" + input + "<-as.character(" + selected[0] + ")");
 								}
 
 							} else {
@@ -2171,14 +2169,14 @@ public class RShellView extends ViewPart {
 			}
 
 			public void plot(com.eco.bio7.plot.PlotOptions o, com.eco.bio7.plot.PlotData d) {
-				if (!RServe.isAliveDialog()) {
+				if (!RTools.isAliveDialog()) {
 					return;
 				}
 				if (RState.isBusy()) {
 					Bio7Dialog.message("R is busy!");
 					return;
 				}
-				RServe.printJob(RShellPlots.code(d, o));
+				RTools.printJob(RShellPlots.code(d, o));
 			}
 
 			public String source(com.eco.bio7.plot.PlotOptions o, com.eco.bio7.plot.PlotData d) {
@@ -2200,21 +2198,21 @@ public class RShellView extends ViewPart {
 		newItemMenuItem_5.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				if (RTable.getInstance() != null) {
-					if (RServe.isAliveDialog()) {
+					if (RTools.isAliveDialog()) {
 						List l = RShellView.getList_8();
 
 						String[] name = l.getSelection();
 
 						if (name.length >= 1) {
 							try {
-								isDataframe = (REXPLogical) RBridge.getBackend()
+								isDataframe = (RValue) RBridge.getBackend()
 										.eval("try(is.data.frame(" + name[0] + "))");
 
-							} catch (RserveException e1) {
+							} catch (RException e1) {
 
 								e1.printStackTrace();
 							}
-							boolean[] bolE = isDataframe.isTRUE();
+							boolean[] bolE = isDataframe.booleans();
 
 							if (bolE[0]) {
 								if (RState.isBusy() == false) {
@@ -2257,20 +2255,20 @@ public class RShellView extends ViewPart {
 		newItemMenuItem_6.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				if (RTable.getInstance() != null) {
-					if (RServe.isAliveDialog()) {
+					if (RTools.isAliveDialog()) {
 						List l = RShellView.getList_8();
 						String[] name = l.getSelection();
 						// for (int i = 0; i < name.length; i++) {
 						if (name.length >= 1) {
 							try {
-								isDataframe = (REXPLogical) RBridge.getBackend()
+								isDataframe = (RValue) RBridge.getBackend()
 										.eval("try(is.data.frame(" + name[0] + "))");
 
-							} catch (RserveException e1) {
+							} catch (RException e1) {
 
 								e1.printStackTrace();
 							}
-							boolean[] bolE = isDataframe.isTRUE();
+							boolean[] bolE = isDataframe.booleans();
 							if (bolE[0]) {
 
 								if (RState.isBusy() == false) {
@@ -2315,19 +2313,19 @@ public class RShellView extends ViewPart {
 		newItemMenuItem_7.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				if (RTable.getInstance() != null) {
-					if (RServe.isAliveDialog()) {
+					if (RTools.isAliveDialog()) {
 						List l = RShellView.getList_8();
 						String[] name = l.getSelection();
 						if (name.length >= 1) {
 							// for (int i = 0; i < name.length; i++) {
 							try {
-								isMatrix = (REXPLogical) RBridge.getBackend().eval("try(is.matrix(" + name[0] + "))");
+								isMatrix = RBridge.getBackend().eval("try(is.matrix(" + name[0] + "))");
 
-							} catch (RserveException e1) {
+							} catch (RException e1) {
 
 								e1.printStackTrace();
 							}
-							boolean[] bolE = isMatrix.isTRUE();
+							boolean[] bolE = isMatrix.booleans();
 							if (bolE[0]) {
 
 								if (RState.isBusy() == false) {
@@ -2371,19 +2369,19 @@ public class RShellView extends ViewPart {
 
 			public void widgetSelected(SelectionEvent e) {
 				if (RTable.getInstance() != null) {
-					if (RServe.isAliveDialog()) {
+					if (RTools.isAliveDialog()) {
 						List l = RShellView.getList_8();
 						String[] name = l.getSelection();
 						if (name.length >= 1) {
 							// for (int i = 0; i < name.length; i++) {
 							try {
-								isVector = (REXPLogical) RBridge.getBackend().eval("try(is.vector(" + name[0] + "))");
+								isVector = RBridge.getBackend().eval("try(is.vector(" + name[0] + "))");
 
-							} catch (RserveException e1) {
+							} catch (RException e1) {
 
 								e1.printStackTrace();
 							}
-							boolean[] bolE = isVector.isTRUE();
+							boolean[] bolE = isVector.booleans();
 							if (bolE[0]) {
 
 								if (RState.isBusy() == false) {
@@ -2426,19 +2424,19 @@ public class RShellView extends ViewPart {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				if (RTable.getInstance() != null) {
-					if (RServe.isAliveDialog()) {
+					if (RTools.isAliveDialog()) {
 						List l = RShellView.getList_8();
 						String[] name = l.getSelection();
 						if (name.length >= 1) {
 							// for (int i = 0; i < name.length; i++) {
 							try {
-								isVector = (REXPLogical) RBridge.getBackend().eval("try(is.vector(" + name[0] + "))");
+								isVector = RBridge.getBackend().eval("try(is.vector(" + name[0] + "))");
 
-							} catch (RserveException e1) {
+							} catch (RException e1) {
 
 								e1.printStackTrace();
 							}
-							boolean[] bolE = isVector.isTRUE();
+							boolean[] bolE = isVector.booleans();
 							if (bolE[0]) {
 
 								if (RState.isBusy() == false) {
@@ -2475,6 +2473,15 @@ public class RShellView extends ViewPart {
 			}
 		});
 		VectorColumn.setText("Vector to Columns");
+
+		new MenuItem(menu_2, SWT.SEPARATOR);
+		/* Several selected objects (x, y, ...) and the elements of a list: a column or row each, the names as header */
+		for (String[] t : new String[][] { { "Selected as Columns", "columns" }, { "Selected as Rows", "rows" }, { "List Elements as Columns", "list_columns" },
+				{ "List Elements as Rows", "list_rows" } }) {
+			MenuItem item = new MenuItem(menu_2, SWT.NONE);
+			item.setText(t[0]);
+			item.addListener(SWT.Selection, _ -> transferToTable(listShell.getSelection(), t[1]));
+		}
 
 		createLibreOfficeMenu(menu);
 
@@ -2592,17 +2599,17 @@ public class RShellView extends ViewPart {
 				 */
 
 				if (file.getName().endsWith(".R") || file.getName().endsWith(".r")) {
-					if (RServe.isAliveDialog()) {
+					if (RTools.isAliveDialog()) {
 						if (RState.isBusy() == false) {
 							RState.setBusy(true);
 							final RInterpreterJob Do = new RInterpreterJob(null, file.toString());
 							Do.addJobChangeListener(new JobChangeAdapter() {
 								public void done(IJobChangeEvent event) {
 									if (event.getResult().isOK()) {
-										int countDev = RServe.getDisplayNumber();
+										int countDev = RTools.getDisplayNumber();
 										RState.setBusy(false);
 										if (countDev > 0) {
-											RServe.closeAndDisplay();
+											RTools.closeAndDisplay();
 										}
 
 										displayRObjects();
@@ -2882,7 +2889,7 @@ public class RShellView extends ViewPart {
 						}
 					}
 					/* Send multiple expressions and evaluate them! */
-					com.eco.bio7.rbridge.RServe.printJobs(t);
+					com.eco.bio7.rbridge.RTools.printJobs(t);
 					/* Linebreak in the job for multiple expressions! */
 
 				} else if (tex.contains("#")) {
@@ -2900,7 +2907,7 @@ public class RShellView extends ViewPart {
 							packageImportSize = map.size();
 						}
 					}
-					com.eco.bio7.rbridge.RServe.printJob(tex);
+					com.eco.bio7.rbridge.RTools.printJob(tex);
 					System.out.println();
 
 				}
@@ -2917,16 +2924,16 @@ public class RShellView extends ViewPart {
 
 	/*
 	 * This method is called when the job from the
-	 * com.eco.bio7.rbridge.RServe.printJob(tex)method has finished! If a package
+	 * com.eco.bio7.rbridge.RTools.printJob(tex)method has finished! If a package
 	 * was detected the package list job is executed which calls (after finished)
-	 * the job function RServeUtil.listRObjects(). If no package has been called the
-	 * RServeUtil.listRObjects() is called to show new objects in the R-Shell view.
+	 * the job function REval.listRObjects(). If no package has been called the
+	 * REval.listRObjects() is called to show new objects in the R-Shell view.
 	 */
 	public void updatePackageImports() {
 		if (packageImportSize > 0) {
 			shellCompletion.update();
 		} else {
-			RServeUtil.listRObjects();
+			REval.listRObjects();
 		}
 	}
 
@@ -3030,7 +3037,7 @@ public class RShellView extends ViewPart {
 
 	/*
 	 * Update the R object list in the R-Shell used by all hard implemented eval
-	 * actions (excluded are Rserve API scripts) if the update preference is true
+	 * actions if the update preference is true
 	 * (by default is)!
 	 */
 	public void displayRObjects() {
@@ -3088,7 +3095,7 @@ public class RShellView extends ViewPart {
 				@Override
 				protected IStatus run(IProgressMonitor monitor) {
 					monitor.beginTask("List Objects...", IProgressMonitor.UNKNOWN);
-					REXP x = null;
+					RValue x = null;
 
 					// List all variables in the R workspace!
 
@@ -3101,14 +3108,14 @@ public class RShellView extends ViewPart {
 						// RBridge.getBackend().eval("try(.varRWorkspaceObjects<-ls())");
 						x = con.eval("try(.bio7TempVarEnvironment$workspVar)");
 						try {
-							listObjectsArray = x.asStrings();
-						} catch (REXPMismatchException e1) {
+							listObjectsArray = x.strings();
+						} catch (RTypeException e1) {
 
 							e1.printStackTrace();
 						}
 						con.eval("try(rm(workspVar,envir=.bio7TempVarEnvironment))");
 
-					} catch (RserveException e1) {
+					} catch (RException e1) {
 
 						e1.printStackTrace();
 					}
@@ -3161,7 +3168,7 @@ public class RShellView extends ViewPart {
 			Bio7Dialog.message("Please select one or more objects!");
 			return;
 		}
-		if (!RServe.isAliveDialog()) {
+		if (!RTools.isAliveDialog()) {
 			return;
 		}
 		if (RState.isBusy()) {
@@ -3210,16 +3217,63 @@ public class RShellView extends ViewPart {
 				"while", "with", "yield").contains(n) ? n + "_" : n;
 	}
 
+	/*
+	 * Several selected objects (columns, rows: one each) or the elements of the
+	 * selected list, data frame or matrix (list_columns, list_rows) into a new
+	 * sheet of the table, the names as header
+	 */
+	private void transferToTable(String[] selected, String mode) {
+		if (selected == null || selected.length == 0) {
+			Bio7Dialog.message("Please select one or more objects!");
+			return;
+		}
+		if (!RTools.isAliveDialog()) {
+			return;
+		}
+		if (RState.isBusy()) {
+			Bio7Dialog.message("R is busy!");
+			return;
+		}
+		boolean list = mode.startsWith("list");
+		String sheet = list ? selected[0] : com.eco.bio7.rbridge.TableTransfer.sheetName(java.util.List.of(selected));
+		String code = com.eco.bio7.rbridge.TableTransfer.rCode(list ? new String[] { selected[0] } : selected, mode);
+		Job job = new Job("Transfer to Table") {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				monitor.beginTask("Transfer Data ...", IProgressMonitor.UNKNOWN);
+				RState.setBusy(true);
+				try {
+					String[] result = RBridge.getBackend().eval(code).strings();
+					java.util.List<String[]> rows = com.eco.bio7.rbridge.TableTransfer.rRows(result);
+					Display.getDefault().asyncExec(() -> {
+						String error = com.eco.bio7.rbridge.TableTransfer.show(sheet, rows);
+						if (error != null) {
+							Bio7Dialog.message(error);
+						}
+					});
+				} catch (Exception ex) {
+					Bio7Dialog.message("Transfer to Table failed:\n" + ex.getMessage());
+				} finally {
+					RState.setBusy(false);
+					monitor.done();
+				}
+				return Status.OK_STATUS;
+			}
+		};
+		job.setUser(true);
+		job.schedule();
+	}
+
 	/* The variables of the workspace and the columns of the data frames (df$col) for the plot view */
 	private java.util.List<String> plotWorkspaceVariables() {
 		java.util.List<String> names = new java.util.ArrayList<>();
 		try {
 			if (RBridge.getBackend() != null && !RState.isBusy()) {
-				REXP x = RBridge.getBackend().eval("local({ out <- character(); for (n in ls(globalenv())) { x <- get(n, envir = globalenv()); "
+				RValue x = RBridge.getBackend().eval("local({ out <- character(); for (n in ls(globalenv())) { x <- get(n, envir = globalenv()); "
 						+ "if (is.data.frame(x)) { cn <- names(x); q <- ifelse(make.names(cn) == cn, cn, paste0('`', cn, '`')); out <- c(out, n, paste0(n, '$', q)) } "
 						+ "else if (is.atomic(x) && length(x) > 0) out <- c(out, n) }; out })");
 				if (x != null && !x.isNull()) {
-					names.addAll(java.util.List.of(x.asStrings()));
+					names.addAll(java.util.List.of(x.strings()));
 				}
 			}
 		} catch (Exception e) {
@@ -3242,20 +3296,20 @@ public class RShellView extends ViewPart {
 	}
 
 	private void plotVariables(String[] sel, com.eco.bio7.plot.PlotOptions options) {
-		if (!RServe.isAliveDialog()) {
+		if (!RTools.isAliveDialog()) {
 			return;
 		}
 		if (RState.isBusy()) {
 			Bio7Dialog.message("R is busy!");
 			return;
 		}
-		RServe.printJob(RShellPlots.code(sel, options));
+		RTools.printJob(RShellPlots.code(sel, options));
 	}
 
 	private void removeSelectedVars() {
-		REXP x = null;
+		RValue x = null;
 
-		if (RServe.isAliveDialog()) {
+		if (RTools.isAliveDialog()) {
 			if (RState.isBusy() == false) {
 				MessageBox message = new MessageBox(Util.getShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 				message.setMessage("Do you really want to remove the selected object(s)?");
@@ -3274,7 +3328,7 @@ public class RShellView extends ViewPart {
 							}
 						}
 
-					} catch (RserveException e1) {
+					} catch (RException e1) {
 
 						e1.printStackTrace();
 					}
@@ -3291,13 +3345,13 @@ public class RShellView extends ViewPart {
 						// RBridge.getBackend().eval(".varRWorkspaceObject<-ls()");
 						x = RBridge.getBackend().eval("try(.bio7TempVarEnvironment$workspVar)");
 						try {
-							v = x.asStrings();
-						} catch (REXPMismatchException e1) {
+							v = x.strings();
+						} catch (RTypeException e1) {
 
 							e1.printStackTrace();
 						}
 						con.eval("try(rm(workspVar,envir=.bio7TempVarEnvironment))");
-					} catch (RserveException e1) {
+					} catch (RException e1) {
 
 						e1.printStackTrace();
 					}

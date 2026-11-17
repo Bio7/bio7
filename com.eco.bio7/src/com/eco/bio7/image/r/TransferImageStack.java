@@ -10,27 +10,21 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
-import org.rosuda.REngine.REXPLogical;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RConnection;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.image.ImageMethods;
 import com.eco.bio7.image.RImageMethodsView;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
 
 public class TransferImageStack extends WorkspaceJob {
 
 	protected int type = 0;
 	private RBackend c;
 	private boolean convert;
-	private REXPLogical bolExists;
+	private RValue bolExists;
 	private boolean[] bolE;
-
-	/** For an Rserve connection (compatibility). */
-	public TransferImageStack(String name, RConnection c, boolean convert) {
-		this(name, RBackend.of(c), convert);
-	}
 
 	public TransferImageStack(String name, RBackend c, boolean convert) {
 		super(name);
@@ -78,10 +72,10 @@ public class TransferImageStack extends WorkspaceJob {
 
 				} else {
 					try {
-						bolExists = (REXPLogical) c.eval("try(require(raster))");
-						bolE = bolExists.isTRUE();
+						bolExists = c.eval("try(require(raster))");
+						bolE = bolExists.booleans();
 
-					} catch (RserveException e1) {
+					} catch (RException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
@@ -90,7 +84,7 @@ public class TransferImageStack extends WorkspaceJob {
 						try {
 							
 							c.eval("rasterStackFromIJ<-stack()");
-						} catch (RserveException e1) {
+						} catch (RException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
@@ -128,7 +122,7 @@ public class TransferImageStack extends WorkspaceJob {
 								// then
 								// the list to a raster stack!
 								// c.eval("rasterStackFromIJ <- do.call(stack,lapply(matrixList,raster))");
-							} catch (RserveException e) {
+							} catch (RException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
@@ -151,7 +145,7 @@ public class TransferImageStack extends WorkspaceJob {
 
 					c.eval("matrixList <- list()");
 
-				} catch (RserveException e) {
+				} catch (RException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -169,12 +163,12 @@ public class TransferImageStack extends WorkspaceJob {
 					ImageMethods.imageToR("imageMatrix", true, type, null);
 					
 						try {
-							// RServe.print("typeof(matrix)");
+							// RTools.print("typeof(matrix)");
 							c.eval("try(matrixList[[" + (slice) + "]]<-imageMatrix)");
 							// lapply(matrixList,image) //plot the list of
 							// matrices
 
-						} catch (RserveException e) {
+						} catch (RException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}

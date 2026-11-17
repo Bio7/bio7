@@ -43,14 +43,11 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Text;
-import org.rosuda.REngine.REXP;
-import org.rosuda.REngine.REXPMismatchException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
-import com.eco.bio7.rbridge.RServeUtil;
+import com.eco.bio7.rbridge.REval;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.RStrObjectInformation;
 import com.eco.bio7.rbridge.UpdateCompletion;
@@ -62,6 +59,9 @@ import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
 import com.eco.bio7.util.Util;
 import com.swtdesigner.ResourceManager;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class ShellCompletion implements UpdateCompletion {
 	private ContentProposalProvider contentProposalProvider;
@@ -110,7 +110,8 @@ public class ShellCompletion implements UpdateCompletion {
 		return allChars.toCharArray();
 	}
 
-	static KeyStroke getActivationKeystroke() {
+	/** The key of the code completion (preferences of the R-Shell, also used by the Python-Shell). */
+	public static KeyStroke getActivationKeystroke() {
 		IPreferenceStore storeLocal = Bio7Plugin.getDefault().getPreferenceStore();
 		KeyStroke instance;
 		String useAlt = storeLocal.getString("RSHELL_CODE_COMPLETION_ACTIVATOR_ALTERED");
@@ -289,10 +290,10 @@ public class ShellCompletion implements UpdateCompletion {
 							try {
 
 								/*
-								 * Function loaded at Rserve startup. Writes the available functions to a file!
+								 * Function loaded at the start of R. Writes the available functions to a file!
 								 */
 								c.eval(".bio7WriteFunctionDef();");
-							} catch (RserveException e) {
+							} catch (RException e) {
 
 								e.printStackTrace();
 							}
@@ -336,7 +337,7 @@ public class ShellCompletion implements UpdateCompletion {
 					}
 					if (event.getResult().isOK()) {
 						/*We need to call the update if we also declare objects with a package call in the R-Shell!*/
-						RServeUtil.listRObjects();
+						REval.listRObjects();
 					}
 				}
 			});
@@ -548,7 +549,7 @@ public class ShellCompletion implements UpdateCompletion {
 			 * This section loads the general code completion if no other method returned a
 			 * special case!
 			 */
-			if (RServe.isAlive()) {
+			if (RTools.isAlive()) {
 				/* Here we get the R workspace vars! */
 				ImageContentProposal[] workspaceVars = getWorkSpaceVars(position, parse);
 				if (workspaceVars != null) {
@@ -682,16 +683,16 @@ public class ShellCompletion implements UpdateCompletion {
 	private static final long COMPLETION_WAIT_MS = 3_000;
 
 	/*
-	 * RServeUtil.fromR in a job: the UI thread waits at most waitMillis (else null,
+	 * REval.fromR in a job: the UI thread waits at most waitMillis (else null,
 	 * the job finishes on its own); null also if R is busy
 	 */
-	private static REXP fromRWithin(String code, long waitMillis) {
-		java.util.concurrent.CompletableFuture<REXP> f = new java.util.concurrent.CompletableFuture<>();
+	private static RValue fromRWithin(String code, long waitMillis) {
+		java.util.concurrent.CompletableFuture<RValue> f = new java.util.concurrent.CompletableFuture<>();
 		org.eclipse.core.runtime.jobs.Job job = new org.eclipse.core.runtime.jobs.Job("R code completion") {
 			@Override
 			protected org.eclipse.core.runtime.IStatus run(org.eclipse.core.runtime.IProgressMonitor monitor) {
 				try {
-					f.complete(RServeUtil.fromR(code));
+					f.complete(REval.fromR(code));
 				} catch (Throwable t) {
 					f.complete(null);
 				}
@@ -762,30 +763,30 @@ public class ShellCompletion implements UpdateCompletion {
 
 	/* Names from R (time-limited), null if none, R is busy or didn't answer in time */
 	private static String[] namesFromR(String code) {
-		REXP rexp = fromRWithin(code, COMPLETION_WAIT_MS);
-		if (rexp == null || rexp.isNull()) {
+		RValue rValue = fromRWithin(code, COMPLETION_WAIT_MS);
+		if (rValue == null || rValue.isNull()) {
 			return null;
 		}
-		String[] v = strings(rexp);
+		String[] v = strings(rValue);
 		return v == null || v.length == 0 ? null : v;
 	}
 
-	private static String[] strings(REXP x) {
+	private static String[] strings(RValue x) {
 		try {
-			return x == null ? null : x.asStrings();
-		} catch (REXPMismatchException e) {
+			return x == null ? null : x.strings();
+		} catch (RTypeException e) {
 			return null;
 		}
 	}
 
 	/* All installed datasets: item, package, title */
 	private static final RListCache datasets = new RListCache(() -> {
-		RServeUtil.evalR("try(.bio7Pkgs <- setdiff(.packages(TRUE), c(\"base\", \"stats\")));"
+		REval.evalR("try(.bio7Pkgs <- setdiff(.packages(TRUE), c(\"base\", \"stats\")));"
 				+ "try(.bio7PkgsTemp<-data(package = .bio7Pkgs)$result);"
 				+ "try(.bio7PkgsTemp<-.bio7PkgsTemp[order(.bio7PkgsTemp[,3]), ])", null);
-		String[] item = strings(RServeUtil.fromR("try(.bio7PkgsTemp[, \"Item\"])"));
-		String[] packages = strings(RServeUtil.fromR("try(.bio7PkgsTemp[, \"Package\"])"));
-		String[] title = strings(RServeUtil.fromR("try(.bio7PkgsTemp[, \"Title\"])"));
+		String[] item = strings(REval.fromR("try(.bio7PkgsTemp[, \"Item\"])"));
+		String[] packages = strings(REval.fromR("try(.bio7PkgsTemp[, \"Package\"])"));
+		String[] title = strings(REval.fromR("try(.bio7PkgsTemp[, \"Title\"])"));
 		if (item == null || packages == null || title == null || packages.length != item.length || title.length != item.length) {
 			return null;
 		}
@@ -794,12 +795,12 @@ public class ShellCompletion implements UpdateCompletion {
 
 	/* All installed packages: name, title */
 	private static final RListCache libraries = new RListCache(() -> {
-		RServeUtil.evalR("try(.bio7ListOfWebPackages <- list(sort(.packages(all.available = TRUE))));"
+		REval.evalR("try(.bio7ListOfWebPackages <- list(sort(.packages(all.available = TRUE))));"
 				+ "try(.bio7ListOfWebPackagesNames<-.bio7ListOfWebPackages[[1]]);"
 				+ "try(.bio7TitleResult<-lapply(.bio7ListOfWebPackagesNames,packageDescription,fields = c(\"Title\")))",
 				null);
-		String[] title = strings(RServeUtil.fromR("try(as.character(.bio7TitleResult))"));
-		String[] names = strings(RServeUtil.fromR("try(.bio7ListOfWebPackagesNames)"));
+		String[] title = strings(REval.fromR("try(as.character(.bio7TitleResult))"));
+		String[] names = strings(REval.fromR("try(.bio7ListOfWebPackagesNames)"));
 		if (title == null || names == null || title.length != names.length) {
 			return null;
 		}
@@ -861,8 +862,8 @@ public class ShellCompletion implements UpdateCompletion {
 
 				}
 			}
-			// packages = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Package\"])").asStrings();
-			// title = RServeUtil.fromR("try(.bio7PkgsTemp[, \"Title\"])").asStrings();
+			// packages = REval.fromR("try(.bio7PkgsTemp[, \"Package\"])").strings();
+			// title = REval.fromR("try(.bio7PkgsTemp[, \"Title\"])").strings();
 
 			if (item != null) {
 
@@ -936,21 +937,21 @@ public class ShellCompletion implements UpdateCompletion {
 
 					if (c != null) {
 						try {
-							String[] result = (String[]) c.eval("try(ls(),silent=TRUE)").asStrings();
+							String[] result = (String[]) c.eval("try(ls(),silent=TRUE)").strings();
 							String[] varsWorkspaceClass = (String[]) c
-									.eval("try(as.character(lapply(mget(ls()),class)))").asStrings();
+									.eval("try(as.character(lapply(mget(ls()),class)))").strings();
 
 							boolean isInPipedFunction = parse.isInPipeFunction();
 							String pipedDataName = parse.getCurrentPipeData();
 							if (isInPipedFunction) {
-								REXP rexp = null;
+								RValue rValue = null;
 								/* We accept dataframes! */
-								rexp = c.eval("try(if (is.data.frame(" + pipedDataName + ")){colnames(" + pipedDataName
+								rValue = c.eval("try(if (is.data.frame(" + pipedDataName + ")){colnames(" + pipedDataName
 										+ ")} ,silent=TRUE)");
 
-								if (rexp.isNull() == false) {
+								if (rValue.isNull() == false) {
 
-									String[] pipeArguments = rexp.asStrings();
+									String[] pipeArguments = rValue.strings();
 									if (pipeArguments[0].startsWith("Error") == false) {
 										String[] pipeArgumentContext = new String[pipeArguments.length];
 										for (int i = 0; i < pipeArguments.length; i++) {
@@ -993,7 +994,7 @@ public class ShellCompletion implements UpdateCompletion {
 								}
 
 							}
-						} catch (RserveException | REXPMismatchException e) {
+						} catch (RException | RTypeException e) {
 							// TODO Auto-generated catch block
 							// e.printStackTrace();
 							System.out.println("Error in R-Shell view code completion!\nR Message: " + e.getMessage());
@@ -1029,7 +1030,7 @@ public class ShellCompletion implements UpdateCompletion {
 						String res = prefix.substring(0, prefix.lastIndexOf("::"));
 						try {
 							String[] result = (String[]) c.eval("try(grep(\"^[a-zA-Z]\",sort(getNamespaceExports(\""
-									+ res + "\")),all,value=TRUE),silent=TRUE)").asStrings();
+									+ res + "\")),all,value=TRUE),silent=TRUE)").strings();
 							if (result != null && result.length > 0) {
 								if (result[0].startsWith("Error") == false) {
 
@@ -1051,7 +1052,7 @@ public class ShellCompletion implements UpdateCompletion {
 								}
 
 							}
-						} catch (RserveException | REXPMismatchException e) {
+						} catch (RException | RTypeException e) {
 							// TODO Auto-generated catch block
 							// e.printStackTrace();
 							System.out.println("Error in R-Shell view code completion!\nR Message: " + e.getMessage());
@@ -1087,7 +1088,7 @@ public class ShellCompletion implements UpdateCompletion {
 						String res = prefix.substring(0, prefix.lastIndexOf(":::"));
 						try {
 							String[] result = (String[]) c.eval("try(grep(\"^[a-zA-Z]\",ls(getNamespace(\"" + res
-									+ "\"), all.names=TRUE),value=TRUE),silent=TRUE)").asStrings();
+									+ "\"), all.names=TRUE),value=TRUE),silent=TRUE)").strings();
 							if (result != null && result.length > 0) {
 								if (result[0].startsWith("Error") == false) {
 
@@ -1120,7 +1121,7 @@ public class ShellCompletion implements UpdateCompletion {
 								}
 
 							}
-						} catch (RserveException | REXPMismatchException e) {
+						} catch (RException | RTypeException e) {
 							// TODO Auto-generated catch block
 							// e.printStackTrace();
 							System.out.println("Error in R-Shell view code completion!\nR Message: " + e.getMessage());
@@ -1151,7 +1152,7 @@ public class ShellCompletion implements UpdateCompletion {
 					if (c != null) {
 						String res = prefix.substring(0, prefix.lastIndexOf("@"));
 						try {
-							String[] result = (String[]) c.eval("try(slotNames(" + res + "),silent=TRUE)").asStrings();
+							String[] result = (String[]) c.eval("try(slotNames(" + res + "),silent=TRUE)").strings();
 							if (result != null && result.length > 0) {
 								if (result[0].startsWith("Error") == false) {
 
@@ -1160,7 +1161,7 @@ public class ShellCompletion implements UpdateCompletion {
 
 									/*
 									 * for (int j = 0; j < result.length; j++) { String resultStr = (String)
-									 * c.eval("try(capture.output(str(" + res + "@" + result[j] + ")))").asString();
+									 * c.eval("try(capture.output(str(" + res + "@" + result[j] + ")))").firstString();
 									 * if (resultStr != null) { propo[j] = new ImageContentProposal(result[j],
 									 * result[j], resultStr, result[j].length(), s4Image); } else { propo[j] = new
 									 * ImageContentProposal(result[j], result[j], null, result[j].length(),
@@ -1172,7 +1173,7 @@ public class ShellCompletion implements UpdateCompletion {
 												&& result[j].substring(0, length).equalsIgnoreCase(afterLastIndex)) {
 
 											String resultStr = (String) c.eval("try(capture.output(str(" + res + "@"
-													+ result[j] + ")),silent=TRUE)").asString();
+													+ result[j] + ")),silent=TRUE)").firstString();
 											if (resultStr != null) {
 												list.add(new ImageContentProposal(result[j], result[j], resultStr,
 														result[j].length(), s4Image));
@@ -1188,7 +1189,7 @@ public class ShellCompletion implements UpdateCompletion {
 								}
 
 							}
-						} catch (RserveException | REXPMismatchException e) {
+						} catch (RException | RTypeException e) {
 							// TODO Auto-generated catch block
 							// e.printStackTrace();
 							System.out.println("Error in R-Shell view code completion!\nR Message: " + e.getMessage());
@@ -1225,7 +1226,7 @@ public class ShellCompletion implements UpdateCompletion {
 						try {
 							String res = prefix.substring(0, prefix.lastIndexOf("$"));
 
-							String[] result = (String[]) c.eval("try(ls(" + res + "),silent=TRUE)").asStrings();
+							String[] result = (String[]) c.eval("try(ls(" + res + "),silent=TRUE)").strings();
 
 							if (result != null && result.length > 0) {
 								if (result[0].startsWith("Error") == false) {
@@ -1238,7 +1239,7 @@ public class ShellCompletion implements UpdateCompletion {
 
 											String resultStr = (String) c
 													.eval("try(capture.output(str(" + res + "$" + result[j] + ")))")
-													.asString();
+													.firstString();
 											if (resultStr != null) {
 												list.add(new ImageContentProposal(result[j], result[j], resultStr,
 														result[j].length(), s3Image));
@@ -1254,7 +1255,7 @@ public class ShellCompletion implements UpdateCompletion {
 								}
 
 							}
-						} catch (RserveException | REXPMismatchException e) {
+						} catch (RException | RTypeException e) {
 							// TODO Auto-generated catch block
 							// e.printStackTrace();
 							System.out.println("Error in R-Shell view code completion!\nR Message: " + e.getMessage());
@@ -1391,7 +1392,7 @@ public class ShellCompletion implements UpdateCompletion {
 		 * 
 		 * }
 		 * 
-		 * } else { System.out.println("No Rserve connection available!"); } return
+		 * } else { System.out.println("R is not running!"); } return
 		 * propo;
 		 */
 	}

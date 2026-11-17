@@ -21,16 +21,16 @@ import org.eclipse.nebula.widgets.grid.GridColumn;
 import org.eclipse.nebula.widgets.grid.GridItem;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.progress.UIJob;
-import org.rosuda.REngine.REXPLogical;
-import org.rosuda.REngine.REXPMismatchException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class TransferVectorToGridJob extends UIJob {
 
 	private String name;
-	private REXPLogical isNumeric;
+	private RValue isNumeric;
 	private boolean row;
 
 	public TransferVectorToGridJob(String name, boolean row) {
@@ -61,12 +61,12 @@ public class TransferVectorToGridJob extends UIJob {
 		int length = 0;
 
 		try {
-			length = c.eval("try(length(" + name + "))").asInteger();
+			length = c.eval("try(length(" + name + "))").firstInt();
 
-		} catch (REXPMismatchException e) {
+		} catch (RTypeException e) {
 
 			e.printStackTrace();
-		} catch (RserveException e) {
+		} catch (RException e) {
 
 			e.printStackTrace();
 		}
@@ -84,23 +84,23 @@ public class TransferVectorToGridJob extends UIJob {
 			int plusR = Spread.getSelectedRowMin();
 
 			try {
-				isNumeric = (REXPLogical) c.eval("try(is.numeric(" + name + "))");
-			} catch (RserveException e) {
+				isNumeric = c.eval("try(is.numeric(" + name + "))");
+			} catch (RException e) {
 
 				e.printStackTrace();
 			}
 
-			boolean[] bolNumeric = isNumeric.isTRUE();
+			boolean[] bolNumeric = isNumeric.booleans();
 
 			if (bolNumeric[0]) {// Must be numeric!
 
 				double[] vector = null;
 				try {
-					vector = (double[]) c.eval("try(" + name + ")").asDoubles();
-				} catch (REXPMismatchException eve) {
+					vector = (double[]) c.eval("try(" + name + ")").doubles();
+				} catch (RTypeException eve) {
 
 					eve.printStackTrace();
-				} catch (RserveException ex) {
+				} catch (RException ex) {
 				}
 
 				if (row) {
@@ -144,11 +144,11 @@ public class TransferVectorToGridJob extends UIJob {
 
 				String[] vector = null;
 				try {
-					vector = (String[]) c.eval("try(" + name + ")").asStrings();
-				} catch (REXPMismatchException eve) {
+					vector = (String[]) c.eval("try(" + name + ")").strings();
+				} catch (RTypeException eve) {
 
 					eve.printStackTrace();
-				} catch (RserveException ex) {
+				} catch (RException ex) {
 				}
 
 				if (row) {

@@ -123,8 +123,8 @@ public class RCompletionShell extends Shell {
 			public void widgetSelected(SelectionEvent e) {
 				try {
 					if (!text.getText().isBlank()) {
-						if (RServe.isAliveDialog()) {
-							com.eco.bio7.rbridge.RServe.printJob(text.getText());
+						if (RTools.isAliveDialog()) {
+							com.eco.bio7.rbridge.RTools.printJob(text.getText());
 						}
 					}
 				} catch (RuntimeException ev) {

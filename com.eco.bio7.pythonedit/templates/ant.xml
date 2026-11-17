@@ -1,54 +1,162 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--Here the description is self defined and not in the file ant.properties. -->
+<!-- The templates of the Python editor (Python 3). ${cursor}: the position after the insertion. -->
 <templates>
-<template autoinsert="false" context="py" id="class_python" deleted="false" description="A class template" enabled="true" name="class">class Plant:&#13;
-   'Common base class for all Plants'&#13;
-   plantCount = 0&#13;
-&#13;
-   def __init__(self, name, height):&#13;
-      self.name = name&#13;
-      self.height = height&#13;
-      Plant.plantCount += 1&#13;
-   &#13;
-   def displayCount(self):&#13;
-     print "Total Plants %d",Plant.plantCount&#13;
-&#13;
-   def displayPlant(self):&#13;
-      print "Name : ", self.name,  ", Height: ", self.height&#13;
-      &#13;
-"Here we create an object from the class Plant!"&#13;
-plant1 = Plant("Polytrichum", 10)&#13;
-&#13;
-"Call method to display attributes!"&#13;
-plant1.displayPlant()&#13;
-    </template><template autoinsert="false" context="py" deleted="false" description="A for loop " enabled="true" id="for_python" name="for">for ${index} in range (1,10):
-		print ${index}
-	</template><template autoinsert="false" context="py" id="function_python" deleted="false" description="Function definition " enabled="true" name="function">def ${name}(${str} ):
-	print ${str};
-	return;
-	</template><template autoinsert="false" context="py" id="if_python" deleted="false" description="If statement " enabled="true" name="if">${index} = 100
-if (${index}==100):
-  print "Value of expression is 100"
-	</template><template autoinsert="false" context="py" id="ifelse_python" deleted="false" description="Ifelse statement" enabled="true" name="ifelse">${index} = 10&#13;
-if ${index}==100:&#13;
-   print "True"&#13;
-else:&#13;
-   print "False"</template><template autoinsert="false" id="nested_loop_python" context="py" deleted="false" description="A nested loop" enabled="true" name="loop nested">${index} = 0&#13;
-while(${index} &lt; 10):&#13;
-   ${index2} = 0&#13;
-   while(${index2} &lt; 10):    &#13;
-      ${index2} = ${index2} + 1&#13;
-      print ${index},${index2}&#13;
-   ${index} = ${index} + 1</template><template autoinsert="false" context="py" id="while_python" deleted="false" description="A while Loop" enabled="true" name="while">${index} = 0&#13;
-while (${index} &lt; 9):&#13;
-   print 'Iteration:', ${index}&#13;
-   ${index} =${index} + 1&#13;
-</template>
-	
-	
+<template id="for_python" context="py" name="for" description="for loop over a range" autoinsert="false" deleted="false" enabled="true">for ${i} in range(${n}):
+    ${cursor}</template>
+<template id="for_enumerate_python" context="py" name="for" description="for loop with index and item (enumerate)" autoinsert="false" deleted="false" enabled="true">for ${i}, ${item} in enumerate(${items}):
+    ${cursor}</template>
+<template id="for_items_python" context="py" name="for" description="for loop over the keys and values of a dict" autoinsert="false" deleted="false" enabled="true">for ${key}, ${value} in ${dictionary}.items():
+    ${cursor}</template>
+<template id="for_zip_python" context="py" name="for" description="for loop over two lists in parallel (zip)" autoinsert="false" deleted="false" enabled="true">for ${a}, ${b} in zip(${list_a}, ${list_b}):
+    ${cursor}</template>
+<template id="nested_loop_python" context="py" name="loop nested" description="nested for loops (rows and columns)" autoinsert="false" deleted="false" enabled="true">for ${i} in range(${rows}):
+    for ${j} in range(${cols}):
+        ${cursor}</template>
+<template id="while_python" context="py" name="while" description="while loop" autoinsert="false" deleted="false" enabled="true">${i} = 0
+while ${i} &lt; ${n}:
+    ${cursor}
+    ${i} += 1</template>
+<template id="if_python" context="py" name="if" description="if statement" autoinsert="false" deleted="false" enabled="true">if ${condition}:
+    ${cursor}</template>
+<template id="ifelse_python" context="py" name="ifelse" description="if else statement" autoinsert="false" deleted="false" enabled="true">if ${condition}:
+    ${cursor}
+else:
+    pass</template>
+<template id="ifelif_python" context="py" name="ifelif" description="if elif else statement" autoinsert="false" deleted="false" enabled="true">if ${condition}:
+    ${cursor}
+elif ${other}:
+    pass
+else:
+    pass</template>
+<template id="function_python" context="py" name="function" description="function definition with docstring" autoinsert="false" deleted="false" enabled="true">def ${name}(${x}):
+    """${Description}."""
+    ${cursor}
+    return ${x}</template>
+<template id="class_python" context="py" name="class" description="class with constructor, representation and a method" autoinsert="false" deleted="false" enabled="true">class ${Plant}:
+    """A plant with a name and a height."""
 
+    def __init__(self, name, height=0.0):
+        self.name = name
+        self.height = height
+
+    def __repr__(self):
+        return f"${Plant}(name={self.name!r}, height={self.height})"
+
+    def grow(self, amount):
+        self.height += amount
+
+
+plant = ${Plant}("Polytrichum", 10)
+plant.grow(2)
+print(plant)</template>
+<template id="dataclass_python" context="py" name="dataclass" description="data class (fields with types and defaults)" autoinsert="false" deleted="false" enabled="true">from dataclasses import dataclass, field
+
+
+@dataclass
+class ${Measurement}:
+    name: str
+    value: float = 0.0
+    tags: list = field(default_factory=list)
+
+
+m = ${Measurement}("height", 12.5)
+print(m)</template>
+<template id="main_python" context="py" name="main" description="code which runs only when the file is run as a script" autoinsert="false" deleted="false" enabled="true">if __name__ == "__main__":
+    ${cursor}</template>
+<template id="try_python" context="py" name="try" description="try except" autoinsert="false" deleted="false" enabled="true">try:
+    ${cursor}
+except ${Exception} as e:
+    print(f"Error: {e}")</template>
+<template id="tryfinally_python" context="py" name="try" description="try except else finally" autoinsert="false" deleted="false" enabled="true">try:
+    ${cursor}
+except ${Exception} as e:
+    print(f"Error: {e}")
+else:
+    pass
+finally:
+    pass</template>
+<template id="read_file_python" context="py" name="read file" description="read a text file" autoinsert="false" deleted="false" enabled="true">with open("${file}.txt", encoding="utf-8") as f:
+    ${text} = f.read()</template>
+<template id="read_lines_python" context="py" name="read lines" description="read a text file line by line" autoinsert="false" deleted="false" enabled="true">with open("${file}.txt", encoding="utf-8") as f:
+    for line in f:
+        print(line.rstrip())</template>
+<template id="write_file_python" context="py" name="write file" description="write a text file" autoinsert="false" deleted="false" enabled="true">with open("${file}.txt", "w", encoding="utf-8") as f:
+    f.write(${text})</template>
+<template id="listcomp_python" context="py" name="list comprehension" description="list comprehension with condition" autoinsert="false" deleted="false" enabled="true">${result} = [${x} * 2 for ${x} in ${items} if ${x} &gt; 0]</template>
+<template id="dictcomp_python" context="py" name="dict comprehension" description="dict comprehension" autoinsert="false" deleted="false" enabled="true">${result} = {${key}: ${value} for ${key}, ${value} in ${pairs}}</template>
+<template id="print_python" context="py" name="print" description="print a variable with its name (f-string)" autoinsert="false" deleted="false" enabled="true">print(f"${x} = {${x}}")</template>
+<template id="sort_python" context="py" name="sorted" description="sort by a key" autoinsert="false" deleted="false" enabled="true">${result} = sorted(${items}, key=lambda ${x}: ${x}[1], reverse=True)</template>
+<template id="timer_python" context="py" name="timer" description="measure the time of code" autoinsert="false" deleted="false" enabled="true">import time
+
+${start} = time.perf_counter()
+${cursor}
+print(f"Time: {time.perf_counter() - ${start}:.3f} s")</template>
+<template id="imports_python" context="py" name="import scientific" description="import numpy, pandas and matplotlib" autoinsert="false" deleted="false" enabled="true">import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt</template>
+<template id="numpy_array_python" context="py" name="numpy array" description="numpy arrays: random, range, reshape" autoinsert="false" deleted="false" enabled="true">import numpy as np
+
+rng = np.random.default_rng(${seed})
+${a} = rng.normal(0, 1, size=(${rows}, ${cols}))
+print(${a}.shape, ${a}.mean(), ${a}.std())</template>
+<template id="read_csv_python" context="py" name="read csv" description="read a CSV file with pandas" autoinsert="false" deleted="false" enabled="true">import pandas as pd
+
+${df} = pd.read_csv("${file}.csv")
+print(${df}.head())
+print(${df}.describe())</template>
+<template id="groupby_python" context="py" name="groupby" description="pandas: statistics of groups" autoinsert="false" deleted="false" enabled="true">${result} = ${df}.groupby("${group}")["${value}"].agg(["mean", "std", "count"])
+print(${result})</template>
+<template id="plot_python" context="py" name="plot" description="matplotlib line plot with labels" autoinsert="false" deleted="false" enabled="true">import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots()
+ax.plot(${x}, ${y}, label="${label}")
+ax.set_xlabel("x")
+ax.set_ylabel("y")
+ax.set_title("${title}")
+ax.legend()
+plt.show()</template>
+<template id="subplots_python" context="py" name="subplots" description="matplotlib figure with 2 x 2 plots" autoinsert="false" deleted="false" enabled="true">import matplotlib.pyplot as plt
+
+fig, axes = plt.subplots(2, 2, figsize=(10, 8))
+axes[0, 0].plot(${x}, ${y})
+axes[0, 1].scatter(${x}, ${y})
+axes[1, 0].hist(${y}, bins=30)
+axes[1, 1].boxplot(${y})
+fig.tight_layout()
+plt.show()</template>
+<template id="hist_python" context="py" name="histogram" description="matplotlib histogram" autoinsert="false" deleted="false" enabled="true">import matplotlib.pyplot as plt
+
+plt.hist(${values}, bins=${bins}, edgecolor="white")
+plt.xlabel("Value")
+plt.ylabel("Frequency")
+plt.show()</template>
+<template id="bio7_image_python" context="py" name="bio7 image" description="Bio7: the current ImageJ image as array, a result as new image" autoinsert="false" deleted="false" enabled="true">import bio7
+
+${img} = bio7.image()  # the current ImageJ image (numpy array)
+${result} = ${img}.astype(float) / ${img}.max()
+bio7.show_image(${result}, "${Result}", display_range="auto")</template>
+<template id="bio7_task_python" context="py" name="bio7 task" description="Bio7: a loop with progress and stop button" autoinsert="false" deleted="false" enabled="true">import bio7
+
+for ${item} in bio7.task("${Processing}", ${items}):
+    ${cursor}</template>
+<template id="bio7_progress_python" context="py" name="bio7 progress" description="Bio7: show the progress of a loop" autoinsert="false" deleted="false" enabled="true">import bio7
+
+for ${i}, ${item} in enumerate(${items}):
+    bio7.progress(${i} + 1, len(${items}), f"Processing {${item}}")
+    ${cursor}</template>
+<template id="bio7_ij_python" context="py" name="bio7 imagej" description="Bio7: run ImageJ commands and a macro" autoinsert="false" deleted="false" enabled="true">import bio7
+
+bio7.ij_run("Gaussian Blur...", "sigma=${sigma}")
+${value} = bio7.ij_macro("return d2s(getValue(\"Mean\"), 3);")
+print(${value})</template>
+<template id="bio7_results_python" context="py" name="bio7 results" description="Bio7: the ImageJ results table and the selection" autoinsert="false" deleted="false" enabled="true">import bio7
+
+${df} = bio7.results_table()  # a pandas DataFrame
+x, y = bio7.roi()  # the coordinates of the selection
+print(${df}.head())</template>
+<template id="bio7_r_python" context="py" name="bio7 r" description="Bio7: transfer data to R and use R" autoinsert="false" deleted="false" enabled="true">import bio7
+
+bio7.to_r("${x}", ${x})
+${result} = bio7.r("summary(${x})")
+print(${result})</template>
 </templates>
-
-
-
-

@@ -26,7 +26,7 @@ import com.eco.bio7.rbridge.backend.RBackend;
  * The memory used by embedded R in the status line, next to the memory of Java:
  * embedded R runs in the process of Bio7 but allocates its memory outside of the
  * Java heap, so the Java memory display doesn't contain it. Shown only while
- * embedded R runs (not for Rserve).
+ * embedded R runs.
  * <p>
  * R is asked with gc() (the memory of the R objects, cons cells and vectors)
  * when R is idle: within a second after an evaluation (also a short one like
@@ -82,7 +82,7 @@ public final class RMemoryStatus {
 			}
 			RBackend backend = RBridge.getBackend();
 			if (backend == null || !backend.isEmbedded()) {
-				/* No R or Rserve: the field is hidden */
+				/* No R: the field is hidden */
 				if (lastBackend != null) {
 					com.eco.bio7.reditors.RLiveNames.set(null);
 				}
@@ -110,7 +110,7 @@ public final class RMemoryStatus {
 			dirty = false;
 			lastMeasure = now;
 			try {
-				show(backend.withTimeout(TIMEOUT_MILLIS).eval(CODE).asDouble());
+				show(backend.withTimeout(TIMEOUT_MILLIS).eval(CODE).firstDouble());
 				refreshNames(backend);
 				refreshCompletion(backend);
 				/* After the measurement (it is an evaluation itself) */
@@ -127,7 +127,7 @@ public final class RMemoryStatus {
 	/* The names which exist in R for the code analysis of the R editor (with the measurement: after an evaluation) */
 	private static void refreshNames(RBackend backend) {
 		try {
-			String[] n = backend.withTimeout(TIMEOUT_MILLIS).eval(NAMES).asStrings();
+			String[] n = backend.withTimeout(TIMEOUT_MILLIS).eval(NAMES).strings();
 			if (n != null) {
 				com.eco.bio7.reditors.RLiveNames.set(java.util.Set.of(java.util.Arrays.stream(n).filter(java.util.Objects::nonNull).distinct().toArray(String[]::new)));
 			}
@@ -157,7 +157,7 @@ public final class RMemoryStatus {
 		}
 		String[] search;
 		try {
-			search = backend.withTimeout(TIMEOUT_MILLIS).eval("search()").asStrings();
+			search = backend.withTimeout(TIMEOUT_MILLIS).eval("search()").strings();
 		} catch (Exception | LinkageError e) {
 			return;
 		}

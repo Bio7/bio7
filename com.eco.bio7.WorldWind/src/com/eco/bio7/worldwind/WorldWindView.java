@@ -50,7 +50,6 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-import org.rosuda.REngine.Rserve.RConnection;
 
 import com.eco.bio7.util.Util;
 import com.eco.bio7.worldwind.swt.NewtInputHandlerSWT;
@@ -95,7 +94,6 @@ public class WorldWindView extends ViewPart {
 	private static final String NASA_ICON_PATH = "images/32x32-icon-nasa.png";
 	public static final String ID = "com.eco.bio7.worldwind.WorldWindView"; //$NON-NLS-1$
 	private static WorldWindowNewtCanvasSWT worldCanvas;
-	private static RConnection rConnection;
 	private ConcurrentHashMap<String, SurfaceImage> imageTable = new ConcurrentHashMap<String, SurfaceImage>();
 	private Frame worldFrame;
 	private SurfaceImage si;
@@ -689,28 +687,18 @@ public class WorldWindView extends ViewPart {
 		});
 	}
 
-	public static void setRConnection(RConnection c) {
-		rConnection = c;
-
-	}
-
-	public static RConnection getRConnection() {
-		return rConnection;
-
-	}
-
-	/* The evaluator of Bio7 (Rserve or embedded R), set by Bio7 */
+	/* The evaluator of Bio7 (embedded R), set by Bio7 */
 	private static java.util.function.Supplier<com.eco.bio7.rbridge.REvaluator> evaluatorSupplier;
 
-	/** Sets the evaluator of Bio7 (Rserve or embedded R). */
+	/** Sets the evaluator of Bio7 (embedded R). */
 	public static void setEvaluatorSupplier(java.util.function.Supplier<com.eco.bio7.rbridge.REvaluator> supplier) {
 		evaluatorSupplier = supplier;
 	}
 
-	/** The evaluation in R (Rserve or embedded R) or null if R is not connected. */
+	/** The evaluation in R (embedded R) or null if R is not connected. */
 	public static com.eco.bio7.rbridge.REvaluator getEvaluator() {
 		var s = evaluatorSupplier;
-		return s != null ? s.get() : com.eco.bio7.rbridge.REvaluator.of(rConnection);
+		return s != null ? s.get() : null;
 	}
 
 	public Panel getPanel() {

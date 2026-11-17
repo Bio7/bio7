@@ -157,7 +157,7 @@ Export-Package: bsh,
  py4j.model,
  py4j.reflection
 Require-Bundle: org.eclipse.ui,
- com.eco.bio7.rffm;resolution:=optional,
+ com.eco.bio7.rffm,
  com.eco.bio7.pyffm;resolution:=optional,
  org.eclipse.help,
  org.eclipse.ui.console,
@@ -285,7 +285,9 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.terminal.view.ui;bundle-version="[1.0.100,2.0.0)",
  org.eclipse.nebula.widgets.grid;bundle-version="1.2.1"
 Eclipse-LazyStart: true
-Import-Package: org.eclipse.e4.ui.css.swt.theme,
+Import-Package: jdk.jfr;resolution:=optional,
+ jdk.jfr.consumer;resolution:=optional,
+ org.eclipse.e4.ui.css.swt.theme,
  org.eclipse.e4.ui.workbench.renderers.swt,
  org.osgi.service.event
 Bundle-RequiredExecutionEnvironment: JavaSE-25

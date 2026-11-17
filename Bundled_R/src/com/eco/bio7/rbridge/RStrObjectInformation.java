@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import org.rosuda.REngine.REXP;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RserveException;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class RStrObjectInformation {
 	public static String ERROR_CHECK = "Error";//// Used in code completion popup infos and tryCatch error function below!
@@ -28,10 +28,10 @@ public class RStrObjectInformation {
 		try {
 
 			out = (String) con.eval("tryCatch(paste(capture.output(tools:::Rd2txt(utils:::.getHelpFile(?" + htmlHelpText + "),package=\"" + packageLabel
-					+ "\", stages=c(\"install\",\"render\"),outputEncoding = \"UTF-8\")),collapse='\n'), error = function(e) {return(\"Error\")})").asString();
+					+ "\", stages=c(\"install\",\"render\"),outputEncoding = \"UTF-8\")),collapse='\n'), error = function(e) {return(\"Error\")})").firstString();
 			// System.out.println("help Out: "+out);
 
-		} catch (RserveException | REXPMismatchException e) {
+		} catch (RException | RTypeException e) {
 
 			// e.printStackTrace();
 
@@ -57,15 +57,15 @@ public class RStrObjectInformation {
 		String resultStr = null;
 
 		try {
-			REXP rexp = con.eval("if (!is.null(get0('" + matDfName + "'))) {" + "paste(capture.output(str(" + matDfName + ")),collapse='\n')}");
-			if (rexp.isNull() == false) {
-				resultStr = rexp.asString();
+			RValue rValue = con.eval("if (!is.null(get0('" + matDfName + "'))) {" + "paste(capture.output(str(" + matDfName + ")),collapse='\n')}");
+			if (rValue.isNull() == false) {
+				resultStr = rValue.firstString();
 			}
 
-		} catch (RserveException e) {
+		} catch (RException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-		} catch (REXPMismatchException e) {
+		} catch (RTypeException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -78,25 +78,25 @@ public class RStrObjectInformation {
 		String informationControlText = null;
 		try {
 			con.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".txt\", sep=\"\"),silent = T)").toString();
-		} catch (RserveException e1) {
+		} catch (RException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		try {
 			con.eval("try(tools::Rd2txt(utils:::.getHelpFile(?" + htmlHelpText + "),.bio7TempHtmlHelpFile,package=\"tools\", stages=c(\"install\", \"render\"),outputEncoding = \"\"),silent = T)");
-		} catch (RserveException e1) {
+		} catch (RException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		String out = null;
 		try {
 			try {
-				out = (String) con.eval("try(.bio7TempHtmlHelpFile)").asString();
-			} catch (RserveException e) {
+				out = (String) con.eval("try(.bio7TempHtmlHelpFile)").firstString();
+			} catch (RException e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
 			}
-		} catch (REXPMismatchException e) {
+		} catch (RTypeException e) {
 
 			e.printStackTrace();
 		}
@@ -132,16 +132,16 @@ public class RStrObjectInformation {
 			con.eval("try(.bio7TempHtmlHelpFile <- paste(tempfile(), \".txt\", sep=\"\"),silent = T)").toString();
 			con.eval("if (!is.null(get0('" + matDfName + "'))) {" + "try(paste(capture.output(str(" + matDfName + "),file = .bio7TempHtmlHelpFile),collapse=\"\\n\"))"
 					+ "} else {try(paste(capture.output(cat(\"\"),file = .bio7TempHtmlHelpFile),collapse=\"\\n\"))}");
-		} catch (RserveException e1) {
+		} catch (RException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		try {
-			out = (String) con.eval("try(.bio7TempHtmlHelpFile)").asString();
-		} catch (RserveException e1) {
+			out = (String) con.eval("try(.bio7TempHtmlHelpFile)").firstString();
+		} catch (RException e1) {
 			// TODO Auto-generated catch block
 			// e1.printStackTrace();
-		} catch (REXPMismatchException e1) {
+		} catch (RTypeException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}

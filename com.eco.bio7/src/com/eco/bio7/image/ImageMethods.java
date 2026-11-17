@@ -6,14 +6,10 @@ import java.awt.Point;
 import java.util.ArrayList;
 
 import org.eclipse.swt.widgets.Display;
-import org.rosuda.REngine.REXPLogical;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.REngineException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.util.Util;
 
@@ -28,6 +24,9 @@ import ij.process.DoubleProcessor;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class ImageMethods {
 
@@ -36,7 +35,7 @@ public class ImageMethods {
 	private static String[] firstChar = { ".", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" };
 
 	/**
-	 * This methods transfers image data from ImageJ to R by means of Rserve. Matrix
+	 * This methods transfers image data from ImageJ to R (embedded R). Matrix
 	 * or vector data is created and variables for the width, height and the name of
 	 * the image will be created.
 	 * 
@@ -64,7 +63,7 @@ public class ImageMethods {
 		int y = 0;
 		int x = 0;
 		ImagePlus imp = null;
-		if (RServe.isAlive()) {
+		if (RTools.isAlive()) {
 			RBackend c = RBridge.getBackend();
 			/* Get the active image ! */
 
@@ -91,7 +90,7 @@ public class ImageMethods {
 
 					c.eval("imageSizeX<-" + w);
 					c.eval("imageDataName<-'" + name + "'");
-				} catch (RserveException e1) {
+				} catch (RException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
@@ -142,7 +141,7 @@ public class ImageMethods {
 
 					try {
 						c.assign(name, pDouble);
-					} catch (REngineException e) {
+					} catch (RException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -169,7 +168,7 @@ public class ImageMethods {
 
 					try {
 						c.assign(name, pInt);
-					} catch (REngineException e) {
+					} catch (RException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -202,7 +201,7 @@ public class ImageMethods {
 
 					try {
 						c.assign(name, pByte);
-					} catch (REngineException e) {
+					} catch (RException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -243,7 +242,7 @@ public class ImageMethods {
 						c.assign(name + "_R", pRByte);
 						c.assign(name + "_G", pGByte);
 						c.assign(name + "_B", pBByte);
-					} catch (REngineException e) {
+					} catch (RException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -266,7 +265,7 @@ public class ImageMethods {
 							c.eval("try(" + name + "<-cbind(" + name + ",as.integer(" + name + "_B" + ")))");
 							c.eval("try(remove(" + name + "_B" + "))");
 
-						} catch (RserveException e) {
+						} catch (RException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
@@ -277,7 +276,7 @@ public class ImageMethods {
 							c.eval("try(" + name + "<-matrix(" + name + "," + w + "," + h + "))");
 
 							// c.eval("try(remove(imageData))");
-						} catch (RserveException e) {
+						} catch (RException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
@@ -316,38 +315,38 @@ public class ImageMethods {
 	public static void imageFromR(int type, String name, int transferDataType) {
 		ImagePlus imp;
 		double[][] matrix = null;
-		REXPLogical bolXExists = null;
-		REXPLogical bolYExists = null;
-		REXPLogical bolDoubleExists = null;
-		REXPLogical bolExists = null;
-		REXPLogical bolRawExists = null;
-		REXPLogical isNumeric = null;
+		RValue bolXExists = null;
+		RValue bolYExists = null;
+		RValue bolDoubleExists = null;
+		RValue bolExists = null;
+		RValue bolRawExists = null;
+		RValue isNumeric = null;
 		ImageProcessor ip;
 		RBackend c = RBridge.getBackend();
-		if (RServe.isAliveDialog()) {
+		if (RTools.isAliveDialog()) {
 			if (name.isEmpty() == false && name != null) {
 
 				try {
-					bolExists = (REXPLogical) c.eval("try(exists(\"" + name + "\"))");
+					bolExists = c.eval("try(exists(\"" + name + "\"))");
 
-				} catch (RserveException e1) {
+				} catch (RException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				boolean[] bolE = bolExists.isTrue();
+				boolean[] bolE = bolExists.booleans();
 				/*
 				 * if(bolE[0]){
 				 */
 				if (bolE[0] && name.equals("image") == false) {
 
 					try {
-						isNumeric = (REXPLogical) c.eval("try(is.numeric(" + name + ")||is.raw(" + name + "))");
-					} catch (RserveException e) {
+						isNumeric = c.eval("try(is.numeric(" + name + ")||is.raw(" + name + "))");
+					} catch (RException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 
-					boolean[] bolNumeric = isNumeric.isTrue();
+					boolean[] bolNumeric = isNumeric.booleans();
 
 					if (bolNumeric[0]) {
 
@@ -355,22 +354,22 @@ public class ImageMethods {
 						/* Transfer doubles! */
 						if (transferDataType == 0) {
 
-							REXPLogical bol = null;
+							RValue bol = null;
 							try {
-								bol = (REXPLogical) c.eval("try(is.matrix(" + name + "))");
-							} catch (RserveException e1) {
+								bol = c.eval("try(is.matrix(" + name + "))");
+							} catch (RException e1) {
 
 								e1.printStackTrace();
 							}
-							boolean[] bo = bol.isTrue();
+							boolean[] bo = bol.booleans();
 							/************************ as matrix! **************************/
 							if (bo[0]) {
 								try {
-									matrix = c.eval("try(" + name + ")").asDoubleMatrix();
-								} catch (REXPMismatchException e) {
+									matrix = c.eval("try(" + name + ")").matrix();
+								} catch (RTypeException e) {
 
 									e.printStackTrace();
-								} catch (RserveException e) {
+								} catch (RException e) {
 
 									e.printStackTrace();
 								}
@@ -439,34 +438,34 @@ public class ImageMethods {
 							/************************ as list! **************************/
 							else {
 								try {
-									bolXExists = (REXPLogical) c.eval("try(exists(\"imageSizeX\"))");
-									bolYExists = (REXPLogical) c.eval("try(exists(\"imageSizeY\"))");
-								} catch (RserveException e1) {
+									bolXExists = c.eval("try(exists(\"imageSizeX\"))");
+									bolYExists = c.eval("try(exists(\"imageSizeY\"))");
+								} catch (RException e1) {
 
 									e1.printStackTrace();
 								}
-								boolean[] bolX = bolXExists.isTrue();
-								boolean[] bolY = bolYExists.isTrue();
+								boolean[] bolX = bolXExists.booleans();
+								boolean[] bolY = bolYExists.booleans();
 								if (bolX[0] == true && bolY[0] == true) {
 									double[] imageData = null;
 									int imagesSizeY;
 									try {
-										imagesSizeY = (int) c.eval("try(imageSizeY)").asDouble();
+										imagesSizeY = (int) c.eval("try(imageSizeY)").firstDouble();
 
-										int imagesSizeX = (int) c.eval("try(imageSizeX)").asDouble();
+										int imagesSizeX = (int) c.eval("try(imageSizeX)").firstDouble();
 										/*
 										 * We can proof for integer as transfer data type so we don't have to proof for
 										 * byte, too! integers can be transfered as doubles!
 										 */
-										bolDoubleExists = (REXPLogical) c.eval("try(is.double(" + name + "))");
-										boolean[] bolInteger = bolDoubleExists.isTrue();
+										bolDoubleExists = c.eval("try(is.double(" + name + "))");
+										boolean[] bolInteger = bolDoubleExists.booleans();
 										if (bolInteger[0]) {
-											imageData = c.eval("try(" + name + ")").asDoubles();
+											imageData = c.eval("try(" + name + ")").doubles();
 										} else {
 											/*
 											 * Again we only need to convert the data to integers if it raw data e.g.!
 											 */
-											imageData = c.eval("try(as.integer(" + name + "))").asDoubles();
+											imageData = c.eval("try(as.integer(" + name + "))").doubles();
 										}
 
 										if (imageData != null) {
@@ -537,10 +536,10 @@ public class ImageMethods {
 
 										}
 
-									} catch (REXPMismatchException e) {
+									} catch (RTypeException e) {
 
 										e.printStackTrace();
-									} catch (RserveException e) {
+									} catch (RException e) {
 
 										e.printStackTrace();
 									}
@@ -557,27 +556,27 @@ public class ImageMethods {
 						} else if (transferDataType == 1) {
 
 							try {
-								bolXExists = (REXPLogical) c.eval("try(exists(\"imageSizeX\"))");
-								bolYExists = (REXPLogical) c.eval("try(exists(\"imageSizeY\"))");
-							} catch (RserveException e1) {
+								bolXExists = c.eval("try(exists(\"imageSizeX\"))");
+								bolYExists = c.eval("try(exists(\"imageSizeY\"))");
+							} catch (RException e1) {
 
 								e1.printStackTrace();
 							}
-							boolean[] bolX = bolXExists.isTrue();
-							boolean[] bolY = bolYExists.isTrue();
+							boolean[] bolX = bolXExists.booleans();
+							boolean[] bolY = bolYExists.booleans();
 							if (bolX[0] == true && bolY[0] == true) {
 								int[] imageData = null;
 								int imagesSizeY;
 								try {
-									imagesSizeY = (int) c.eval("try(imageSizeY)").asDouble();
+									imagesSizeY = (int) c.eval("try(imageSizeY)").firstDouble();
 
-									int imagesSizeX = (int) c.eval("try(imageSizeX)").asDouble();
-									bolDoubleExists = (REXPLogical) c.eval("try(is.integer(" + name + "))");
-									boolean[] bolInteger = bolDoubleExists.isTrue();
+									int imagesSizeX = (int) c.eval("try(imageSizeX)").firstDouble();
+									bolDoubleExists = c.eval("try(is.integer(" + name + "))");
+									boolean[] bolInteger = bolDoubleExists.booleans();
 									if (bolInteger[0]) {
-										imageData = c.eval("try(" + name + ")").asIntegers();
+										imageData = c.eval("try(" + name + ")").ints();
 									} else {
-										imageData = c.eval("try(as.integer(" + name + "))").asIntegers();
+										imageData = c.eval("try(as.integer(" + name + "))").ints();
 									}
 
 									if (imageData != null) {
@@ -648,10 +647,10 @@ public class ImageMethods {
 
 									}
 
-								} catch (REXPMismatchException e) {
+								} catch (RTypeException e) {
 
 									e.printStackTrace();
-								} catch (RserveException e) {
+								} catch (RException e) {
 
 									e.printStackTrace();
 								}
@@ -670,23 +669,23 @@ public class ImageMethods {
 							int imagesSizeY;
 
 							try {
-								bolRawExists = (REXPLogical) c.eval("try(is.raw(" + name + "))");
-								bolXExists = (REXPLogical) c.eval("try(exists(\"imageSizeX\"))");
-								bolYExists = (REXPLogical) c.eval("try(exists(\"imageSizeY\"))");
+								bolRawExists = c.eval("try(is.raw(" + name + "))");
+								bolXExists = c.eval("try(exists(\"imageSizeX\"))");
+								bolYExists = c.eval("try(exists(\"imageSizeY\"))");
 
-							} catch (RserveException e1) {
+							} catch (RException e1) {
 								e1.printStackTrace();
 							}
-							boolean[] bolRaw = bolRawExists.isTrue();
-							boolean[] bolX = bolXExists.isTrue();
-							boolean[] bolY = bolYExists.isTrue();
+							boolean[] bolRaw = bolRawExists.booleans();
+							boolean[] bolX = bolXExists.booleans();
+							boolean[] bolY = bolYExists.booleans();
 							if (bolRaw[0] == true) {
 								if (bolX[0] == true && bolY[0] == true) {
 									try {
-										imagesSizeY = (int) c.eval("try(imageSizeY)").asDouble();
+										imagesSizeY = (int) c.eval("try(imageSizeY)").firstDouble();
 
-										int imagesSizeX = (int) c.eval("try(imageSizeX)").asDouble();
-										imageData = c.eval("try(" + name + ")").asBytes();
+										int imagesSizeX = (int) c.eval("try(imageSizeX)").firstDouble();
+										imageData = c.eval("try(" + name + ")").bytes();
 
 										if (imageData != null) {
 											if (type == 0) {
@@ -755,10 +754,10 @@ public class ImageMethods {
 											imp.show();
 
 										}
-									} catch (REXPMismatchException e) {
+									} catch (RTypeException e) {
 
 										System.out.println("An transfer error occured!\n" + "Please select the correct image type!\n" + "For a byte transfer a list has to be present!\n");
-									} catch (RserveException e) {
+									} catch (RException e) {
 
 										e.printStackTrace();
 									}
@@ -799,7 +798,7 @@ public class ImageMethods {
 		byte[] pByte = null;
 		int y = 0;
 		int x = 0;
-		if (RServe.isAlive()) {
+		if (RTools.isAlive()) {
 			RBackend c = RBridge.getBackend();
 			/* Get the active image ! */
 
@@ -816,7 +815,7 @@ public class ImageMethods {
 
 					c.eval("imageSizeX<-" + w);
 					c.eval("imageDataName<-'" + name + "'");
-				} catch (RserveException e1) {
+				} catch (RException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
@@ -867,7 +866,7 @@ public class ImageMethods {
 
 					try {
 						c.assign("imageData", pDouble);
-					} catch (REngineException e) {
+					} catch (RException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -894,7 +893,7 @@ public class ImageMethods {
 
 					try {
 						c.assign("imageData", pInt);
-					} catch (REngineException e) {
+					} catch (RException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -921,7 +920,7 @@ public class ImageMethods {
 
 					try {
 						c.assign("imageData", pByte);
-					} catch (REngineException e) {
+					} catch (RException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -956,12 +955,12 @@ public class ImageMethods {
 		int imagesSizeX = 0;
 
 		try {
-			imagesSizeY = (int) RBridge.getBackend().eval("try(imageSizeY)").asDouble();
-			imagesSizeX = (int) RBridge.getBackend().eval("try(imageSizeX)").asDouble();
-		} catch (REXPMismatchException e1) {
+			imagesSizeY = (int) RBridge.getBackend().eval("try(imageSizeY)").firstDouble();
+			imagesSizeX = (int) RBridge.getBackend().eval("try(imageSizeX)").firstDouble();
+		} catch (RTypeException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-		} catch (RserveException e1) {
+		} catch (RException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
@@ -978,12 +977,12 @@ public class ImageMethods {
 
 				try {
 
-					imageData = RBridge.getBackend().eval("try(" + dataName + ")").asBytes();
+					imageData = RBridge.getBackend().eval("try(" + dataName + ")").bytes();
 
-				} catch (REXPMismatchException e) {
+				} catch (RTypeException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				} catch (RserveException e) {
+				} catch (RException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -1006,11 +1005,11 @@ public class ImageMethods {
 				if (ip.getWidth() == imagesSizeX && ip.getHeight() == imagesSizeY) {
 
 					try {
-						imageData = RBridge.getBackend().eval("try(" + dataName + ")").asBytes();
-					} catch (REXPMismatchException e) {
+						imageData = RBridge.getBackend().eval("try(" + dataName + ")").bytes();
+					} catch (RTypeException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
-					} catch (RserveException e) {
+					} catch (RException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -1041,12 +1040,12 @@ public class ImageMethods {
 
 				try {
 
-					imageDataFloat = RBridge.getBackend().eval("try(" + dataName + ")").asDoubles();
+					imageDataFloat = RBridge.getBackend().eval("try(" + dataName + ")").doubles();
 
-				} catch (REXPMismatchException e) {
+				} catch (RTypeException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				} catch (RserveException e) {
+				} catch (RException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -1069,11 +1068,11 @@ public class ImageMethods {
 				if (ipFloat.getWidth() == imagesSizeX && ipFloat.getHeight() == imagesSizeY) {
 
 					try {
-						imageDataFloat = RBridge.getBackend().eval("try(" + dataName + ")").asDoubles();
-					} catch (REXPMismatchException e) {
+						imageDataFloat = RBridge.getBackend().eval("try(" + dataName + ")").doubles();
+					} catch (RTypeException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
-					} catch (RserveException e) {
+					} catch (RException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -1113,12 +1112,12 @@ public class ImageMethods {
 		int imagesSizeX = 0;
 
 		try {
-			imagesSizeY = (int) RBridge.getBackend().eval("try(imageSizeY)").asDouble();
-			imagesSizeX = (int) RBridge.getBackend().eval("try(imageSizeX)").asDouble();
-		} catch (REXPMismatchException e1) {
+			imagesSizeY = (int) RBridge.getBackend().eval("try(imageSizeY)").firstDouble();
+			imagesSizeX = (int) RBridge.getBackend().eval("try(imageSizeX)").firstDouble();
+		} catch (RTypeException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-		} catch (RserveException e1) {
+		} catch (RException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
@@ -1135,12 +1134,12 @@ public class ImageMethods {
 
 			try {
 
-				imageData = RBridge.getBackend().eval("try(" + dataName + ")").asBytes();
+				imageData = RBridge.getBackend().eval("try(" + dataName + ")").bytes();
 
-			} catch (REXPMismatchException e) {
+			} catch (RTypeException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			} catch (RserveException e) {
+			} catch (RException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -1170,11 +1169,11 @@ public class ImageMethods {
 			if (ip.getWidth() == imagesSizeX && ip.getHeight() == imagesSizeY) {
 
 				try {
-					imageData = RBridge.getBackend().eval("try(" + dataName + ")").asBytes();
-				} catch (REXPMismatchException e) {
+					imageData = RBridge.getBackend().eval("try(" + dataName + ")").bytes();
+				} catch (RTypeException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				} catch (RserveException e) {
+				} catch (RException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -1195,7 +1194,7 @@ public class ImageMethods {
 	}
 
 	/**
-	 * This methods transfers image stack data to R by means of Rserve. A feature
+	 * This methods transfers image stack data to R (embedded R). A feature
 	 * matrix from the slices will be created and variables for the width, height
 	 * and the name of the image stack will be created in the R workspace, too.
 	 * 
@@ -1217,7 +1216,7 @@ public class ImageMethods {
 
 		int slice = 1;
 		ImagePlus imp = null;
-		if (RServe.isAlive()) {
+		if (RTools.isAlive()) {
 			RBackend c = RBridge.getBackend();
 			/* Get the active image ! */
 
@@ -1239,14 +1238,14 @@ public class ImageMethods {
 
 					c.eval("imageSizeX<-" + w);
 					//c.eval("imageDataName<-'" + name + "'");
-				} catch (RserveException e1) {
+				} catch (RException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 
 				try {
 					c.eval("try(" + name + "<-NULL)");
-				} catch (RserveException e2) {
+				} catch (RException e2) {
 					// TODO Auto-generated catch block
 					e2.printStackTrace();
 				}
@@ -1308,7 +1307,7 @@ public class ImageMethods {
 
 						try {
 							c.assign(l, pDouble);
-						} catch (REngineException e) {
+						} catch (RException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
@@ -1335,7 +1334,7 @@ public class ImageMethods {
 
 						try {
 							c.assign(l, pInt);
-						} catch (REngineException e) {
+						} catch (RException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
@@ -1368,7 +1367,7 @@ public class ImageMethods {
 
 						try {
 							c.assign(l, pByte);
-						} catch (REngineException e) {
+						} catch (RException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
@@ -1377,7 +1376,7 @@ public class ImageMethods {
 					try {
 						c.eval("try(" + name + "<-cbind(" + name + "," + l + "))");
 						c.eval("remove(" + l + ")");
-					} catch (RserveException e1) {
+					} catch (RException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
@@ -1402,7 +1401,7 @@ public class ImageMethods {
 
 	/**
 	 * This methods transfers image stack data of ROI selections (ROI Manager) to R
-	 * by means of Rserve. A feature matrix from the slices will be created and
+	 * (embedded R). A feature matrix from the slices will be created and
 	 * variables for the width, height and the name of the image ROI data will be
 	 * created in the R workspace, too. Signatures can be added, too (from the group number
 	 * or extracted from the ROI names number at the end seperated by an underscore.
@@ -1435,7 +1434,7 @@ public class ImageMethods {
 				System.out.println("NO ROI's available in ROI Manager!");
 				return;
 			}
-			if (RServe.isAlive()) {
+			if (RTools.isAlive()) {
 
 				if ((imp.getStackSize()) <= 1) {
 					System.out.println("Please select a stack with more than one image!");
@@ -1452,7 +1451,7 @@ public class ImageMethods {
 
 					connection.eval("imageSizeX<-" + w);
 
-				} catch (RserveException e1) {
+				} catch (RException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
@@ -1471,7 +1470,7 @@ public class ImageMethods {
 					try {
 						connection.eval("try(" + roiName + "<-NULL)");
 
-					} catch (RserveException e2) {
+					} catch (RException e2) {
 						// TODO Auto-generated catch block
 						System.out.println("Please select a proper name for the ROI's in the ROI Manager\n" + "Some special chars are not supported for the transfer to R!");
 						return;
@@ -1507,7 +1506,7 @@ public class ImageMethods {
 							l = "layer" + i;
 							try {
 								connection.assign(l, valD);
-							} catch (REngineException e1) {
+							} catch (RException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
@@ -1517,7 +1516,7 @@ public class ImageMethods {
 							try {
 								connection.eval("try(" + roiName + "<-cbind(" + roiName + "," + l + "))");
 								connection.eval("remove(" + l + ")");
-							} catch (RserveException e1) {
+							} catch (RException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
@@ -1531,7 +1530,7 @@ public class ImageMethods {
 							l = "layer" + i;
 							try {
 								connection.assign(l, valI);
-							} catch (REngineException e1) {
+							} catch (RException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
@@ -1541,7 +1540,7 @@ public class ImageMethods {
 							try {
 								connection.eval("try(" + roiName + "<-cbind(" + roiName + "," + l + "))");
 								connection.eval("remove(" + l + ")");
-							} catch (RserveException e1) {
+							} catch (RException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
@@ -1555,7 +1554,7 @@ public class ImageMethods {
 							l = "layer" + i;
 							try {
 								connection.assign(l, valB);
-							} catch (REngineException e1) {
+							} catch (RException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
@@ -1565,7 +1564,7 @@ public class ImageMethods {
 							try {
 								connection.eval("try(" + roiName + "<-cbind(" + roiName + "," + l + "))");
 								connection.eval("remove(" + l + ")");
-							} catch (RserveException e1) {
+							} catch (RException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
@@ -1594,7 +1593,7 @@ public class ImageMethods {
 										}
 									}
 
-								} catch (RserveException e1) {
+								} catch (RException e1) {
 									// TODO Auto-generated catch block
 									e1.printStackTrace();
 								}
@@ -1621,7 +1620,7 @@ public class ImageMethods {
 										}
 									}
 
-								} catch (RserveException e1) {
+								} catch (RException e1) {
 									// TODO Auto-generated catch block
 									e1.printStackTrace();
 								}
@@ -1649,7 +1648,7 @@ public class ImageMethods {
 										}
 									}
 
-								} catch (RserveException e1) {
+								} catch (RException e1) {
 									// TODO Auto-generated catch block
 									e1.printStackTrace();
 								}

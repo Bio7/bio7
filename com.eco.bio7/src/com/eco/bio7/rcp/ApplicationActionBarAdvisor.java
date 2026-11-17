@@ -87,11 +87,11 @@ import com.eco.bio7.rbridge.actions.ClipboardRValues;
 import com.eco.bio7.rbridge.actions.ExecuteRTextSelection;
 import com.eco.bio7.rbridge.actions.InterpretR;
 import com.eco.bio7.rbridge.actions.LoadRWorkspace;
-import com.eco.bio7.rbridge.actions.OpenRservePreferencesAction;
+import com.eco.bio7.rbridge.actions.OpenRPreferencesAction;
 import com.eco.bio7.rbridge.actions.PrintExpression;
 import com.eco.bio7.rbridge.actions.SaveRWorkspace;
 import com.eco.bio7.rbridge.actions.SaveRWorkspaceAndStart;
-import com.eco.bio7.rbridge.actions.StartRServe;
+import com.eco.bio7.rbridge.actions.StartRAction;
 import com.eco.bio7.time.Time;
 import com.eco.bio7.util.Util;
 
@@ -161,7 +161,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	private static Action counterreset;
 
-	private static Action startrserve;
+	private static Action startR;
 
 	private static Action startpython;
 
@@ -191,7 +191,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	private ClipboardRValues clipboardRValues;
 
-	private OpenRservePreferencesAction openRservePref;
+	private OpenRPreferencesAction openRPref;
 
 	private LoadRWorkspace loadR;
 
@@ -357,8 +357,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		counterreset = new CounterReset("Counter Reset", window);
 		register(counterreset);
 
-		startrserve = new StartRServe("Start R", window);
-		register(startrserve);
+		startR = new StartRAction("Start R", window);
+		register(startR);
 
 		startpython = new com.eco.bio7.pybridge.StartPython("Start Python", window);
 		register(startpython);
@@ -385,8 +385,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		clipboardRValues = new ClipboardRValues("Get Clipboard Data", window);
 		register(clipboardRValues);
 
-		openRservePref = new OpenRservePreferencesAction();
-		register(openRservePref);
+		openRPref = new OpenRPreferencesAction();
+		register(openRPref);
 
 		loadR = new LoadRWorkspace("Load Workspace", window);
 		register(loadR);
@@ -754,7 +754,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		};
 		scriptMenu.addMenuListener(ScriptListener);
-		rMenu.add(startrserve);
+		rMenu.add(startR);
 		rMenu.add(new Separator());
 		rMenu.add(loadR);
 		rMenu.add(saveR);
@@ -775,7 +775,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 			// rMenu.add(new SaveRWorkspaceand_Start("Start R Shell", window2));
 		}
 		/*
-		 * rMenu.add(new Separator()); rMenu.add(openRservePref);
+		 * rMenu.add(new Separator()); rMenu.add(openRPref);
 		 */
 
 		/*
@@ -854,7 +854,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		// coolBar.add(new ToolBarContributionItem(imagebar, "image"));
 		toolbar.add(start);
 		toolbar.add(setup);
-		toolbar.add(startrserve);
+		toolbar.add(startR);
 		toolbar.add(startpython);
 		toolbar.add(toolbarCreateProjectAndFiles);
 		// toolbar.add(fastOpenScriptAction);
@@ -865,8 +865,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		return start;
 	}
 
-	public static Action getStartrserve() {
-		return startrserve;
+	public static Action getStartR() {
+		return startR;
 	}
 
 	public static Action getStartpython() {

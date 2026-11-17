@@ -23,14 +23,13 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
-import org.rosuda.REngine.REngineException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rffm.RException;
 
 
 public class RPackageSkeleton implements IObjectActionDelegate {
@@ -82,12 +81,12 @@ public class RPackageSkeleton implements IObjectActionDelegate {
 
 				}
 				String[] stringsToR = v.toArray(new String[v.size()]);
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					RBackend c = RBridge.getBackend();
 					try {
 						c.assign(".tempPackageFiles", stringsToR);
 
-					} catch (REngineException e1) {
+					} catch (RException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
@@ -106,7 +105,7 @@ public class RPackageSkeleton implements IObjectActionDelegate {
 									RBackend c = RBridge.getBackend();
 									try {
 										c.assign(".listOfVariables", includeRVariables);
-									} catch (REngineException e1) {
+									} catch (RException e1) {
 										// TODO Auto-generated catch block
 										e1.printStackTrace();
 									}
@@ -121,7 +120,7 @@ public class RPackageSkeleton implements IObjectActionDelegate {
 										/* Remove the temporary variable! */
 										c.eval("try(remove(.tempPackageFiles))");
 										c.eval("try(remove(.listOfVariables))");
-									} catch (RserveException e) {
+									} catch (RException e) {
 										// TODO Auto-generated catch block
 										e.printStackTrace();
 									}

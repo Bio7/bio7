@@ -24,7 +24,7 @@ import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.collection.BrowserUtil;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
 
 public class StartShinyApp extends Action implements IObjectActionDelegate {
@@ -67,9 +67,6 @@ public class StartShinyApp extends Action implements IObjectActionDelegate {
 
 				String cleanedPath = loc.replace("\\", "/");
 
-				if (RServe.isAlive()) {
-					Bio7Action.callRserve();
-				}
 				int shinyPort = store.getInt("SHINY_PORT");
 				String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 				if (selectionConsole.equals("R")) {
@@ -95,7 +92,7 @@ public class StartShinyApp extends Action implements IObjectActionDelegate {
 							ConsolePageParticipant.pipeInputToConsole("setwd(.tempCurrentWd);", true, false);
 							// con.eval("try(runApp(port=5099,launch.browser =FALSE))");
 							/*
-							 * } catch (RserveException e) { // TODO Auto-generated catch block
+							 * } catch (RException e) { // TODO Auto-generated catch block
 							 * e.printStackTrace(); }
 							 */
 

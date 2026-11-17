@@ -32,21 +32,21 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.rosuda.REngine.REXPLogical;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.collection.BrowserUtil;
 import com.eco.bio7.markdownedit.Activator;
 import com.eco.bio7.markdownedit.editors.MarkdownEditor;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
-import com.eco.bio7.rbridge.RServeUtil;
+import com.eco.bio7.rbridge.REval;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
 
 public class RMarkdownAction extends Action implements IObjectActionDelegate {
 
@@ -75,7 +75,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			return;
 		}
 
-		if (RServe.isAliveDialog() == false) {
+		if (RTools.isAliveDialog() == false) {
 			return;
 		}
 
@@ -123,7 +123,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 			return;
 		}
 
-		if (RServe.isAliveDialog() == false) {
+		if (RTools.isAliveDialog() == false) {
 			return;
 		}
 
@@ -212,8 +212,8 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 						RBackend c = RBridge.getBackend();
 
 						try {
-							REXPLogical rl = (REXPLogical) c.eval("require(rmarkdown)");
-							if (!(rl.isTRUE()[0])) {
+							RValue rl = c.eval("require(rmarkdown)");
+							if (!(rl.booleans()[0])) {
 
 								Bio7Dialog.message("Cannot load 'markdown' package!");
 							}
@@ -225,9 +225,9 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 							c.eval("setwd('" + dirPath + "')");
 
 							System.out.println(selFile);
-							RServe.print("render(\"" + selFile + "\")");
+							RTools.print("render(\"" + selFile + "\")");
 
-						} catch (RserveException e1) {
+						} catch (RException e1) {
 
 							e1.printStackTrace();
 						}
@@ -285,7 +285,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 									File fil = new File(dirPath + "/" + theName + ".pdf");
 									if (fil.exists()) {
 
-										RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser,
+										RTools.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser,
 												true, false);
 
 										// Program.launch(dirPath + "/" + theName + ".pdf");
@@ -359,7 +359,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 						}
 						try {
 							c.eval("try(setwd(.tempCurrentWd));");
-						} catch (RserveException e) {
+						} catch (RException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
@@ -378,7 +378,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 							 */
 							RState.setBusy(false);
 							canOperate = true;
-							RServeUtil.listRObjects();
+							REval.listRObjects();
 
 						} else {
 							RState.setBusy(false);
@@ -442,7 +442,7 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 		case "html" -> openHtml(result.toString());
 		case "pdf" -> {
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-			RServe.openPDF(result.getParent().toString().replace("\\", "/") + "/", result.getFileName().toString(), store.getBoolean("PDF_USE_BROWSER"),
+			RTools.openPDF(result.getParent().toString().replace("\\", "/") + "/", result.getFileName().toString(), store.getBoolean("PDF_USE_BROWSER"),
 					store.getString("BROWSER_SELECTION"), false, false);
 		}
 		default -> Program.launch(result.toString());

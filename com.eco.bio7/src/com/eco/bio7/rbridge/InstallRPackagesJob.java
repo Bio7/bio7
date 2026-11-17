@@ -24,13 +24,13 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
-import org.rosuda.REngine.REXPMismatchException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.views.PackageInstallView;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class InstallRPackagesJob extends WorkspaceJob {
 
@@ -44,7 +44,7 @@ public class InstallRPackagesJob extends WorkspaceJob {
 
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
 		monitor.beginTask("Retrieve package list..", IProgressMonitor.UNKNOWN);
-		if (RServe.isAlive()) {
+		if (RTools.isAlive()) {
 			RBackend c = RBridge.getBackend();
 			Display display = PlatformUI.getWorkbench().getDisplay();
 			display.syncExec(new Runnable() {
@@ -67,11 +67,11 @@ public class InstallRPackagesJob extends WorkspaceJob {
 					try {
 						out = c.eval(
 								"try(paste(capture.output(install.packages(\"" + items[i] + "\",dependencies=TRUE,repos =\"" + server + "\",lib=\"" + destdir + "\",destdir=\"" + destdir
-										+ "\")),collapse=\"\\n\"))").asString();
-					} catch (REXPMismatchException e) {
+										+ "\")),collapse=\"\\n\"))").firstString();
+					} catch (RTypeException e) {
 
 						e.printStackTrace();
-					} catch (RserveException e) {
+					} catch (RException e) {
 
 						e.printStackTrace();
 					}
@@ -91,11 +91,11 @@ public class InstallRPackagesJob extends WorkspaceJob {
 						try {
 							out = c.eval(
 									"try(paste(capture.output(install.packages(\"" + items[i] + "\",dependencies=TRUE,repos =\"" + server + "\",lib=\"" + destdir + "\",destdir=\"" + destdir
-											+ "\")),collapse=\"\\n\"))").asString();
-						} catch (REXPMismatchException e) {
+											+ "\")),collapse=\"\\n\"))").firstString();
+						} catch (RTypeException e) {
 
 							e.printStackTrace();
-						} catch (RserveException e) {
+						} catch (RException e) {
 
 							e.printStackTrace();
 						}
@@ -111,11 +111,11 @@ public class InstallRPackagesJob extends WorkspaceJob {
 						String out = null;
 						try {
 							out = c.eval(
-									"try(paste(capture.output(install.packages(\"" + items[i] + "\",dependencies=TRUE,repos =\"" + server + "\")),collapse=\"\\n\"))").asString();
-						} catch (REXPMismatchException e) {
+									"try(paste(capture.output(install.packages(\"" + items[i] + "\",dependencies=TRUE,repos =\"" + server + "\")),collapse=\"\\n\"))").firstString();
+						} catch (RTypeException e) {
 
 							e.printStackTrace();
-						} catch (RserveException e) {
+						} catch (RException e) {
 
 							e.printStackTrace();
 						}
@@ -138,11 +138,11 @@ public class InstallRPackagesJob extends WorkspaceJob {
 				try {
 					out = c.eval(
 							"try(paste(capture.output(install.packages(\"" + itemsSpatial[i] + "\",dependencies=TRUE,repos =\"" + server + "\",lib=\"" + destdir + "\",destdir=\"" + destdir
-									+ "\")),collapse=\"\\n\"))").asString();
-				} catch (REXPMismatchException e) {
+									+ "\")),collapse=\"\\n\"))").firstString();
+				} catch (RTypeException e) {
 
 					e.printStackTrace();
-				} catch (RserveException e) {
+				} catch (RException e) {
 
 					e.printStackTrace();
 				}
@@ -156,38 +156,14 @@ public class InstallRPackagesJob extends WorkspaceJob {
 	}
 
 	public static void writeOutput() {
-		writeToConsole();
 
 		try {
 			RBridge.getBackend().voidEval("try(readLines(con = stdin()))");
-		} catch (RserveException e) {
+		} catch (RException e) {
 
 			e.printStackTrace();
 		}
 
-		writeToConsole();
-
-	}
-
-	public static void writeToConsole() {
-		new Thread() {
-			public void run() {
-				Process p = RConnectionJob.getProc();
-				// Write to the output!
-				final OutputStream os = p.getOutputStream();
-				final OutputStreamWriter osw = new OutputStreamWriter(os);
-				final BufferedWriter bw = new BufferedWriter(osw, 100);
-
-				try {
-					bw.write("\n");
-
-					bw.close();
-				} catch (IOException e) {
-					System.err.println("");
-				}
-
-			}
-		}.start();
 
 	}
 

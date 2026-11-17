@@ -428,12 +428,16 @@ public final class PySession {
 		}, 0);
 	}
 
+	/*
+	 * The arrays are encoded at once and not kept: no copy of the caller's array
+	 * (PyValue.of copies it, a value can be kept); one copy less of large arrays
+	 */
 	public void assign(String name, double... values) throws PyException {
-		assign(name, PyValue.of(values));
+		assign(name, new PyValue.Array(values, "f8", null));
 	}
 
 	public void assign(String name, int... values) throws PyException {
-		assign(name, PyValue.of(values));
+		assign(name, new PyValue.Array(values, "i4", null));
 	}
 
 	public void assign(String name, String... values) throws PyException {
@@ -441,7 +445,7 @@ public final class PySession {
 	}
 
 	public void assign(String name, boolean... values) throws PyException {
-		assign(name, PyValue.of(values));
+		assign(name, new PyValue.Array(values, "b1", null));
 	}
 
 	/** A 2-d array (rows). */

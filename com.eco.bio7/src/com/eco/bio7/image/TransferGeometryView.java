@@ -15,16 +15,16 @@ import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.part.ViewPart;
-import org.rosuda.REngine.REXP;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
-import com.eco.bio7.rbridge.RServeUtil;
+import com.eco.bio7.rbridge.REval;
 import com.eco.bio7.rbridge.RState;
 import org.eclipse.swt.widgets.Label;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class TransferGeometryView extends ViewPart {
 
@@ -161,7 +161,7 @@ public class TransferGeometryView extends ViewPart {
 					doSetDataframe = true;
 				}
 
-				REXP x = null;
+				RValue x = null;
 				combo_1.removeAll();
 				combo_1.add("-Select-", 0);
 				combo_1.select(0);
@@ -178,7 +178,7 @@ public class TransferGeometryView extends ViewPart {
 					combo_1.select(0);
 					return;
 				}
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						String[] v = null;
 						// List all variables in the R workspace!
@@ -189,14 +189,14 @@ public class TransferGeometryView extends ViewPart {
 							x = RBridge.getBackend().eval("try(varWorkspaceType)");
 							if (x.isNull() == false) {
 								try {
-									v = x.asStrings();
-								} catch (REXPMismatchException e1) {
+									v = x.strings();
+								} catch (RTypeException e1) {
 
 									e1.printStackTrace();
 								}
 							}
 							RBridge.getBackend().eval("try(remove(varWorkspaceType))");
-						} catch (RserveException e1) {
+						} catch (RException e1) {
 
 							e1.printStackTrace();
 						}
@@ -311,7 +311,7 @@ public class TransferGeometryView extends ViewPart {
 					return;
 				}
 				// if (dialog.open() == Window.OK) {
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					int selection = getGeometrySelectionSelection();
 					boolean transferAsList = transferAsList();
 
@@ -334,7 +334,7 @@ public class TransferGeometryView extends ViewPart {
 								if (event.getResult().isOK()) {
 
 									RState.setBusy(false);
-									RServeUtil.listRObjects();
+									REval.listRObjects();
 								} else {
 									RState.setBusy(false);
 								}

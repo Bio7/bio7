@@ -19,7 +19,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * An R object as Java data (a copy). The vector types of R map to one record
+ * An R object as Java data (a copy). Read with doubles(), ints(), strings(),
+ * booleans(), bytes(), firstDouble(), firstString(), elements(), matrix() and
+ * create with RValue.of(...), listOf(...), dataFrame(...), factor(...).
+ * <p>
+ * The types as records: The vector types of R map to one record
  * each; the attributes names, dim, dimnames, class, levels and row.names are
  * kept (other attributes are not transferred).
  * <p>
@@ -64,6 +68,345 @@ public sealed interface RValue permits RValue.Null, RValue.Logical, RValue.Int, 
 	/** Returns true if the "class" attribute contains the class. */
 	default boolean inherits(String cls) {
 		return attribute("class") instanceof Str s && Arrays.asList(s.values()).contains(cls);
+	}
+
+	/* ---------------- Creating values ---------------- */
+
+	/** NULL of R. */
+	RValue NULL = Null.INSTANCE;
+
+	/** A numeric vector. */
+	static RValue of(double... values) {
+		return new Num(values, Map.of());
+	}
+
+	/** An integer vector. */
+	static RValue of(int... values) {
+		return new Int(values, Map.of());
+	}
+
+	/** A character vector (null: NA). */
+	static RValue of(String... values) {
+		return new Str(values, Map.of());
+	}
+
+	/** A logical vector. */
+	static RValue of(boolean... values) {
+		return new Logical(values);
+	}
+
+	/** A raw vector. */
+	static RValue of(byte... values) {
+		return new Raw(values, Map.of());
+	}
+
+	/** A list without names. */
+	static RValue listOf(RValue... elements) {
+		return new List(elements);
+	}
+
+	/** A list with names (in the order of the map). */
+	static RValue listOf(Map<String, RValue> elements) {
+		return List.named(elements);
+	}
+
+	/** A data frame: the columns (vectors of the same length) by name. */
+	static RValue dataFrame(Map<String, RValue> columns) {
+		int rows = columns.isEmpty() ? 0 : columns.values().iterator().next().length();
+		return new List(java.util.List.copyOf(columns.values()), attributes("names", new Str(columns.keySet().toArray(String[]::new)),
+				"class", new Str("data.frame"), "row.names", new Int(NA_INTEGER, -rows)));
+	}
+
+	/** A factor: the labels (null: NA), the levels sorted as in R. */
+	static RValue factor(String... labels) {
+		String[] levels = java.util.Arrays.stream(labels).filter(java.util.Objects::nonNull).distinct().sorted().toArray(String[]::new);
+		java.util.List<String> index = java.util.Arrays.asList(levels);
+		int[] codes = new int[labels.length];
+		for (int i = 0; i < labels.length; i++) {
+			codes[i] = labels[i] == null ? NA_INTEGER : index.indexOf(labels[i]) + 1;
+		}
+		return new Int(codes, attributes("levels", new Str(levels), "class", new Str("factor")));
+	}
+
+	/** This value with one attribute more (or replaced; null removes it). */
+	default RValue with(String attribute, RValue value) {
+		Map<String, RValue> a = new LinkedHashMap<>(attributes());
+		if (value == null) {
+			a.remove(attribute);
+		} else {
+			a.put(attribute, value);
+		}
+		return switch (this) {
+		case Null n -> n;
+		case Logical l -> new Logical(l.values(), a);
+		case Int i -> new Int(i.values(), a);
+		case Num d -> new Num(d.values(), a);
+		case Str s -> new Str(s.values(), a);
+		case Raw r -> new Raw(r.values(), a);
+		case List l -> new List(l.values(), a);
+		case Other o -> new Other(o.type(), a);
+		};
+	}
+
+	/** This value with names. */
+	default RValue withNames(String... names) {
+		return with("names", new Str(names));
+	}
+
+	/** This value as a matrix or an array with the dimensions. */
+	default RValue withDim(int... dim) {
+		return with("dim", new Int(dim));
+	}
+
+	/* ---------------- The kind of value ---------------- */
+
+	default boolean isNull() {
+		return this instanceof Null;
+	}
+
+	/** Numbers: a numeric or an integer vector (not a factor). */
+	default boolean isNumeric() {
+		return this instanceof Num || this instanceof Int i && !i.isFactor();
+	}
+
+	/** A character vector. */
+	default boolean isCharacter() {
+		return this instanceof Str;
+	}
+
+	default boolean isLogical() {
+		return this instanceof Logical;
+	}
+
+	default boolean isRaw() {
+		return this instanceof Raw;
+	}
+
+	/** A list (also a data frame). */
+	default boolean isList() {
+		return this instanceof List;
+	}
+
+	default boolean isFactor() {
+		return this instanceof Int i && i.isFactor();
+	}
+
+	default boolean isDataFrame() {
+		return this instanceof List l && l.isDataFrame();
+	}
+
+	/** A matrix (two dimensions). */
+	default boolean isMatrix() {
+		int[] d = dim();
+		return d != null && d.length == 2;
+	}
+
+	/** The type of R, e.g., "double", "character", "list" (for messages). */
+	default String typeName() {
+		return switch (this) {
+		case Null n -> "NULL";
+		case Logical l -> "logical";
+		case Int i -> i.isFactor() ? "factor" : "integer";
+		case Num d -> "double";
+		case Str s -> "character";
+		case Raw r -> "raw";
+		case List l -> l.isDataFrame() ? "data.frame" : "list";
+		case Other o -> o.type();
+		};
+	}
+
+	/* ---------------- Reading values ---------------- */
+
+	/**
+	 * The values as numbers: numeric, integer and logical vectors (NA: NA_REAL),
+	 * character vectors are parsed (not a number: NA_REAL).
+	 */
+	default double[] doubles() {
+		return switch (this) {
+		case Num d -> d.values();
+		case Int i -> toDoubles(i.values());
+		case Logical l -> toDoubles(l.values());
+		case Str s -> {
+			double[] v = new double[s.values().length];
+			for (int k = 0; k < v.length; k++) {
+				v[k] = parseDouble(s.values()[k]);
+			}
+			yield v;
+		}
+		default -> throw wrongType("numbers");
+		};
+	}
+
+	/** The values as integers: integer and logical vectors, numbers are truncated (NA, NaN: NA_INTEGER). */
+	default int[] ints() {
+		return switch (this) {
+		case Int i -> i.values();
+		case Logical l -> l.values();
+		case Num d -> {
+			int[] v = new int[d.values().length];
+			for (int k = 0; k < v.length; k++) {
+				double x = d.values()[k];
+				v[k] = Double.isNaN(x) ? NA_INTEGER : (int) x;
+			}
+			yield v;
+		}
+		default -> throw wrongType("integers");
+		};
+	}
+
+	/**
+	 * The values as text: a character vector (NA: null), the labels of a factor,
+	 * numbers and logical values as text (NA: "NA").
+	 */
+	default String[] strings() {
+		return switch (this) {
+		case Str s -> s.values();
+		case Int i when i.isFactor() -> i.factorLabels();
+		case Int i -> {
+			String[] t = new String[i.values().length];
+			for (int k = 0; k < t.length; k++) {
+				t[k] = i.values()[k] == NA_INTEGER ? "NA" : Integer.toString(i.values()[k]);
+			}
+			yield t;
+		}
+		case Num d -> {
+			String[] t = new String[d.values().length];
+			for (int k = 0; k < t.length; k++) {
+				t[k] = isNA(d.values()[k]) ? "NA" : Double.toString(d.values()[k]);
+			}
+			yield t;
+		}
+		case Logical l -> {
+			String[] t = new String[l.values().length];
+			for (int k = 0; k < t.length; k++) {
+				t[k] = l.values()[k] == NA_INTEGER ? "NA" : l.values()[k] != 0 ? "TRUE" : "FALSE";
+			}
+			yield t;
+		}
+		default -> throw wrongType("text");
+		};
+	}
+
+	/** The values as booleans: logical values (NA: false), numbers (not 0: true). */
+	default boolean[] booleans() {
+		return switch (this) {
+		case Logical l -> l.asBooleans();
+		case Int i -> {
+			boolean[] b = new boolean[i.values().length];
+			for (int k = 0; k < b.length; k++) {
+				b[k] = i.values()[k] != 0 && i.values()[k] != NA_INTEGER;
+			}
+			yield b;
+		}
+		case Num d -> {
+			boolean[] b = new boolean[d.values().length];
+			for (int k = 0; k < b.length; k++) {
+				b[k] = d.values()[k] != 0 && !Double.isNaN(d.values()[k]);
+			}
+			yield b;
+		}
+		default -> throw wrongType("logical values");
+		};
+	}
+
+	/** The bytes of a raw vector. */
+	default byte[] bytes() {
+		if (this instanceof Raw r) {
+			return r.values();
+		}
+		throw wrongType("bytes (a raw vector)");
+	}
+
+	/** The first number (see {@link #doubles()}). */
+	default double firstDouble() {
+		double[] v = doubles();
+		if (v.length == 0) {
+			throw new RTypeException("Expected a number but R returned an empty " + typeName() + " vector");
+		}
+		return v[0];
+	}
+
+	/** The first integer (see {@link #ints()}). */
+	default int firstInt() {
+		int[] v = ints();
+		if (v.length == 0) {
+			throw new RTypeException("Expected an integer but R returned an empty " + typeName() + " vector");
+		}
+		return v[0];
+	}
+
+	/** The first text (see {@link #strings()}). */
+	default String firstString() {
+		String[] v = strings();
+		if (v.length == 0) {
+			throw new RTypeException("Expected a text but R returned an empty " + typeName() + " vector");
+		}
+		return v[0];
+	}
+
+	/** True if the first value is TRUE (a logical vector, e.g., of is.numeric(x)). */
+	default boolean isTrue() {
+		return this instanceof Logical l && l.values().length > 0 && l.values()[0] == 1;
+	}
+
+	/** The elements of a list (also the columns of a data frame). */
+	default java.util.List<RValue> elements() {
+		if (this instanceof List l) {
+			return l.values();
+		}
+		throw wrongType("a list");
+	}
+
+	/** An element of a list (from 0). */
+	default RValue element(int index) {
+		return elements().get(index);
+	}
+
+	/** An element of a list by name, or null. */
+	default RValue element(String name) {
+		if (this instanceof List l) {
+			return l.get(name);
+		}
+		throw wrongType("a list");
+	}
+
+	/** A matrix as rows: [row][column] (numbers with two dimensions). */
+	default double[][] matrix() {
+		int[] d = dim();
+		if (d == null || d.length != 2) {
+			throw new RTypeException("Expected a matrix but R returned a " + typeName() + " without two dimensions");
+		}
+		double[] v = doubles();
+		double[][] m = new double[d[0]][d[1]];
+		for (int r = 0; r < d[0]; r++) {
+			for (int c = 0; c < d[1]; c++) {
+				m[r][c] = v[c * d[0] + r];
+			}
+		}
+		return m;
+	}
+
+	private RTypeException wrongType(String expected) {
+		return new RTypeException("Expected " + expected + " but R returned " + typeName());
+	}
+
+	private static double[] toDoubles(int[] v) {
+		double[] d = new double[v.length];
+		for (int k = 0; k < d.length; k++) {
+			d[k] = v[k] == NA_INTEGER ? NA_REAL : v[k];
+		}
+		return d;
+	}
+
+	private static double parseDouble(String s) {
+		if (s == null) {
+			return NA_REAL;
+		}
+		try {
+			return Double.parseDouble(s.strip());
+		} catch (NumberFormatException e) {
+			return NA_REAL;
+		}
 	}
 
 	/* ---------------- The types ---------------- */

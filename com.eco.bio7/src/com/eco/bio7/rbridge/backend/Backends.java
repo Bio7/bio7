@@ -18,15 +18,11 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import com.eco.bio7.Bio7Plugin;
 
 /**
- * The selection of the R backend (preference R_BACKEND: RSERVE or EMBEDDED) and
+ * The R backend (embedded R) and
  * the embedded backend once it runs. This class doesn't load the classes of
  * embedded R (the bundle com.eco.bio7.rffm is optional).
  */
 public final class Backends {
-
-	public static final String PREFERENCE = "R_BACKEND";
-	public static final String RSERVE = "RSERVE";
-	public static final String EMBEDDED = "EMBEDDED";
 
 	private static volatile RBackend embedded;
 
@@ -35,12 +31,6 @@ public final class Backends {
 			+ "Interrupt a computation with Ctrl+C in the console, or restart Bio7 to start R again.";
 
 	private Backends() {
-	}
-
-	/** Returns true if embedded R is selected in the preferences (the default). */
-	public static boolean isEmbeddedSelected() {
-		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		return EMBEDDED.equals(store.getString(PREFERENCE));
 	}
 
 	/** The embedded backend if embedded R runs, else null. */
@@ -86,9 +76,9 @@ public final class Backends {
 	}
 
 	/**
-	 * Starts embedded R (in the console of Bio7) if it is selected and not running.
+	 * Starts embedded R (in the console of Bio7) if it is not running.
 	 *
-	 * @return null if it runs, else the error (Rserve is used then)
+	 * @return null if it runs, else the error
 	 */
 	public static String startEmbedded() {
 		if (embedded != null) {

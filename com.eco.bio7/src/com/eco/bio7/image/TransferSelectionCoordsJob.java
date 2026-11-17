@@ -13,18 +13,18 @@ import org.gdal.gdal.Dataset;
 import org.gdal.gdal.gdal;
 import org.gdal.gdalconst.gdalconst;
 import org.gdal.osr.SpatialReference;
-import org.rosuda.REngine.REXPLogical;
-import org.rosuda.REngine.REngineException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.Roi;
 import ij.plugin.frame.RoiManager;
 import ij.process.ImageProcessor;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChangeListener {
 
@@ -196,14 +196,14 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 					? "local({r<-terra::rast(.bio7GeoFile);e<-as.vector(terra::ext(r));rs<-terra::res(r);list(c(e[1],rs[1],0,e[4],0,-rs[2]),terra::crs(r,proj=TRUE))})"
 					: "local({r<-raster::raster(.bio7GeoFile);rs<-raster::res(r);list(c(raster::xmin(r),rs[1],0,raster::ymax(r),0,-rs[2]),raster::projection(r))})";
 			con.eval(".bio7GeoResult<-tryCatch(" + read + ",error=function(e) conditionMessage(e))");
-			boolean failed = ((REXPLogical) con.eval("is.character(.bio7GeoResult)")).isTRUE()[0];
+			boolean failed = (con.eval("is.character(.bio7GeoResult)")).booleans()[0];
 			if (failed) {
-				String message = con.eval(".bio7GeoResult").asString();
+				String message = con.eval(".bio7GeoResult").firstString();
 				con.eval("rm(.bio7GeoFile,.bio7GeoResult)");
 				return "The R package '" + pkg + "' could not read the file:\n\n" + message;
 			}
-			double[] transform = con.eval(".bio7GeoResult[[1]]").asDoubles();
-			String proj = con.eval("as.character(.bio7GeoResult[[2]])").asString();
+			double[] transform = con.eval(".bio7GeoResult[[1]]").doubles();
+			String proj = con.eval("as.character(.bio7GeoResult[[2]])").firstString();
 			con.eval("rm(.bio7GeoFile,.bio7GeoResult)");
 			if (transform == null || transform.length != 6) {
 				return "The R package '" + pkg + "' returned no georeference for the file.";
@@ -214,7 +214,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 			adfGeoTransform = transform;
 			proj4String = proj.trim();
 			return null;
-		} catch (RserveException | org.rosuda.REngine.REXPMismatchException e) {
+		} catch (RException | RTypeException e) {
 			return "The georeference could not be read with R: " + e.getMessage();
 		}
 	}
@@ -229,14 +229,14 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 			if (!installed(con, "sp")) {
 				return "The R package 'sp' is not installed (needed for the spatial objects of the transfer). Please install it, e.g., in the \"Packages\" view of Bio7 (tab \"Install Packages\") or in R with:\n\ninstall.packages(\"sp\")";
 			}
-		} catch (RserveException | org.rosuda.REngine.REXPMismatchException e) {
+		} catch (RException | RTypeException e) {
 			return "The R package 'sp' could not be checked: " + e.getMessage();
 		}
 		return null;
 	}
 
-	private static boolean installed(RBackend con, String pkg) throws RserveException, org.rosuda.REngine.REXPMismatchException {
-		return ((REXPLogical) con.eval("requireNamespace('" + pkg + "', quietly=TRUE)")).isTRUE()[0];
+	private static boolean installed(RBackend con, String pkg) throws RException, RTypeException {
+		return (con.eval("requireNamespace('" + pkg + "', quietly=TRUE)")).booleans()[0];
 	}
 
 	public double getTransformedCentroidCoordsX(int row, int col) {
@@ -310,7 +310,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 				 /*Only transfer selected ROI's from the ROI Manager or all if no ROI is selected!*/
 				Roi[] r = RoiManager.getInstance().getSelectedRoisAsArray();
 				c = RBridge.getBackend();
-				if (RServe.isAlive()) {
+				if (RTools.isAlive()) {
 
 					/* Get the image processor of the image ! */
 					ImageProcessor ip = imp.getProcessor();
@@ -323,7 +323,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 
 						c.eval("imageSizeX<-" + w);
 
-					} catch (RserveException e1) {
+					} catch (RException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
@@ -347,7 +347,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 							try {
 								c.assign(".xTempVarRoiSelectionCoordinates", x);
 								c.assign(".yTempVarRoiSelectionCoordinates", y);
-							} catch (REngineException e) {
+							} catch (RException e) {
 
 								e.printStackTrace();
 							}
@@ -356,7 +356,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 							c.eval("try(roiYSelectionCoordinates[[" + (i + 1) + "]]<-.yTempVarRoiSelectionCoordinates)");
 
 						}
-					} catch (RserveException e) {
+					} catch (RException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -384,7 +384,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 				/*Only transfer selected ROI's from the ROI Manager or all if no ROI is selected!*/
 				Roi[] r = RoiManager.getInstance().getSelectedRoisAsArray();
 				c = RBridge.getBackend();
-				if (RServe.isAlive()) {
+				if (RTools.isAlive()) {
 
 					/* Get the image processor of the image ! */
 					ImageProcessor ipSize = imp.getProcessor();
@@ -396,7 +396,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 
 						c.eval("imageSizeX<-" + w);
 
-					} catch (RserveException e1) {
+					} catch (RException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
@@ -407,14 +407,14 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 						/*
 						 * try { c.eval("listpolygons<-NULL");
 						 * c.eval("listpolygons<-list()"); } catch
-						 * (RserveException e) { // TODO Auto-generated catch
+						 * (RException e) { // TODO Auto-generated catch
 						 * block e.printStackTrace(); }
 						 */
 
 						try {
 							c.eval(".listRoiXPoints<-list()");
 							c.eval(".listRoiYPoints<-list()");
-						} catch (RserveException e1) {
+						} catch (RException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
@@ -432,7 +432,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 								try {
 									c.assign(".xTempVarRoiSelectionCoordinates", x);
 									c.assign(".yTempVarRoiSelectionCoordinates", y);
-								} catch (REngineException e) {
+								} catch (RException e) {
 
 									e.printStackTrace();
 								}
@@ -461,7 +461,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 								try {
 									c.assign(".xTempVarRoiSelectionCoordinates", transX);
 									c.assign(".yTempVarRoiSelectionCoordinates", transY);
-								} catch (REngineException e) {
+								} catch (RException e) {
 
 									e.printStackTrace();
 								}
@@ -470,7 +470,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 							try {
 								c.eval("try(.listRoiXPoints[[" + (i + 1) + "]]<-.xTempVarRoiSelectionCoordinates)");
 								c.eval("try(.listRoiYPoints[[" + (i + 1) + "]]<-.yTempVarRoiSelectionCoordinates)");
-							} catch (RserveException e) {
+							} catch (RException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
@@ -491,7 +491,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 									c.eval("spatialPolygons<-SpatialPolygons(mapply(function(x, y,id) {Polygons(list(Polygon(cbind(x,y))),id)} ,.listRoiXPoints,.listRoiYPoints,as.character(1:length(.listRoiXPoints))),proj4string=CRS(\"" + proj4String + "\"))");
 								}
 
-							} catch (RserveException e) {
+							} catch (RException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
@@ -506,7 +506,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 									c.eval("spatialPolygonsDataFrame<-SpatialPolygonsDataFrame(SpatialPolygons(mapply(function(x, y,id) {Polygons(list(Polygon(cbind(x,y))),id)} ,.listRoiXPoints,.listRoiYPoints,as.character(1:length(.listRoiXPoints))),proj4string=CRS(\"" + proj4String + "\"))," + selDataframe + ")");
 								}
 
-							} catch (RserveException e) {
+							} catch (RException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
@@ -520,7 +520,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 						try {
 							c.eval(".listRoiXPoints<-list()");
 							c.eval(".listRoiYPoints<-list()");
-						} catch (RserveException e1) {
+						} catch (RException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
@@ -539,7 +539,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 									c.assign(".xTempVarRoiSelectionCoordinates", x);
 									c.assign(".yTempVarRoiSelectionCoordinates", y);
 
-								} catch (REngineException e) {
+								} catch (RException e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
@@ -568,7 +568,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 								try {
 									c.assign(".xTempVarRoiSelectionCoordinates", transX);
 									c.assign(".yTempVarRoiSelectionCoordinates", transY);
-								} catch (REngineException e) {
+								} catch (RException e) {
 
 									e.printStackTrace();
 								}
@@ -577,7 +577,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 							try {
 								c.eval("try(.listRoiXPoints[[" + (i + 1) + "]]<-.xTempVarRoiSelectionCoordinates)");
 								c.eval("try(.listRoiYPoints[[" + (i + 1) + "]]<-.yTempVarRoiSelectionCoordinates)");
-							} catch (RserveException e) {
+							} catch (RException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
@@ -598,7 +598,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 									c.eval("spatialLines<-SpatialLines(mapply(function(x, y,id) {Lines(list(Line(cbind(x,y))),id)} ,.listRoiXPoints,.listRoiYPoints,as.character(1:length(.listRoiXPoints))),proj4string=CRS(\"" + proj4String + "\"))");
 								}
 
-							} catch (RserveException e) {
+							} catch (RException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
@@ -613,7 +613,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 									c.eval("spatialLinesDataFrame<-SpatialLinesDataFrame(SpatialLines(mapply(function(x, y,id) {Lines(list(Line(cbind(x,y))),id)} ,.listRoiXPoints,.listRoiYPoints,as.character(1:length(.listRoiXPoints))),proj4string=CRS(\"" + proj4String + "\"))," + selDataframe + ")");
 								}
 
-							} catch (RserveException e) {
+							} catch (RException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
@@ -627,7 +627,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 						try {
 							c.eval(".xpoints<-NULL");
 							c.eval(".ypoints<-NULL");
-						} catch (RserveException e) {
+						} catch (RException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
@@ -644,10 +644,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 									c.assign(".yTempVarRoiSelectionCoordinates", y);
 									c.eval("try(.xpoints<-append(.xpoints,.xTempVarRoiSelectionCoordinates))");
 									c.eval("try(.ypoints<-append(.ypoints,.yTempVarRoiSelectionCoordinates))");
-								} catch (RserveException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								} catch (REngineException e) {
+								} catch (RException e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
@@ -677,7 +674,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 									c.assign(".yTempVarRoiSelectionCoordinates", transY);
 									c.eval("try(.xpoints<-append(.xpoints,.xTempVarRoiSelectionCoordinates))");
 									c.eval("try(.ypoints<-append(.ypoints,.yTempVarRoiSelectionCoordinates))");
-								} catch (REngineException e) {
+								} catch (RException e) {
 
 									e.printStackTrace();
 								}
@@ -701,7 +698,7 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 									c.eval("try(spatialPointsDataFrame<-SpatialPointsDataFrame(.xyTempVarPoints," + selDataframe + ",proj4string=CRS(\"" + proj4String + "\")))");
 								}
 							}
-						} catch (RserveException e) {
+						} catch (RException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
@@ -724,22 +721,22 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 
 		if (RBridge.getBackend() != null) {
 			c = RBridge.getBackend();
-			REXPLogical bolExists = null;
+			RValue bolExists = null;
 			try {
-				bolExists = (REXPLogical) c.eval("require(sp)");
+				bolExists = c.eval("require(sp)");
 
-			} catch (RserveException e1) {
+			} catch (RException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			boolean[] bolE = bolExists.isTRUE();
+			boolean[] bolE = bolExists.booleans();
 
 			if (bolE[0]) {
 
 				try {
 					// c.eval("library(maptools)");
 					c.eval("library(sp)");
-				} catch (RserveException e) {
+				} catch (RException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}

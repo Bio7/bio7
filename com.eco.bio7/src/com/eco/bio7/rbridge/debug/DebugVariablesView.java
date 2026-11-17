@@ -88,7 +88,8 @@ public class DebugVariablesView extends ViewPart {
 	private void createToolbar() {
 		IToolBarManager tm = getViewSite().getActionBars().getToolBarManager();
 		tm.add(new DebugRScript());
-		tm.add(new DebugStopAction());
+		stopAction = new DebugStopAction();
+		tm.add(stopAction);
 		tm.add(new Separator());
 		tm.add(new DebugNextAction());
 		tm.add(new DebugStepIntoAction());
@@ -98,6 +99,30 @@ public class DebugVariablesView extends ViewPart {
 		tm.add(new Separator());
 		tm.add(new DebugInfoAction());
 		getViewSite().getActionBars().updateActionBars();
+		updateStop();
+	}
+
+	/* The stop button (disabled without a debug session) */
+	private DebugStopAction stopAction;
+
+	/*
+	 * Stop only while R is debugged: a debug session of Bio7 or R waits in
+	 * browser() (also a browser() called in the console)
+	 */
+	private void updateStop() {
+		if (stopAction != null) {
+			stopAction.setEnabled(DebugProgress.isSessionActive() || com.eco.bio7.rbridge.backend.EmbeddedR.isAtBrowsePrompt());
+		}
+	}
+
+	/** Updates the actions of the open view (e.g., the debug session has started or ended). Any thread. */
+	public static void updateActions() {
+		org.eclipse.swt.widgets.Display display = PlatformUI.getWorkbench().getDisplay();
+		display.asyncExec(() -> {
+			if (instance != null) {
+				instance.updateStop();
+			}
+		});
 	}
 
 	/** Shows the view (with the debug actions), e.g., when a breakpoint is set; it is not activated. */

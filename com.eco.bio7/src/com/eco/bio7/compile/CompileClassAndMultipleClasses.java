@@ -344,7 +344,13 @@ public class CompileClassAndMultipleClasses {
         }
     }
 
-    public void compileClasses(IResource res, IFile ifil, IWorkbenchPage page) {
+    /**
+     * Compiles the classes of the project of the file and runs the class of the
+     * file in a job (the thread "DynamicCode-Execution").
+     *
+     * @return the job (e.g., to know when the code has finished: the profiler)
+     */
+    public Job compileClasses(IResource res, IFile ifil, IWorkbenchPage page) {
         this.resource = res;
         this.pag = page;
         this.ifile = ifil;
@@ -487,6 +493,7 @@ public class CompileClassAndMultipleClasses {
         });
         
         job.schedule();
+        return job;
     }
 
     /**

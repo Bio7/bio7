@@ -201,7 +201,7 @@ public class REditorTextHover implements ITextHover, ITextHoverExtension, ITextH
 					return htmlHelpText + "," + wordOffset + "," + resultedLength;
 				}
 
-				/* Embedded R: in this (hover) thread, time-limited; Rserve: in the UI thread */
+				/* Embedded R: in this (hover) thread, time-limited */
 				REvaluator c = REvaluator.forEditor(REditor.getEvaluator());
 				if (c != null) {
 					if (RState.isBusy() == false) {

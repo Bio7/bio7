@@ -110,17 +110,7 @@ public final class PythonDebugger {
 			return;
 		}
 		PySession py = EmbeddedPython.session();
-		if (py.isBusy()) {
-			Bio7Dialog.message("Python is busy.");
-			return;
-		}
-		try {
-			register();
-			loadModule(py);
-		} catch (Exception e) {
-			Bio7Dialog.message("The debugger could not be started: " + e.getMessage());
-			return;
-		}
+		boolean busy = py.isBusy();
 		scriptFile = file;
 		running = true;
 		List<Integer> lines = PythonBreakpoints.lines(file);
@@ -133,13 +123,31 @@ public final class PythonDebugger {
 		ConsoleInterpreterAction.getInstance().startPython();
 		EmbeddedPython.print("Debugging " + file.getName() + (lines.isEmpty() ? " (no breakpoints: stops at the first line)" : " (breakpoints: lines " + lines + ")")
 				+ "\nWhile stopped, the console evaluates in the frame; n (next), s (step), r (return), c (continue), q (quit).\n", false);
+		if (busy) {
+			EmbeddedPython.print("Python is busy (e.g., starting): the debugger starts when it is free.\n", false);
+		}
 		PythonDebugView.refreshAll();
 		String path = file.getLocation().toOSString().replace("\\", "\\\\").replace("'", "\\'");
-		/* Not shown as running job (the debug session waits at breakpoints) */
-		py.runAsync("__import__('_bio7dbg').run('" + path + "', " + lines + ", " + (stopAtFirstLine ? "True" : "False") + ")", null);
+		String breakpoints = PythonBreakpoints.specs(file);
+		/*
+		 * In a thread: the calls wait for Python (e.g., its startup) without blocking
+		 * the user interface. Not shown as running job (the session waits at breakpoints)
+		 */
+		Thread starter = new Thread(() -> {
+			try {
+				register();
+				loadModule(py);
+				py.runAsync("__import__('_bio7dbg').run('" + path + "', " + breakpoints + ", " + (stopAtFirstLine ? "True" : "False") + ")", null);
+			} catch (Exception e) {
+				running = false;
+				Bio7Dialog.message("The debugger could not be started: " + e.getMessage());
+			}
+		}, "Bio7 debugger start");
+		starter.setDaemon(true);
+		starter.start();
 	}
 
-	private static void register() {
+	private static synchronized void register() {
 		if (registered) {
 			return;
 		}
@@ -179,7 +187,7 @@ public final class PythonDebugger {
 		/* Breakpoints changed in the editor since the start */
 		IFile f = scriptFile;
 		if (f != null) {
-			EmbeddedPython.session().exec("__import__('_bio7dbg').set_breaks(" + PythonBreakpoints.lines(f) + ")");
+			EmbeddedPython.session().exec("__import__('_bio7dbg').set_breaks(" + PythonBreakpoints.specs(f) + ")");
 		}
 		Stop s = stop;
 		if (s.message() != null) {
@@ -309,6 +317,30 @@ public final class PythonDebugger {
 		return query(() -> {
 			py().assign("_bio7_dbg_arg", PyValue.of(expression));
 			return text(py().eval("__import__('_bio7dbg').evaluate(_bio7_dbg_arg)"));
+		});
+	}
+
+	/**
+	 * The hover of the editor: type, size and value (several lines) of an
+	 * expression in the selected frame; an empty string if the name is not defined.
+	 */
+	public static String describe(String expression) throws Exception {
+		return query(() -> {
+			py().assign("_bio7_dbg_arg", PyValue.of(expression));
+			return text(py().eval("__import__('_bio7dbg').describe(_bio7_dbg_arg)"));
+		});
+	}
+
+	/**
+	 * Copies the value of an expression of the frame to the workspace of Python
+	 * (the name target) and returns the cells for the table (mode: head, matrix,
+	 * rows, ...) or null (mode null).
+	 */
+	public static List<String[]> toWorkspace(String target, String expression, String mode) throws Exception {
+		return query(() -> {
+			py().assign("_bio7_dbg_arg", new PyValue.PyList(List.of(PyValue.of(target), PyValue.of(expression))));
+			py().eval("__import__('_bio7dbg').to_main_as(*_bio7_dbg_arg)");
+			return mode == null ? null : com.eco.bio7.pybridge.PythonShellView.tableRows(py(), target, mode);
 		});
 	}
 

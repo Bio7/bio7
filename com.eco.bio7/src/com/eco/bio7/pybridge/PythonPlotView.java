@@ -189,6 +189,13 @@ public final class PythonPlotView {
 		canvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		canvas.addListener(SWT.Paint, e -> paint(e.gc));
 		canvas.addListener(SWT.Resize, _ -> resized());
+		/*
+		 * The keys of the fullscreen mode (F2 to F5, Esc): on macOS a canvas only takes
+		 * the keyboard focus (a click) if it has a key listener
+		 */
+		canvas.addListener(SWT.KeyDown, _ -> {
+		});
+		canvas.addListener(SWT.MouseDown, _ -> canvas.setFocus());
 
 		Composite bar = new Composite(root, SWT.NONE);
 		bar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));

@@ -47,8 +47,11 @@ public final class PythonEditorHooks {
 			PythonEditorSupport.liveNames = PythonEditorHooks::liveNames;
 			PythonEditorSupport.liveCompletion = PythonEditorHooks::liveCompletion;
 			PythonEditorSupport.liveHover = PythonEditorHooks::liveHover;
+			PythonEditorSupport.debugHover = PythonEditorHooks::debugHover;
+			PythonEditorSupport.debugAction = PythonEditorHooks::debugAction;
 			PythonEditorSupport.installPackage = pkg -> Display.getDefault().asyncExec(() -> PythonPackagesView.prepareInstall(pkg));
 			PythonEditorSupport.debugScript = () -> com.eco.bio7.pybridge.debug.PythonDebugger.startActiveEditor(false);
+			PythonEditorSupport.profileScript = selection -> com.eco.bio7.pybridge.debug.PythonProfiler.profileActiveEditor(selection);
 		} catch (LinkageError e) {
 			/* The Python editor is not installed */
 		}
@@ -122,15 +125,57 @@ public final class PythonEditorHooks {
 		}
 	}
 
-	private static String liveHover(String word) {
-		/* The debugger stopped: the value in the frame of the stop */
-		if (com.eco.bio7.pybridge.debug.PythonDebugger.isPaused() && DOTTED.matcher(word).matches()) {
+	/* An expression for the hover while debugging: no calls, statements or assignments (no side effects) */
+	private static final Pattern UNSAFE = Pattern.compile("[(;\\n]|(?<![=!<>])=(?!=)|:=|\\b(lambda|import|del|yield|await)\\b");
+
+	/* The debugger stopped: type, size and value of the expression in the frame of the stop */
+	private static String debugHover(String expression) {
+		if (!com.eco.bio7.pybridge.debug.PythonDebugger.isPaused() || expression.length() > 300 || UNSAFE.matcher(expression).find()) {
+			return null;
+		}
+		try {
+			String v = com.eco.bio7.pybridge.debug.PythonDebugger.describe(expression);
+			return v == null || v.isBlank() ? null : v;
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	/*
+	 * The actions of the hover while debugging (a background thread): the value of
+	 * the expression to the workspace of Python, the table or ImageJ
+	 */
+	private static void debugAction(String action, String expression) {
+		String target = expression.matches("[A-Za-z_][A-Za-z0-9_]*") ? expression : "debug_value";
+		Thread t = new Thread(() -> {
 			try {
-				String v = com.eco.bio7.pybridge.debug.PythonDebugger.evaluate(word);
-				return v == null || v.startsWith("<NameError") ? null : "Debugger: " + word + " = " + v;
+				switch (action) {
+				case "table" -> {
+					java.util.List<String[]> rows = com.eco.bio7.pybridge.debug.PythonDebugger.toWorkspace(target, expression, "auto");
+					Display.getDefault().asyncExec(() -> PythonShellView.fillTable(target, rows));
+				}
+				case "imagej" -> {
+					com.eco.bio7.pybridge.debug.PythonDebugger.toWorkspace(target, expression, null);
+					com.eco.bio7.pybridge.debug.PythonDebugger.query(() -> PythonUtil.imageFromPython(target, target));
+				}
+				default -> {
+					com.eco.bio7.pybridge.debug.PythonDebugger.toWorkspace(target, expression, null);
+					EmbeddedPython.print("\nCopied to the Python workspace: " + target + "\n", false);
+				}
+				}
 			} catch (Exception e) {
-				return null;
+				String m = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
+				EmbeddedPython.print("\n" + expression + ": " + m + "\n", true);
 			}
+		}, "Bio7 Python debug hover");
+		t.setDaemon(true);
+		t.start();
+	}
+
+	private static String liveHover(String word) {
+		/* The debugger stopped: the hover of the debugger */
+		if (com.eco.bio7.pybridge.debug.PythonDebugger.isPaused()) {
+			return null;
 		}
 		PySession s = idle();
 		if (s == null || !DOTTED.matcher(word).matches() || !liveNames().contains(word.split("\\.")[0])) {

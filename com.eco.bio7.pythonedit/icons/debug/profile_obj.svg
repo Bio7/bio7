@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A profile mark: a bar chart (the time of a line) -->
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" version="1.1">
+  <rect x="2" y="9" width="3" height="5" rx="0.5" style="fill:#f0a35e;stroke:#a24a0c;stroke-width:0.7"/>
+  <rect x="6.5" y="4" width="3" height="10" rx="0.5" style="fill:#e8590c;stroke:#a24a0c;stroke-width:0.7"/>
+  <rect x="11" y="6.5" width="3" height="7.5" rx="0.5" style="fill:#f0a35e;stroke:#a24a0c;stroke-width:0.7"/>
+</svg>

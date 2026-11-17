@@ -5,10 +5,7 @@ import java.awt.Polygon;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
-import org.rosuda.REngine.REngineException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RConnection;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
 //import com.eco.bio7.image.PointPanel;
@@ -24,27 +21,13 @@ import ij.measure.ResultsTable;
 import ij.plugin.filter.Analyzer;
 import ij.process.ImageProcessor;
 import ij.text.TextWindow;
+import com.eco.bio7.rffm.RException;
 
 /**
  * @author M. Austenfeld A class to transfer the results of an ImageJ Particle
  *         analysis.
  */
 public class IJTranserResultsTable {
-
-	/** For an Rserve connection (compatibility). */
-	public void transferResultsTable(RConnection con, boolean dialog) {
-		transferResultsTable(RBackend.of(con), dialog);
-	}
-
-	/** For an Rserve connection (compatibility). */
-	public void pointsToR(RConnection d) {
-		pointsToR(RBackend.of(d));
-	}
-
-	/** For an Rserve connection (compatibility). */
-	public static void runParticleAnalysis(RConnection con, String macro) {
-		runParticleAnalysis(RBackend.of(con), macro);
-	}
 
 	public void transferResultsTable(RBackend con, boolean dialog) {
 		ResultsTable rt = Analyzer.getResultsTable();
@@ -63,7 +46,7 @@ public class IJTranserResultsTable {
 			if (rt.getColumn(0) != null) {
 				try {
 					con.eval("try(IJResultsTable<-data.frame(1:" + rt.getColumn(0).length + "))");
-				} catch (RserveException e) {
+				} catch (RException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -85,14 +68,14 @@ public class IJTranserResultsTable {
 						columnName = columnName.replaceAll("[^a-zA-Z0-9_.]+", "_");
 						try {
 							con.assign(columnName, col);
-						} catch (REngineException e1) {
+						} catch (RException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
 						try {
 							con.eval("try(IJResultsTable<-data.frame(IJResultsTable," + columnName + "))");
 							con.eval("remove(" + columnName + ")");
-						} catch (RserveException e) {
+						} catch (RException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
@@ -105,7 +88,7 @@ public class IJTranserResultsTable {
 
 				try {
 					con.eval("try(IJResultsTable[1]<-NULL)");
-				} catch (RserveException e) {
+				} catch (RException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -134,7 +117,7 @@ public class IJTranserResultsTable {
 
 					d.eval("imageSizeX<-" + w);
 
-				} catch (RserveException e1) {
+				} catch (RException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
@@ -151,7 +134,7 @@ public class IJTranserResultsTable {
 						d.assign("selectionx", roix);
 
 						d.assign("selectiony", roiy);
-					} catch (REngineException e) {
+					} catch (RException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -164,13 +147,13 @@ public class IJTranserResultsTable {
 			 * 
 			 * d.assign("y", xydia[1]); d.assign("diameter_panel", xydia[2]);
 			 * d.assign("species", xydia[3]); d.assign("alpha", xydia[4]); } catch
-			 * (REngineException e) { // TODO Auto-generated catch block
+			 * (RException e) { // TODO Auto-generated catch block
 			 * e.printStackTrace(); }
 			 * 
 			 * try { d.voidEval("fieldx<-" + PointPanelImageMethodsView.getFieldX() + "");
 			 * 
 			 * d.voidEval("fieldy<-" + PointPanelImageMethodsView.getFieldY() + ""); } catch
-			 * (RserveException e) { // TODO Auto-generated catch block e.printStackTrace();
+			 * (RException e) { // TODO Auto-generated catch block e.printStackTrace();
 			 * }
 			 */
 			// }
@@ -278,7 +261,7 @@ public class IJTranserResultsTable {
 				try {
 					d.voidEval("imageSizeY<-" + currentImage.getHeight() + "");
 					d.voidEval("imageSizeX<-" + currentImage.getWidth() + "");
-				} catch (RserveException e1) {
+				} catch (RException e1) {
 
 				}
 				roi = currentImage.getRoi();
@@ -293,7 +276,7 @@ public class IJTranserResultsTable {
 						d.assign("selectionx", roix);
 
 						d.assign("selectiony", roiy);
-					} catch (REngineException e) {
+					} catch (RException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -314,7 +297,7 @@ public class IJTranserResultsTable {
 	/**
 	 * A method to transfer results from a particle analysis in ImageJ.
 	 * 
-	 * @param con   a Rserve connection.
+	 * @param con   the connection to R.
 	 * @param macro an optional macro.
 	 */
 	public static void runParticleAnalysis(RBackend con, String macro) {
@@ -336,7 +319,7 @@ public class IJTranserResultsTable {
 			if (rt.getColumn(0) != null) {
 				try {
 					con.eval("try(Particles<-data.frame(1:" + rt.getColumn(0).length + "))");
-				} catch (RserveException e) {
+				} catch (RException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -352,14 +335,14 @@ public class IJTranserResultsTable {
 						}
 						try {
 							con.assign(columnName, col);
-						} catch (REngineException e1) {
+						} catch (RException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
 						try {
 							con.eval("try(Particles<-data.frame(Particles," + columnName + "))");
 							con.eval("remove(" + columnName + ")");
-						} catch (RserveException e) {
+						} catch (RException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
@@ -374,7 +357,7 @@ public class IJTranserResultsTable {
 				}
 				try {
 					con.eval("try(Particles[1]<-NULL)");
-				} catch (RserveException e) {
+				} catch (RException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}

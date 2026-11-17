@@ -48,7 +48,7 @@ import com.eco.bio7.rffm.internal.RNative;
 
 /**
  * R embedded in the Java process with the Foreign Function and Memory API (no
- * Rserve, no compiled native code): an existing installation of R (built as a
+ * no compiled native code): an existing installation of R (built as a
  * shared library) is loaded.
  * <p>
  * R runs in its own thread; all methods can be called from any thread and wait
@@ -199,6 +199,11 @@ public final class RSession implements AutoCloseable {
 				}
 				if (task != null) {
 					interruptRequested = false;
+					/*
+					 * An interrupt R didn't handle in the previous evaluation (e.g., requested
+					 * when it had just ended) must not cancel this one (a plot would be lost)
+					 */
+					clearPendingInterrupt();
 					task.run();
 				} else if (options.processEvents()) {
 					idle();
@@ -367,7 +372,7 @@ public final class RSession implements AutoCloseable {
 		MemorySegment rp = arena.allocate(512, 8);
 		int defParams = (int) call.downcallHandle(n.symbolAddress("R_DefParamsEx"), FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT)).invokeExact(rp, 1);
 		if (defParams != 0) {
-			/* This R doesn't accept the start structure (version 1) of the offsets below: no start (Rserve is used) */
+			/* This R doesn't accept the start structure (version 1) of the offsets below: no start */
 			throw new IllegalStateException("This version of R doesn't support the start structure of embedded R (R_DefParamsEx returned " + defParams + ")");
 		}
 		MemorySegment user = (MemorySegment) call.downcallHandle(n.symbolAddress("getRUser"), FunctionDescriptor.of(ADDRESS)).invokeExact();
@@ -1511,6 +1516,11 @@ public final class RSession implements AutoCloseable {
 				c.unprotect(1);
 			}
 		});
+	}
+
+	/* Clears the interrupt flag of R (thread of R) */
+	private void clearPendingInterrupt() {
+		n.setInt(n.os.equals("Windows") ? "UserBreak" : "R_interrupts_pending", 0);
 	}
 
 	/** Interrupts the evaluation (like Ctrl+C in R). */

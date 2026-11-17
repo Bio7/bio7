@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<style>
+:root { --bg:#ffffff; --fg:#1f2328; --muted:#656d76; --line:#d8dee4; --head:#f6f8fa; --bar:#e8590c; --barbg:#fde7d9;
+  --own:#e8590c; --lib:#4a77b4; --builtin:#8c959f; --hot:#fff4ec; --tab:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0d1117; --fg:#e6edf3; --muted:#8d96a0; --line:#30363d; --head:#161b22;
+  --bar:#f0883e; --barbg:#3d2412; --own:#d9622b; --lib:#3b6aa0; --builtin:#59636e; --hot:#2a1d14; --tab:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin: 0; font: 13px/1.4 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; background: var(--bg); color: var(--fg); }
+header { padding: 12px 16px 6px; }
+h1 { font-size: 17px; margin: 0 0 4px; }
+.summary { color: var(--muted); }
+.message { margin-top: 6px; color: #cf222e; white-space: pre-wrap; }
+nav { display: flex; gap: 4px; padding: 0 16px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--bg); z-index: 2; }
+nav button { border: 0; background: none; color: var(--muted); padding: 8px 10px; font: inherit; cursor: pointer; border-bottom: 2px solid transparent; }
+nav button.active { color: var(--fg); border-bottom-color: var(--tab); font-weight: 600; }
+section { display: none; padding: 10px 16px 24px; }
+section.active { display: block; }
+.tools { margin-bottom: 8px; color: var(--muted); }
+table { border-collapse: collapse; width: 100%; }
+th, td { padding: 1px 8px; text-align: right; white-space: nowrap; }
+th { position: sticky; top: 37px; background: var(--head); border-bottom: 1px solid var(--line); cursor: pointer; user-select: none; font-weight: 600; }
+td.code, th.code, td.name, th.name { text-align: left; }
+td.code { font: 12px/1.45 ui-monospace, Menlo, Consolas, monospace; white-space: pre; width: 100%; }
+td.num { color: var(--muted); font: 12px ui-monospace, Menlo, monospace; }
+tr.hot td { background: var(--hot); }
+th.bar, td.bar { width: 140px; min-width: 140px; }
+.bar div { height: 10px; background: var(--barbg); border-radius: 2px; position: relative; }
+.bar div span { position: absolute; left: 0; top: 0; bottom: 0; background: var(--bar); border-radius: 2px; }
+#flame { position: relative; width: 100%; overflow: hidden; }
+#flame div { position: absolute; height: 17px; overflow: hidden; white-space: nowrap; font: 11px/17px ui-monospace, Menlo, monospace;
+  color: #fff; padding: 0 3px; border-right: 1px solid var(--bg); border-bottom: 1px solid var(--bg); cursor: pointer; }
+.own { background: var(--own); } .lib { background: var(--lib); } .builtin { background: var(--builtin); }
+.crumb { margin-bottom: 6px; color: var(--muted); }
+.crumb a { color: var(--tab); cursor: pointer; }
+.legend span { display: inline-block; width: 10px; height: 10px; margin: 0 4px 0 12px; vertical-align: -1px; border-radius: 2px; }
+.mine td.name { font-weight: 600; }
+</style></head>
+<body>
+<header><h1 id="title"></h1><div class="summary" id="summary"></div><div class="message" id="message"></div></header>
+<nav><button data-tab="lines" class="active">Lines</button><button data-tab="flame">Flame Graph</button><button data-tab="functions">Functions</button></nav>
+<section id="lines" class="active">
+  <div class="tools"><label><input type="checkbox" id="onlyTimed"> Only lines with time</label> &nbsp; Time: the line with the functions it calls; Self: the line itself.</div>
+  <table><thead><tr><th>Line</th><th>Time (ms)</th><th>Self (ms)</th><th>%</th><th class="bar"></th><th class="code">Code</th></tr></thead><tbody id="lineRows"></tbody></table>
+</section>
+<section id="flame-section" data-tab-id="flame">
+  <div class="crumb" id="crumb"></div>
+  <div class="legend">Click a call to zoom in. <span class="own"></span>this script<span class="lib"></span>other code<span class="builtin"></span>built-in</div>
+  <div id="flame"></div>
+</section>
+<section id="functions">
+  <div class="tools"><label><input type="checkbox" id="onlyMine"> Only functions of this script</label> &nbsp; Click a header to sort (cProfile).</div>
+  <table><thead><tr><th class="name" data-col="0">Function</th><th class="name" data-col="1">File</th><th data-col="2">Line</th><th data-col="3">Calls</th>
+  <th data-col="5">Self (ms)</th><th data-col="6">Total (ms)</th><th data-col="8">Per call (ms)</th></tr></thead><tbody id="funcRows"></tbody></table>
+</section>
+<script>
+const D = __DATA__;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+const ms = v => v >= 100 ? v.toFixed(0) : v >= 1 ? v.toFixed(1) : v > 0 ? v.toFixed(2) : "";
+document.getElementById("title").textContent = "Profile: " + D.name + (D.selection ? " (selection)" : "");
+document.getElementById("summary").textContent = "Run time " + D.elapsed.toFixed(3) + " s, sampled " + (D.sampled).toFixed(3) + " s ("
+  + D.samples + " samples, about every " + (D.interval * 1000).toFixed(0) + " ms)";
+if (D.message) document.getElementById("message").textContent = D.message;
+/* tabs */
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button").forEach(x => x.classList.toggle("active", x === b));
+  document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
+  (b.dataset.tab === "flame" ? document.getElementById("flame-section") : document.getElementById(b.dataset.tab)).classList.add("active");
+  if (b.dataset.tab === "flame") drawFlame();
+});
+/* lines */
+const total = D.sampled * 1000, maxLine = Math.max(1e-9, ...D.source.map(r => r[1]));
+function drawLines() {
+  const only = document.getElementById("onlyTimed").checked, rows = [];
+  for (const [n, t, s, code] of D.source) {
+    if (only && t <= 0) continue;
+    const pct = total > 0 ? 100 * t / total : 0;
+    rows.push("<tr" + (pct >= 5 ? " class='hot'" : "") + "><td class='num'>" + n + "</td><td>" + ms(t) + "</td><td>" + ms(s) + "</td><td>"
+      + (pct >= 0.1 ? pct.toFixed(1) : "") + "</td><td class='bar'>" + (t > 0 ? "<div><span style='width:" + (100 * t / maxLine).toFixed(1) + "%'></span></div>" : "")
+      + "</td><td class='code'>" + esc(code) + "</td></tr>");
+  }
+  document.getElementById("lineRows").innerHTML = rows.join("");
+}
+document.getElementById("onlyTimed").onchange = drawLines;
+drawLines();
+/* flame graph (icicle: the calls downwards) */
+let focus = D.flame, path = [D.flame];
+function drawFlame() {
+  const box = document.getElementById("flame"), W = box.clientWidth || 800, H = 18, items = [];
+  let maxDepth = 0;
+  (function lay(node, x0, x1, depth) {
+    if ((x1 - x0) * W < 1) return;
+    items.push([node, x0, x1, depth]); maxDepth = Math.max(maxDepth, depth);
+    let x = x0;
+    for (const c of node[5]) { const w = node[1] > 0 ? (x1 - x0) * c[1] / node[1] : 0; lay(c, x, x + w, depth + 1); x += w; }
+  })(focus, 0, 1, 0);
+  box.style.height = ((maxDepth + 1) * H) + "px";
+  box.innerHTML = items.map(([n, x0, x1, d], i) => {
+    const cls = n[4] ? "own" : (n[2] === "built-in" || n[2] === "" ? "builtin" : "lib");
+    const label = n[2] ? n[0] + " (" + n[2] + (n[3] ? ":" + n[3] : "") + ")" : n[0];
+    const pct = total > 0 ? (100 * n[1] / total).toFixed(1) : "0";
+    return "<div data-i='" + i + "' class='" + cls + "' style='left:" + (x0 * 100) + "%;width:" + ((x1 - x0) * 100) + "%;top:" + (d * H) + "px' title='"
+      + esc(label + "\n" + ms(n[1]) + " ms, " + pct + " %") + "'>" + ((x1 - x0) * W > 30 ? esc(label) : "") + "</div>";
+  }).join("");
+  box.querySelectorAll("div").forEach(el => el.onclick = () => {
+    const node = items[+el.dataset.i][0];
+    const k = path.indexOf(node);
+    if (k >= 0) path = path.slice(0, k + 1); else path.push(node);
+    focus = node; drawFlame();
+  });
+  document.getElementById("crumb").innerHTML = path.map((n, i) => "<a data-k='" + i + "'>" + esc(n[0]) + "</a>").join(" &rsaquo; ");
+  document.querySelectorAll("#crumb a").forEach(a => a.onclick = () => { path = path.slice(0, +a.dataset.k + 1); focus = path[path.length - 1]; drawFlame(); });
+}
+window.addEventListener("resize", () => { if (document.getElementById("flame-section").classList.contains("active")) drawFlame(); });
+/* functions */
+let sortCol = 6, sortDesc = true;
+function drawFunctions() {
+  const only = document.getElementById("onlyMine").checked;
+  const rows = D.functions.filter(r => !only || r[7]).map(r => r.concat([r[3] > 0 ? r[6] / r[3] : 0]));
+  rows.sort((a, b) => { const x = a[sortCol], y = b[sortCol]; const c = typeof x === "string" ? x.localeCompare(y) : x - y; return sortDesc ? -c : c; });
+  document.getElementById("funcRows").innerHTML = rows.map(r => "<tr" + (r[7] ? " class='mine'" : "") + "><td class='name'>" + esc(r[0]) + "</td><td class='name'>"
+    + esc(r[1]) + "</td><td class='num'>" + (r[2] || "") + "</td><td>" + (r[3] == null ? "" : r[3] === r[4] ? r[3] : r[3] + "/" + r[4]) + "</td><td>" + ms(r[5]) + "</td><td>"
+    + ms(r[6]) + "</td><td>" + ms(r[8]) + "</td></tr>").join("");
+}
+document.querySelectorAll("#functions th").forEach(th => th.onclick = () => {
+  const c = +th.dataset.col; sortDesc = c === sortCol ? !sortDesc : c > 1; sortCol = c; drawFunctions();
+});
+document.getElementById("onlyMine").onchange = drawFunctions;
+drawFunctions();
+</script>
+</body></html>

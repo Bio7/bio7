@@ -44,10 +44,10 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.image.r.IJTranserResultsTable;
 import com.eco.bio7.image.r.TransferImageStack;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.pybridge.PythonImageTransfer;
 import com.eco.bio7.rbridge.RBridge;
-import com.eco.bio7.rbridge.RServeUtil;
+import com.eco.bio7.rbridge.REval;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.util.Util;
 import ij.ImagePlus;
@@ -192,7 +192,7 @@ public class RImageMethodsView extends ViewPart {
 					return;
 				}
 
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
 						Job job = new Job("Transfer to R") {
@@ -212,7 +212,7 @@ public class RImageMethodsView extends ViewPart {
 								if (event.getResult().isOK()) {
 
 									RState.setBusy(false);
-									RServeUtil.listRObjects();
+									REval.listRObjects();
 								} else {
 
 									RState.setBusy(false);
@@ -271,7 +271,7 @@ public class RImageMethodsView extends ViewPart {
 								if (event.getResult().isOK()) {
 
 									RState.setBusy(false);
-									RServeUtil.listRObjects();
+									REval.listRObjects();
 								} else {
 
 									RState.setBusy(false);
@@ -316,7 +316,7 @@ public class RImageMethodsView extends ViewPart {
 					return;
 				}
 
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
 						Job job = new Job("Transfer to R") {
@@ -336,7 +336,7 @@ public class RImageMethodsView extends ViewPart {
 								if (event.getResult().isOK()) {
 
 									RState.setBusy(false);
-									RServeUtil.listRObjects();
+									REval.listRObjects();
 									Bio7Dialog.message("ROI transferred!");
 								} else {
 
@@ -373,7 +373,7 @@ public class RImageMethodsView extends ViewPart {
 					return;
 				}
 
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
 						Job job = new Job("Transfer to R") {
@@ -393,7 +393,7 @@ public class RImageMethodsView extends ViewPart {
 								if (event.getResult().isOK()) {
 
 									RState.setBusy(false);
-									RServeUtil.listRObjects();
+									REval.listRObjects();
 									//Bio7Dialog.message("Particles action executed!");
 								} else {
 
@@ -425,7 +425,7 @@ public class RImageMethodsView extends ViewPart {
 					PythonImageTransfer.pixels(transferTypeCombo.getSelectionIndex());
 					return;
 				}
-				if (RServe.isAlive()) {
+				if (RTools.isAlive()) {
 					ImagePlus imp = WindowManager.getCurrentImage();
 					if (imp != null) {
 						if (RState.isBusy() == false) {
@@ -436,7 +436,7 @@ public class RImageMethodsView extends ViewPart {
 								public void done(IJobChangeEvent event) {
 									if (event.getResult().isOK()) {
 										RState.setBusy(false);
-										RServeUtil.listRObjects();
+										REval.listRObjects();
 										Bio7Dialog.message("Selected Pixels transferred to R!");
 									} else {
 										RState.setBusy(false);
@@ -511,7 +511,7 @@ public class RImageMethodsView extends ViewPart {
 					return;
 				}
 
-				if (RServe.isAlive()) {
+				if (RTools.isAlive()) {
 					ImagePlus imp = WindowManager.getCurrentImage();
 					if (imp != null) {
 						if (RState.isBusy() == false) {
@@ -524,7 +524,7 @@ public class RImageMethodsView extends ViewPart {
 									if (event.getResult().isOK()) {
 
 										RState.setBusy(false);
-										RServeUtil.listRObjects();
+										REval.listRObjects();
 										//Bio7Dialog.message("Selected Pixels transferred to R!");
 
 									} else {
@@ -565,7 +565,7 @@ public class RImageMethodsView extends ViewPart {
 					PythonImageTransfer.pixelsRoiManagerStack(transferTypeCombo.getSelectionIndex());
 					return;
 				}
-				if (RServe.isAlive()) {
+				if (RTools.isAlive()) {
 					ImagePlus imp = WindowManager.getCurrentImage();
 					if (imp != null) {
 						if (RState.isBusy() == false) {
@@ -577,7 +577,7 @@ public class RImageMethodsView extends ViewPart {
 									if (event.getResult().isOK()) {
 
 										RState.setBusy(false);
-										RServeUtil.listRObjects();
+										REval.listRObjects();
 										//Bio7Dialog.message("Selected Pixels transferred to R!");
 									} else {
 
@@ -620,7 +620,7 @@ public class RImageMethodsView extends ViewPart {
 					PythonImageTransfer.imageToPython(imageMatrixNameToR.getText(), transferTypeCombo.getSelectionIndex());
 					return;
 				}
-				if (RServe.isAlive()) {
+				if (RTools.isAlive()) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
 						if (canTransferPic) {
@@ -631,7 +631,7 @@ public class RImageMethodsView extends ViewPart {
 									if (event.getResult().isOK()) {
 										canTransferPic = true;
 										RState.setBusy(false);
-										RServeUtil.listRObjects();
+										REval.listRObjects();
 									} else {
 										canTransferPic = true;
 										RState.setBusy(false);
@@ -670,7 +670,7 @@ public class RImageMethodsView extends ViewPart {
 					PythonImageTransfer.imageFromPython(imageMatrixNameFromR.getText(), toimageJCombo.getSelectionIndex());
 					return;
 				}
-				if (RServe.isAlive()) {
+				if (RTools.isAlive()) {
 					if (transferTypeCombo.getSelectionIndex() == 3) {
 						Bio7Dialog.message("RGB transfer to ImageJ is not supported!\n Please use e.g. byte transfer for the R ,G ,B components\n which can be merged with ImageJ!");
 						return;
@@ -804,7 +804,7 @@ public class RImageMethodsView extends ViewPart {
 									if (event.getResult().isOK()) {
 										canTransfer = true;
 										RState.setBusy(false);
-										RServeUtil.listRObjects();
+										REval.listRObjects();
 									} else {
 										canTransfer = true;
 										RState.setBusy(false);
@@ -820,7 +820,7 @@ public class RImageMethodsView extends ViewPart {
 						Bio7Dialog.message("No image available!");
 					}
 				} else {
-					RServe.isAliveDialog();
+					RTools.isAliveDialog();
 				}
 			}
 		});
@@ -858,7 +858,7 @@ public class RImageMethodsView extends ViewPart {
 									if (event.getResult().isOK()) {
 										canTransfer = true;
 										RState.setBusy(false);
-										RServeUtil.listRObjects();
+										REval.listRObjects();
 									} else {
 										canTransfer = true;
 										RState.setBusy(false);
@@ -874,7 +874,7 @@ public class RImageMethodsView extends ViewPart {
 						Bio7Dialog.message("No image available!");
 					}
 				} else {
-					RServe.isAliveDialog();
+					RTools.isAliveDialog();
 				}
 
 			}
@@ -1038,7 +1038,7 @@ public class RImageMethodsView extends ViewPart {
 	}
 
 	/**
-	 * This methods transfers image data from ImageJ to R by means of Rserve. Matrix
+	 * This methods transfers image data from ImageJ to R (embedded R). Matrix
 	 * or vector data is created and variables for the width, height and the name of
 	 * the image will be created.
 	 * 

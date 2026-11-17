@@ -31,12 +31,12 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
 import com.eco.bio7.util.Util;
+import com.eco.bio7.rffm.RException;
 
 public class RefreshLoadedPackagesForCompletion extends Action implements IObjectActionDelegate {
 
@@ -44,7 +44,7 @@ public class RefreshLoadedPackagesForCompletion extends Action implements IObjec
 
 	public RefreshLoadedPackagesForCompletion(String text, REditor rEditor) {
 		super(text);
-		setActionDefinitionId("com.eco.bio7.reditor.rserve.refresh.packages");
+		setActionDefinitionId("com.eco.bio7.reditor.r.refresh.packages");
 		setId("com.eco.bio7.reditor.refresh.packages");
 		this.rEditor = rEditor;
 
@@ -71,7 +71,7 @@ public class RefreshLoadedPackagesForCompletion extends Action implements IObjec
 								// System.out.println("library("+entry.getValue()+")");
 								try {
 									c.eval("try(library(" + entry.getValue() + "))");
-								} catch (RserveException e) {
+								} catch (RException e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
@@ -81,7 +81,7 @@ public class RefreshLoadedPackagesForCompletion extends Action implements IObjec
 								 * Writes the available functions to a file!
 								 */
 								c.eval(".bio7WriteFunctionDef();");
-							} catch (RserveException e) {
+							} catch (RException e) {
 
 								e.printStackTrace();
 							}

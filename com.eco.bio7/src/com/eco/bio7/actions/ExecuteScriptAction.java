@@ -25,8 +25,8 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.BeanShellInterpreter;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.jobs.ImageMacroWorkspaceJob;
-import com.eco.bio7.rbridge.RServe;
-import com.eco.bio7.rbridge.RServeUtil;
+import com.eco.bio7.rbridge.RTools;
+import com.eco.bio7.rbridge.REval;
 import com.eco.bio7.rbridge.RState;
 
 public class ExecuteScriptAction extends Action {
@@ -45,19 +45,19 @@ public class ExecuteScriptAction extends Action {
 	public void run() {
 		
 		if (file.getName().endsWith(".R") || file.getName().endsWith(".r")) {
-			if (RServe.isAliveDialog()) {
+			if (RTools.isAliveDialog()) {
 				if (RState.isBusy() == false) {
 					RState.setBusy(true);
 					final RInterpreterJob Do = new RInterpreterJob(null, file.toString());
 					Do.addJobChangeListener(new JobChangeAdapter() {
 						public void done(IJobChangeEvent event) {
 							if (event.getResult().isOK()) {
-								int countDev = RServe.getDisplayNumber();
+								int countDev = RTools.getDisplayNumber();
 								RState.setBusy(false);
 								if (countDev > 0) {
-									RServe.closeAndDisplay();
+									RTools.closeAndDisplay();
 								}
-								RServeUtil.listRObjects();
+								REval.listRObjects();
 							}
 						}
 					});

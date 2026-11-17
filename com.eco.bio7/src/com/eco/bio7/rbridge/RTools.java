@@ -38,14 +38,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
-import org.rosuda.REngine.REXP;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RConnection;
 import com.eco.bio7.rbridge.backend.Backends;
 import com.eco.bio7.rbridge.backend.RBackend;
-import com.eco.bio7.rbridge.backend.RserveBackend;
-import org.rosuda.REngine.Rserve.RSession;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.batch.FileRoot;
@@ -66,27 +60,26 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.plugin.FolderOpener;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 /**
- * This class provides methods for the communication with the Rserve
+ * This class provides methods for the communication with the R
  * application.
  * 
  * @author Bio7
  * 
  */
-public class RServe {
+public class RTools {
 
 	private static String rout; // The output to the console
 
 	private static boolean Rrunning = false;
 
-	private static RConnection connection = null;
-
 	private static boolean isconnecting = false;
 
 	private static String[] selections = null;
-
-	private static RSession rSession;
 
 	/**
 	 * Evaluates an R expression without running in a job. This method can be used
@@ -96,20 +89,20 @@ public class RServe {
 	 * @param expression a R expression.
 	 */
 	public static void evaluateExt(String expression) {
-		if (RServe.isAlive()) {
+		if (RTools.isAlive()) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
 				try {
 					RBridge.getBackend().eval(expression);
 
-					int countDev = RServe.getDisplayNumber();
+					int countDev = RTools.getDisplayNumber();
 					if (countDev > 0) {
-						RServe.closeAndDisplay();
+						RTools.closeAndDisplay();
 					}
 
-				} catch (RserveException e) {
+				} catch (RException e) {
 					RState.setBusy(false);
-					System.out.println(e.getRequestErrorDescription());
+					System.out.println(e.getMessage());
 
 				}
 				RState.setBusy(false);
@@ -138,10 +131,10 @@ public class RServe {
 						int countDev = getDisplayNumber();
 						RState.setBusy(false);
 						if (countDev > 0) {
-							RServe.closeAndDisplay();
+							RTools.closeAndDisplay();
 						}
 						System.out.flush();
-						/* The next calls RServeUtil.listRObjects()! */
+						/* The next calls REval.listRObjects()! */
 						updatePackageImports();
 
 					} else {
@@ -159,15 +152,18 @@ public class RServe {
 			Process p;
 			// IPreferenceStore store =
 			// Bio7Plugin.getDefault().getPreferenceStore();
-			// if (store.getBoolean("RSERVE_NATIVE_START")) {
 			ConsolePageParticipant consol = ConsolePageParticipant.getConsolePageParticipantInstance();
 			p = consol.getRProcess();
 			/*
 			 * } else {
 			 * 
-			 * p = RConnectionJob.getProc(); }
 			 */
 
+			/* Embedded R (no process of R): the expression waits for R (it was lost before) */
+			if (p == null) {
+				RWait.whenFree("the R expression", () -> printJob(expression));
+				return;
+			}
 			// Write to the output!
 			if (p != null) {
 				final OutputStream os = p.getOutputStream();
@@ -212,10 +208,10 @@ public class RServe {
 						int countDev = getDisplayNumber();
 						RState.setBusy(false);
 						if (countDev > 0) {
-							RServe.closeAndDisplay();
+							RTools.closeAndDisplay();
 						}
 						System.out.flush();
-						/* The next calls RServeUtil.listRObjects()! */
+						/* The next calls REval.listRObjects()! */
 						updatePackageImports();
 
 					} else {
@@ -239,15 +235,18 @@ public class RServe {
 			Process p;
 			// IPreferenceStore store =
 			// Bio7Plugin.getDefault().getPreferenceStore();
-			// if (store.getBoolean("RSERVE_NATIVE_START")) {
 			ConsolePageParticipant consol = ConsolePageParticipant.getConsolePageParticipantInstance();
 			p = consol.getRProcess();
 			/*
 			 * } else {
 			 * 
-			 * p = RConnectionJob.getProc(); }
 			 */
 
+			/* Embedded R (no process of R): the expression waits for R (it was lost before) */
+			if (p == null) {
+				RWait.whenFree("the R expression", () -> printJobJoin(expression));
+				return;
+			}
 			// Write to the output!
 			if (p != null) {
 				final OutputStream os = p.getOutputStream();
@@ -293,10 +292,10 @@ public class RServe {
 
 						RState.setBusy(false);
 						if (countDev > 0) {
-							RServe.closeAndDisplay();
+							RTools.closeAndDisplay();
 						}
 						System.out.flush();
-						/* The next calls RServeUtil.listRObjects()! */
+						/* The next calls REval.listRObjects()! */
 						updatePackageImports();
 
 					} else {
@@ -336,11 +335,11 @@ public class RServe {
 	public static void print(String expression) {
 
 		/*
-		 * try { RServe.rout = RServe.connection.eval("try(paste(capture.output(print("
-		 * + expression + ")),collapse=\"\\n\"))").asString(); } catch
-		 * (REXPMismatchException e) {
+		 * try { RTools.rout = RTools.connection.eval("try(paste(capture.output(print("
+		 * + expression + ")),collapse=\"\\n\"))").firstString(); } catch
+		 * (RTypeException e) {
 		 * 
-		 * e.printStackTrace(); } catch (RserveException e) {
+		 * e.printStackTrace(); } catch (RException e) {
 		 * 
 		 * e.printStackTrace(); }
 		 */
@@ -348,42 +347,33 @@ public class RServe {
 		String tryend = "},error = function(e) {message(paste(\"Error: \",e$message))})";
 
 		try {
-			RServe.rout = RBridge.getBackend().eval(
+			RTools.rout = RBridge.getBackend().eval(
 					"paste(capture.output(print(" + trybegin + "(" + expression + ")" + tryend + ")),collapse=\"\\n\")")
-					.asString();
+					.firstString();
 
-		} catch (REXPMismatchException e) {
+		} catch (RTypeException e) {
 
 			e.printStackTrace();
-		} catch (RserveException e) {
+		} catch (RException e) {
 			System.out.println("Error : " + e.getMessage());
 		}
 
-		// StartBio7Utils.getConsoleInstance().cons.println(RServe.rout);
+		// StartBio7Utils.getConsoleInstance().cons.println(RTools.rout);
 
-		if (RServe.rout != null && RServe.rout.equals("NULL") == false) {
-			StartBio7Utils.getConsoleInstance().cons.println(RServe.rout);
+		if (RTools.rout != null && RTools.rout.equals("NULL") == false) {
+			StartBio7Utils.getConsoleInstance().cons.println(RTools.rout);
 			/* Send also the output to the R console view! */
 			if (RShellView.isConsoleExpanded()) {
 
-				RShellView.setTextConsole(RServe.rout);
+				RShellView.setTextConsole(RTools.rout);
 
 			}
 		}
 
 	}
 
-	/**
-	 * Returns a Rserve connection.
-	 * 
-	 * @return a R connection.
-	 */
-	public static RConnection getConnection() {
-		return connection;
-	}
-
 	static {
-		/* The R editor (other bundle) evaluates with the connection of RBridge (Rserve or embedded R) */
+		/* The R editor (other bundle) evaluates with the connection of RBridge (embedded R) */
 		REditor.setEvaluatorSupplier(RBridge::getBackend);
 		WorldWindView.setEvaluatorSupplier(RBridge::getBackend);
 		/* The hover of a variable in the R editor in a debug session (its value, open it in the table) */
@@ -394,7 +384,7 @@ public class RServe {
 	}
 
 	/**
-	 * Returns if the connection to Rserve is alive visible by means of a dialog.
+	 * Returns if R is running, with a dialog if it isn't.
 	 * 
 	 * @return a boolean value.
 	 */
@@ -418,24 +408,13 @@ public class RServe {
 	}
 
 	/**
-	 * Returns if the connection to Rserve is alive.
+	 * Returns if R is running.
 	 * 
 	 * @return a boolean value.
 	 */
 	public static boolean isAlive() {
 		return Rrunning;
 
-	}
-
-	/**
-	 * Sets a Rserve connection.
-	 * 
-	 * @param connection a R connection.
-	 */
-	public static void setConnection(RConnection connection) {
-		RServe.connection = connection;
-		WorldWindView.setRConnection(connection);
-		REditor.setConnection(connection);
 	}
 
 	/**
@@ -467,7 +446,7 @@ public class RServe {
 	}
 
 	/**
-	 * Returns if the Rserve application is running.
+	 * Returns if R is running.
 	 * 
 	 * @return a boolean value.
 	 */
@@ -476,7 +455,7 @@ public class RServe {
 	}
 
 	/**
-	 * Set the Rserve running value.
+	 * Sets if R is running.
 	 * 
 	 * @param running a boolean value.
 	 */
@@ -490,7 +469,7 @@ public class RServe {
 	 * @param rout a string value.
 	 */
 	public static void setRout(String rout) {
-		RServe.rout = rout;
+		RTools.rout = rout;
 	}
 
 	/**
@@ -503,7 +482,7 @@ public class RServe {
 	}
 
 	/**
-	 * Returns if the Bio7 application is connected to the Rserve application.
+	 * Returns if Bio7 is connected to R.
 	 * 
 	 * @return a boolean value.
 	 */
@@ -559,7 +538,7 @@ public class RServe {
 			/*
 			 * try { rout = RBridge.getBackend().eval("" +
 			 * "try(paste(capture.output(source(fileroot,echo=T)),collapse=\"\\n\"))").
-			 * asString(); } catch (REXPMismatchException e) {
+			 * asString(); } catch (RTypeException e) {
 			 * 
 			 * e.printStackTrace(); }
 			 */
@@ -571,8 +550,8 @@ public class RServe {
 			String rCommand = "" + "paste(capture.output(tryCatch(source(fileroot," + options
 					+ "),error = function(e) {message(paste0(\"\n\",e))})),collapse=\"\\n\")";
 			try {
-				rout = RBridge.getBackend().eval(rCommand).asString();
-			} catch (REXPMismatchException e) {
+				rout = RBridge.getBackend().eval(rCommand).firstString();
+			} catch (RTypeException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -588,7 +567,7 @@ public class RServe {
 				}
 			}
 
-		} catch (RserveException e) {
+		} catch (RException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -617,7 +596,7 @@ public class RServe {
 			RBridge.getBackend()
 					.eval("tryCatch(source(fileroot,echo=F),error = function(e) {message(paste0(\"\n\",e))})");
 
-		} catch (RserveException e) {
+		} catch (RException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -917,26 +896,26 @@ public class RServe {
 
 		int countDev = 0;
 		if (customDevice) {
-			REXP devList = null;
+			RValue devList = null;
 			try {
 				/* The plot canvas device of embedded R stays open (it shows the plots itself) */
 				devList = RBridge.getBackend().eval("sum(!(names(dev.list()) %in% c('bio7PlotCanvas', 'bio7PlotVector')))");
-			} catch (RserveException e) {
+			} catch (RException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
 			try {
-				countDev = devList.asInteger();
+				countDev = devList.firstInt();
 				// System.out.println(countDev);
-			} catch (REXPMismatchException e) {
+			} catch (RTypeException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
 			try {
 				RBridge.getBackend().eval("if (length(dev.list()) > 0 && !(names(dev.cur()) %in% c('bio7PlotCanvas', 'bio7PlotVector'))) dev.off()");
-			} catch (RserveException e) {
+			} catch (RException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -1013,26 +992,6 @@ public class RServe {
 			}
 
 		}
-	}
-
-	/**
-	 * A method to store the current RSession.
-	 * 
-	 * @param rSess the RSession
-	 */
-	public static void setRsession(RSession rSess) {
-		rSession = rSess;
-
-	}
-
-	/**
-	 * A method to get the current stored RSession.
-	 * 
-	 * @return the RSession
-	 */
-	public static RSession getRsession() {
-
-		return rSession;
 	}
 
 }

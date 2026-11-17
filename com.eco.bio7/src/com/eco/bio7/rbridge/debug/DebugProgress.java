@@ -85,12 +85,14 @@ public class DebugProgress {
 	public static void startSession() {
 		debugSessionActive = true;
 		stepping = false;
+		DebugVariablesView.updateActions();
 	}
 
 	/* Called to end the debug session */
 	public static void endSession() {
 		debugSessionActive = false;
 		stepping = false;
+		DebugVariablesView.updateActions();
 	}
 
 	/* Check if a debug session is active */
@@ -507,8 +509,34 @@ public class DebugProgress {
 	}
 
 	/* The session has ended (the script has finished or R has left Browse mode) */
+	/**
+	 * Ends a layout of several plots which the debugged script has set (e.g.,
+	 * par(mfrow = c(2, 3)), maybe half filled after Stop): the next plot starts
+	 * on a new page with one plot. As soon as R is free (after Q or an interrupt).
+	 */
+	public static void resetPlotLayoutWhenFree() {
+		Thread t = new Thread(() -> {
+			try {
+				long end = System.currentTimeMillis() + 30000;
+				while ((com.eco.bio7.rbridge.backend.EmbeddedR.isBrowsing() || com.eco.bio7.rbridge.backend.EmbeddedR.isBusy())
+						&& System.currentTimeMillis() < end) {
+					Thread.sleep(100);
+				}
+				com.eco.bio7.rbridge.backend.RBackend r = com.eco.bio7.rbridge.RBridge.getBackend();
+				if (r != null && !com.eco.bio7.rbridge.backend.EmbeddedR.isBrowsing()) {
+					r.voidEval("if (dev.cur() > 1 && any(par('mfrow') != 1)) par(mfrow = c(1, 1))");
+				}
+			} catch (Exception e) {
+				/* R ended or waits again */
+			}
+		}, "R Debug plot layout");
+		t.setDaemon(true);
+		t.start();
+	}
+
 	private static void sessionEnded(String error) {
 		endSession();
+		resetPlotLayoutWhenFree();
 		if (!com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning()) {
 			ConsolePageParticipant c = ConsolePageParticipant.getConsolePageParticipantInstance();
 			c.pipeToRConsole("options(prompt=\"> \")");

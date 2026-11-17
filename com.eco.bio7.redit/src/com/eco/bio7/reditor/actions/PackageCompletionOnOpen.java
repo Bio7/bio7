@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
-import org.rosuda.REngine.REXP;
 
 import com.eco.bio7.rbridge.REvaluator;
 import com.eco.bio7.rbridge.RState;
@@ -32,6 +31,7 @@ import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
+import com.eco.bio7.rffm.RValue;
 
 /**
  * Adds the packages of an opened R script (library(), require()) to the code
@@ -217,10 +217,10 @@ public final class PackageCompletionOnOpen {
 	 * function definitions are written. Returns false if none was attached.
 	 */
 	private static boolean attach(REvaluator c, String vector) throws Exception {
-		REXP x = c.eval("local({ p <- " + vector + "; p <- p[!(paste0('package:', p) %in% search())]; "
+		RValue x = c.eval("local({ p <- " + vector + "; p <- p[!(paste0('package:', p) %in% search())]; "
 				+ "ok <- vapply(p, function(n) isTRUE(suppressWarnings(require(n, character.only = TRUE, quietly = TRUE))), logical(1)); "
 				+ "as.character(p[ok]) })");
-		String[] attached = x == null || x.isNull() ? new String[0] : x.asStrings();
+		String[] attached = x == null || x.isNull() ? new String[0] : x.strings();
 		if (attached == null || attached.length == 0) {
 			return false;
 		}
@@ -233,8 +233,8 @@ public final class PackageCompletionOnOpen {
 	 * function definitions (needs the current R helper).
 	 */
 	private static boolean load(REvaluator c, String vector) throws Exception {
-		REXP current = c.eval("'packages' %in% names(formals(.bio7WriteFunctionDef))");
-		if (current == null || current.isNull() || current.asIntegers()[0] != 1) {
+		RValue current = c.eval("'packages' %in% names(formals(.bio7WriteFunctionDef))");
+		if (current == null || current.isNull() || current.ints()[0] != 1) {
 			System.out.println(PREFIX + "the R helper is outdated: please restart R (or use the mode 'Attach packages')");
 			return false;
 		}

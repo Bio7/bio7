@@ -14,14 +14,10 @@ package _util;
 import java.awt.Point;
 import java.util.ArrayList;
 
-import org.rosuda.REngine.REXPLogical;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.REngineException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -32,6 +28,9 @@ import ij.process.ColorProcessor;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class ImageToRTransfer {
 
@@ -41,7 +40,7 @@ public class ImageToRTransfer {
 
 	/**
 	 * This methods transfers image stack data of ROI selections (ROI Manager) to R
-	 * by means of Rserve. A feature matrix from the slices will be created and
+	 * (embedded R). A feature matrix from the slices will be created and
 	 * variables for the width, height and the name of the image ROI data will be
 	 * created in the R workspace, too. Signatures can be added, too (from the group
 	 * number or extracted from the ROI names number at the end seperated by an
@@ -69,7 +68,7 @@ public class ImageToRTransfer {
 			return;
 		}
 
-		/* Rserve or embedded R (the backend of Bio7) */
+		/* embedded R (the backend of Bio7) */
 		RBackend connection = RBridge.getBackend();
 
 		if (RoiManager.getInstance() != null) {
@@ -78,7 +77,7 @@ public class ImageToRTransfer {
 				System.out.println("NO ROI's available in ROI Manager!");
 				return;
 			}
-			if (RServe.isAlive()) {
+			if (RTools.isAlive()) {
 
 				/*
 				 * if ((imp.getStackSize()) <= 1) {
@@ -96,7 +95,7 @@ public class ImageToRTransfer {
 
 					connection.eval("imageSizeX<-" + w);
 
-				} catch (RserveException e1) {
+				} catch (RException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
@@ -115,7 +114,7 @@ public class ImageToRTransfer {
 					try {
 						connection.eval("try(" + roiName + "<-NULL)");
 
-					} catch (RserveException e2) {
+					} catch (RException e2) {
 						// TODO Auto-generated catch block
 						System.out.println("Please select a proper name for the ROI's in the ROI Manager\n"
 								+ "Some special chars are not supported for the transfer to R!");
@@ -156,7 +155,7 @@ public class ImageToRTransfer {
 							l = "layer" + i;
 							try {
 								connection.assign(l, valD);
-							} catch (REngineException e1) {
+							} catch (RException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
@@ -166,7 +165,7 @@ public class ImageToRTransfer {
 							try {
 								connection.eval("try(" + roiName + "<-cbind(" + roiName + "," + l + "))");
 								connection.eval("remove(" + l + ")");
-							} catch (RserveException e1) {
+							} catch (RException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
@@ -180,7 +179,7 @@ public class ImageToRTransfer {
 							l = "layer" + i;
 							try {
 								connection.assign(l, valI);
-							} catch (REngineException e1) {
+							} catch (RException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
@@ -190,7 +189,7 @@ public class ImageToRTransfer {
 							try {
 								connection.eval("try(" + roiName + "<-cbind(" + roiName + "," + l + "))");
 								connection.eval("remove(" + l + ")");
-							} catch (RserveException e1) {
+							} catch (RException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
@@ -204,7 +203,7 @@ public class ImageToRTransfer {
 							l = "layer" + i;
 							try {
 								connection.assign(l, valB);
-							} catch (REngineException e1) {
+							} catch (RException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
@@ -214,7 +213,7 @@ public class ImageToRTransfer {
 							try {
 								connection.eval("try(" + roiName + "<-cbind(" + roiName + "," + l + "))");
 								connection.eval("remove(" + l + ")");
-							} catch (RserveException e1) {
+							} catch (RException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
@@ -248,7 +247,7 @@ public class ImageToRTransfer {
 										}
 									}
 
-								} catch (RserveException e1) {
+								} catch (RException e1) {
 									// TODO Auto-generated catch block
 									e1.printStackTrace();
 								}
@@ -277,7 +276,7 @@ public class ImageToRTransfer {
 										}
 									}
 
-								} catch (RserveException e1) {
+								} catch (RException e1) {
 									// TODO Auto-generated catch block
 									e1.printStackTrace();
 								}
@@ -307,7 +306,7 @@ public class ImageToRTransfer {
 										}
 									}
 
-								} catch (RserveException e1) {
+								} catch (RException e1) {
 									// TODO Auto-generated catch block
 									e1.printStackTrace();
 								}
@@ -343,64 +342,64 @@ public class ImageToRTransfer {
 	 */
 	public static ImagePlus imageFromR(String name) {
 		ImagePlus imp = null;
-		REXPLogical bolXExists = null;
-		REXPLogical bolYExists = null;
-		REXPLogical bolDoubleExists = null;
-		REXPLogical bolExists = null;
-		REXPLogical isNumeric = null;
-		REXPLogical isImageMatrixNull = null;
+		RValue bolXExists = null;
+		RValue bolYExists = null;
+		RValue bolDoubleExists = null;
+		RValue bolExists = null;
+		RValue isNumeric = null;
+		RValue isImageMatrixNull = null;
 		ImageProcessor ip;
 		RBackend c = RBridge.getBackend();
-		if (RServe.isAlive()) {
+		if (RTools.isAlive()) {
 			/* Test if the imageMatrix R object is null! */
 			try {
-				isImageMatrixNull = (REXPLogical) c.eval("try(is.null("+name+"))");
-			} catch (RserveException e) {
+				isImageMatrixNull = (RValue) c.eval("try(is.null("+name+"))");
+			} catch (RException e) {
 				e.printStackTrace();
 			}
-			boolean[] boolIsImageMatrixNull = isImageMatrixNull.isTRUE();
+			boolean[] boolIsImageMatrixNull = isImageMatrixNull.booleans();
 			/* Test if the imageMatrix object is null and return null! */
 			if (boolIsImageMatrixNull[0]) {
 				return null;
 			}
 			if (name.isEmpty() == false && name != null) {
 				try {
-					bolExists = (REXPLogical) c.eval("try(exists(\"" + name + "\"))");
-				} catch (RserveException e1) {
+					bolExists = (RValue) c.eval("try(exists(\"" + name + "\"))");
+				} catch (RException e1) {
 					e1.printStackTrace();
 				}
-				boolean[] bolE = bolExists.isTRUE();
+				boolean[] bolE = bolExists.booleans();
 				if (bolE[0] && name.equals("image") == false) {
 
 					try {
-						isNumeric = (REXPLogical) c.eval("try(is.numeric(" + name + ")||is.raw(" + name + "))");
-					} catch (RserveException e) {
+						isNumeric = (RValue) c.eval("try(is.numeric(" + name + ")||is.raw(" + name + "))");
+					} catch (RException e) {
 						e.printStackTrace();
 					}
-					boolean[] bolNumeric = isNumeric.isTRUE();
+					boolean[] bolNumeric = isNumeric.booleans();
 					if (bolNumeric[0]) {
 						try {
-							bolXExists = (REXPLogical) c.eval("try(exists(\"imageSizeX\"))");
-							bolYExists = (REXPLogical) c.eval("try(exists(\"imageSizeY\"))");
-						} catch (RserveException e1) {
+							bolXExists = (RValue) c.eval("try(exists(\"imageSizeX\"))");
+							bolYExists = (RValue) c.eval("try(exists(\"imageSizeY\"))");
+						} catch (RException e1) {
 
 							e1.printStackTrace();
 						}
-						boolean[] bolX = bolXExists.isTRUE();
-						boolean[] bolY = bolYExists.isTRUE();
+						boolean[] bolX = bolXExists.booleans();
+						boolean[] bolY = bolYExists.booleans();
 						if (bolX[0] == true && bolY[0] == true) {
 							int[] imageData = null;
 							int imagesSizeY;
 							try {
-								imagesSizeY = (int) c.eval("try(imageSizeY)").asDouble();
+								imagesSizeY = (int) c.eval("try(imageSizeY)").firstDouble();
 
-								int imagesSizeX = (int) c.eval("try(imageSizeX)").asDouble();
-								bolDoubleExists = (REXPLogical) c.eval("try(is.integer(" + name + "))");
-								boolean[] bolInteger = bolDoubleExists.isTRUE();
+								int imagesSizeX = (int) c.eval("try(imageSizeX)").firstDouble();
+								bolDoubleExists = (RValue) c.eval("try(is.integer(" + name + "))");
+								boolean[] bolInteger = bolDoubleExists.booleans();
 								if (bolInteger[0]) {
-									imageData = c.eval("try(" + name + ")").asIntegers();
+									imageData = c.eval("try(" + name + ")").ints();
 								} else {
-									imageData = c.eval("try(as.integer(" + name + "))").asIntegers();
+									imageData = c.eval("try(as.integer(" + name + "))").ints();
 								}
 
 								if (imageData != null) {
@@ -421,10 +420,10 @@ public class ImageToRTransfer {
 
 								}
 
-							} catch (REXPMismatchException e) {
+							} catch (RTypeException e) {
 
 								e.printStackTrace();
-							} catch (RserveException e) {
+							} catch (RException e) {
 
 								e.printStackTrace();
 							}

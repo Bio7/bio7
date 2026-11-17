@@ -17,7 +17,7 @@ public class ActionUtil {
                 try {
                     IWorkbenchPage page = PlatformUI.getWorkbench()
                             .getActiveWorkbenchWindow().getActivePage();
-                    page.showView(BROWSER_VIEW_ID);
+                    page.bringToTop(page.showView(BROWSER_VIEW_ID, null, IWorkbenchPage.VIEW_VISIBLE));
                 } catch (PartInitException e) {
                     e.printStackTrace();
                 }
@@ -34,7 +34,8 @@ public class ActionUtil {
                 try {
                     IWorkbenchPage page = PlatformUI.getWorkbench()
                             .getActiveWorkbenchWindow().getActivePage();
-                    IViewPart view = page.showView(BROWSER_VIEW_ID);
+                    IViewPart view = page.showView(BROWSER_VIEW_ID, null, IWorkbenchPage.VIEW_VISIBLE);
+                    page.bringToTop(view);
                     // Use reflection or a shared interface to call setLocation
                     // (see note below)
                     java.lang.reflect.Method m = view.getClass().getMethod("setLocation", String.class);

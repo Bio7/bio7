@@ -1,168 +1,178 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- The templates of the R editor. $$ is a $ in R, ${cursor}: the position after the insertion. -->
 <templates>
+<template id="rscript.for" context="rscript" name="for" description="iterate over a vector" autoinsert="false" deleted="false" enabled="true">for (${x} in ${vector}) {
+  ${cursor}
+}</template>
+<template id="rscript.for.index" context="rscript" name="for" description="iterate with an index (seq_along)" autoinsert="false" deleted="false" enabled="true">for (${i} in seq_along(${vector})) {
+  ${cursor}
+}</template>
+<template id="rscript.while" context="rscript" name="while" description="while loop" autoinsert="false" deleted="false" enabled="true">while (${condition}) {
+  ${cursor}
+}</template>
+<template id="rscript.repeat" context="rscript" name="repeat" description="repeat loop with break" autoinsert="false" deleted="false" enabled="true">repeat {
+  ${cursor}
+  if (${condition}) break
+}</template>
+<template id="rscript.if" context="rscript" name="if" description="if statement" autoinsert="false" deleted="false" enabled="true">if (${condition}) {
+  ${cursor}
+}</template>
+<template id="rscript.ifelse" context="rscript" name="ifelse" description="if else statement" autoinsert="false" deleted="false" enabled="true">if (${condition}) {
+  ${cursor}
+} else {
+  
+}</template>
+<template id="rscript.else" context="rscript" name="else" description="else block (after the } of an if)" autoinsert="false" deleted="false" enabled="true">else {
+  ${cursor}
+}</template>
+<template id="rscript.elseif" context="rscript" name="elseif" description="else if block (after the } of an if)" autoinsert="false" deleted="false" enabled="true">else if (${condition}) {
+  ${cursor}
+}</template>
+<template id="rscript.switch" context="rscript" name="switch" description="switch with alternatives and a default" autoinsert="false" deleted="false" enabled="true">${result} &lt;- switch(${type},
+  "a" = ,
+  "b" = "a or b",
+  "c" = "c",
+  stop("Unknown type: ", ${type})
+)</template>
+<template id="rscript.function" context="rscript" name="function" description="function definition" autoinsert="false" deleted="false" enabled="true">${name} &lt;- function(${x}) {
+  ${cursor}
+}</template>
+<template id="rscript.function.checks" context="rscript" name="function" description="function with argument checks and a default" autoinsert="false" deleted="false" enabled="true">${name} &lt;- function(${x}, ${n} = 10) {
+  stopifnot(is.numeric(${x}), length(${n}) == 1, ${n} &gt; 0)
+  ${cursor}
+}</template>
+<template id="rscript.lapply" context="rscript" name="lapply" description="apply a function to each element (a list)" autoinsert="false" deleted="false" enabled="true">${result} &lt;- lapply(${list}, function(${x}) {
+  ${cursor}
+})</template>
+<template id="rscript.vapply" context="rscript" name="vapply" description="apply a function to each element (a vector of a type)" autoinsert="false" deleted="false" enabled="true">${result} &lt;- vapply(${vector}, function(${x}) {
+  ${cursor}
+}, numeric(1))</template>
+<template id="rscript.tryCatch" context="rscript" name="tryCatch" description="handle errors and warnings" autoinsert="false" deleted="false" enabled="true">${result} &lt;- tryCatch({
+  ${cursor}
+}, warning = function(w) {
+  message("Warning: ", conditionMessage(w))
+  NULL
+}, error = function(e) {
+  message("Error: ", conditionMessage(e))
+  NULL
+}, finally = {
+  
+})</template>
+<template id="rscript.timing" context="rscript" name="timing" description="measure the time of code" autoinsert="false" deleted="false" enabled="true">${t} &lt;- system.time({
+  ${cursor}
+})
+print(${t})</template>
+<template id="rscript.progress" context="rscript" name="progress" description="loop with a text progress bar" autoinsert="false" deleted="false" enabled="true">${pb} &lt;- txtProgressBar(min = 0, max = ${n}, style = 3)
+for (${i} in seq_len(${n})) {
+  ${cursor}
+  setTxtProgressBar(${pb}, ${i})
+}
+close(${pb})</template>
+<template id="rscript.package" context="rscript" name="package" description="install a package if necessary and load it" autoinsert="false" deleted="false" enabled="true">if (!requireNamespace("${pkg}", quietly = TRUE)) {
+  install.packages("${pkg}")
+}
+library(${pkg})</template>
+<template id="rscript.read.csv" context="rscript" name="read csv" description="read a CSV file" autoinsert="false" deleted="false" enabled="true">${data} &lt;- read.csv("${file}.csv", header = TRUE, stringsAsFactors = FALSE)
+str(${data})
+summary(${data})</template>
+<template id="rscript.write.csv" context="rscript" name="write csv" description="write a data frame to a CSV file" autoinsert="false" deleted="false" enabled="true">write.csv(${data}, "${file}.csv", row.names = FALSE)</template>
+<template id="rscript.data.frame" context="rscript" name="data frame" description="create a data frame" autoinsert="false" deleted="false" enabled="true">${data} &lt;- data.frame(
+  group = rep(c("A", "B"), each = 5),
+  value = rnorm(10),
+  stringsAsFactors = FALSE
+)</template>
+<template id="rscript.aggregate" context="rscript" name="aggregate" description="statistics of groups" autoinsert="false" deleted="false" enabled="true">${result} &lt;- aggregate(${value} ~ ${group}, data = ${data}, FUN = mean)</template>
+<template id="rscript.pipe" context="rscript" name="pipe" description="native pipe" autoinsert="false" deleted="false" enabled="true">${data} |&gt;
+  subset(${condition}) |&gt;
+  head()</template>
+<template id="rscript.plot" context="rscript" name="plot" description="scatter plot with labels" autoinsert="false" deleted="false" enabled="true">plot(${x}, ${y}, pch = 19, col = "steelblue",
+  main = "${title}", xlab = "x", ylab = "y")
+grid()</template>
+<template id="rscript.par" context="rscript" name="par" description="several plots (par restored at the end)" autoinsert="false" deleted="false" enabled="true">op &lt;- par(mfrow = c(${rows}, ${cols}))
+${cursor}
+par(op)</template>
+<template id="rscript.ggplot" context="rscript" name="ggplot" description="ggplot2 scatter plot" autoinsert="false" deleted="false" enabled="true">library(ggplot2)
+ggplot(${data}, aes(x = ${x}, y = ${y})) +
+  geom_point() +
+  labs(title = "${title}") +
+  theme_minimal()</template>
+<template id="rscript.lm" context="rscript" name="lm" description="linear model with summary and diagnostics" autoinsert="false" deleted="false" enabled="true">${fit} &lt;- lm(${y} ~ ${x}, data = ${data})
+summary(${fit})
+op &lt;- par(mfrow = c(2, 2))
+plot(${fit})
+par(op)</template>
+<template id="rscript.S3" context="rscript" name="S3 class" description="S3 class: constructor and print method" autoinsert="false" deleted="false" enabled="true">new_${plant} &lt;- function(name, height = 0) {
+  obj &lt;- list(name = name, height = height)
+  class(obj) &lt;- "${plant}"
+  obj
+}
 
-<template id="rscript.for"
-	context="rscript" 
-	name="for"
-	description="iterate over a vector" 
-	autoinsert="false" 
-	>for (${x} in ${vector}) {${cursor}}&#13;
-</template>
+print.${plant} &lt;- function(x, ...) {
+  cat("${plant}:", x$$name, "- height:", x$$height, "\n")
+  invisible(x)
+}
 
-<template id="rscript.else" 
-	context="rscript" 
-	name="else"
-	description="else block" 
-	autoinsert="false" 
-	>else {${cursor}}&#13;
-	</template>
+p &lt;- new_${plant}("Corynephorus canescens", 15)
+print(p)</template>
+<template id="rscript.S4" context="rscript" name="S4 class" description="S4 class with validity, generic and method" autoinsert="false" deleted="false" enabled="true">setClass("${Plant}",
+  slots = c(name = "character", height = "numeric"),
+  prototype = list(name = NA_character_, height = 0),
+  validity = function(object) {
+    if (length(object@height) != 1 || object@height &lt; 0) {
+      return("height must be a single non-negative number")
+    }
+    TRUE
+  }
+)
 
-<template id="rscript.elseif"
-	context="rscript" 
-	name="elseif"
-	description="else if block" 
-	autoinsert="false" 
-	>else if (${condition}) {${cursor}}&#13;
-	</template>
+setGeneric("grow", function(object, amount) standardGeneric("grow"))
+setMethod("grow", "${Plant}", function(object, amount) {
+  object@height &lt;- object@height + amount
+  validObject(object)
+  object
+})
 
-<template id="rscript.for.index"
-	context="rscript" 
-	name="for"
-	description="iterate with index over a vector" 
-	autoinsert="false" 
-	>for (${i} in 1:length(${vector})) {${cursor}}&#13;
-	</template>
-
-<template id="rscript.function"
-	context="rscript" 
-	name="function"
-	description="function definition" 
-	autoinsert="false" 
-	>${myFunc}&lt;-function(${parameter}) {${cursor}}&#13;
-	</template>
-
-<template id="rscript.if"
-	context="rscript" 
-	name="if"
-	description="if statement" 
-	autoinsert="false" 
-	>if (${condition}) {${cursor}}&#13;
-	</template>
-
-<template id="rscript.ifelse"
-	context="rscript" 
-	name="ifelse"
-	description="if else statement" 
-	autoinsert="false" 
-	>if (${condition}) {${cursor}} else{}&#13;
-	</template>
-
-<template id="rscript.repeat"
-	context="rscript" 
-	name="repeat"
-	description="repeat loop block" 
-	autoinsert="false" 
-	>repeat {${cursor}}&#13;
-	</template>
-
-<template id="rscript.while"
-	context="rscript" 
-	name="while"
-	description="while loop block" 
-	autoinsert="false" 
-	>while (${condition}) {${cursor}}&#13;
-	</template>
-	
-<template id="rscript.S3"
-	context="rscript" 
-	name="S3 class"
-	description="S3 class" 
-	autoinsert="false" 
-	>${listName} &lt;- list(stringVar = "AString", intVar = 10, doubleVar = 2.1)&#13;
-class(${listName}) &lt;- "${className}"&#13;
-${listName}$$stringVar
-</template>
-
-<template id="rscript.S4"
-	context="rscript" 
-	name="S4 class"
-	description="S4 class" 
-	autoinsert="false" 
-	>
-${myS4Class} &lt;- setClass("${myS4Class}",&#13;
-    slots = c(&#13;
-       var1 = "numeric",&#13;
-       var2   = "numeric",&#13;
-       var3   = "logical"&#13;
-             ),&#13;
-     prototype=list(&#13;
-        var1 = c(0.0,0.0),&#13;
-        var3   = TRUE,&#13;
-        var2 = c(0.0,0.0)&#13;
-              ),&#13;
-     validity=function(object)
-        {
-           if(is.numeric(object@var1)) {&#13;
-              return("Correct datatype!")&#13;
-           }&#13;
-           else {&#13;
-              return("Wrong datatype!")&#13;
-           }  
-           return(TRUE)&#13;
-         }&#13;
-      )&#13;
-anObject &lt;- ${myS4Class}()        	
-</template>
-
-<template id="rscript.refClass"
-	context="rscript" 
-	name="Reference class"
-	description="reference class" 
-	autoinsert="false" 
-	>${plant} &lt;- setRefClass("${plant}",&#13;
-    fields = list(name = "character", weight = "numeric", age = "numeric"),&#13;
-    methods = list(&#13;
-      getName = function(x) {&#13;
-        name &lt;&lt;- name&#13;
-      },&#13;
-      getWeight = function(x) {&#13;
-        weight &lt;&lt;- weight&#13;
-      },&#13;
-      getAge = function(x) {&#13;
-        age &lt;&lt;- age&#13;
-      }&#13;
-    )&#13;
-)&#13;
-s &lt;- ${plant}(name = "Corynephorus canescens", weight = 15, age = 3.5)&#13;
-</template>
-
-<template id="rscript.R6Class"
-	context="rscript" 
-	name="R6 class"
-	description="R6 class" 
-	autoinsert="false" 
-	>library(R6)
-${className} &lt;- R6Class("${className}",&#13;
-    public = list(&#13;
-      var1 = NULL,&#13;
-      var2 = NULL,&#13;
-      initialize = function(var1 = NA, var2 = NA) {&#13;
-        self$$var1 &lt;- var1&#13;
-        self$$var2 &lt;- var2&#13;
-        self$$result()&#13;
-      },&#13;
-      set_var2 = function(val) {&#13;
-        self$$var2 &lt;- val&#13;
-      },&#13;
-      result = function() {&#13;
-        cat(paste0("The given values are: ", self$$var1, " and ", self$$var2,".\n"))&#13;
-      }&#13;
-   )&#13;
-)&#13;
-testObject &lt;- ${className}$$new("high", "green")&#13;
-</template>
+p &lt;- new("${Plant}", name = "Corynephorus canescens", height = 15)
+p &lt;- grow(p, 2)
+p@height</template>
+<template id="rscript.refClass" context="rscript" name="Reference class" description="reference class with fields and methods" autoinsert="false" deleted="false" enabled="true">${Plant} &lt;- setRefClass("${Plant}",
+  fields = list(name = "character", weight = "numeric", age = "numeric"),
+  methods = list(
+    getName = function() {
+      name
+    },
+    setWeight = function(value) {
+      weight &lt;&lt;- value
+      invisible(.self)
+    },
+    show = function() {
+      cat("${Plant}:", name, "- weight:", weight, "- age:", age, "\n")
+    }
+  )
+)
+p &lt;- ${Plant}$$new(name = "Corynephorus canescens", weight = 15, age = 3.5)
+p$$setWeight(16)
+p</template>
+<template id="rscript.R6Class" context="rscript" name="R6 class" description="R6 class with fields and methods" autoinsert="false" deleted="false" enabled="true">library(R6)
+${Plant} &lt;- R6Class("${Plant}",
+  public = list(
+    name = NULL,
+    height = NULL,
+    initialize = function(name, height = 0) {
+      self$$name &lt;- name
+      self$$height &lt;- height
+    },
+    grow = function(amount) {
+      self$$height &lt;- self$$height + amount
+      invisible(self)
+    },
+    print = function(...) {
+      cat("${Plant}:", self$$name, "- height:", self$$height, "\n")
+      invisible(self)
+    }
+  )
+)
+p &lt;- ${Plant}$$new("Corynephorus canescens", 15)
+p$$grow(2)
+p</template>
 </templates>
-
-
-
-

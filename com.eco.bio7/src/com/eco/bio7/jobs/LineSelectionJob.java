@@ -20,12 +20,11 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.preferences.PreferenceConstants;
-import com.eco.bio7.rbridge.RConnectionJob;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
+import com.eco.bio7.rffm.RException;
 
 public class LineSelectionJob extends WorkspaceJob {
 
@@ -48,7 +47,7 @@ public class LineSelectionJob extends WorkspaceJob {
 					cscript.eval("try(source(f, echo=T))");
 					cscript.eval("try(close(f))");
 					cscript.eval("try(rm(f))");
-					} catch (RserveException e) {
+					} catch (RException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -65,7 +64,7 @@ public class LineSelectionJob extends WorkspaceJob {
 					cscript.eval("try(rm(f))");
 					//writeToConsole();
 					//cscript.voidEval("try(readLines(con = stdin()))");
-					} catch (RserveException e) {
+					} catch (RException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -74,7 +73,7 @@ public class LineSelectionJob extends WorkspaceJob {
 
 		} else {
 
-			RServe.isAliveDialog();
+			RTools.isAliveDialog();
 
 		}
 
@@ -82,38 +81,14 @@ public class LineSelectionJob extends WorkspaceJob {
 	}
 
 	public static void writeOutput() {
-		writeToConsole();
 		
 			try {
 				RBridge.getBackend().voidEval("try(readLines(con = stdin()))");
-			} catch (RserveException e) {
+			} catch (RException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		
-		writeToConsole();
-
-	}
-
-	public static void writeToConsole() {
-		new Thread() {
-			public void run() {
-				Process p = RConnectionJob.getProc();
-				// Write to the output!
-				final OutputStream os = p.getOutputStream();
-				final OutputStreamWriter osw = new OutputStreamWriter(os);
-				final BufferedWriter bw = new BufferedWriter(osw, 100);
-
-				try {
-					bw.write("\n");
-
-					bw.close();
-				} catch (IOException e) {
-					System.err.println("");
-				}
-
-			}
-		}.start();
 
 	}
 

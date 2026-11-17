@@ -25,9 +25,9 @@ import com.eco.bio7.rbridge.backend.RBackend;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
-import com.eco.bio7.rbridge.RServeUtil;
+import com.eco.bio7.rbridge.REval;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditors.REditor;
@@ -52,7 +52,7 @@ public class ExecuteRTextSelection extends Action {
 		this.window = window;
 		buff = new StringBuffer();
 
-		setId("com.eco.bio7.rserve_selection");
+		setId("com.eco.bio7.r_selection");
 		setActionDefinitionId("com.eco.bio7.execute_r_select");
 	}
 
@@ -138,7 +138,7 @@ public class ExecuteRTextSelection extends Action {
 
 							}
 
-							// RServe.printJobJoin(code);
+							// RTools.printJobJoin(code);
 
 							/* Queued (no join: the UI stays free); the file is deleted when it was evaluated */
 							if (temp != null) {
@@ -175,7 +175,7 @@ public class ExecuteRTextSelection extends Action {
 		interrupt = true;
 		/* The selections not yet evaluated are dropped */
 		clearQueue();
-		// RServeUtil.evalR("try(try(" + code + "))", null);
+		// REval.evalR("try(try(" + code + "))", null);
 		buff.setLength(0); // clear buffer!
 	}
 
@@ -250,7 +250,7 @@ public class ExecuteRTextSelection extends Action {
 	}
 
 	private static void submit(String script, File file, boolean deleteFile) {
-		if (!RServe.isAliveDialog()) {
+		if (!RTools.isAliveDialog()) {
 			if (deleteFile && file != null) {
 				file.delete();
 			}
@@ -297,7 +297,7 @@ public class ExecuteRTextSelection extends Action {
 					next.file().delete();
 				}
 				boolean ok = event.getResult().isOK();
-				int countDev = ok ? RServe.getDisplayNumber() : 0;
+				int countDev = ok ? RTools.getDisplayNumber() : 0;
 				/* R free first, then not running: a selection in between is queued, not refused */
 				RState.setBusy(false);
 				boolean more;
@@ -306,11 +306,11 @@ public class ExecuteRTextSelection extends Action {
 					more = !queue.isEmpty();
 				}
 				if (countDev > 0) {
-					RServe.closeAndDisplayNoJoin();
+					RTools.closeAndDisplayNoJoin();
 				}
 				if (ok && !more) {
 					/* The object list after the last queued selection */
-					RServeUtil.listRObjects();
+					REval.listRObjects();
 				}
 				startNext();
 			}

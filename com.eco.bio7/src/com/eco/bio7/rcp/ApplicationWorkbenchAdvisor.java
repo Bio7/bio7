@@ -21,11 +21,9 @@ import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import com.eco.bio7.rbridge.backend.RBackend;
 
 import com.eco.bio7.Bio7Plugin;
-import com.eco.bio7.rbridge.RConnectionJob;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
-import com.eco.bio7.rbridge.RServeUtil;
-import com.eco.bio7.rbridge.TerminateRserve;
+import com.eco.bio7.rbridge.REval;
 import com.eco.bio7.util.Util;
 import com.eco.bio7.worldwind.WorldWindView;
 
@@ -100,7 +98,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 			}
 			if (storeRWorkspace) {
 				/*
-				 * We have to save the R editors here because else the Rserve connection will be
+				 * We have to save the R editors here because else the R connection will be
 				 * lost because of the save file dialog of the editors! (UI thread: editors)
 				 */
 				IRunnableWithProgress saveEditors = new IRunnableWithProgress() {
@@ -122,8 +120,8 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 					public void run(IProgressMonitor monitor) {
 						monitor.beginTask("Saving R workspace...", IProgressMonitor.UNKNOWN);
 						/* Save the R workspace for the next session if enabled! */
-						if (RServe.isAlive()) {
-							RServeUtil.evalR(command, null);
+						if (RTools.isAlive()) {
+							REval.evalR(command, null);
 						}
 					}
 				};
@@ -137,12 +135,6 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 				}
 			}
 
-			if (RConnectionJob.getProc() != null) {
-				RConnectionJob.getProc().destroy();// Kills the Rserve
-				// application!"
-			}
-
-			terminate_rserve();
 			/* Embedded R: the finalizers of R run, the devices close */
 			if (com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning()) {
 				com.eco.bio7.rbridge.backend.EmbeddedR.close();
@@ -225,45 +217,6 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
 		// if (!status.isOK()){ ErrorDialog.openError(...); }
 
-	}
-
-	private void terminate_rserve() {
-		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-
-			TerminateRserve.killProcessWindows();
-
-		} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
-			RBackend con = RBridge.getBackend();
-			if (con != null) {
-				con.close();
-				RServe.setConnection(null);
-				WorldWindView.setRConnection(null);
-			}
-			/*
-			 * Only killall Rserve instances if using the deprecated Rserve start function!
-			 */
-			/*
-			 * if (store.getBoolean("RSERVE_NATIVE_START") == false) {
-			 * TerminateRserve.killProcessLinux(); }
-			 */
-
-		} else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
-			RBackend con = RBridge.getBackend();
-			if (con != null) {
-				con.close();
-				RServe.setConnection(null);
-				WorldWindView.setRConnection(null);
-			}
-			/*
-			 * Only killall Rserve instances if using the deprecated Rserve start function!
-			 */
-			/*
-			 * if (store.getBoolean("RSERVE_NATIVE_START") == false) {
-			 * TerminateRserve.killProcessMac(); }
-			 */
-
-		}
 	}
 
 }

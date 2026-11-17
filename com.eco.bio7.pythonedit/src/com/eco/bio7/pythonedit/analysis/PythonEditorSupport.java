@@ -15,6 +15,7 @@ package com.eco.bio7.pythonedit.analysis;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -40,6 +41,28 @@ public final class PythonEditorSupport {
 
 	/** A short description of a variable of the running Python (type, shape, value) or null. */
 	public static volatile Function<String, String> liveHover;
+
+	/**
+	 * The debugger is stopped: type, size and value of an expression in the frame
+	 * of the stop (several lines); null if not stopped or not defined. Called in
+	 * the thread of the hover.
+	 */
+	public static volatile Function<String, String> debugHover;
+
+	/** The actions of the debug hover ("workspace", "table", "imagej") with the expression. */
+	public static volatile BiConsumer<String, String> debugAction;
+
+	/** The preference: all hovers of the Python editor on or off. */
+	public static final String HOVERS = "PYTHON_EDITOR_HOVERS";
+
+	/** True if the hovers are on (also if the default of the preference is missing). */
+	public static boolean hoversEnabled() {
+		org.eclipse.jface.preference.IPreferenceStore store = com.eco.bio7.pythonedit.PythonEditorPlugin.getDefault().getPreferenceStore();
+		return !store.contains(HOVERS) || store.getBoolean(HOVERS);
+	}
+
+	/** Profiles the script of the active editor (true: only the selection) in the embedded Python. */
+	public static volatile Consumer<Boolean> profileScript;
 
 	/** Debugs the script of the active editor (the debugger of the embedded Python). */
 	public static volatile Runnable debugScript;

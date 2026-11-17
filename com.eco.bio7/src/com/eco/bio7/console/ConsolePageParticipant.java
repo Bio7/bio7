@@ -85,13 +85,12 @@ import org.eclipse.ui.part.IPageBookViewPage;
 import org.eclipse.ui.part.IPageSite;
 import org.osgi.framework.Bundle;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.os.pid.UnixProcessManager;
 import com.eco.bio7.popup.actions.RunJavaClassFile;
 import com.eco.bio7.preferences.PreferenceConstants;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.backend.Backends;
 import com.eco.bio7.rbridge.backend.EmbeddedR;
@@ -107,6 +106,7 @@ import com.eco.bio7.reditor.database.view.DatabaseView;
 import com.eco.bio7.scriptengines.ScriptEngineConnection;
 import com.pty4j.PtyProcess;
 import com.pty4j.PtyProcessBuilder;
+import com.eco.bio7.rffm.RException;
 
 public class ConsolePageParticipant implements IConsolePageParticipant {
 
@@ -150,30 +150,6 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 	public Object getAdapter(Class adapter) {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
-	/* The output of the R process is also collected here while it is not null */
-	private static volatile StringBuffer rOutputCapture;
-	/* The maximum length of the collected output */
-	private static final int MAX_R_OUTPUT_CAPTURE = 64 * 1024;
-
-	/**
-	 * Starts to collect the output of the R process of the console (e.g., to
-	 * detect the messages of a command). Stop it with stopROutputCapture.
-	 */
-	public static void startROutputCapture() {
-		rOutputCapture = new StringBuffer();
-	}
-
-	/** Returns the output of the R process collected since startROutputCapture (empty if not started). */
-	public static String getROutputCapture() {
-		StringBuffer capture = rOutputCapture;
-		return capture != null ? capture.toString() : "";
-	}
-
-	/** Stops to collect the output of the R process. */
-	public static void stopROutputCapture() {
-		rOutputCapture = null;
 	}
 
 	public static void pipeInputToConsole(String input, boolean lineSeperator, boolean addToHistory) {
@@ -292,19 +268,6 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 						}
 					} else {
 
-					}
-
-				}
-
-				else if (event.keyCode == SWT.F1) {
-
-					/* Rserve only: embedded R and the console share one workspace */
-					if (interpreterSelection.equals("R") && RServe.getConnection() != null) {
-						fastSaveAndReloadRWorkspace();
-						System.out.print("R workspace data transferred to native R workspace!");
-						System.out.println();
-					} else {
-						Bio7Dialog.message("Please start R and the \"Native R\" shell in the Bio7 console!");
 					}
 
 				}
@@ -727,62 +690,28 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 	}
 
+	/**
+	 * Starts R (embedded R, in the process of Bio7) in a job: the user interface
+	 * stays usable during the start (e.g., a slow computer).
+	 */
 	public void processRCommand() {
-
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		consoleEncoding = store.getString("Console_Encoding");
-		/* Embedded R (default, preference): R in the process of Bio7, else (or if it can't be started) Rserve */
-		if (Backends.isEmbeddedSelected()) {
-			if (Backends.isEmbeddedRunning()) {
-				return;
-			}
-			String error = Backends.startEmbedded();
-			if (error == null) {
-				return;
-			}
-			String message = "Embedded R could not be started:\n" + error + "\n\nR is started as a separate process (Rserve).";
-			System.err.println(message.replace("\n\n", " "));
-			Display.getDefault().asyncExec(() -> MessageDialog.openWarning(Util.getShell(), "Embedded R", message));
-		}
-		String rPath = store.getString(PreferenceConstants.PATH_R);
-		/* The R of the preferences, else the first R found (the PATH, the usual folders) */
-		String home = RLocator.resolveHome(rPath);
-		String executable = home == null ? null : RLocator.consoleExecutableOf(home);
-		if (executable == null) {
-			Display.getDefault().asyncExec(() -> {
-				MessageDialog dialog = new MessageDialog(Util.getShell(), "R", null,
-						"R was not found" + (rPath.isEmpty() ? "" : " in " + rPath) + " (also not in the PATH and the usual folders).\n\n"
-								+ "Please install R or select the path of R in 'R and Rserve Setup'.",
-						MessageDialog.WARNING, 0, "R and Rserve Setup...", "Close");
-				if (dialog.open() == 0) {
-					RSetupDialog.openSetup();
-				}
-			});
+		if (Backends.isEmbeddedRunning()) {
 			return;
 		}
-		if (!rPath.isEmpty() && !home.equals(rPath)) {
-			System.out.println("R was not found in the path of the preferences (" + rPath + "), started R of "
-					+ (home.isEmpty() ? "the PATH" : home) + ". The path can be selected in 'R and Rserve Setup' (R preferences).");
+		String error = com.eco.bio7.rcp.BackgroundStart.run("Starting R", Backends::startEmbedded);
+		if (error == null) {
+			return;
 		}
-		try {
-			List<String> args = new ArrayList<String>();
-			args.add(executable);
-			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-				args.add("--ess");
-			} else {
-				args.add("--interactive");
+		System.err.println("R could not be started: " + error);
+		Display.getDefault().asyncExec(() -> {
+			MessageDialog dialog = new MessageDialog(Util.getShell(), "R", null, "R could not be started:\n" + error
+					+ "\n\nPlease install R or select the path of R in 'R Setup'.", MessageDialog.WARNING, 0, "R Setup...", "Close");
+			if (dialog.open() == 0) {
+				RSetupDialog.openSetup();
 			}
-			ProcessBuilder builder = new ProcessBuilder(args);
-			builder.redirectErrorStream(true);
-			RProcess = builder.start();
-			RprocessThread = new Thread(new RProcessGrabber());
-			RprocessThread.start();
-
-			rOptions();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
+		});
 	}
 
 	class PythonProcessGrabber implements Runnable {
@@ -867,15 +796,6 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 					int ch;
 					while ((ch = inr.read()) != -1) {
-						/* The output for a listener (e.g., the start of Rserve, see RConnectionJob) */
-						StringBuffer capture = rOutputCapture;
-						if (capture != null) {
-							capture.append((char) ch);
-							/* Only the recent output (if the capture is not stopped) */
-							if (capture.length() > MAX_R_OUTPUT_CAPTURE) {
-								capture.delete(0, capture.length() - MAX_R_OUTPUT_CAPTURE / 2);
-							}
-						}
 
 						if (Bio7Dialog.getOS().equals("Windows")) {
 
@@ -1165,7 +1085,7 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 			 * case "r": System.out.print("System>");
 			 * 
 			 * input = readLine(mode); if (input == null||input.equals("")) break; else {
-			 * if(RServe.isAliveDialog()){ RServe.printJob(input);
+			 * if(RTools.isAliveDialog()){ RTools.printJob(input);
 			 * 
 			 * }
 			 * 
@@ -1222,7 +1142,6 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					}
 
 					/*
-					 * Process p = RConnectionJob.getProc(); // Write to the output!
 					 */
 
 					ignore = false;
@@ -1277,7 +1196,6 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					}
 
 					/*
-					 * Process p = RConnectionJob.getProc(); // Write to the output!
 					 */
 
 					ignore = false;
@@ -1329,7 +1247,6 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					}
 
 					/*
-					 * Process p = RConnectionJob.getProc(); // Write to the output!
 					 */
 
 					ignore = false;
@@ -1387,7 +1304,6 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					}
 
 					/*
-					 * Process p = RConnectionJob.getProc(); // Write to the output!
 					 */
 
 					ignore = false;
@@ -1481,89 +1397,6 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 
 		else if (interpreterSelection.equals("Python")) {
 			ConsoleInterpreterAction.getInstance().startPython();
-		}
-	}
-
-	private void fastSaveAndReloadRWorkspace() {
-		IPreferenceStore store = null;
-		String path = null;
-		try {
-			store = Bio7Plugin.getDefault().getPreferenceStore();
-		} catch (RuntimeException ex) {
-
-			ex.printStackTrace();
-		}
-		if (store != null) {
-			path = store.getString(PreferenceConstants.P_TEMP_R);
-		}
-
-		selected = path + "\\tempCurrent";
-
-		File dir = new File(path);
-		if (dir.canWrite()) {
-
-			if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-				selected = path + "\\tempCurrent";
-				selected = selected.replace("\\", "\\\\");
-			}
-			/* For Linux and MacOSX! */
-			else {
-				selected = path + "/tempCurrent";
-			}
-
-			if (selected != null) {
-
-				final String save = "try(save.image(file =\"" + selected + ".RData"
-						+ "\", version = NULL, ascii = FALSE))";
-				if (RState.isBusy() == false) {
-					RState.setBusy(true);
-
-					Job job = new Job("Transfer data to native started R!") {
-						@Override
-						protected IStatus run(IProgressMonitor monitor) {
-							monitor.beginTask("Transfer data to native started R ...", IProgressMonitor.UNKNOWN);
-							RBackend con = RBridge.getBackend();
-							try {
-								con.voidEval(save);
-							} catch (RserveException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-							String fileR = selected + ".RData";
-							if (interpreterSelection.equals("R")) {
-
-								ConsolePageParticipant.pipeInputToConsole("load(file =\"" + fileR + "\");", true, true);
-
-							} else {
-								Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
-							}
-
-							monitor.done();
-							return Status.OK_STATUS;
-						}
-
-					};
-					job.addJobChangeListener(new JobChangeAdapter() {
-						public void done(IJobChangeEvent event) {
-							if (event.getResult().isOK()) {
-								RState.setBusy(false);
-
-							} else {
-								RState.setBusy(false);
-							}
-						}
-					});
-
-					job.schedule();
-
-					// LineFeed.
-
-				} else {
-					Bio7Dialog.message("R is busy!");
-				}
-			}
-		} else {
-			Bio7Dialog.message("Directory is not writable!");
 		}
 	}
 

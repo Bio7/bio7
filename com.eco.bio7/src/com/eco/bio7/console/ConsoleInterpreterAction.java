@@ -24,14 +24,13 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.IOConsole;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.actions.InterpretPython;
 import com.eco.bio7.popup.actions.RunJavaClassFile;
-import com.eco.bio7.rbridge.RConnectionJob;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.worldwind.WorldWindView;
+import com.eco.bio7.rffm.RException;
 
 public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 
@@ -280,11 +279,6 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 
 		participant.interpreterSelection = "R";
 		ioConsole.clearConsole();
-		/*
-		 * if (RBridge.getBackend() != null) { try { RBridge.getBackend().shutdown(); } catch (RserveException en) { // TODO Auto-generated catch block en.printStackTrace(); } RConnectionJob.setCanceled(true); RBridge.getBackend().close(); RServe.setConnection(null);
-		 * 
-		 * WorldWindView.setRConnection(null); }
-		 */
 		/* Exit an existing shell process! */
 		// exitShellProcess();
 		/* Open a new shell process! */
@@ -321,7 +315,8 @@ public class ConsoleInterpreterAction extends Action implements IMenuCreator {
 		/* The embedded Python (preferences): Python in the process of Bio7 */
 		if (participant.getPythonProcess() == null && com.eco.bio7.pybridge.EmbeddedPython.isSelected()) {
 			String[] error = new String[1];
-			org.eclipse.swt.custom.BusyIndicator.showWhile(org.eclipse.swt.widgets.Display.getDefault(), () -> error[0] = com.eco.bio7.pybridge.EmbeddedPython.start());
+			/* In a job: the user interface stays usable during the start (e.g., a slow computer) */
+			error[0] = com.eco.bio7.rcp.BackgroundStart.run("Starting Python", com.eco.bio7.pybridge.EmbeddedPython::start);
 			participant.ignore = true;
 			/* Wakes the reader of the former interpreter (the line break is not sent to it) */
 			if (!"Python".equals(previous)) {

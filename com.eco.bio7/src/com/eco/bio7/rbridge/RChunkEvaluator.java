@@ -105,7 +105,7 @@ public final class RChunkEvaluator {
 			src.toFile().deleteOnExit();
 			dir.toFile().deleteOnExit();
 			/* The new variables in the R-Shell */
-			RServeUtil.listRObjects();
+			REval.listRObjects();
 			return new RChunks.Output(text, plots, error);
 		} catch (IOException e) {
 			return new RChunks.Output("The chunk could not be evaluated: " + e.getMessage(), List.of(), true);

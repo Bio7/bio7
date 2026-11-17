@@ -52,6 +52,9 @@ public class WorkbenchPreferencePython extends FieldEditorPreferencePage impleme
 			}
 		});
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
+		addField(new BooleanFieldEditor(com.eco.bio7.pythonedit.analysis.PythonEditorSupport.HOVERS,
+				"Enable Hovers (all, also in the context menu of the editor)", getFieldEditorParent()));
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
 
 		/* The color schemes (all colors below; then a single color can be changed) */
 		addField(new org.eclipse.jface.preference.RadioGroupFieldEditor(com.eco.bio7.util.ColorSchemes.LIGHT_PREFERENCE, "Color scheme (light theme)", 4,

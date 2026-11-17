@@ -21,16 +21,16 @@ import org.eclipse.nebula.widgets.grid.GridColumn;
 import org.eclipse.nebula.widgets.grid.GridItem;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.progress.UIJob;
-import org.rosuda.REngine.REXPLogical;
-import org.rosuda.REngine.REXPMismatchException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.batch.Bio7Dialog;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class TransferMatrixToGridJob extends UIJob {
 
 	private String name;
-	private REXPLogical isNumeric;
+	private RValue isNumeric;
 
 	public TransferMatrixToGridJob(String name) {
 		super("Transfer Matrix");
@@ -57,13 +57,13 @@ public class TransferMatrixToGridJob extends UIJob {
 	private void transferMatrixToGrid() {
 		RBackend c = RBridge.getBackend();
 		try {
-			isNumeric = (REXPLogical) c.eval("try(is.numeric(" + name + "))");
-		} catch (RserveException e) {
+			isNumeric = c.eval("try(is.numeric(" + name + "))");
+		} catch (RException e) {
 
 			e.printStackTrace();
 		}
 
-		boolean[] bolNumeric = isNumeric.isTRUE();
+		boolean[] bolNumeric = isNumeric.booleans();
 
 		if (bolNumeric[0]) {// Must be numeric!
 			double[][] matrix = null;
@@ -71,13 +71,13 @@ public class TransferMatrixToGridJob extends UIJob {
 			int lengthX = 0;
 
 			try {
-				lengthY = c.eval("try(length(" + name + "[,1]))").asInteger();
-				lengthX = c.eval("try(length(" + name + "[1,]))").asInteger();
+				lengthY = c.eval("try(length(" + name + "[,1]))").firstInt();
+				lengthX = c.eval("try(length(" + name + "[1,]))").firstInt();
 
-			} catch (REXPMismatchException e) {
+			} catch (RTypeException e) {
 
 				e.printStackTrace();
-			} catch (RserveException e) {
+			} catch (RException e) {
 
 				e.printStackTrace();
 			}
@@ -90,11 +90,11 @@ public class TransferMatrixToGridJob extends UIJob {
 				int rowCount = grid.getItemCount();
 
 				try {
-					matrix = c.eval("try(" + name + ")").asDoubleMatrix();
-				} catch (REXPMismatchException eve) {
+					matrix = c.eval("try(" + name + ")").matrix();
+				} catch (RTypeException eve) {
 
 					eve.printStackTrace();
-				} catch (RserveException ex) {
+				} catch (RException ex) {
 				}
 
 				if (colCount < matrix[0].length) {

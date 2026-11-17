@@ -341,7 +341,7 @@ public class DatabaseView extends ViewPart {
 					e2.printStackTrace();
 				}
 				xs.toXML(profiles, fs);
-				/* Rserve has to be alive to create encrypted credentials! */
+				/* R has to run to create encrypted credentials! */
 				/*if (btnCreateEncryptedPwd.getSelection()) {
 
 					createEncryptedCredentials();

@@ -9,7 +9,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 
 public class SetWdRAction extends Action implements IObjectActionDelegate {
 
@@ -24,7 +24,7 @@ public class SetWdRAction extends Action implements IObjectActionDelegate {
 
 	public void run(IAction action) {
 
-		if (RServe.isAliveDialog()) {
+		if (RTools.isAliveDialog()) {
 
 			ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService()
 					.getSelection();
@@ -47,7 +47,7 @@ public class SetWdRAction extends Action implements IObjectActionDelegate {
 
 					}
 					String cleanedPath=loc.replace("\\","/");
-					RServe.printJob("try(setwd(\"" + cleanedPath + "\"))");
+					RTools.printJob("try(setwd(\"" + cleanedPath + "\"))");
 
 				}
 

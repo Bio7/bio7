@@ -223,7 +223,10 @@ public class PythonEditor extends TextEditor implements IPropertyChangeListener,
 	@Override
 	protected void rulerContextMenuAboutToShow(IMenuManager menu) {
 		super.rulerContextMenuAboutToShow(menu);
+		/* The same breakpoint actions as in the R editor */
 		addAction(menu, "Toggle Python Breakpoint");
+		addAction(menu, "Python Breakpoint Condition");
+		addAction(menu, "Remove All Python Breakpoints");
 	}
 
 	protected void editorContextMenuAboutToShow(IMenuManager menu) {
@@ -231,6 +234,17 @@ public class PythonEditor extends TextEditor implements IPropertyChangeListener,
 		addAction(menu, "ContentAssistProposal");
 		addAction(menu, ITextEditorActionConstants.QUICK_ASSIST);
 		addAction(menu, "Format Python Code");
+		org.eclipse.jface.action.MenuManager refactor = new org.eclipse.jface.action.MenuManager("Refactor");
+		for (String[] k : com.eco.bio7.pythonedit.analysis.RefactorAction.KINDS) {
+			if (k[0].equals("imports") || k[0].equals("surround")) {
+				refactor.add(new Separator());
+			}
+			IAction a = getAction(k[2]);
+			if (a != null) {
+				refactor.add(a);
+			}
+		}
+		menu.add(refactor);
 		if (com.eco.bio7.pythonedit.analysis.PythonEditorSupport.debugScript != null) {
 			menu.add(new org.eclipse.jface.action.Action("Debug Python Script") {
 				@Override
@@ -245,11 +259,55 @@ public class PythonEditor extends TextEditor implements IPropertyChangeListener,
 				}
 			});
 		}
+		if (com.eco.bio7.pythonedit.analysis.PythonEditorSupport.profileScript != null) {
+			/* The profiler: the time of the lines and functions (a report and marks in the ruler) */
+			org.eclipse.jface.action.MenuManager profile = new org.eclipse.jface.action.MenuManager("Profile");
+			profile.add(new org.eclipse.jface.action.Action("Profile Python Script") {
+				@Override
+				public void run() {
+					java.util.function.Consumer<Boolean> p = com.eco.bio7.pythonedit.analysis.PythonEditorSupport.profileScript;
+					if (p != null) {
+						p.accept(false);
+					}
+				}
+			});
+			org.eclipse.jface.action.Action selection = new org.eclipse.jface.action.Action("Profile Selection") {
+				@Override
+				public void run() {
+					java.util.function.Consumer<Boolean> p = com.eco.bio7.pythonedit.analysis.PythonEditorSupport.profileScript;
+					if (p != null) {
+						p.accept(true);
+					}
+				}
+			};
+			selection.setEnabled(getSelectionProvider().getSelection() instanceof org.eclipse.jface.text.ITextSelection ts && ts.getLength() > 0);
+			profile.add(selection);
+			profile.add(new Separator());
+			profile.add(new org.eclipse.jface.action.Action("Clear Profile Marks") {
+				@Override
+				public void run() {
+					if (getEditorInput() instanceof org.eclipse.ui.IFileEditorInput fi) {
+						com.eco.bio7.pythonedit.analysis.PythonProfileMarks.clear(fi.getFile());
+					}
+				}
+			});
+			menu.add(profile);
+		}
 		menu.add(new Separator());
 		addAction(menu, "Add Block Comment");
 		addAction(menu, "Remove Block Comment");
 		menu.add(new Separator());
 		addAction(menu, "Python Editor Preferences");
+		/* All hovers of the editor on or off (help, values, colors, quick fixes, values while debugging) */
+		org.eclipse.jface.preference.IPreferenceStore hoverStore = com.eco.bio7.pythonedit.PythonEditorPlugin.getDefault().getPreferenceStore();
+		org.eclipse.jface.action.Action hovers = new org.eclipse.jface.action.Action("Enable Hovers", org.eclipse.jface.action.IAction.AS_CHECK_BOX) {
+			@Override
+			public void run() {
+				hoverStore.setValue(com.eco.bio7.pythonedit.analysis.PythonEditorSupport.HOVERS, isChecked());
+			}
+		};
+		hovers.setChecked(com.eco.bio7.pythonedit.analysis.PythonEditorSupport.hoversEnabled());
+		menu.add(hovers);
 
 	}
 
@@ -294,8 +352,15 @@ public class PythonEditor extends TextEditor implements IPropertyChangeListener,
 		IAction toggle = com.eco.bio7.pythonedit.analysis.PythonBreakpoints.toggleAction(this, getVerticalRuler());
 		setAction(ITextEditorActionConstants.RULER_DOUBLE_CLICK, toggle);
 		setAction("Toggle Python Breakpoint", toggle);
+		/* The condition and the hit count of a breakpoint (the ruler) */
+		setAction("Python Breakpoint Condition", com.eco.bio7.pythonedit.analysis.PythonBreakpoints.propertiesAction(this, getVerticalRuler()));
+		setAction("Remove All Python Breakpoints", com.eco.bio7.pythonedit.analysis.PythonBreakpoints.removeAllAction(this));
 		/* Formats the code with ruff or black (Ctrl+Shift+F) */
 		setAction("Format Python Code", new com.eco.bio7.pythonedit.analysis.FormatAction(this));
+		/* The refactorings (the Refactor menu, key bindings) */
+		for (String[] k : com.eco.bio7.pythonedit.analysis.RefactorAction.KINDS) {
+			setAction(k[2], new com.eco.bio7.pythonedit.analysis.RefactorAction(this, k));
+		}
 
 	}
 

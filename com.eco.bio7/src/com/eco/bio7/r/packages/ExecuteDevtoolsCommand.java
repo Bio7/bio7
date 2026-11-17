@@ -15,16 +15,16 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.PlatformUI;
-import org.rosuda.REngine.REXPLogical;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
 
 public class ExecuteDevtoolsCommand {
 
@@ -61,7 +61,7 @@ public class ExecuteDevtoolsCommand {
 				// System.out.println(loc);
 				
 				String rCommand = "library(devtools);setwd(\"" + loc + "\");" + command + "";
-				if (RServe.isAlive()) {
+				if (RTools.isAlive()) {
 
 					if (cancelCreation == false) {
 
@@ -69,7 +69,7 @@ public class ExecuteDevtoolsCommand {
 							RState.setBusy(true);
 
 							Job job = new Job("Roxygen") {
-								REXPLogical bol = null;
+								RValue bol = null;
 
 								@Override
 								protected IStatus run(IProgressMonitor monitor) {
@@ -78,12 +78,12 @@ public class ExecuteDevtoolsCommand {
 									RBackend c = RBridge.getBackend();
 
 									try {
-										bol = (REXPLogical) c.eval("require(devtools)");
-									} catch (RserveException e1) {
+										bol = c.eval("require(devtools)");
+									} catch (RException e1) {
 										// TODO Auto-generated catch block
 										e1.printStackTrace();
 									}
-									if (bol.isTRUE()[0] == false) {
+									if (bol.booleans()[0] == false) {
 										Bio7Dialog.message("Library 'devtools' required!\nPlease install the 'devtools' package!");
 										return Status.OK_STATUS;
 									}
@@ -96,7 +96,7 @@ public class ExecuteDevtoolsCommand {
 										/*Restore the current workspace!*/
 										c.eval("try(setwd(.tempCurrentWd));");
 
-									} catch (RserveException e) {
+									} catch (RException e) {
 										// TODO Auto-generated catch block
 										e.printStackTrace();
 									}
@@ -143,7 +143,7 @@ public class ExecuteDevtoolsCommand {
 							Bio7Dialog.message("R is busy!");
 						}
 					}
-				} else if (RServe.isAlive() == false) {
+				} else if (RTools.isAlive() == false) {
 					String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 					if (selectionConsole.equals("R")) {
 

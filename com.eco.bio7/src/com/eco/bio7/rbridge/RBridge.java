@@ -13,22 +13,17 @@
 
 package com.eco.bio7.rbridge;
 
-import org.rosuda.REngine.Rserve.RConnection;
 
 import com.eco.bio7.rbridge.backend.Backends;
 import com.eco.bio7.rbridge.backend.RBackend;
-import com.eco.bio7.rbridge.backend.RserveBackend;
 import com.eco.bio7.reditors.REditor;
 
 /**
- * The connection of Bio7 to R, independent of how R is connected: embedded R
- * (default, in the process of Bio7) or Rserve. Use RServe.getConnection()
- * only for code which needs Rserve itself (e.g., a remote connection).
+ * The connection of Bio7 to R: embedded R in the process of Bio7. The values are
+ * RValue of the plugin com.eco.bio7.rffm, e.g.,
+ * {@code RBridge.getBackend().eval("mean(x)").firstDouble()}.
  */
 public final class RBridge {
-
-	/* The backend of the current Rserve connection (created once per connection) */
-	private static RBackend rserveBackend;
 
 	static {
 		/* The R editor and WorldWind (other bundles) evaluate with the same connection */
@@ -40,34 +35,20 @@ public final class RBridge {
 	}
 
 	/**
-	 * Returns the connection to R: embedded R if it runs, else the Rserve
-	 * connection.
+	 * Returns the connection to R (embedded R).
 	 *
-	 * @return the backend or null if R is not connected.
+	 * @return the backend or null if R is not started.
 	 */
 	public static RBackend getBackend() {
-		RBackend embedded = Backends.embedded();
-		if (embedded != null) {
-			return embedded;
-		}
-		RConnection c = RServe.getConnection();
-		if (c == null) {
-			return null;
-		}
-		RBackend b = rserveBackend;
-		if (b == null || b.rserveConnection() != c) {
-			b = new RserveBackend(c);
-			rserveBackend = b;
-		}
-		return b;
+		return Backends.embedded();
 	}
 
-	/** Returns true if R is connected (embedded R or Rserve). */
+	/** Returns true if R is started. */
 	public static boolean isConnected() {
 		return getBackend() != null;
 	}
 
-	/** Returns true if embedded R is used. */
+	/** Returns true if R is started (R is always embedded). */
 	public static boolean isEmbedded() {
 		return Backends.isEmbeddedRunning();
 	}

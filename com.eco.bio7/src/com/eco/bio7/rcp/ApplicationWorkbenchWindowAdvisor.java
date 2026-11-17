@@ -115,7 +115,6 @@ import org.gdal.gdal.gdal;
 import org.gdal.ogr.ogr;
 import org.osgi.framework.Bundle;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.ImageJPluginActions.ImageJWindowAction;
@@ -130,17 +129,18 @@ import com.eco.bio7.compile.utils.ScanClassPath;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.image.ui.CanvasView;
 import com.eco.bio7.preferences.PreferenceConstants;
-import com.eco.bio7.preferences.RServePlotPrefs;
+import com.eco.bio7.preferences.RPlotPreferences;
 import com.eco.bio7.preferences.Reg;
 import com.eco.bio7.rbridge.RConfig;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
-import com.eco.bio7.rbridge.RServeUtil;
+import com.eco.bio7.rbridge.REval;
 import com.eco.bio7.rbridge.RState;
-import com.eco.bio7.rbridge.actions.StartRServe;
+import com.eco.bio7.rbridge.actions.StartRAction;
 import com.eco.bio7.rbridge.debug.REditorListener;
 import com.eco.bio7.time.CalculationThread;
 import com.eco.bio7.util.Util;
+import com.eco.bio7.rffm.RException;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
@@ -527,7 +527,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 				store.setDefault("InstallLocation", reg1 + "\\site-library");
 				store.setDefault("SweaveScriptLocation", reg1 + "/share/texmf/tex/latex");
 				store.setDefault("pdfLatex", "");
-				store.setDefault("RSERVE_ARGS", "");
 
 			}
 			if (reg2 != null) {
@@ -554,7 +553,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault("InstallLocation", "");
 			store.setDefault("SweaveScriptLocation", "");
 			store.setDefault("pdfLatex", "");
-			store.setDefault("RSERVE_ARGS", "");
 
 			/*
 			 * if (is64BitVM()) { store.setDefault("r_pipe_path", reg1 + "/bin"); } else {
@@ -585,7 +583,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault("InstallLocation", "");
 			store.setDefault("SweaveScriptLocation", "");
 			store.setDefault("pdfLatex", "");
-			store.setDefault("RSERVE_ARGS", "");
 			// reg2 = "";
 			// reg2 = "/Applications/LibreOffice.app/Contents/MacOS";
 			// store.setDefault(PreferenceConstants.PATH_LIBREOFFICE, reg2);
@@ -641,7 +638,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			store.setDefault("PDF_READER", "ACROBAT");
 		}
 
-		// store.setDefault("RSERVE_AUTOSTART", false);
 		store.setDefault("R_PACKAGE_SERVER", "https://cran.r-project.org");
 		if (getOS().equals("Linux")) {
 			store.setDefault("knitroptions",
@@ -673,12 +669,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("REQUEST_EDITOR_FOCUS", true);
 		store.setDefault("INTERPRET_JAVASCRIPT_IN_BROWSER", false);
 		store.setDefault("INSTALL_R_PACKAGES_DESCRPTION_URL", "https://cran.r-project.org/web/packages/");
-		store.setDefault("DETECT_R_PROCESS", true);
 		store.setDefault("R_DEBUG_PORT", 21555);
-		store.setDefault("RSERVE_CLIENT_CONNECTION_PORT", 6311);
-		store.setDefault("RSERVE_CONNECT_TIMEOUT", 20);
-		/* Embedded R (default; if it can't be started, Rserve is used) or Rserve */
-		store.setDefault("R_BACKEND", "EMBEDDED");
 		store.setDefault("SHINY_PORT", 5559);
 		store.setDefault("LATEX_ENGINE", "pdflatex");
 		store.setDefault("BIBTEX_ENGINE", "bibtex");
@@ -708,11 +699,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("CLOSE_DEVICE", "if(length(dev.list())>0) dev.off()");
 
 		store.setDefault("rcmdinstall", "--build");
-		store.setDefault("REMOTE", false);
-		store.setDefault("HOST", "127.0.0.1");
-		store.setDefault("TCP", 6311);
-		store.setDefault("USERNAME", "bio7");
-		store.setDefault("PASSWORD", "admin");
 
 		store.setDefault("DEFAULT_DIGITS", 15);
 		store.setDefault("TRANSFER_METHOD", false);
@@ -803,7 +789,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 									con.eval("options(device=\".bio7Device\")");
 								}
 
-							} catch (RserveException e) {
+							} catch (RException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
@@ -820,15 +806,15 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 					String sel = store2.getString("PLOT_DEVICE_SELECTION");
 
-					RServePlotPrefs prefsPlotRserve = RServePlotPrefs.getInstance();
+					RPlotPreferences prefsPlot = RPlotPreferences.getInstance();
 
 					if (sel.equals("PLOT_IMAGE")) {
 
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
+						prefsPlot.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
 								+ "tempDevicePlot%05d.tiff"
 								+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")");
-						prefsPlotRserve.deviceFilename.setStringValue("");
-						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
+						prefsPlot.deviceFilename.setStringValue("");
+						prefsPlot.deviceFilename.setEnabled(false, prefsPlot.getFieldEditorParentControl());
 					} else if (sel.equals("PLOT_CAIRO")) {
 
 						if (getOS().equals("Mac")) {
@@ -836,54 +822,54 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 							Bio7Dialog.message("Cairo not supported on MacOSX!");
 
 						} else {
-							prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
+							prefsPlot.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
 									+ "tempDevicePlot%05d.tiff"
 									+ "\") { tiff(filename,width = 480, height = 480, type=\"cairo\")}; options(device=\".bio7Device\")");
-							prefsPlotRserve.deviceFilename.setStringValue("");
-							prefsPlotRserve.deviceFilename.setEnabled(false,
-									prefsPlotRserve.getFieldEditorParentControl());
+							prefsPlot.deviceFilename.setStringValue("");
+							prefsPlot.deviceFilename.setEnabled(false,
+									prefsPlot.getFieldEditorParentControl());
 						}
 					}
 
 					else if (sel.equals("PLOT_PRINT")) {
 
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
+						prefsPlot.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
 								+ "tempDevicePlot%05d.tiff"
 								+ "\") { tiff(filename,width = 6, height = 6, units=\"in\",res=600)}; options(device=\".bio7Device\")");
-						prefsPlotRserve.deviceFilename.setStringValue("");
-						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
+						prefsPlot.deviceFilename.setStringValue("");
+						prefsPlot.deviceFilename.setEnabled(false, prefsPlot.getFieldEditorParentControl());
 					} else if (sel.equals("PLOT_PDF")) {
 
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
+						prefsPlot.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
 								+ "tempDevicePlot.pdf" + "\") { pdf(filename)}; options(device=\".bio7Device\")");
-						prefsPlotRserve.deviceFilename.setStringValue("tempDevicePlot.pdf");
-						prefsPlotRserve.deviceFilename.setEnabled(true, prefsPlotRserve.getFieldEditorParentControl());
+						prefsPlot.deviceFilename.setStringValue("tempDevicePlot.pdf");
+						prefsPlot.deviceFilename.setEnabled(true, prefsPlot.getFieldEditorParentControl());
 					}
 
 					else if (sel.equals("PLOT_SVG")) {
 
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
+						prefsPlot.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
 								+ "tempDevicePlot.svg" + "\") { svg(filename)}; options(device=\".bio7Device\")");
-						prefsPlotRserve.deviceFilename.setStringValue("tempDevicePlot.svg");
-						prefsPlotRserve.deviceFilename.setEnabled(true, prefsPlotRserve.getFieldEditorParentControl());
+						prefsPlot.deviceFilename.setStringValue("tempDevicePlot.svg");
+						prefsPlot.deviceFilename.setEnabled(true, prefsPlot.getFieldEditorParentControl());
 
 					} else if (sel.equals("PLOT_POSTSCRIPT")) {
 
-						prefsPlotRserve.mult
+						prefsPlot.mult
 								.setStringValue(".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot.eps"
 										+ "\") { postscript(filename)}; options(device=\".bio7Device\")");
-						prefsPlotRserve.deviceFilename.setStringValue("tempDevicePlot.eps");
-						prefsPlotRserve.deviceFilename.setEnabled(true, prefsPlotRserve.getFieldEditorParentControl());
+						prefsPlot.deviceFilename.setStringValue("tempDevicePlot.eps");
+						prefsPlot.deviceFilename.setEnabled(true, prefsPlot.getFieldEditorParentControl());
 					}
 
 					else if (sel.equals("PLOT_IMAGEJ_IMAGESIZE")) {
 
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
+						prefsPlot.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
 								+ "tempDevicePlot%05d.tiff" + "\") {"
 								+ " tryCatch(tiff(filename,width = imageSizeX, height = imageSizeY, units = \"px\"),error = function (x) {tiff(filename,width = 512, height = 512, units = \"px\"); print('ImageSizeX and ImageSizeY variables not defined in R Workspace. Applied default values!')})"
 								+ "}; options(device=\".bio7Device\")");
-						prefsPlotRserve.deviceFilename.setStringValue("");
-						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
+						prefsPlot.deviceFilename.setStringValue("");
+						prefsPlot.deviceFilename.setEnabled(false, prefsPlot.getFieldEditorParentControl());
 					}
 
 					else if (sel.equals("PLOT_IMAGEJ_IMAGESIZE_CAIRO")) {
@@ -892,13 +878,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 							Bio7Dialog.message("Cairo not supported on MacOSX!");
 						} else {
 
-							prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
+							prefsPlot.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
 									+ "tempDevicePlot%05d.tiff" + "\") { "
 									+ "tryCatch(tiff(filename,width = imageSizeX, height = imageSizeY, units = \"px\",type=\"cairo\"),error = function (x) {tiff(filename,width = 512, height = 512, units = \"px\",type=\"cairo\"); print('ImageSizeX and ImageSizeY variables not defined in R Workspace. Applied default values!')})"
 									+ "}; options(device=\".bio7Device\")");
-							prefsPlotRserve.deviceFilename.setStringValue("");
-							prefsPlotRserve.deviceFilename.setEnabled(false,
-									prefsPlotRserve.getFieldEditorParentControl());
+							prefsPlot.deviceFilename.setStringValue("");
+							prefsPlot.deviceFilename.setEnabled(false,
+									prefsPlot.getFieldEditorParentControl());
 						}
 					}
 
@@ -916,46 +902,37 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 							if (view != null) {
 								Rectangle rec = view.getParent2().getClientArea();
 								if (rec.width > 0 && rec.height > correction) {
-									prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
+									prefsPlot.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
 											+ "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width = " + rec.width
 											+ ", height = " + (rec.height - 100)
 											+ ", type=\"cairo\")}; options(device=\".bio7Device\")");
 								} else {
-									prefsPlotRserve.mult.setStringValue(
+									prefsPlot.mult.setStringValue(
 											".bio7Device <- function(filename = \"" + pathTo + "tempDevicePlot%05d.tiff"
 													+ "\") { tiff(filename,width = " + 512 + ", height = " + 512
 													+ ", type=\"cairo\")}; options(device=\".bio7Device\")");
 
 								}
-								prefsPlotRserve.deviceFilename.setStringValue("");
-								prefsPlotRserve.deviceFilename.setEnabled(false,
-										prefsPlotRserve.getFieldEditorParentControl());
+								prefsPlot.deviceFilename.setStringValue("");
+								prefsPlot.deviceFilename.setEnabled(false,
+										prefsPlot.getFieldEditorParentControl());
 							}
 						}
 
 					} else if (sel.equals("PLOT_IMAGEJ_CANVAS")) {
 						/* The device of embedded R: live in the ImageJ plot canvas, resizable */
-						prefsPlotRserve.mult.setStringValue("options(device = \"bio7PlotCanvas\")");
-						prefsPlotRserve.deviceFilename.setStringValue("");
-						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
-						if (!"EMBEDDED".equals(store2.getString("R_BACKEND"))) {
-							Bio7Dialog.message("The ImageJ Plot Canvas device needs embedded R:\n"
-									+ "R preferences > R connection > Embedded R (then start R again), and 'Use Custom Device'.");
-						}
+						prefsPlot.mult.setStringValue("options(device = \"bio7PlotCanvas\")");
+						prefsPlot.deviceFilename.setStringValue("");
+						prefsPlot.deviceFilename.setEnabled(false, prefsPlot.getFieldEditorParentControl());
 					} else if (sel.equals("PLOT_SWT_VECTOR")) {
 						/*
 						 * The device of embedded R: SWT vector graphics in a custom view, resizable
-						 * (with Rserve the image device, see VECTOR_DEVICE_DEFAULT)
 						 */
-						prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
+						prefsPlot.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
 								+ "tempDevicePlot%05d.tiff"
 								+ "\") { tiff(filename,width = 480, height = 480, units = \"px\")}; options(device=\".bio7Device\")" + VECTOR_DEVICE_DEFAULT);
-						prefsPlotRserve.deviceFilename.setStringValue("");
-						prefsPlotRserve.deviceFilename.setEnabled(false, prefsPlotRserve.getFieldEditorParentControl());
-						if (!"EMBEDDED".equals(store2.getString("R_BACKEND"))) {
-							Bio7Dialog.message("The SWT Vector Plot device needs embedded R:\n"
-									+ "R preferences > R connection > Embedded R (then start R again), and 'Use Custom Device'.");
-						}
+						prefsPlot.deviceFilename.setStringValue("");
+						prefsPlot.deviceFilename.setEnabled(false, prefsPlot.getFieldEditorParentControl());
 					} else if (sel.equals("PLOT_IMAGEJ_DISPLAYSIZE")) {
 
 						CanvasView view = CanvasView.getCanvas_view();
@@ -967,19 +944,19 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 						if (view != null) {
 							Rectangle rec = view.getParent2().getClientArea();
 							if (rec.width > 0 && rec.height > correction) {
-								prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
+								prefsPlot.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
 										+ "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width =  " + rec.width
 										+ ", height = " + (rec.height - correction)
 										+ ", units = \"px\")}; options(device=\".bio7Device\")");
 							} else {
-								prefsPlotRserve.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
+								prefsPlot.mult.setStringValue(".bio7Device <- function(filename = \"" + pathTo
 										+ "tempDevicePlot%05d.tiff" + "\") { tiff(filename,width =  " + 512
 										+ ", height = " + 512 + ", units = \"px\")}; options(device=\".bio7Device\")");
 
 							}
-							prefsPlotRserve.deviceFilename.setStringValue("");
-							prefsPlotRserve.deviceFilename.setEnabled(false,
-									prefsPlotRserve.getFieldEditorParentControl());
+							prefsPlot.deviceFilename.setStringValue("");
+							prefsPlot.deviceFilename.setEnabled(false,
+									prefsPlot.getFieldEditorParentControl());
 						}
 					}
 
@@ -994,9 +971,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	}
 
 	/*
-	 * The default device: the SWT Vector Plot of embedded R. Its R function only
-	 * exists in embedded R, so the default definition defines the image device first
-	 * (used with Rserve) and selects the vector device if it is available.
+	 * The default device: the SWT Vector Plot of embedded R. The default definition
+	 * defines the image device first and selects the vector device if its R
+	 * function is available.
 	 */
 	private static final String VECTOR_DEVICE_DEFAULT = "; if (exists(\"bio7PlotVector\", mode = \"function\")) options(device = \"bio7PlotVector\")";
 
@@ -1049,7 +1026,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		pendingDeviceDefinition = null;
 		try {
 			con.eval(value);
-		} catch (RserveException e) {
+		} catch (RException e) {
 			e.printStackTrace();
 		}
 	}
@@ -1297,7 +1274,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 					if (fileName.endsWith(".R") || fileName.endsWith(".r")) {
 
-						RServeUtil.evalR(null, files[i].toString());
+						REval.evalR(null, files[i].toString());
 					}
 
 					else if (fileName.endsWith(".bsh")) {
@@ -1400,6 +1377,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 	public void postWindowOpen() {
 
 		super.postWindowOpen();
+		/* macOS: the window to the front when Bio7 is activated from the Dock */
+		Shell mainShell = getWindowConfigurer().getWindow().getShell();
+		MacActivation.install(mainShell.getDisplay(), mainShell);
+		/* macOS: sharp views while a fullscreen shell is on a monitor with a lower resolution */
+		com.eco.bio7.util.FullscreenMonitors.keepHighestZoom(mainShell.getDisplay());
+		/* A click into an editor or view activates it, also when the embedded browser had the focus */
+		BrowserFocusFix.install(mainShell.getDisplay());
 
 		// *************************************
 		new StartBio7Utils();
@@ -1470,7 +1454,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			}
 
 			/*
-			 * if (store.getBoolean("RSERVE_AUTOSTART")) { Bio7Action.callRserve(); }
 			 */
 
 		} catch (WorkbenchException e) {
@@ -1574,15 +1557,15 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 
 						else {
 
-							if (RServe.isAlive() == false) {
+							if (RTools.isAlive() == false) {
 
-								StartRServe.setFileList(fileListR);
-								StartRServe.setFromDragDrop(true);
+								StartRAction.setFileList(fileListR);
+								StartRAction.setFromDragDrop(true);
 								/*
 								 * Now we can start the server. Variable setFromDragDrop will be set to false in
-								 * the StartRserve class after job has finished!
+								 * the start of R!
 								 */
-								Bio7Action.callRserve();
+								Bio7Action.startR();
 
 							} else {
 								RBackend con = RBridge.getBackend();
@@ -1621,7 +1604,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			RState.setBusy(true);
 			try {
 				con.assign(".bio7TempRScriptFile", file);
-			} catch (RserveException e) {
+			} catch (RException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -1635,7 +1618,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 						 */
 						RConfig.config(con);
 						RState.setBusy(false);
-						RServeUtil.listRObjects();
+						REval.listRObjects();
 					} else {
 						RState.setBusy(false);
 					}

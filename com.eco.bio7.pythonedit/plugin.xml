@@ -97,6 +97,42 @@
      
    
     <key
+          commandId="com.eco.bio7.pythoneditor.refactor.rename"
+          contextId="com.eco.bio7.python.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="M2+M3+R">
+    </key>
+    <key
+          commandId="com.eco.bio7.pythoneditor.refactor.extract.variable"
+          contextId="com.eco.bio7.python.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="M2+M3+L">
+    </key>
+    <key
+          commandId="com.eco.bio7.pythoneditor.refactor.extract.function"
+          contextId="com.eco.bio7.python.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="M2+M3+M">
+    </key>
+    <key
+          commandId="com.eco.bio7.pythoneditor.refactor.inline"
+          contextId="com.eco.bio7.python.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="M2+M3+I">
+    </key>
+    <key
+          commandId="com.eco.bio7.pythoneditor.refactor.imports"
+          contextId="com.eco.bio7.python.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="M1+M2+O">
+    </key>
+    <key
+          commandId="com.eco.bio7.pythoneditor.refactor.docstring"
+          contextId="com.eco.bio7.python.editor.scope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="M2+M3+J">
+    </key>
+    <key
           commandId="com.eco.bio7.pythoneditor.format"
           contextId="com.eco.bio7.python.editor.scope"
           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
@@ -117,6 +153,48 @@
     </extension>
    <extension 
    point="org.eclipse.ui.commands">
+       <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Renames the variable, function or class at the cursor in this file"
+          id="com.eco.bio7.pythoneditor.refactor.rename"
+          name="Rename (Python)">
+    </command>
+       <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Assigns the selected expression to a new variable"
+          id="com.eco.bio7.pythoneditor.refactor.extract.variable"
+          name="Extract Variable (Python)">
+    </command>
+       <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Moves the selected statements into a new function"
+          id="com.eco.bio7.pythoneditor.refactor.extract.function"
+          name="Extract Function (Python)">
+    </command>
+       <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Replaces the variable at the cursor with its value"
+          id="com.eco.bio7.pythoneditor.refactor.inline"
+          name="Inline Variable (Python)">
+    </command>
+       <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Sorts the imports (and removes unused imports with ruff)"
+          id="com.eco.bio7.pythoneditor.refactor.imports"
+          name="Organize Imports (Python)">
+    </command>
+       <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Surrounds the selected lines with try and except"
+          id="com.eco.bio7.pythoneditor.refactor.surround"
+          name="Surround with try/except (Python)">
+    </command>
+       <command
+          categoryId="org.eclipse.ui.category.textEditor"
+          description="Inserts a docstring into the function or class at the cursor"
+          id="com.eco.bio7.pythoneditor.refactor.docstring"
+          name="Insert Docstring (Python)">
+    </command>
        <command
           categoryId="org.eclipse.ui.category.textEditor"
           description="Formats the Python code with ruff or black"
@@ -155,6 +233,20 @@
       <persistent value="true"/>
    </extension>
    <extension
+         id="profileline"
+         name="Python Profile"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.textmarker"/>
+      <persistent value="false"/>
+   </extension>
+   <extension
+         id="conditionalbreakpoint"
+         name="Python Conditional Breakpoint"
+         point="org.eclipse.core.resources.markers">
+      <super type="com.eco.bio7.pythonedit.breakpoint"/>
+      <persistent value="true"/>
+   </extension>
+   <extension
          id="debugline"
          name="Python Debug Line"
          point="org.eclipse.core.resources.markers">
@@ -163,7 +255,10 @@
    </extension>
    <extension point="org.eclipse.ui.editors.annotationTypes">
       <type markerType="com.eco.bio7.pythonedit.breakpoint" name="com.eco.bio7.pythonedit.breakpoint"/>
+      <type markerType="com.eco.bio7.pythonedit.conditionalbreakpoint" name="com.eco.bio7.pythonedit.conditionalbreakpoint"
+            super="com.eco.bio7.pythonedit.breakpoint"/>
       <type markerType="com.eco.bio7.pythonedit.debugline" name="com.eco.bio7.pythonedit.debugline"/>
+      <type markerType="com.eco.bio7.pythonedit.profileline" name="com.eco.bio7.pythonedit.profileline"/>
    </extension>
    <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
       <specification
@@ -182,6 +277,40 @@
             textPreferenceKey="com.eco.bio7.pythonedit.breakpoint.text"
             textPreferenceValue="false"
             verticalRulerPreferenceKey="com.eco.bio7.pythonedit.breakpoint.ruler"
+            verticalRulerPreferenceValue="true"/>
+      <specification
+            annotationType="com.eco.bio7.pythonedit.conditionalbreakpoint"
+            colorPreferenceKey="com.eco.bio7.pythonedit.conditionalbreakpoint.color"
+            colorPreferenceValue="240,160,32"
+            contributesToHeader="false"
+            highlightPreferenceKey="com.eco.bio7.pythonedit.conditionalbreakpoint.highlight"
+            highlightPreferenceValue="false"
+            icon="icons/debug/brkp_cond_obj.svg"
+            includeOnPreferencePage="true"
+            label="Python Conditional Breakpoint"
+            overviewRulerPreferenceKey="com.eco.bio7.pythonedit.conditionalbreakpoint.overview"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="3"
+            textPreferenceKey="com.eco.bio7.pythonedit.conditionalbreakpoint.text"
+            textPreferenceValue="false"
+            verticalRulerPreferenceKey="com.eco.bio7.pythonedit.conditionalbreakpoint.ruler"
+            verticalRulerPreferenceValue="true"/>
+      <specification
+            annotationType="com.eco.bio7.pythonedit.profileline"
+            colorPreferenceKey="com.eco.bio7.pythonedit.profileline.color"
+            colorPreferenceValue="232,89,12"
+            contributesToHeader="false"
+            highlightPreferenceKey="com.eco.bio7.pythonedit.profileline.highlight"
+            highlightPreferenceValue="false"
+            icon="icons/debug/profile_obj.svg"
+            includeOnPreferencePage="true"
+            label="Python Profile (time of a line)"
+            overviewRulerPreferenceKey="com.eco.bio7.pythonedit.profileline.overview"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="2"
+            textPreferenceKey="com.eco.bio7.pythonedit.profileline.text"
+            textPreferenceValue="false"
+            verticalRulerPreferenceKey="com.eco.bio7.pythonedit.profileline.ruler"
             verticalRulerPreferenceValue="true"/>
       <specification
             annotationType="com.eco.bio7.pythonedit.debugline"

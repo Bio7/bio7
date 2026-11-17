@@ -92,6 +92,9 @@ public final class RShellPlots {
 		r.add("  title <- " + str(o.title().isEmpty() ? autoTitle(kind, d) : o.title()) + "; subtitle <- " + str(o.subtitle()) + "; caption <- "
 				+ str(o.caption()));
 		r.add("");
+		r.add("  # One plot on a new page (ends a layout of several plots, e.g., par(mfrow = c(2, 3)) of a script)");
+		r.add("  if (dev.cur() > 1 && any(par('mfrow') != 1)) par(mfrow = c(1, 1))");
+		r.add("");
 		r.add("  # The style");
 		if (modern) {
 			r.add("  op <- par(ps = " + n(o.fontSize()) + ", mar = c(5, 4.5, " + (o.subtitle().isEmpty() ? "3.5" : "4.5")

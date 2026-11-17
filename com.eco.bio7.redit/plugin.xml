@@ -312,10 +312,24 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
             </separator>
          </menu>
        <action
+             class="com.eco.bio7.reditor.actions.CollectLibraryCalls"
+             definitionId="com.eco.bio7.reditor.refactor.libraries"
+             id="com.eco.bio7.reditor.refactor.libraries"
+             label="Collect Library Calls"
+             menubarPath="refactor.menu/refact">
+       </action>
+       <action
+             class="com.eco.bio7.reditor.actions.InlineVariable"
+             definitionId="com.eco.bio7.reditor.refactor.inline"
+             id="com.eco.bio7.reditor.refactor.inline"
+             label="Inline Variable"
+             menubarPath="refactor.menu/refact">
+       </action>
+       <action
              class="com.eco.bio7.reditor.actions.ExtractMethod"
              definitionId="com.eco.bio7.reditor.refactor.extract.method"
              id="com.eco.bio7.reditor.refactor.extract.meth"
-             label="Extract Method"
+             label="Extract Function"
              menubarPath="refactor.menu/refact">
        </action>
        <action
@@ -327,15 +341,15 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
        </action>
        <action
              class="com.eco.bio7.reditor.actions.RFormatAction"
-             definitionId="com.eco.bio7.reditor.rserve.format"
-             id="com.eco.bio7.reditor.rserve.for"
+             definitionId="com.eco.bio7.reditor.r.format"
+             id="com.eco.bio7.reditor.r.for"
              label="Format R Source"
              menubarPath="format.menu/format">
        </action>
        <action
              class="com.eco.bio7.reditor.actions.RFormatSelectionAction"
-             definitionId="com.eco.bio7.reditor.rserve.format.selection"
-             id="com.eco.bio7.reditor.rserve.for.sel"
+             definitionId="com.eco.bio7.reditor.r.format.selection"
+             id="com.eco.bio7.reditor.r.for.sel"
              label="Format Selected R Source"
              menubarPath="format.menu/format">
        </action>
@@ -371,7 +385,7 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
              class="com.eco.bio7.reditor.actions.SurroundTryCatch"
              definitionId="com.eco.bio7.reditor.surround.trycatch"
              id="com.eco.bio7.reditor.surround.trycatch"
-             label="Surround with try and catch"
+             label="Surround with tryCatch"
              menubarPath="source.menu/source">
        </action>
     </viewerContribution>
@@ -415,25 +429,31 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
           sequence="CTRL+ALT+V">
     </key>
     <key
-          commandId="com.eco.bio7.reditor.rserve.format"
+          commandId="com.eco.bio7.reditor.refactor.inline"
+          contextId="com.eco.bio7.reditor.REditorScope"
+          schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+          sequence="CTRL+ALT+I">
+    </key>
+    <key
+          commandId="com.eco.bio7.reditor.r.format"
           contextId="com.eco.bio7.reditor.REditorScope"
           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
           sequence="CTRL+SHIFT+F">
     </key>
     <key
-          commandId="com.eco.bio7.reditor.rserve.format.selection"
+          commandId="com.eco.bio7.reditor.r.format.selection"
           contextId="com.eco.bio7.reditor.REditorScope"
           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
           sequence="CTRL+SHIFT+ALT+F">
     </key>
     <key
-          commandId="com.eco.bio7.reditor.rserve.plot.preferences"
+          commandId="com.eco.bio7.reditor.r.plot.preferences"
           contextId="org.eclipse.ui.contexts.window"
           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
           sequence="CTRL+SHIFT+P">
     </key>
     <key
-          commandId="com.eco.bio7.reditor.rserve.refresh.packages"
+          commandId="com.eco.bio7.reditor.r.refresh.packages"
           contextId="com.eco.bio7.reditor.REditorScope"
           schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
           sequence="CTRL+ALT+R">
@@ -531,9 +551,9 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
  <extension
        point="org.eclipse.ui.commands">
       <command
-          description="Surround with try catch"
+          description="Surrounds the selected lines with tryCatch"
           id="com.eco.bio7.reditor.surround.trycatch"
-          name="Surround with try catch">
+          name="Surround with tryCatch">
     </command>
     <command
           description="Insert Roxygen Comment"
@@ -547,9 +567,19 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
           name="Rename">
     </command>
     <command
-          description="Extract a Method"
+          description="Extracts the selected statements into a function (parameters and results are detected)"
           id="com.eco.bio7.reditor.refactor.extract.method"
-          name="Extract Method">
+          name="Extract Function">
+    </command>
+    <command
+          description="Replaces the variable at the cursor with its value"
+          id="com.eco.bio7.reditor.refactor.inline"
+          name="Inline Variable">
+    </command>
+    <command
+          description="Collects the library() and require() calls at the first one (duplicates removed)"
+          id="com.eco.bio7.reditor.refactor.libraries"
+          name="Collect Library Calls">
     </command>
     <command
           description="Extract a Variable"
@@ -558,22 +588,22 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
     </command>
     <command
           description="Format R Source"
-          id="com.eco.bio7.reditor.rserve.format"
+          id="com.eco.bio7.reditor.r.format"
           name="Format R Source">
     </command>
     <command
           description="Format Selected R Source"
-          id="com.eco.bio7.reditor.rserve.format.selection"
+          id="com.eco.bio7.reditor.r.format.selection"
           name="Format R Selected Source">
     </command>
     <command
           description="Plot Preferences"
-          id="com.eco.bio7.reditor.rserve.plot.preferences"
+          id="com.eco.bio7.reditor.r.plot.preferences"
           name="Plot Preferences">
     </command>
     <command
           description="Refresh Package Completion"
-          id="com.eco.bio7.reditor.rserve.refresh.packages"
+          id="com.eco.bio7.reditor.r.refresh.packages"
           name="Refresh Package Completion">
     </command>
     <command
@@ -740,5 +770,35 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
             </command>
          </menu>
       </menuContribution>
+   </extension>
+   <!-- The marks of a profile in the R editor (the time of a line; not saved) -->
+   <extension
+         id="profileline"
+         name="R Profile"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.textmarker"/>
+      <persistent value="false"/>
+   </extension>
+   <extension point="org.eclipse.ui.editors.annotationTypes">
+      <type markerType="com.eco.bio7.redit.profileline" name="com.eco.bio7.redit.profileline"/>
+   </extension>
+   <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="com.eco.bio7.redit.profileline"
+            colorPreferenceKey="com.eco.bio7.redit.profileline.color"
+            colorPreferenceValue="232,89,12"
+            contributesToHeader="false"
+            highlightPreferenceKey="com.eco.bio7.redit.profileline.highlight"
+            highlightPreferenceValue="false"
+            icon="icons/profile_obj.svg"
+            includeOnPreferencePage="true"
+            label="R Profile (time of a line)"
+            overviewRulerPreferenceKey="com.eco.bio7.redit.profileline.overview"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="2"
+            textPreferenceKey="com.eco.bio7.redit.profileline.text"
+            textPreferenceValue="false"
+            verticalRulerPreferenceKey="com.eco.bio7.redit.profileline.ruler"
+            verticalRulerPreferenceValue="true"/>
    </extension>
 </plugin>

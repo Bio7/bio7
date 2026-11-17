@@ -17,17 +17,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.rosuda.REngine.REXP;
-import org.rosuda.REngine.REXPDouble;
-import org.rosuda.REngine.REXPGenericVector;
-import org.rosuda.REngine.REXPInteger;
-import org.rosuda.REngine.REXPList;
-import org.rosuda.REngine.REXPLogical;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.REXPNull;
-import org.rosuda.REngine.REXPRaw;
-import org.rosuda.REngine.REXPString;
-import org.rosuda.REngine.RList;
 
 import com.eco.bio7.pyffm.PyValue;
 
@@ -41,6 +30,8 @@ import ij.process.FloatPolygon;
 import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
 
 /**
  * Converts data of Bio7 (ImageJ images, the results table, R objects) into
@@ -257,127 +248,117 @@ public final class PythonConvert {
 		return new PyValue.PyDict(m);
 	}
 
-	/* ---------------- R (REXP: embedded R and Rserve) ---------------- */
+	/* ---------------- R (RValue) ---------------- */
 
 	/** An R object as Python value (vectors, matrices, arrays, lists, data frames, factors). */
-	public static PyValue fromR(REXP r) throws REXPMismatchException {
+	public static PyValue fromR(RValue r) {
 		if (r == null || r.isNull()) {
 			return PyValue.None.INSTANCE;
 		}
-		if (r.inherits("data.frame") && r.isList()) {
-			RList list = r.asList();
+		int[] dim = r.dim();
+		switch (r) {
+		case RValue.List list when list.isDataFrame(): {
 			Map<String, PyValue> cols = new LinkedHashMap<>();
-			for (int i = 0; i < list.size(); i++) {
-				String name = list.names != null && i < list.names.size() ? String.valueOf(list.names.get(i)) : "V" + (i + 1);
-				cols.put(name, fromR(list.at(i)));
+			String[] names = list.names();
+			for (int i = 0; i < list.length(); i++) {
+				cols.put(names != null && i < names.length ? names[i] : "V" + (i + 1), fromR(list.element(i)));
 			}
-			String[] index = null;
-			REXP rn = r.getAttribute("row.names");
-			if (rn != null && rn.isString()) {
-				index = rn.asStrings();
-			}
+			String[] index = list.attribute("row.names") instanceof RValue.Str rn ? rn.values() : null;
 			return new PyValue.Frame(cols, index);
 		}
-		if (r.isFactor()) {
-			return new PyValue.Str(r.asFactor().asStrings());
-		}
-		if (r.isList()) {
-			RList list = r.asList();
-			boolean named = list.names != null && list.names.stream().anyMatch(n -> n != null && !String.valueOf(n).isEmpty());
+		case RValue.List list: {
+			String[] names = list.names();
+			boolean named = names != null && java.util.Arrays.stream(names).anyMatch(n -> n != null && !n.isEmpty());
 			if (named) {
 				Map<String, PyValue> m = new LinkedHashMap<>();
-				for (int i = 0; i < list.size(); i++) {
-					m.put(String.valueOf(list.names.get(i)), fromR(list.at(i)));
+				for (int i = 0; i < list.length(); i++) {
+					m.put(names[i], fromR(list.element(i)));
 				}
 				return new PyValue.PyDict(m);
 			}
 			List<PyValue> items = new ArrayList<>();
-			for (int i = 0; i < list.size(); i++) {
-				items.add(fromR(list.at(i)));
+			for (RValue e : list.elements()) {
+				items.add(fromR(e));
 			}
 			return new PyValue.PyList(items);
 		}
-		int[] dim = r.dim();
-		if (r.isString()) {
-			return new PyValue.Str(dim == null ? r.asStrings() : reorder(r.asStrings(), dim, true));
+		case RValue.Int i when i.isFactor():
+			return new PyValue.Str(i.strings());
+		case RValue.Str t:
+			return new PyValue.Str(dim == null ? t.values() : reorder(t.values(), dim, true));
+		case RValue.Logical l: {
+			boolean[] b = l.booleans();
+			return new PyValue.Array(dim == null ? b : reorder(b, dim, true), "b1", dim);
 		}
-		if (r instanceof REXPLogical l) {
-			boolean[] b = l.isTRUE();
-			return new PyValue.Array(dim == null ? b : reorder(b, dim, true), "b1", dim == null ? null : dim);
+		case RValue.Raw raw: {
+			byte[] b = raw.bytes();
+			return new PyValue.Array(dim == null ? b : reorder(b, dim, true), "u1", dim);
 		}
-		if (r instanceof REXPRaw raw) {
-			byte[] b = raw.asBytes();
-			return new PyValue.Array(dim == null ? b : reorder(b, dim, true), "u1", dim == null ? null : dim);
+		case RValue.Int i: {
+			int[] v = i.values();
+			return new PyValue.Array(dim == null ? v : reorder(v, dim, true), "i4", dim);
 		}
-		if (r.isInteger()) {
-			int[] v = r.asIntegers();
-			return new PyValue.Array(dim == null ? v : reorder(v, dim, true), "i4", dim == null ? null : dim);
-		}
-		if (r.isNumeric()) {
-			double[] v = r.asDoubles();
+		case RValue.Num n: {
+			double[] v = n.values().clone();
 			/* NA of R as NaN (numpy) */
-			for (int i = 0; i < v.length; i++) {
-				if (REXPDouble.isNA(v[i])) {
-					v[i] = Double.NaN;
+			for (int k = 0; k < v.length; k++) {
+				if (RValue.isNA(v[k])) {
+					v[k] = Double.NaN;
 				}
 			}
-			return new PyValue.Array(dim == null ? v : reorder(v, dim, true), "f8", dim == null ? null : dim);
+			return new PyValue.Array(dim == null ? v : reorder(v, dim, true), "f8", dim);
 		}
-		return new PyValue.Other(r.getClass().getSimpleName(), r.toDebugString());
+		default:
+			return new PyValue.Other(r.typeName(), r.typeName());
+		}
 	}
 
 	/** A Python value as R object (arrays keep their shape as dim). */
-	public static REXP toR(PyValue v) throws REXPMismatchException {
+	public static RValue toR(PyValue v) throws RException {
 		switch (v) {
 		case PyValue.None n:
-			return new REXPNull();
+			return RValue.NULL;
 		case PyValue.Str s:
-			return new REXPString(s.values());
+			return RValue.of(s.values());
 		case PyValue.Array a: {
 			int[] shape = a.shape();
 			boolean matrix = shape.length > 1;
-			REXPList attr = matrix ? new REXPList(new RList(new REXP[] { new REXPInteger(shape) }, new String[] { "dim" })) : null;
 			Object data = a.data();
+			RValue r;
 			if (data instanceof boolean[] b) {
-				boolean[] d = matrix ? reorder(b, shape, false) : b;
-				return new REXPLogical(d, attr);
-			}
-			boolean integer = (data instanceof int[] || data instanceof short[] || data instanceof byte[]) && !a.dtype().equals("u4");
-			if (integer) {
+				r = RValue.of(matrix ? reorder(b, shape, false) : b);
+			} else if ((data instanceof int[] || data instanceof short[] || data instanceof byte[]) && !a.dtype().equals("u4")) {
 				int[] d = a.asInts();
-				return new REXPInteger(matrix ? reorder(d, shape, false) : d, attr);
+				r = RValue.of(matrix ? reorder(d, shape, false) : d);
+			} else {
+				double[] d = a.asDoubles();
+				r = RValue.of(matrix ? reorder(d, shape, false) : d);
 			}
-			double[] d = a.asDoubles();
-			return new REXPDouble(matrix ? reorder(d, shape, false) : d, attr);
+			return matrix ? r.withDim(shape) : r;
 		}
 		case PyValue.PyList l: {
-			REXP[] items = new REXP[l.length()];
+			RValue[] items = new RValue[l.length()];
 			for (int i = 0; i < items.length; i++) {
 				items[i] = toR(l.values().get(i));
 			}
-			return new REXPGenericVector(new RList(items));
+			return RValue.listOf(items);
 		}
 		case PyValue.PyDict d: {
-			List<REXP> items = new ArrayList<>();
-			List<String> names = new ArrayList<>();
+			Map<String, RValue> items = new LinkedHashMap<>();
 			for (Map.Entry<String, PyValue> e : d.values().entrySet()) {
-				names.add(e.getKey());
-				items.add(toR(e.getValue()));
+				items.put(e.getKey(), toR(e.getValue()));
 			}
-			return new REXPGenericVector(new RList(items.toArray(new REXP[0]), names.toArray(new String[0])));
+			return RValue.listOf(items);
 		}
 		case PyValue.Frame f: {
-			List<REXP> items = new ArrayList<>();
-			List<String> names = new ArrayList<>();
+			Map<String, RValue> columns = new LinkedHashMap<>();
 			for (Map.Entry<String, PyValue> e : f.columns().entrySet()) {
-				names.add(e.getKey());
-				items.add(toR(e.getValue()));
+				columns.put(e.getKey(), toR(e.getValue()));
 			}
-			REXP df = REXP.createDataFrame(new RList(items.toArray(new REXP[0]), names.toArray(new String[0])));
-			return df;
+			return RValue.dataFrame(columns);
 		}
 		case PyValue.Other o:
-			throw new REXPMismatchException(null, "A Python object of the type " + o.type() + " can't be transferred to R");
+			throw new RException("A Python object of the type " + o.type() + " can't be transferred to R");
 		}
 	}
 

@@ -9,17 +9,16 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RConnection;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RConfig;
 import com.eco.bio7.rbridge.RBridge;
-import com.eco.bio7.rbridge.RServeUtil;
+import com.eco.bio7.rbridge.REval;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
+import com.eco.bio7.rffm.RException;
 
 public class LoadRWorkspace extends Action {
 
@@ -89,11 +88,6 @@ public class LoadRWorkspace extends Action {
 
 	}
 
-	/** For an Rserve connection (compatibility). */
-	public void load(RConnection con) {
-		load(RBackend.of(con));
-	}
-
 	public void load(RBackend con) {
 		String selected;
 
@@ -131,7 +125,7 @@ public class LoadRWorkspace extends Action {
 
 				try {
 					con.assign(".bio7TempRScriptFile", selected);
-				} catch (RserveException e) {
+				} catch (RException e) {
 
 					e.printStackTrace();
 				}
@@ -145,7 +139,7 @@ public class LoadRWorkspace extends Action {
 							
 							System.out.print("try(load(file = " + filePath + "))");
 							System.out.println();
-							RServeUtil.listRObjects();
+							REval.listRObjects();
 						} else {
 							RState.setBusy(false);
 						}

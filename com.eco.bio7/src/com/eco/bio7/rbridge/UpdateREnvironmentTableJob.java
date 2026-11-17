@@ -22,9 +22,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.PlatformUI;
-import org.rosuda.REngine.REXPMismatchException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class UpdateREnvironmentTableJob extends WorkspaceJob {
 
@@ -51,23 +51,23 @@ public class UpdateREnvironmentTableJob extends WorkspaceJob {
 		if (packageItem.equals("Attached:")) {
 			return Status.OK_STATUS;
 		}
-		if (RServe.isAlive()) {
+		if (RTools.isAlive()) {
 			RBackend c = RBridge.getBackend();
 
 			try {
 				if (func) {
 
-					packageLsfList = c.eval("try(lsf.str(\"package:" + packageItem + "\"))").asStrings();
+					packageLsfList = c.eval("try(lsf.str(\"package:" + packageItem + "\"))").strings();
 					packageLsList = c.eval("try(gsub(\" \\nNULL\", \"\",as.character(lapply(as.list(lsf.str(\"package:"
-							+ packageItem + "\")),args))))").asStrings();
+							+ packageItem + "\")),args))))").strings();
 				} else {
 
 					packageDataList = c.eval("try(data(package=\"" + packageItem + "\")$results[,\"Item\"])")
-							.asStrings();
+							.strings();
 					packageDataListDescription = c
-							.eval("try(data(package=\"" + packageItem + "\")$results[,\"Title\"])").asStrings();
+							.eval("try(data(package=\"" + packageItem + "\")$results[,\"Title\"])").strings();
 				}
-			} catch (RserveException | REXPMismatchException e) {
+			} catch (RException | RTypeException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

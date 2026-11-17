@@ -22,8 +22,8 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.rbridge.RServe;
-import com.eco.bio7.rbridge.RServeUtil;
+import com.eco.bio7.rbridge.RTools;
+import com.eco.bio7.rbridge.REval;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 
@@ -65,7 +65,7 @@ public class ClearRWorkspace extends Action {
 			}
 
 		} else {
-			if (RServe.isAliveDialog()) {
+			if (RTools.isAliveDialog()) {
 				MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 				message.setMessage("Do you really want to remove all visible objects?");
 				message.setText("Remove objects");
@@ -80,12 +80,12 @@ public class ClearRWorkspace extends Action {
 						Do.addJobChangeListener(new JobChangeAdapter() {
 							public void done(IJobChangeEvent event) {
 								if (event.getResult().isOK()) {
-									int countDev = RServe.getDisplayNumber();
+									int countDev = RTools.getDisplayNumber();
 									RState.setBusy(false);
 									if (countDev > 0) {
-										RServe.closeAndDisplay();
+										RTools.closeAndDisplay();
 									}
-									RServeUtil.listRObjects();
+									REval.listRObjects();
 								}
 							}
 						});

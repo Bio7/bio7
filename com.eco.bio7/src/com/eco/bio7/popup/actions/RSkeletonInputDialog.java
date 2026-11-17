@@ -17,19 +17,19 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Button;
-import org.rosuda.REngine.REXP;
-import org.rosuda.REngine.REXPMismatchException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.image.ui.CanvasView;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RState;
 
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.GridData;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class RSkeletonInputDialog extends Dialog {
 	private Text txtMypackage;
@@ -145,10 +145,10 @@ public class RSkeletonInputDialog extends Dialog {
 	}
 
 	private void displayRObjects() {
-		REXP x = null;
+		RValue x = null;
 		list.removeAll();
 
-		if (RServe.isAliveDialog()) {
+		if (RTools.isAliveDialog()) {
 			if (RState.isBusy() == false) {
 				String[] v = null;
 				// List all variables in the R workspace!
@@ -164,14 +164,14 @@ public class RSkeletonInputDialog extends Dialog {
 
 					x = c.eval("try(.bio7TempEnvPackage$tempPackageBio7VariablesName)");
 					try {
-						v = x.asStrings();
-					} catch (REXPMismatchException e1) {
+						v = x.strings();
+					} catch (RTypeException e1) {
 
 						e1.printStackTrace();
 					}
 					/*Remove the temp. variable from the custom environment!*/
 					c.eval("try(remove(tempPackageBio7VariablesName,envir=.bio7TempEnvPackage))");
-				} catch (RserveException e1) {
+				} catch (RException e1) {
 
 					e1.printStackTrace();
 				}

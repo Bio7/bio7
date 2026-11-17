@@ -10,9 +10,6 @@ import java.util.List;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.rosuda.REngine.REXP;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditor.antlr.ref.RRefPhaseListen;
@@ -20,6 +17,9 @@ import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 
 public class RQuickFixSolutions {
@@ -289,11 +289,11 @@ public class RQuickFixSolutions {
 			return null;
 		}
 		try {
-			org.rosuda.REngine.REXP x = c.withTimeout(5000).eval("local({ f <- '" + function + "'; p <- .packages(all.available = TRUE); "
+			RValue x = c.withTimeout(5000).eval("local({ f <- '" + function + "'; p <- .packages(all.available = TRUE); "
 					+ "hit <- vapply(p, function(x) { a <- file.path(find.package(x, quiet = TRUE), 'help', 'AnIndex'); "
 					+ "length(a) == 1 && file.exists(a) && any(startsWith(readLines(a, warn = FALSE), paste0(f, '\\t'))) }, logical(1)); "
 					+ "head(setdiff(unique(p[hit]), c('base', 'stats', 'utils', 'graphics', 'grDevices', 'methods', 'datasets')), 5) })");
-			String[] packages = x == null || x.isNull() ? new String[0] : x.asStrings();
+			String[] packages = x == null || x.isNull() ? new String[0] : x.strings();
 			if (packages == null || packages.length == 0) {
 				return null;
 			}
@@ -438,11 +438,11 @@ public class RQuickFixSolutions {
 				/* Get all installed dataset names, their package and description! */
 				try {
 
-					REXP rexpr = c.eval("try(help.search(paste0(\"^\",\"" + funcName + "\",\"$\"),agrep=FALSE)$matches[,\"Package\"])");
-					if (rexpr != null) {
-						packages = rexpr.asStrings();
+					RValue rValue = c.eval("try(help.search(paste0(\"^\",\"" + funcName + "\",\"$\"),agrep=FALSE)$matches[,\"Package\"])");
+					if (rValue != null) {
+						packages = rValue.strings();
 					}
-				} catch (RserveException | REXPMismatchException e) {
+				} catch (RException | RTypeException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} finally {
@@ -464,10 +464,10 @@ public class RQuickFixSolutions {
 		 * 
 		 * Get all installed dataset names, their package and description! try {
 		 * 
-		 * REXP rexpr = c.eval("try(help.search(paste0(\"^\",\"" + funcName +
-		 * "\",\"$\"),agrep=FALSE)$matches[,\"Package\"])"); if (rexpr != null) {
-		 * packages = rexpr.asStrings(); } } catch (RserveException |
-		 * REXPMismatchException e) { // TODO Auto-generated catch block
+		 * RValue rValue = c.eval("try(help.search(paste0(\"^\",\"" + funcName +
+		 * "\",\"$\"),agrep=FALSE)$matches[,\"Package\"])"); if (rValue != null) {
+		 * packages = rValue.strings(); } } catch (RException |
+		 * RTypeException e) { // TODO Auto-generated catch block
 		 * e.printStackTrace(); }
 		 * 
 		 * }
@@ -476,7 +476,7 @@ public class RQuickFixSolutions {
 		 */
 
 		// else {
-		// System.out.println("No Rserve connection available!");
+		// System.out.println("R is not running!");
 		// }
 		return packages;
 	}

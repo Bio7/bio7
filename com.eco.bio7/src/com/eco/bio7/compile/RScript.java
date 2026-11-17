@@ -32,27 +32,26 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.rosuda.REngine.REXP;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.REngineException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.BatchModel;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.PlotJob;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
-import com.eco.bio7.rbridge.RServeUtil;
+import com.eco.bio7.rbridge.REval;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.views.RShellView;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class RScript {
 
 	private static ArrayList marked = new ArrayList();
 	private static String script;
-	protected static REXP rexp;
+	protected static RValue rValue;
 	protected static boolean attachFinished;
 
 	public static IMarker[] findMyMarkers(IResource target) {
@@ -163,9 +162,9 @@ public class RScript {
 
 	/**
 	 * Evaluates a script for R without running in a job: the call returns when R
-	 * has evaluated it. Embedded R: in the calling thread (call it from a job or a
-	 * background thread for long scripts, else the UI waits); Rserve: in the UI
-	 * thread as before. For long scripts prefer {@link #rScriptJob(String, String)}.
+	 * has evaluated it, in the calling thread (call it from a job or a background
+	 * thread for long scripts, else the UI waits). For long scripts prefer
+	 * {@link #rScriptJob(String, String)}.
 	 *
 	 * @param a script.
 	 */
@@ -176,10 +175,10 @@ public class RScript {
 
 		final RBackend cscript = RBridge.getBackend();
 
-		if (RServe.isRrunning()) {
+		if (RTools.isRrunning()) {
 			if (cscript != null) {
 
-				/* Embedded R: in this thread (not forced into the UI thread); Rserve: UI thread */
+				/* Embedded R: in this thread (not forced into the UI thread) */
 				final String code = script;
 				com.eco.bio7.rbridge.REvaluator.run(cscript, new Runnable() {
 
@@ -187,7 +186,7 @@ public class RScript {
 
 						try {
 							cscript.voidEval(code);
-						} catch (RserveException e) {
+						} catch (RException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
@@ -210,19 +209,20 @@ public class RScript {
 	 * @param loc the script location.
 	 */
 	public static void rScriptJob(String script, String loc) {
-		if (RState.isBusy() == false) {
+		/* Waits for R if it is busy (it was not executed before, only a message on stdout) */
+		com.eco.bio7.rbridge.RWait.whenFree("the R script", () -> {
 			RState.setBusy(true);
 			RInterpreterJob Do = new RInterpreterJob(script, loc);
 			Do.setUser(true);
 			Do.addJobChangeListener(new JobChangeAdapter() {
 				public void done(IJobChangeEvent event) {
 					if (event.getResult().isOK()) {
-						int countDev = RServe.getDisplayNumber();
+						int countDev = RTools.getDisplayNumber();
 						RState.setBusy(false);
 						if (countDev > 0) {
-							RServe.closeAndDisplay();
+							RTools.closeAndDisplay();
 						}
-						RServeUtil.listRObjects();
+						REval.listRObjects();
 						BatchModel.resumeFlow();
 
 					} else {
@@ -232,9 +232,7 @@ public class RScript {
 			});
 
 			Do.schedule();
-		} else {
-			System.out.println("R is busy. Can't execute the R script!");
-		}
+		});
 
 	}
 
@@ -244,10 +242,10 @@ public class RScript {
 	 * @return the r workspace object names as a String array.
 	 */
 	public static String[] getRObjects() {
-		REXP x = null;
+		RValue x = null;
 		String[] v = null;
 
-		if (RServe.isAliveDialog()) {
+		if (RTools.isAliveDialog()) {
 			if (RState.isBusy() == false) {
 
 				// List all variables in the R workspace!
@@ -256,13 +254,13 @@ public class RScript {
 					RBridge.getBackend().eval("try(var<-ls())");
 					x = RBridge.getBackend().eval("try(var)");
 					try {
-						v = x.asStrings();
-					} catch (REXPMismatchException e1) {
+						v = x.strings();
+					} catch (RTypeException e1) {
 
 						e1.printStackTrace();
 					}
 					RBridge.getBackend().eval("try(remove(var))");
-				} catch (RserveException e1) {
+				} catch (RException e1) {
 
 					e1.printStackTrace();
 				}
@@ -277,16 +275,16 @@ public class RScript {
 	}
 
 	/**
-	 * A method to return REXP objects of Rserve running in a job. This method
+	 * A method to return RValue objects of R running in a job. This method
 	 * also checks if a R job is already running.
 	 * 
 	 * @param eval
 	 *            a R command.
-	 * @return a REXP object.
+	 * @return a RValue object.
 	 */
-	public static REXP valueFromRJob(String eval) {
+	public static RValue valueFromRJob(String eval) {
 
-		if (RServe.isAliveDialog()) {
+		if (RTools.isAliveDialog()) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
 				Job job = new Job("Transfer from R") {
@@ -295,8 +293,8 @@ public class RScript {
 					protected IStatus run(IProgressMonitor monitor) {
 						monitor.beginTask("Transfer Data ...", IProgressMonitor.UNKNOWN);
 						try {
-							rexp = RBridge.getBackend().eval(eval);
-						} catch (RserveException e) {
+							rValue = RBridge.getBackend().eval(eval);
+						} catch (RException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
@@ -322,7 +320,7 @@ public class RScript {
 				System.out.println("R is busy. Can't execute the R script!");
 			}
 		}
-		return rexp;
+		return rValue;
 	}
 
 	/**
@@ -333,7 +331,7 @@ public class RScript {
 	 */
 	public static void attachToR(String name, Object... assign) {
 
-		if (RServe.isAlive()) {
+		if (RTools.isAlive()) {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
 
@@ -343,44 +341,35 @@ public class RScript {
 					} else if (assign[0] instanceof String[]) {
 						try {
 							RBridge.getBackend().assign(name, (String[]) assign[0]);
-						} catch (REngineException e) {
+						} catch (RException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-					} else if (assign[0] instanceof REXP) {
-						RBridge.getBackend().assign(name, (REXP) assign[0]);
+					} else if (assign[0] instanceof RValue) {
+						RBridge.getBackend().assign(name, (RValue) assign[0]);
 					} else if (assign[0] instanceof double[]) {
 						try {
 							RBridge.getBackend().assign(name, (double[]) assign[0]);
-						} catch (REngineException e) {
+						} catch (RException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					} else if (assign[0] instanceof int[]) {
 						try {
 							RBridge.getBackend().assign(name, (int[]) assign[0]);
-						} catch (REngineException e) {
+						} catch (RException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					} else if (assign[0] instanceof byte[]) {
 						try {
 							RBridge.getBackend().assign(name, (byte[]) assign[0]);
-						} catch (REngineException e) {
+						} catch (RException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
-
-					else if (assign[0] instanceof REXP && assign[1] instanceof REXP) {
-						try {
-							RBridge.getBackend().assign(name, (REXP) assign[0], (REXP) assign[1]);
-						} catch (REngineException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-				} catch (RserveException e) {
+				} catch (RException e) {
 					// TODO Auto-generated catch block
 					RState.setBusy(false);
 					e.printStackTrace();

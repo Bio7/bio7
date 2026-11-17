@@ -11,8 +11,8 @@
  ********************************************************************************/
 
 import static com.eco.bio7.image.ImageMethods.imageFeatureStackToR;
-import static com.eco.bio7.rbridge.RServeUtil.evalRScript;
-import static com.eco.bio7.rbridge.RServeUtil.listRObjects;
+import static com.eco.bio7.rbridge.REval.evalRScript;
+import static com.eco.bio7.rbridge.REval.listRObjects;
 import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +43,7 @@ import com.eco.bio7.collection.CustomView;
 import com.eco.bio7.collection.Work;
 import com.eco.bio7.image.RImageMethodsView;
 import com.eco.bio7.util.Util;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RState;
 import _util.Filters;
 import _util.Haralick;
@@ -121,7 +121,7 @@ public class Main extends com.eco.bio7.compile.Model {
 				}
 
 				else {
-					if (RServe.isAliveDialog()) {
+					if (RTools.isAliveDialog()) {
 						if (RState.isBusy() == false) {
 							/* Notify that R is busy! */
 							RState.setBusy(true);
@@ -143,7 +143,7 @@ public class Main extends com.eco.bio7.compile.Model {
 
 					RState.setBusy(false);
 					/* Update the R-Shell view workspace objects! */
-					if (RServe.isAlive()) {
+					if (RTools.isAlive()) {
 						listRObjects();
 					}
 				} else {
@@ -1126,7 +1126,7 @@ public class Main extends com.eco.bio7.compile.Model {
 					int roiHeight = roi.getBounds().height;
 					if (roiWidth >= 5 && roiHeight >= 5) {
 						/* Get all settings before the workflow for preview starts! */
-						if (RServe.isAlive()) {
+						if (RTools.isAlive()) {
 							if (RState.isBusy() == false) {
 								/* Notify that R is busy! */
 								RState.setBusy(true);
@@ -1167,7 +1167,7 @@ public class Main extends com.eco.bio7.compile.Model {
 
 					RState.setBusy(false);
 					/* Update the R-Shell view workspace objects! */
-					if (RServe.isAlive()) {
+					if (RTools.isAlive()) {
 						listRObjects();
 					}
 					jobDone = true;

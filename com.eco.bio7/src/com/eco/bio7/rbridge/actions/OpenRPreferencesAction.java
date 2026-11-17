@@ -11,14 +11,14 @@ import com.eco.bio7.util.Util;
 /**
  * Open the preferences dialog
  */
-public class OpenRservePreferencesAction extends Action implements ActionFactory.IWorkbenchAction {
+public class OpenRPreferencesAction extends Action implements ActionFactory.IWorkbenchAction {
 
 	private IWorkbenchWindow workbenchWindow;
 
-	public OpenRservePreferencesAction() {
-		super("Rserve");
-		setActionDefinitionId("com.eco.bio7.rserve_openPreferences");
-		setId("com.eco.bio7.r.rserve");
+	public OpenRPreferencesAction() {
+		super("R Preferences");
+		setActionDefinitionId("com.eco.bio7.r_openPreferences");
+		setId("com.eco.bio7.r.preferences");
 		setText("Preferences");
 
 	}
@@ -57,7 +57,7 @@ public class OpenRservePreferencesAction extends Action implements ActionFactory
 	/*
 	 * protected void configureWorkspaceSettings() {
 	 * 
-	 * RServePrefs pref = new RServePrefs(); IPreferencePage page = pref;
+	 * RPreferences pref = new RPreferences(); IPreferencePage page = pref;
 	 * page.setTitle("R preferences"); // page.setImageDescriptor(image);
 	 * 
 	 * RPackagesPreferencePage pref1=new RPackagesPreferencePage();
@@ -65,17 +65,17 @@ public class OpenRservePreferencesAction extends Action implements ActionFactory
 	 * page1.setTitle("R Preferences Built Tools");
 	 * 
 	 * WorkbenchPreferenceR pref2 = new WorkbenchPreferenceR(); IPreferencePage
-	 * page2 = pref2; page2.setTitle("Rserve editor preferences"); //
+	 * page2 = pref2; page2.setTitle("R editor preferences"); //
 	 * page.setImageDescriptor(image);
 	 * 
 	 * TemplatesPreferencePage pref3 = new TemplatesPreferencePage();
-	 * IPreferencePage page3 = pref3; page3.setTitle("Rserve editor templates");
+	 * IPreferencePage page3 = pref3; page3.setTitle("R editor templates");
 	 * 
 	 * PreferencePageShell pref4 = new PreferencePageShell(); IPreferencePage
 	 * page4 = pref4; page4.setTitle("Preferences Native");
 	 * 
-	 * RServePlotPrefs pref5 = new RServePlotPrefs(); IPreferencePage page5 =
-	 * pref5; page5.setTitle("Rserve Plot preferences");
+	 * RPlotPreferences pref5 = new RPlotPreferences(); IPreferencePage page5 =
+	 * pref5; page5.setTitle("R Plot preferences");
 	 * 
 	 * RPrefDebug pref6 = new RPrefDebug(); IPreferencePage page6 = pref6;
 	 * page6.setTitle("R Debug preferences");
@@ -87,10 +87,10 @@ public class OpenRservePreferencesAction extends Action implements ActionFactory
 	 * IPreferencePage page8 = pref8;
 	 * page8.setTitle("R code analysis preferences");
 	 * 
-	 * showPreferencePage("com.eco.bio7.RServe",
-	 * page,"com.eco.bio7.RServePlot",page5,"com.eco.bio7.rpackages", page1,
-	 * "com.eco.bio7.RServe.editor", page2,
-	 * "com.eco.bio7.RServe.editor.templates",
+	 * showPreferencePage("com.eco.bio7.RTools",
+	 * page,"com.eco.bio7.RPlot",page5,"com.eco.bio7.rpackages", page1,
+	 * "com.eco.bio7.RTools.editor", page2,
+	 * "com.eco.bio7.RTools.editor.templates",
 	 * page3,"com.eco.bio7.native",page4,"com.eco.bio7.debug",page6,
 	 * "com.eco.bio7.rcode",page7,"com.eco.bio7.rcode.analysis",page8); }
 	 * 

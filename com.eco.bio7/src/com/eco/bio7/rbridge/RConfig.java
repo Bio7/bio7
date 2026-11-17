@@ -9,19 +9,13 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.osgi.framework.Bundle;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RConnection;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
+import com.eco.bio7.rffm.RException;
 
 /*A class for the configuration of some variables and configurations needed for R embedded in Bio7!*/
 public class RConfig {
-
-	/** The configuration for an Rserve connection (see config(RBackend)). */
-	public static void config(RConnection con) {
-		config(RBackend.of(con));
-	}
 
 	/* Defines the functions of an R file of Bio7 in R (the code is sent, R needs no access to the file) */
 	private static void loadRCode(RBackend con, String file) {
@@ -29,7 +23,7 @@ public class RConfig {
 			String code = java.nio.file.Files.readString(java.nio.file.Path.of(file), java.nio.charset.StandardCharsets.UTF_8);
 			con.assign(".bio7RCode", code);
 			con.voidEval("try(eval(parse(text = .bio7RCode), envir = globalenv())); try(rm(.bio7RCode, envir = globalenv()))");
-		} catch (IOException | RserveException | RuntimeException e) {
+		} catch (IOException | RException | RuntimeException e) {
 			System.err.println("Bio7: the R functions of " + file + " could not be loaded: " + e.getMessage());
 		}
 	}
@@ -64,7 +58,7 @@ public class RConfig {
 			con.eval("try(options(max.print=5000))");
 			/* Make the default completion function in R available! */
 			con.eval("try(source('" + scriptPath + "'))");
-			/* The package lists of the package views (cached repository index), also for a remote Rserve! */
+			/* The package lists of the package views (cached repository index) */
 			loadRCode(con, scriptFolder + "bio7Packages.R");
 			/* Define a new R environment! */
 			con.eval("try(.bio7TempEnvPath<- new.env())");
@@ -103,7 +97,7 @@ public class RConfig {
 			rStartupArgs = rStartupArgs.replace('\r', ' ');// Replace
 			con.eval("" + rStartupArgs + "");
 
-		} catch (RserveException e1) {
+		} catch (RException e1) {
 
 			// e1.printStackTrace();
 			System.out.println("Error occured!");

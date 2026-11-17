@@ -24,14 +24,13 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
-import org.rosuda.REngine.REXPLogical;
-import org.rosuda.REngine.REngineException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rcp.ApplicationActionBarAdvisor;
 import com.eco.bio7.time.Time;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
 
 public class ClusterJob extends WorkspaceJob {
 	private static int cluster = 2;
@@ -85,7 +84,7 @@ public class ClusterJob extends WorkspaceJob {
 			try {
 				/* Create an empty matrix! */
 				c.eval("clusterData<-NULL");
-			} catch (RserveException e2) {
+			} catch (RException e2) {
 				// TODO Auto-generated catch block
 				e2.printStackTrace();
 			}
@@ -102,8 +101,8 @@ public class ClusterJob extends WorkspaceJob {
 						monitor.setTaskName("Create data frame!");
 						try {
 							/* Double data and integer data can be clustered! */
-							REXPLogical bol = (REXPLogical) c.eval("try(is.double(imageData))");
-							boolean[] bo = bol.isTrue();
+							RValue bol = c.eval("try(is.double(imageData))");
+							boolean[] bo = bol.booleans();
 							if (bo[0]) {
 
 								c.eval("try(clusterData<-cbind(clusterData,imageData))");
@@ -114,14 +113,14 @@ public class ClusterJob extends WorkspaceJob {
 							if (i == 0) {
 								// c.eval("clusterData[1]<-NULL");
 							}
-						} catch (RserveException e1) {
+						} catch (RException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
 					} else {
 						try {
 							c.eval("image" + count + "<-imageData");
-						} catch (RserveException e) {
+						} catch (RException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
@@ -136,7 +135,7 @@ public class ClusterJob extends WorkspaceJob {
 				try {
 					c.eval("try(remove(imageData));gc();");
 
-				} catch (RserveException e2) {
+				} catch (RException e2) {
 					// TODO Auto-generated catch block
 					e2.printStackTrace();
 				}
@@ -147,7 +146,7 @@ public class ClusterJob extends WorkspaceJob {
 								"Executing: clara_result <- clara(clusterData," + cluster + "," + textOptions + ")");
 						c.eval("try(clara_result <- clara(clusterData," + cluster + "," + textOptions + "))");
 						c.eval("try(imageCluster<-as.raw(clara_result$cluster))");
-					} catch (RserveException e1) {
+					} catch (RException e1) {
 
 						e1.printStackTrace();
 					}
@@ -157,7 +156,7 @@ public class ClusterJob extends WorkspaceJob {
 								"Executing: kmeans_result <- kmeans(clusterData," + cluster + "," + textOptions + ")");
 						c.eval("try(kmeans_result <- kmeans(clusterData," + cluster + "," + textOptions + "))");
 						c.eval("try(imageCluster<-as.raw(kmeans_result$cluster))");
-					} catch (RserveException e1) {
+					} catch (RException e1) {
 
 						e1.printStackTrace();
 					}
@@ -169,7 +168,7 @@ public class ClusterJob extends WorkspaceJob {
 				}
 				try {
 					c.eval("try(remove(clusterData));gc();");
-				} catch (RserveException e1) {
+				} catch (RException e1) {
 					e1.printStackTrace();
 				}
 				monitor.worked(1);
@@ -179,7 +178,7 @@ public class ClusterJob extends WorkspaceJob {
 				try {
 
 					c.eval("remove(imageCluster);gc();");
-				} catch (RserveException e1) {
+				} catch (RException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}

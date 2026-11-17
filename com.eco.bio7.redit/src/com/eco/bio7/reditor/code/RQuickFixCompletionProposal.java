@@ -17,13 +17,13 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.actions.RefreshLoadedPackagesForCompletion;
 import com.eco.bio7.reditor.images.ImagePool;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.util.Util;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class RQuickFixCompletionProposal implements ICompletionProposal {
 
@@ -102,7 +102,7 @@ public class RQuickFixCompletionProposal implements ICompletionProposal {
 
 						try {
 							con.eval(replace);
-						} catch (RserveException e) {
+						} catch (RException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
@@ -165,11 +165,11 @@ public class RQuickFixCompletionProposal implements ICompletionProposal {
 							String out = null;
 							try {
 								out = con.eval("try(paste(capture.output(install.packages(\"" + packageName + "\",dependencies=TRUE,repos =\"" + server + "\",lib=\"" + destdir + "\",destdir=\""
-										+ destdir + "\")),collapse=\"\\n\"))").asString();
-							} catch (REXPMismatchException e) {
+										+ destdir + "\")),collapse=\"\\n\"))").firstString();
+							} catch (RTypeException e) {
 
 								e.printStackTrace();
-							} catch (RserveException e) {
+							} catch (RException e) {
 
 								e.printStackTrace();
 							}
@@ -188,11 +188,11 @@ public class RQuickFixCompletionProposal implements ICompletionProposal {
 								String out = null;
 								try {
 									out = con.eval("try(paste(capture.output(install.packages(\"" + packageName + "\",dependencies=TRUE,repos =\"" + server + "\",lib=\"" + destdir + "\",destdir=\""
-											+ destdir + "\")),collapse=\"\\n\"))").asString();
-								} catch (REXPMismatchException e) {
+											+ destdir + "\")),collapse=\"\\n\"))").firstString();
+								} catch (RTypeException e) {
 
 									e.printStackTrace();
-								} catch (RserveException e) {
+								} catch (RException e) {
 
 									e.printStackTrace();
 								}
@@ -203,11 +203,11 @@ public class RQuickFixCompletionProposal implements ICompletionProposal {
 
 								String out = null;
 								try {
-									out = con.eval("try(paste(capture.output(install.packages(\"" + packageName + "\",dependencies=TRUE,repos =\"" + server + "\")),collapse=\"\\n\"))").asString();
-								} catch (REXPMismatchException e) {
+									out = con.eval("try(paste(capture.output(install.packages(\"" + packageName + "\",dependencies=TRUE,repos =\"" + server + "\")),collapse=\"\\n\"))").firstString();
+								} catch (RTypeException e) {
 
 									e.printStackTrace();
-								} catch (RserveException e) {
+								} catch (RException e) {
 
 									e.printStackTrace();
 								}

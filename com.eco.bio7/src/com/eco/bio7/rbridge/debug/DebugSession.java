@@ -52,7 +52,7 @@ public final class DebugSession {
 	 * Writes the debugged copy of the script: the breakpoints (source line ->
 	 * expression or null) injected. Returns the path of the copy.
 	 */
-	public static Path writeDebugCopy(Path source, Map<Integer, String> breakpoints) throws IOException {
+	public static Path writeDebugCopy(Path source, Map<Integer, RBreakpoint> breakpoints) throws IOException {
 		List<String> lines = Files.readAllLines(source, StandardCharsets.UTF_8);
 		List<String> out = new ArrayList<>();
 		List<Integer> inj = new ArrayList<>();
@@ -78,32 +78,37 @@ public final class DebugSession {
 		return copy;
 	}
 
-	/* The line inserted before a breakpoint */
-	static String injection(int sourceLine, String expression) {
+	/*
+	 * The line inserted before a breakpoint: browser(), a condition, a hit count
+	 * (stop once, at the n-th time; with a condition: the n-th time it is true) and
+	 * a log point (print the value instead of stopping), also combined
+	 */
+	static String injection(int sourceLine, RBreakpoint bp) {
 		/* The breakpoint stores its line: browser() itself doesn't tell R's position */
 		String stop = "{ assign('.bio7bp', " + sourceLine + "L, envir = .GlobalEnv); browser() }";
-		if (expression == null || expression.isBlank()) {
+		if (bp == null || bp.isPlain()) {
 			return stop;
 		}
-		String e = expression.trim();
-		if (e.startsWith("#")) {
-			/* Hit count: stop at the n-th time the line is reached */
-			String n = e.substring(1).trim();
-			String v = ".bio7hit_" + sourceLine;
-			return "if (assign('" + v + "', get0('" + v + "', envir = .GlobalEnv, ifnotfound = 0) + 1, envir = .GlobalEnv) >= (" + n + ")) " + stop;
+		if (bp.legacy() != null) {
+			/* An expression of the former dialog ("if (x == 5) browser()") */
+			return bp.legacy().replace("browser()", stop);
 		}
-		if (e.regionMatches(true, 0, "log:", 0, 4)) {
+		String action = stop;
+		if (!bp.log().isEmpty()) {
 			/* Log point: print the value, don't stop */
-			String x = e.substring(4).trim();
+			String x = bp.log();
 			String label = x.replace("\\", "\\\\").replace("\"", "\\\"");
-			return "cat(\"\\u25B6 line " + sourceLine + ": " + label + " = \", tryCatch(paste(format(" + x
+			action = "cat(\"\\u25B6 line " + sourceLine + ": " + label + " = \", tryCatch(paste(format(" + x
 					+ "), collapse = ' '), error = function(e) conditionMessage(e)), \"\\n\", sep = \"\")";
 		}
-		/* An expression of the former dialog ("if (x == 5) browser()") or a condition */
-		if (e.contains("browser()")) {
-			return e.replace("browser()", stop);
+		String cond = bp.condition().isEmpty() ? null : "isTRUE(" + bp.condition() + ")";
+		if (bp.hitCount() > 1) {
+			/* Counted only when the condition is true (&&) */
+			String v = ".bio7hit_" + sourceLine;
+			String count = "(assign('" + v + "', get0('" + v + "', envir = .GlobalEnv, ifnotfound = 0) + 1, envir = .GlobalEnv) == " + bp.hitCount() + ")";
+			return "if (" + (cond == null ? "" : cond + " && ") + count + ") " + action;
 		}
-		return "if (isTRUE(" + e + ")) " + stop;
+		return cond == null ? action : "if (" + cond + ") " + action;
 	}
 
 	/**

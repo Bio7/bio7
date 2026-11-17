@@ -18,18 +18,18 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
-import org.rosuda.REngine.REXPMismatchException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.Console;
 import com.eco.bio7.preferences.PreferenceConstants;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.StartBio7Utils;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class RInterpreterJob extends WorkspaceJob {
 
@@ -76,7 +76,7 @@ public class RInterpreterJob extends WorkspaceJob {
 
 		final RBackend cscript = RBridge.getBackend();
 
-		if (RServe.isRrunning()) {
+		if (RTools.isRrunning()) {
 			if (cscript != null) {
 				try {
 					// boolean startShell =
@@ -101,9 +101,9 @@ public class RInterpreterJob extends WorkspaceJob {
 								cscript.eval("message(paste0(\"> source('\",.bio7TempRScriptFile),\"')\",sep=\"\")");
 								String options=store.getString("R_SOURCE_OPTIONS");
 								String rCommand = "" + "paste(capture.output(tryCatch(source(.bio7TempRScriptFile,"+options+"),error = function(e) {message(paste0(\"\n\",e))})),collapse=\"\\n\")";
-								rout = cscript.eval(rCommand).asString();
+								rout = cscript.eval(rCommand).firstString();
 
-							} catch (REXPMismatchException e) {
+							} catch (RTypeException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
@@ -144,8 +144,8 @@ public class RInterpreterJob extends WorkspaceJob {
 								cscript.eval("message(paste0(\"> source('\",.bio7TempRScriptFile),\"')\",sep=\"\")");
 								String options=store.getString("R_SOURCE_OPTIONS");
 								String rCommand = "" + "paste(capture.output(tryCatch(source(.bio7TempRScriptFile,"+options+"),error = function(e) {message(paste0(\"\n\",e))})),collapse=\"\\n\")";
-								rout = cscript.eval(rCommand).asString();
-							} catch (REXPMismatchException e) {
+								rout = cscript.eval(rCommand).firstString();
+							} catch (RTypeException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
@@ -169,7 +169,7 @@ public class RInterpreterJob extends WorkspaceJob {
 						}
 					}
 
-				} catch (RserveException e) {
+				} catch (RException e) {
 					exception = true;
 					System.out.println("R exception!");
 				}
@@ -185,7 +185,7 @@ public class RInterpreterJob extends WorkspaceJob {
 			 * available ! }
 			 * 
 			 * else { Bio7Dialog.message("An exception occured! \n" +
-			 * "If necessary restart the RServe application!"); }
+			 * "If necessary restart R!"); }
 			 * 
 			 * } }); }
 			 */
@@ -197,7 +197,6 @@ public class RInterpreterJob extends WorkspaceJob {
 
 	/*
 	 * public void writeToConsole() { new Thread() { public void run() { Process p =
-	 * RConnectionJob.getProc(); // Write to the output! final OutputStream os =
 	 * p.getOutputStream(); final OutputStreamWriter osw = new
 	 * OutputStreamWriter(os); final BufferedWriter bw = new BufferedWriter(osw,
 	 * 100);

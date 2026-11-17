@@ -52,7 +52,6 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.PlatformUI;
 import com.eco.bio7.rbridge.backend.RBackend;
 import com.eco.bio7.rbridge.RBridge;
-import org.rosuda.REngine.Rserve.RConnection;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.rbridge.RState;

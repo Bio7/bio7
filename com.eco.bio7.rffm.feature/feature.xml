@@ -7,9 +7,8 @@
 
    <description>
       Embeds an existing R installation in the Java process with the Foreign
-Function and Memory API (Java 22+): no Rserve, no compiled native code.
-Includes Java graphics devices. The default R connection of Bio7
-(if it can't be started, Rserve is used).
+Function and Memory API (Java 22+): no compiled native code.
+Includes Java graphics devices. The R connection of Bio7.
    </description>
 
    <license url="https://www.eclipse.org/legal/epl-2.0/">

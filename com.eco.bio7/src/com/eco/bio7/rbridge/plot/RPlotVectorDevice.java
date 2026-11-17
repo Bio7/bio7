@@ -72,8 +72,15 @@ public final class RPlotVectorDevice {
 
 	private final RSession session;
 	private final RecordingGraphicsDevice device;
-	private final int number;
-	private final String viewName;
+	/* The number and the name of the view (a reopened view can get another number) */
+	private volatile int number;
+	private volatile String viewName;
+	/* The view was opened once (UI thread): a later open() reserves a number again */
+	private boolean opened;
+	/* The user closed the view: the device is closed in R as soon as R is free (see closedByUser) */
+	private volatile boolean closeRequested;
+	/* The version of the last page when the user closed the view (only a newer page opens it again) */
+	private volatile long closedVersion = -1;
 
 	/* The latest page from R and if a redraw is scheduled */
 	private volatile RecordingGraphicsDevice.Page pending;
@@ -86,6 +93,9 @@ public final class RPlotVectorDevice {
 	private Label historyLabel, statusLabel;
 	private volatile boolean closedByR;
 	private volatile int[] requestedSize;
+	/* The time of the last page (UI thread): the first page after a pause shows the view */
+	private long lastPageMillis;
+	private static final long SHOW_AFTER_PAUSE_MS = 1000;
 	/* The page count of the device when the view was last checked (UI thread) */
 	private long checkedPages;
 
@@ -142,15 +152,29 @@ public final class RPlotVectorDevice {
 			openViews.remove(number);
 			return;
 		}
+		if (opened) {
+			/* Opened again (the view was closed, the device in R is still open): a free number */
+			synchronized (RPlotVectorDevice.class) {
+				if (!openViews.add(number)) {
+					number = nextNumber();
+					viewName = number == 1 ? TITLE : TITLE + " " + number;
+				}
+			}
+		}
+		opened = true;
+		/* Opened (again): a pending close of the device is cancelled */
+		closeRequested = false;
 		Composite parent;
 		try {
 			parent = new CustomView().getComposite(viewName, icon());
 		} catch (RuntimeException e) {
 			openViews.remove(number);
+			System.err.println("The plot view could not be opened: " + e);
 			return;
 		}
 		if (parent == null || parent.isDisposed()) {
 			openViews.remove(number);
+			System.err.println("The plot view could not be opened.");
 			return;
 		}
 		/* A new plot view: right beside the console (else in the folder of the ImageJ-Canvas view) */
@@ -187,6 +211,8 @@ public final class RPlotVectorDevice {
 		statusLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
 		root.addListener(SWT.Dispose, _ -> {
+			RecordingGraphicsDevice.Page last = pending;
+			closedVersion = last != null ? last.version() : 0;
 			openViews.remove(number);
 			clicks.offer(STOP);
 			closedByUser();
@@ -244,15 +270,30 @@ public final class RPlotVectorDevice {
 		if (redrawScheduled.compareAndSet(false, true)) {
 			Display.getDefault().asyncExec(() -> {
 				redrawScheduled.set(false);
+				/*
+				 * R draws into this device but its view is missing (closed while the device
+				 * stayed open, or it could not be opened): the view is opened again
+				 */
+				RecordingGraphicsDevice.Page latest = pending;
+				if (!isOpen() && !closedByR && latest != null && latest.version() > closedVersion) {
+					open();
+					checkedPages = device.pageCount();
+				}
 				if (isOpen()) {
 					shown = pending;
 					canvas.redraw();
 					/* A new plot (also in another perspective): the view is shown in the current perspective */
+					/*
+					 * A new plot, or R draws again after a pause (e.g., into a layout of several
+					 * plots, no new page): the view is shown in the current perspective
+					 */
 					long pages = device.pageCount();
-					if (pages != checkedPages) {
+					long now = System.currentTimeMillis();
+					if (pages != checkedPages || now - lastPageMillis > SHOW_AFTER_PAUSE_MS) {
 						checkedPages = pages;
 						PlotViews.showInPerspective(VIEW_ID, viewName);
 					}
+					lastPageMillis = now;
 				}
 			});
 		}
@@ -453,19 +494,44 @@ public final class RPlotVectorDevice {
 		});
 	}
 
-	/* The user closed the view: close the device in R (not in the UI thread: R may be busy) */
+	/*
+	 * The user closed the view: close the device in R (not in the UI thread: R may
+	 * be busy). While R waits at a prompt of browser() (e.g., the debugger stopped
+	 * at a breakpoint) it can't be closed: it is closed as soon as R is free (else
+	 * the next plot would draw into this device without a view, in its layout)
+	 */
 	private void closedByUser() {
 		if (closedByR || !session.isAlive()) {
 			return;
 		}
+		closeRequested = true;
 		Thread t = new Thread(() -> {
-			try {
-				int n = session.deviceNumber(device);
-				if (n > 1) {
-					session.voidEval("if (" + n + " %in% dev.list()) dev.off(" + n + ")");
+			boolean reported = false;
+			while (closeRequested && !closedByR && session.isAlive()) {
+				try {
+					if (session.isWaitingForConsoleInput()) {
+						/* browser() or readline(): later */
+						Thread.sleep(500);
+						continue;
+					}
+					int n = session.deviceNumber(device);
+					if (n > 1 && closeRequested) {
+						session.voidEval("if (" + n + " %in% dev.list()) dev.off(" + n + ")");
+					}
+					return;
+				} catch (InterruptedException e) {
+					return;
+				} catch (Exception e) {
+					if (session.isWaitingForConsoleInput()) {
+						/* R entered browser() meanwhile: later */
+						continue;
+					}
+					if (!reported && session.isAlive()) {
+						reported = true;
+						System.err.println("The plot device could not be closed in R: " + e.getMessage());
+					}
+					return;
 				}
-			} catch (Exception e) {
-				/* R ended */
 			}
 		}, "Close R device");
 		t.setDaemon(true);

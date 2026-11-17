@@ -11,12 +11,12 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.widgets.Display;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.reditors.REditorTextHover;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class OpenHelpBrowserAction extends Action {
 	private String htmlHelpText;
@@ -67,8 +67,8 @@ public class OpenHelpBrowserAction extends Action {
 
 							}
 							try {
-								out = (String) c.eval("try(.bio7TempHtmlHelpFile)").asString();
-							} catch (REXPMismatchException e) {
+								out = (String) c.eval("try(.bio7TempHtmlHelpFile)").firstString();
+							} catch (RTypeException e) {
 
 								e.printStackTrace();
 							}
@@ -88,7 +88,7 @@ public class OpenHelpBrowserAction extends Action {
 						}
 					}
 
-				} catch (RserveException e1) {
+				} catch (RException e1) {
 
 					// e1.printStackTrace();
 

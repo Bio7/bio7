@@ -8,12 +8,12 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.rosuda.REngine.REXPLogical;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.util.Bio7Dialog;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class DatabaseMethods {
 	private String dir;
@@ -26,21 +26,21 @@ public class DatabaseMethods {
 			if (RState.isBusy() == false) {
 				RState.setBusy(true);
 
-				REXPLogical bol = null;
+				RValue bol = null;
 				try {
-					bol = (REXPLogical) c.eval("require(odbc)");
-				} catch (RserveException e1) {
+					bol = c.eval("require(odbc)");
+				} catch (RException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				if (bol.isTRUE()[0]) {
+				if (bol.booleans()[0]) {
 
 					try {
 						c.eval("library(odbc);.odbc_driver_name <- odbcListDrivers()$name;"
 								+ ".odbc_names<-unique(.odbc_driver_name);");
-						res = c.eval(".odbc_names").asStrings();
+						res = c.eval(".odbc_names").strings();
 						// con.eval("remove(c(.odbc_names,.odbc_driver_name))");
-					} catch (RserveException | REXPMismatchException e) {
+					} catch (RException | RTypeException e) {
 						// TODO Auto-generated catch block
 						RState.setBusy(false);
 						e.printStackTrace();
@@ -69,9 +69,9 @@ public class DatabaseMethods {
 		 * 
 		 * try { con.eval("library(odbc);.odbc_driver_name <- odbcListDrivers()$name;" +
 		 * ".odbc_names<-unique(.odbc_driver_name);"); res =
-		 * con.eval(".odbc_names").asStrings(); //
+		 * con.eval(".odbc_names").strings(); //
 		 * con.eval("remove(c(.odbc_names,.odbc_driver_name))"); } catch
-		 * (RserveException | REXPMismatchException e) { // TODO Auto-generated catch
+		 * (RException | RTypeException e) { // TODO Auto-generated catch
 		 * block e.printStackTrace(); }
 		 * 
 		 * }
@@ -127,12 +127,12 @@ public class DatabaseMethods {
 											out = con
 													.eval("paste(capture.output(print(" + trybegin + trybegin + "("
 															+ t[i] + ")" + tryend + tryend + ")),collapse=\"\\n\")")
-													.asString();
+													.firstString();
 
-										} catch (REXPMismatchException e) {
+										} catch (RTypeException e) {
 
 											e.printStackTrace();
-										} catch (RserveException e) {
+										} catch (RException e) {
 											System.out.println("Error : " + e.getMessage());
 										}
 										System.out.println();
@@ -145,9 +145,9 @@ public class DatabaseMethods {
 									String result;
 									try {
 										result = con.eval("try(paste(capture.output(print(" + expression
-												+ ")),collapse=\"\\n\"))").asString();
+												+ ")),collapse=\"\\n\"))").firstString();
 										System.out.println(result);
-									} catch (REXPMismatchException e) {
+									} catch (RTypeException e) {
 										// TODO Auto-generated catch block
 										e.printStackTrace();
 									}
@@ -157,7 +157,7 @@ public class DatabaseMethods {
 									// System.out.println(result);
 
 									// c.eval(expression);
-								} catch (RserveException e) {
+								} catch (RException e) {
 
 									e.printStackTrace();
 								}
@@ -215,14 +215,14 @@ public class DatabaseMethods {
 								try {
 									result = con.eval(
 											"try(paste(capture.output(print(" + expression + ")),collapse=\"\\n\"))")
-											.asString();
+											.firstString();
 									System.out.println(result);
-								} catch (REXPMismatchException e) {
+								} catch (RTypeException e) {
 
 									e.printStackTrace();
 								}
 
-							} catch (RserveException e) {
+							} catch (RException e) {
 
 								e.printStackTrace();
 							}

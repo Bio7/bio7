@@ -93,7 +93,6 @@ jdk/bin/javaw.exe
       <plugin id="Bundled_R"/>
       <plugin id="com.eco.bio7"/>
       <plugin id="com.eco.bio7.WorldWind"/>
-      <plugin id="com.eco.bio7.albireo"/>
       <plugin id="com.eco.bio7.browser"/>
       <plugin id="com.eco.bio7.compiled"/>
       <plugin id="com.eco.bio7.edit"/>

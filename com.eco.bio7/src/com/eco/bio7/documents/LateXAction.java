@@ -27,7 +27,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 
 public class LateXAction implements IObjectActionDelegate {
@@ -126,7 +126,7 @@ public class LateXAction implements IObjectActionDelegate {
 								File fil = new File(dirPath + "/" + name + ".pdf");
 								if (fil.exists()) {
 									if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
-										RServe.plotLinux(dirPath + "/" + name + ".pdf");
+										RTools.plotLinux(dirPath + "/" + name + ".pdf");
 									}
 
 									else {

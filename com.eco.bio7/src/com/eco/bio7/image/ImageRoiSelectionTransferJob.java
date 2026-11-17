@@ -25,15 +25,14 @@ import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
-import org.rosuda.REngine.REngineException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.preferences.PreferenceConstants;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.util.Util;
+import com.eco.bio7.rffm.RException;
 
 public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobChangeListener {
 
@@ -131,7 +130,7 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 				Bio7Dialog.message("NO ROI's available in ROI Manager!");
 				return;
 			}
-			if (RServe.isAliveDialog()) {
+			if (RTools.isAliveDialog()) {
 				ImagePlus impd = WindowManager.getCurrentImage();
 				if ((impd.getStackSize()) > 1) {
 					Bio7Dialog.message("Info: For a stack only the first slice (layer)\n" + "will be measured for all ROI's in the ROI Manager!");
@@ -158,7 +157,7 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 
 						connection.eval("imageSizeX<-" + w);
 
-					} catch (RserveException e1) {
+					} catch (RException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
@@ -176,7 +175,7 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 						try {
 							connection.eval("try(" + roiName + "<-NULL)");
 
-						} catch (RserveException e2) {
+						} catch (RException e2) {
 							// TODO Auto-generated catch block
 							Bio7Dialog.message("Please select a proper name for the ROI's in the ROI Manager\n" + "Some special chars are not supported for the transfer to R!");
 							return;
@@ -216,7 +215,7 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 								//System.out.println(l+" is: "+ layerName);
 								try {
 									connection.assign(l, valD);
-								} catch (REngineException e1) {
+								} catch (RException e1) {
 									// TODO Auto-generated catch block
 									e1.printStackTrace();
 								}
@@ -226,7 +225,7 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 								try {
 									connection.eval("try(" + roiName + "<-cbind(" + roiName + "," + l + "))");
 									connection.eval("remove(" + l + ")");
-								} catch (RserveException e1) {
+								} catch (RException e1) {
 									// TODO Auto-generated catch block
 									e1.printStackTrace();
 								}
@@ -241,7 +240,7 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 								//System.out.println(l+" is: "+ layerName);
 								try {
 									connection.assign(l, valI);
-								} catch (REngineException e1) {
+								} catch (RException e1) {
 									// TODO Auto-generated catch block
 									e1.printStackTrace();
 								}
@@ -251,7 +250,7 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 								try {
 									connection.eval("try(" + roiName + "<-cbind(" + roiName + "," + l + "))");
 									connection.eval("remove(" + l + ")");
-								} catch (RserveException e1) {
+								} catch (RException e1) {
 									// TODO Auto-generated catch block
 									e1.printStackTrace();
 								}
@@ -266,7 +265,7 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 								//System.out.println(l+" is: "+ layerName);
 								try {
 									connection.assign(l, valB);
-								} catch (REngineException e1) {
+								} catch (RException e1) {
 									// TODO Auto-generated catch block
 									e1.printStackTrace();
 								}
@@ -276,7 +275,7 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 								try {
 									connection.eval("try(" + roiName + "<-cbind(" + roiName + "," + l + "))");
 									connection.eval("remove(" + l + ")");
-								} catch (RserveException e1) {
+								} catch (RException e1) {
 									// TODO Auto-generated catch block
 									e1.printStackTrace();
 								}
@@ -310,7 +309,7 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 									}
 								}
 
-							} catch (RserveException e1) {
+							} catch (RException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
@@ -342,7 +341,7 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 									}
 								}
 
-							} catch (RserveException e1) {
+							} catch (RException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
@@ -372,7 +371,7 @@ public class ImageRoiSelectionTransferJob extends WorkspaceJob implements IJobCh
 									}
 								}
 
-							} catch (RserveException e1) {
+							} catch (RException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}

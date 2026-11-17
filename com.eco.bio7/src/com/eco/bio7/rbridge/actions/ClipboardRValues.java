@@ -11,7 +11,7 @@ import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RClipboardValuesJob;
 import com.eco.bio7.rbridge.RBridge;
-import com.eco.bio7.rbridge.RServeUtil;
+import com.eco.bio7.rbridge.REval;
 import com.eco.bio7.rbridge.RState;
 
 public class ClipboardRValues extends Action {
@@ -19,7 +19,7 @@ public class ClipboardRValues extends Action {
 	public ClipboardRValues(String text, IWorkbenchWindow window) {
 		super(text);
 
-		setId("com.eco.bio7.rserve_clipboardRValues");
+		setId("com.eco.bio7.r_clipboardRValues");
 		setActionDefinitionId("com.eco.bio7.execute_r_clipboard_values");
 	}
 
@@ -49,7 +49,7 @@ public class ClipboardRValues extends Action {
 					public void done(IJobChangeEvent event) {
 						if (event.getResult().isOK()) {
 							RState.setBusy(false);
-							RServeUtil.listRObjects();
+							REval.listRObjects();
 						} else {
 							RState.setBusy(false);
 						}

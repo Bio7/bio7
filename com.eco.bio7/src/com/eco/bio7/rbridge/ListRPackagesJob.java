@@ -19,12 +19,12 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
-import org.rosuda.REngine.REXPMismatchException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.views.PackageInstallView;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class ListRPackagesJob extends WorkspaceJob {
 
@@ -39,7 +39,7 @@ public class ListRPackagesJob extends WorkspaceJob {
 		monitor.beginTask("Retrieve package list..", IProgressMonitor.UNKNOWN);
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		String server = store.getString("R_PACKAGE_SERVER");
-		if (RServe.isAlive()) {
+		if (RTools.isAlive()) {
 			Display display = PlatformUI.getWorkbench().getDisplay();
 			display.syncExec(new Runnable() {
 
@@ -58,8 +58,8 @@ public class ListRPackagesJob extends WorkspaceJob {
 						+ "\", type = \"source\") else available.packages(contriburl = contrib.url(\"" + server + "\")))");
 
 				try {
-					packageList = c.eval("try(.bio7ListOfWebPackages[,1])").asStrings();
-				} catch (REXPMismatchException e) {
+					packageList = c.eval("try(.bio7ListOfWebPackages[,1])").strings();
+				} catch (RTypeException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
@@ -75,7 +75,7 @@ public class ListRPackagesJob extends WorkspaceJob {
 					});
 
 				
-			} catch (RserveException e) {
+			} catch (RException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}

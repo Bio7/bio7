@@ -27,7 +27,7 @@ import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.rbridge.RConfig;
 import com.eco.bio7.rbridge.RLocator;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.plot.RPlotCanvasDevice;
 import com.eco.bio7.rffm.RConsole;
 import com.eco.bio7.rffm.RException;
@@ -137,7 +137,7 @@ public final class EmbeddedR {
 		String preferred = store.getString(PreferenceConstants.PATH_R);
 		String home = RLocator.resolveHome(preferred);
 		if (home == null) {
-			return "R was not found (see 'R and Rserve Setup' in the R preferences).";
+			return "R was not found (see 'R Setup' in the R preferences).";
 		}
 		if (home.isEmpty()) {
 			/* The R of the PATH: its home */
@@ -147,7 +147,7 @@ public final class EmbeddedR {
 			}
 			home = r.home();
 		}
-		/* Older R versions are not supported (Rserve is used then) */
+		/* Older R versions are not supported */
 		String tooOld = unsupportedVersion(home);
 		if (tooOld != null) {
 			return tooOld;
@@ -169,6 +169,17 @@ public final class EmbeddedR {
 			@Override
 			public void writeWarning(String text) {
 				print(warning, text, true);
+			}
+
+			/* The prompt of browser() or of the console: the stop button of the debug view */
+			@Override
+			public void prompt(String prompt) {
+				write(prompt, false);
+				boolean b = prompt != null && prompt.startsWith("Browse[");
+				if (b != browsePrompt) {
+					browsePrompt = b;
+					com.eco.bio7.rbridge.debug.DebugVariablesView.updateActions();
+				}
 			}
 		});
 		/* Linux: the C++ runtime of the selected Python too (the newest is loaded first) */
@@ -212,7 +223,7 @@ public final class EmbeddedR {
 		} catch (RException e) {
 			print("The paths of pandoc could not be set: " + e.getMessage() + "\n", true);
 		}
-		RServe.setRrunning(true);
+		RTools.setRrunning(true);
 		RConfig.config(backend);
 		print("Embedded R " + session.version() + " in " + home + "\n", false);
 		return null;
@@ -298,6 +309,14 @@ public final class EmbeddedR {
 			}
 		}
 		return null;
+	}
+
+	/* The last prompt of R was the prompt of browser() ("Browse[n]>") */
+	private static volatile boolean browsePrompt;
+
+	/** Returns true if the last prompt of R is the prompt of browser() (R waits in Browse mode). */
+	public static boolean isAtBrowsePrompt() {
+		return browsePrompt;
 	}
 
 	/** Returns true if embedded R waits for console input within an evaluation (browser()). */

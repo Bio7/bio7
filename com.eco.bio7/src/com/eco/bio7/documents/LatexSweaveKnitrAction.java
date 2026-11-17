@@ -37,21 +37,21 @@ import org.eclipse.ui.PlatformUI;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
-import org.rosuda.REngine.REXPLogical;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.BatchModel;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.collection.BrowserUtil;
 import com.eco.bio7.collection.Work;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
-import com.eco.bio7.rbridge.RServeUtil;
+import com.eco.bio7.rbridge.REval;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
 
 public class LatexSweaveKnitrAction extends Action {
 
@@ -142,7 +142,7 @@ public class LatexSweaveKnitrAction extends Action {
 
 			if (extension.equals("tex") == false) {
 
-				if (RServe.isAliveDialog() == false) {
+				if (RTools.isAliveDialog() == false) {
 					return;
 				}
 
@@ -181,9 +181,9 @@ public class LatexSweaveKnitrAction extends Action {
 								c.eval("try(setwd('" + dirPath + "'));");
 								c.eval("try(Sweave(\"" + project + "\"))");
 								c.eval("try(setwd(.tempCurrentWd));");
-								// c.eval("try(dev.off());");//not needed with Rserve?
+								// c.eval("try(dev.off());");
 
-							} catch (RserveException e) {
+							} catch (RException e) {
 
 								System.out.println(e.getMessage());
 							}
@@ -198,8 +198,8 @@ public class LatexSweaveKnitrAction extends Action {
 							RBackend c = RBridge.getBackend();
 
 							try {
-								REXPLogical rl = (REXPLogical) c.eval("require(knitr)");
-								if (!(rl.isTRUE()[0])) {
+								RValue rl = c.eval("require(knitr)");
+								if (!(rl.booleans()[0])) {
 
 									Bio7Dialog.message("Cannot load 'knitr' package!");
 								}
@@ -263,16 +263,16 @@ public class LatexSweaveKnitrAction extends Action {
 									/* Clean the path for R and knitr! */
 									String cleanedPath = temp.getPath().replace("\\", "/");
 
-									RServe.print("knit('" + cleanedPath + "','" + theName + "." + fileext + "')");
+									RTools.print("knit('" + cleanedPath + "','" + theName + "." + fileext + "')");
 
 								}
 
 								else if (fileext.equals("tex")) {
 
-									RServe.print("knit('" + selFile + "','" + theName + "." + fileext + "')");
+									RTools.print("knit('" + selFile + "','" + theName + "." + fileext + "')");
 								}
 
-							} catch (RserveException e1) {
+							} catch (RException e1) {
 
 								e1.printStackTrace();
 							}
@@ -316,7 +316,7 @@ public class LatexSweaveKnitrAction extends Action {
 							}
 							try {
 								c.eval("try(setwd(.tempCurrentWd));");
-							} catch (RserveException e) {
+							} catch (RException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
@@ -335,7 +335,7 @@ public class LatexSweaveKnitrAction extends Action {
 							// Util.activateEditorPage(editor);
 							/* Only list objects when using R with latex! */
 							if (extension.equals("tex") == false) {
-								RServeUtil.listRObjects();
+								REval.listRObjects();
 							}
 						} else {
 							RState.setBusy(false);
@@ -524,8 +524,8 @@ public class LatexSweaveKnitrAction extends Action {
 
 			e.printStackTrace();
 			/*
-			 * Bio7Dialog.message( "Rserve executable not available !" );
-			 * RServe.setConnection(null);
+			 * Bio7Dialog.message( "R is not available!" );
+			 * RTools.setConnection(null);
 			 */
 		}
 
@@ -547,13 +547,13 @@ public class LatexSweaveKnitrAction extends Action {
 
 						/*
 						 * if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
-						 * RServe.plotLinux(dirPath + "/" + theName + ".pdf"); }
+						 * RTools.plotLinux(dirPath + "/" + theName + ".pdf"); }
 						 */
 
 						// else {
 
 						// Program.launch(dirPath + "/" + theName + ".pdf");
-						RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser, true, false);
+						RTools.openPDF(dirPath + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser, true, false);
 						// }
 					} else {
 						Bio7Dialog.message(
@@ -856,8 +856,8 @@ public class LatexSweaveKnitrAction extends Action {
 
 			e.printStackTrace();
 			/*
-			 * Bio7Dialog.message( "Rserve executable not available !" );
-			 * RServe.setConnection(null);
+			 * Bio7Dialog.message( "R is not available!" );
+			 * RTools.setConnection(null);
 			 */
 		}
 		try {

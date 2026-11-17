@@ -14,7 +14,6 @@ package com.eco.bio7.rbridge;
 /*import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;*/
-import org.rosuda.REngine.Rserve.RSession;
 
 //import com.eco.bio7.rbridge.RShellView;
 
@@ -30,7 +29,6 @@ public class RState {
 	/* The state of an R which evaluates on its own (e.g., the console of embedded R) */
 	private static volatile java.util.function.BooleanSupplier externalBusy;
 
-	private static RSession rSession = null;
 
 	/**
 	 * A method to detect if the R interpreter is busy.
@@ -88,24 +86,6 @@ public class RState {
 
 		}
 */
-	}
-
-	/**
-	 * A method to detect if a R session is available.
-	 * 
-	 * @return a boolean value.
-	 */
-	public RSession getRSession() {
-		return rSession;
-	}
-
-	/**
-	 * Sets an RSession object.
-	 * 
-	 * @param rsession an RSession.
-	 */
-	public static void setRSession(RSession rsession) {
-		rSession = rsession;
 	}
 
 }

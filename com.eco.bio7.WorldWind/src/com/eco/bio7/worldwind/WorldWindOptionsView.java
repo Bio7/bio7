@@ -139,11 +139,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolTip;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-import org.rosuda.REngine.REXPLogical;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.REngineException;
 import com.eco.bio7.rbridge.REvaluator;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import worldw.Activator;
 
@@ -157,6 +153,9 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.GridData;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class WorldWindOptionsView extends ViewPart {
 
@@ -865,35 +864,35 @@ public class WorldWindOptionsView extends ViewPart {
 		removeAllButton.setToolTipText(
 				"Add an area to the text fields.\nThe variables have to be defined in the current R workspace");
 		removeAllButton.addSelectionListener(new SelectionAdapter() {
-			private REXPLogical bolExistsMaxLon;
-			private REXPLogical bolExistsMinLon;
-			private REXPLogical bolExistsMaxLat;
-			private REXPLogical bolExistsMinLat;
+			private RValue bolExistsMaxLon;
+			private RValue bolExistsMinLon;
+			private RValue bolExistsMaxLat;
+			private RValue bolExistsMinLat;
 
 			public void widgetSelected(final SelectionEvent e) {
 				REvaluator c = WorldWindView.getEvaluator();
 				if (c != null) {
 					try {
-						bolExistsMaxLon = (REXPLogical) c.eval("try(exists(\"maxLon\"))");
-						bolExistsMinLon = (REXPLogical) c.eval("try(exists(\"minLon\"))");
-						bolExistsMaxLat = (REXPLogical) c.eval("try(exists(\"maxLat\"))");
-						bolExistsMinLat = (REXPLogical) c.eval("try(exists(\"minLat\"))");
+						bolExistsMaxLon = c.eval("try(exists(\"maxLon\"))");
+						bolExistsMinLon = c.eval("try(exists(\"minLon\"))");
+						bolExistsMaxLat = c.eval("try(exists(\"maxLat\"))");
+						bolExistsMinLat = c.eval("try(exists(\"minLat\"))");
 
-						boolean[] bolEMaxLon = bolExistsMaxLon.isTrue();
-						boolean[] bolEMinLon = bolExistsMinLon.isTrue();
-						boolean[] bolEMaxLat = bolExistsMaxLat.isTrue();
-						boolean[] bolEMinLat = bolExistsMinLat.isTrue();
+						boolean[] bolEMaxLon = bolExistsMaxLon.booleans();
+						boolean[] bolEMinLon = bolExistsMinLon.booleans();
+						boolean[] bolEMaxLat = bolExistsMaxLat.booleans();
+						boolean[] bolEMinLat = bolExistsMinLat.booleans();
 						if (bolEMaxLon[0] || bolEMinLon[0] || bolEMaxLat[0] || bolEMinLat[0]) {
-							double maxLo = c.eval("maxLon").asDouble();
+							double maxLo = c.eval("maxLon").firstDouble();
 							maxLon.setText("" + maxLo);
 
-							double minLo = c.eval("minLon").asDouble();
+							double minLo = c.eval("minLon").firstDouble();
 							minLon.setText("" + minLo);
 
-							double maxLa = c.eval("maxLat").asDouble();
+							double maxLa = c.eval("maxLat").firstDouble();
 							maxLat.setText("" + maxLa);
 
-							double minLa = c.eval("minLat").asDouble();
+							double minLa = c.eval("minLat").firstDouble();
 							minLat.setText("" + minLa);
 						} else {
 							MessageBox messageBox = new MessageBox(new Shell(),
@@ -904,10 +903,10 @@ public class WorldWindOptionsView extends ViewPart {
 							messageBox.open();
 						}
 
-					} catch (REXPMismatchException e1) {
+					} catch (RTypeException e1) {
 
 						e1.printStackTrace();
-					} catch (RserveException e1) {
+					} catch (RException e1) {
 
 						e1.printStackTrace();
 					}
@@ -1611,7 +1610,7 @@ public class WorldWindOptionsView extends ViewPart {
 
 					try {
 						con.assign("meas", v);
-					} catch (REngineException e1) {
+					} catch (RException e1) {
 
 						e1.printStackTrace();
 					}
@@ -1619,7 +1618,7 @@ public class WorldWindOptionsView extends ViewPart {
 
 						con.eval("df<-cbind(df,meas)");
 						con.eval("df[,1]<-c('Length','Area','Width','Height','Heading','Center')");
-					} catch (RserveException e1) {
+					} catch (RException e1) {
 
 						e1.printStackTrace();
 					}

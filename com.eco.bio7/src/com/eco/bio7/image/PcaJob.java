@@ -24,17 +24,16 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
-import org.rosuda.REngine.REXPLogical;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.REngineException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.ApplicationActionBarAdvisor;
 import com.eco.bio7.rcp.StartBio7Utils;
 import com.eco.bio7.time.Time;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class PcaJob extends WorkspaceJob {
 	private static int cluster = 1;
@@ -85,7 +84,7 @@ public class PcaJob extends WorkspaceJob {
 			ImagePlus imp = null;
 			try {
 				c.eval("clusterData<-NULL");
-			} catch (RserveException e2) {
+			} catch (RException e2) {
 				// TODO Auto-generated catch block
 				e2.printStackTrace();
 			}
@@ -102,8 +101,8 @@ public class PcaJob extends WorkspaceJob {
 						monitor.setTaskName("Create data frame!");
 						try {
 							/* Double data and integer data can be clustered! */
-							REXPLogical bol = (REXPLogical) c.eval("try(is.double(imageData))");
-							boolean[] bo = bol.isTrue();
+							RValue bol = c.eval("try(is.double(imageData))");
+							boolean[] bo = bol.booleans();
 							if (bo[0]) {
 
 								c.eval("clusterData<-cbind(clusterData,imageData)");
@@ -116,14 +115,14 @@ public class PcaJob extends WorkspaceJob {
 							if (i == 0) {
 								// c.eval("clusterData[1]<-NULL");
 							}
-						} catch (RserveException e1) {
+						} catch (RException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
 					} else {
 						try {
 							c.eval("try(image" + count + "<-imageData)");
-						} catch (RserveException e) {
+						} catch (RException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
@@ -138,7 +137,7 @@ public class PcaJob extends WorkspaceJob {
 				try {
 					c.eval("try(remove(imageData));gc();");
 
-				} catch (RserveException e2) {
+				} catch (RException e2) {
 					// TODO Auto-generated catch block
 					e2.printStackTrace();
 				}
@@ -162,7 +161,7 @@ public class PcaJob extends WorkspaceJob {
 					/* The plots of the variance and the loadings (embedded R) */
 					RImageAnalysisPlots.pca(c, cluster, imagesToCluster);
 					c.eval("try(remove(pcaData));gc();");
-				} catch (RserveException e1) {
+				} catch (RException e1) {
 
 					e1.printStackTrace();
 				}
@@ -172,7 +171,7 @@ public class PcaJob extends WorkspaceJob {
 
 					c.eval("try(remove(clusterData))");
 					// c.eval("remove(imageCluster)");
-				} catch (RserveException e1) {
+				} catch (RException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
@@ -192,11 +191,11 @@ public class PcaJob extends WorkspaceJob {
 	private void printInR(String expression) {
 		String rout = null;
 		try {
-			rout = RBridge.getBackend().eval("try(paste(capture.output(print(" + expression + ")),collapse=\"\\n\"))").asString();
-		} catch (REXPMismatchException e) {
+			rout = RBridge.getBackend().eval("try(paste(capture.output(print(" + expression + ")),collapse=\"\\n\"))").firstString();
+		} catch (RTypeException e) {
 
 			e.printStackTrace();
-		} catch (RserveException e) {
+		} catch (RException e) {
 
 			e.printStackTrace();
 		}

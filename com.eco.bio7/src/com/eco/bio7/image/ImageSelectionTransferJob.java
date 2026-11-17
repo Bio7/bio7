@@ -24,15 +24,14 @@ import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
-import org.rosuda.REngine.REngineException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.preferences.PreferenceConstants;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.util.Util;
+import com.eco.bio7.rffm.RException;
 
 public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChangeListener {
 
@@ -125,7 +124,7 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 		items = CanvasView.getCanvas_view().tabFolder.getItems();
 		RBackend con = RBridge.getBackend();
 
-		if (RServe.isAliveDialog()) {
+		if (RTools.isAliveDialog()) {
 
 			display.syncExec(new Runnable() {
 
@@ -157,7 +156,7 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 				con.eval("imageSizeX<-" + w);
 				con.eval("" + input + "<-NULL");
 
-			} catch (RserveException e2) {
+			} catch (RException e2) {
 				// TODO Auto-generated catch block
 				e2.printStackTrace();
 			}
@@ -191,7 +190,7 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 					l = "layer" + (i + 1);
 					try {
 						con.assign(l, valD);
-					} catch (REngineException e1) {
+					} catch (RException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
@@ -201,7 +200,7 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 					try {
 						con.eval("try(" + input + "<-cbind(" + input + "," + l + "))");
 						con.eval("remove(" + l + ")");
-					} catch (RserveException e1) {
+					} catch (RException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
@@ -215,7 +214,7 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 					l = "layer" + (i + 1);
 					try {
 						con.assign(l, valI);
-					} catch (REngineException e1) {
+					} catch (RException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
@@ -225,7 +224,7 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 					try {
 						con.eval("try(" + input + "<-cbind(" + input + "," + l + "))");
 						con.eval("remove(" + l + ")");
-					} catch (RserveException e1) {
+					} catch (RException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
@@ -239,7 +238,7 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 					l = "layer" + (i + 1);
 					try {
 						con.assign(l, valB);
-					} catch (REngineException e1) {
+					} catch (RException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
@@ -249,7 +248,7 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 					try {
 						con.eval("try(" + input + "<-cbind(" + input + "," + l + "))");
 						con.eval("remove(" + l + ")");
-					} catch (RserveException e1) {
+					} catch (RException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
@@ -263,7 +262,7 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 					try {
 						con.eval("" + input + "<-cbind(rep(c(" + sig + "),length(" + input + "[,1]))," + input + ")");
 						con.eval("colnames(" + input + ")[1] <- \"Class\"");
-					} catch (RserveException e1) {
+					} catch (RException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
@@ -273,7 +272,7 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 						con.eval("" + input + "<-cbind(rep(c(as.integer(" + sig + ")),length(" + input + "[,1])),"
 								+ input + ")");
 						con.eval("colnames(" + input + ")[1] <- \"Class\"");
-					} catch (RserveException e1) {
+					} catch (RException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
@@ -283,7 +282,7 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 						con.eval("" + input + "<-cbind(rep(c(as.raw(" + sig + ")),length(" + input + "[,1]))," + input
 								+ ")");
 						con.eval("colnames(" + input + ")[1] <- \"Class\"");
-					} catch (RserveException e1) {
+					} catch (RException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}

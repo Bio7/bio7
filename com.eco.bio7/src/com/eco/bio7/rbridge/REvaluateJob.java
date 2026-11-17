@@ -17,11 +17,11 @@ import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.StartBio7Utils;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class REvaluateJob extends WorkspaceJob {
 
@@ -41,15 +41,15 @@ public class REvaluateJob extends WorkspaceJob {
 
 		String out = null;
 		try {
-			out = RBridge.getBackend().eval("paste(capture.output(print(" + trybegin  + "(" + toprint + ")"  + tryend + ")),collapse=\"\\n\")").asString();
+			out = RBridge.getBackend().eval("paste(capture.output(print(" + trybegin  + "(" + toprint + ")"  + tryend + ")),collapse=\"\\n\")").firstString();
 
-		} catch (REXPMismatchException e) {
+		} catch (RTypeException e) {
 
 			e.printStackTrace();
-		} catch (RserveException e) {
+		} catch (RException e) {
 			System.out.println("Error : " + e.getMessage());
 		}
-		RServe.setRout(out);
+		RTools.setRout(out);
 
 		/* Avoid the printing of an empty object - 'NULL'! */
 		if (out != null && out.equals("NULL") == false) {

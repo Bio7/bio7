@@ -92,7 +92,47 @@ class Debugger(bdb.Bdb):
             self.run_to_breakpoint = False
             self.set_continue()
             return
-        self._pause(frame, "line")
+        self._hit_count_reached(frame)
+        if self._log_point(frame):
+            return
+        self._pause(frame, "line", self._condition_error(frame))
+
+    def _log_point(self, frame):
+        """A log point (breakpoint with a log expression): prints the value, doesn't stop.
+        While stepping the debugger stops as at every line."""
+        if os.path.abspath(frame.f_code.co_filename) != self.path or self.stop_here(frame):
+            return False
+        logs = [getattr(bp, "_bio7_log", None) for bp in self.get_breaks(self.path, frame.f_lineno)]
+        logs = [x for x in logs if x]
+        if not logs:
+            return False
+        for expr in logs:
+            try:
+                value = _short(eval(expr, frame.f_globals, frame.f_locals), 2000)
+            except Exception as e:
+                value = "<%s: %s>" % (type(e).__name__, e)
+            sys.stdout.write("\u25b6 line %d: %s = %s\n" % (frame.f_lineno, expr, value))
+        return True
+
+    def _hit_count_reached(self, frame):
+        """A breakpoint with a hit count stops once (at the n-th hit): then it is off for this run."""
+        if os.path.abspath(frame.f_code.co_filename) != self.path:
+            return
+        for bp in self.get_breaks(self.path, frame.f_lineno):
+            if getattr(bp, "_bio7_hits", 0) > 1 and bp.enabled and bp.ignore == 0:
+                bp.enabled = False
+
+    def _condition_error(self, frame):
+        """The error of the condition of a breakpoint at the line (bdb stops then), else None."""
+        if os.path.abspath(frame.f_code.co_filename) != self.path:
+            return None
+        for bp in self.get_breaks(self.path, frame.f_lineno):
+            if bp.cond:
+                try:
+                    eval(bp.cond, frame.f_globals, frame.f_locals)
+                except Exception as e:
+                    return "The condition of the breakpoint (%s) failed: %s: %s" % (bp.cond, type(e).__name__, e)
+        return None
 
     def user_return(self, frame, value):
         pass
@@ -165,8 +205,7 @@ def run(path, breakpoints, stop_first):
     _debugger = d
     # the breakpoints of bdb are shared by all debuggers: only the ones of this run
     d.clear_all_breaks()
-    for line in breakpoints:
-        d.set_break(path, int(line))
+    _apply_breaks(d, breakpoints)
     ns = _main.__dict__
     ns["__file__"] = path
     try:
@@ -198,9 +237,42 @@ def set_breaks(lines):
     """The breakpoints of the script (e.g., changed in the editor while debugging)."""
     if _debugger is None:
         return
-    _debugger.clear_all_breaks()
-    for line in lines:
-        _debugger.set_break(_debugger.path, int(line))
+    _apply_breaks(_debugger, lines)
+
+
+def _spec(b):
+    """A breakpoint: a line or [line, condition or None, hit count, log expression or None]."""
+    if isinstance(b, (list, tuple)):
+        line = int(b[0])
+        cond = b[1] if len(b) > 1 and b[1] else None
+        hits = int(b[2]) if len(b) > 2 and b[2] else 0
+        log = b[3] if len(b) > 3 and b[3] else None
+        return line, cond, hits, log
+    return int(b), None, 0, None
+
+
+def _apply_breaks(d, specs):
+    """Sets the breakpoints of the script: unchanged breakpoints keep their hits
+    (a hit count counts on), changed ones are new."""
+    wanted = {}
+    for b in specs:
+        line, cond, hits, log = _spec(b)
+        wanted[line] = (cond, hits, log)
+    for bp in list(bdb.Breakpoint.bpbynumber):
+        if bp is None or os.path.abspath(bp.file) != d.path:
+            continue
+        if wanted.get(bp.line) != (bp.cond, getattr(bp, "_bio7_hits", 0), getattr(bp, "_bio7_log", None)):
+            d.clear_break(bp.file, bp.line)
+    for line, (cond, hits, log) in wanted.items():
+        if any(bp.cond == cond and getattr(bp, "_bio7_hits", 0) == hits and getattr(bp, "_bio7_log", None) == log
+               for bp in d.get_breaks(d.path, line)):
+            continue
+        d.set_break(d.path, line, cond=cond)
+        bp = d.get_breaks(d.path, line)[-1]
+        bp._bio7_hits = hits
+        bp._bio7_log = log
+        # stops at the n-th hit: the first n - 1 are ignored
+        bp.ignore = max(0, hits - 1)
 
 
 def _frame():
@@ -258,3 +330,73 @@ def to_main(name):
     f = _frame()
     _main.__dict__[name] = eval(name, f.f_globals, f.f_locals)
     return name
+
+
+def to_main_as(target, expression):
+    """Copies the value of an expression of the frame to __main__ under the name target."""
+    f = _frame()
+    _main.__dict__[target] = eval(expression, f.f_globals, f.f_locals)
+    return target
+
+
+def describe(expression, max_lines=30, limit=3000):
+    """The hover of the editor: the type, the size and the value (several lines) of an
+    expression in the selected frame; a NameError: an empty string (no hover)."""
+    f = _frame()
+    if f is None:
+        return ""
+    try:
+        v = eval(expression, f.f_globals, f.f_locals)
+    except NameError:
+        return ""
+    except Exception as e:
+        return "<" + type(e).__name__ + ": " + str(e) + ">"
+    if _is_code(v):
+        return ""  # functions, classes, modules: the help of the editor (signature, documentation)
+    head = _type(v)
+    parts = head.split(" ")
+    if len(parts) == 2 and parts[0] == parts[1]:
+        head = parts[0]  # a numpy scalar (e.g., float64)
+    size = _size(v)
+    if size:
+        head += "  [" + size + "]"
+    text = _pretty(v, max_lines)
+    lines = text.splitlines()
+    if len(lines) > max_lines:
+        lines = lines[:max_lines] + ["..."]
+    text = "\n".join(lines)
+    if len(text) > limit:
+        text = text[:limit] + " ..."
+    return head + "\n" + text
+
+
+def _is_code(v):
+    import types
+    if isinstance(v, (types.FunctionType, types.BuiltinFunctionType, types.MethodType, types.BuiltinMethodType, types.ModuleType, type)):
+        return True
+    # other callables (e.g., numpy functions, partial): not data with a shape
+    return callable(v) and not hasattr(v, "shape")
+
+
+def _pretty(v, max_lines):
+    try:
+        module = type(v).__module__ or ""
+        if module.startswith("pandas"):
+            import pandas as pd
+            with pd.option_context("display.max_rows", max_lines - 2, "display.min_rows", 10, "display.max_columns", 12, "display.width", 110):
+                return repr(v)
+        if module.startswith("numpy") and hasattr(v, "shape"):
+            import numpy as np
+            return np.array2string(np.asarray(v), threshold=200, edgeitems=4, max_line_width=110)
+        if isinstance(v, (list, tuple, dict, set, frozenset)) and len(v) <= 200:
+            import pprint
+            return pprint.pformat(v, width=100, compact=True)
+        if isinstance(v, (list, tuple, dict, set, frozenset)):
+            import reprlib
+            r = reprlib.Repr()
+            r.maxlist = r.maxtuple = r.maxset = r.maxfrozenset = r.maxdict = 60
+            r.maxstring = r.maxother = 200
+            return r.repr(v)
+        return repr(v)
+    except Exception as e:
+        return "<repr failed: %s>" % e

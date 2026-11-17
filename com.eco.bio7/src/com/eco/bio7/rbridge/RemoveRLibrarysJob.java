@@ -21,9 +21,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.PlatformUI;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.rbridge.views.PackageInstallView;
+import com.eco.bio7.rffm.RException;
 
 public class RemoveRLibrarysJob extends WorkspaceJob {
 
@@ -37,7 +37,7 @@ public class RemoveRLibrarysJob extends WorkspaceJob {
 
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
 		monitor.beginTask("Remove Librarys..", IProgressMonitor.UNKNOWN);
-		if (RServe.isAlive()) {
+		if (RTools.isAlive()) {
 			Display display = PlatformUI.getWorkbench().getDisplay();
 			display.syncExec(new Runnable() {
 
@@ -49,7 +49,7 @@ public class RemoveRLibrarysJob extends WorkspaceJob {
 
 						try {
 							c.eval("try(remove.packages(\"" + tableItems[i].getText(0) + "\"))");
-						} catch (RserveException e) {
+						} catch (RException e) {
 
 							e.printStackTrace();
 						}

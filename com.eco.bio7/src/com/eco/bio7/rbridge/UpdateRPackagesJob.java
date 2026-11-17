@@ -22,10 +22,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.rosuda.REngine.REXPMismatchException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class UpdateRPackagesJob extends WorkspaceJob {
 
@@ -38,7 +38,7 @@ public class UpdateRPackagesJob extends WorkspaceJob {
 
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
 		monitor.beginTask("Update Packages..", IProgressMonitor.UNKNOWN);
-		if (RServe.isAlive()) {
+		if (RTools.isAlive()) {
 			RBackend c = RBridge.getBackend();
 
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
@@ -48,16 +48,15 @@ public class UpdateRPackagesJob extends WorkspaceJob {
 			/* If a location is given! */
 
 			// destdir = destdir.replace("\\", "\\\\");
-            /*Here we update the packages but exclude Rserve!*/
 			String out = null;
 			try {
-				out = c.eval(".pkgListToUpdate <- installed.packages(priority='NA')[,'Package'];" + ".pkgListToUpdate<-.pkgListToUpdate[-which(.pkgListToUpdate==\"Rserve\",arr.ind =TRUE)];"
-						+ "try(paste(capture.output(update.packages(repos =\"" + server + "\",checkBuilt=TRUE, ask=FALSE,oldPkgs=.pkgListToUpdate)),collapse=\"\\n\"))").asString();
+				out = c.eval(".pkgListToUpdate <- installed.packages(priority='NA')[,'Package'];"
+						+ "try(paste(capture.output(update.packages(repos =\"" + server + "\",checkBuilt=TRUE, ask=FALSE,oldPkgs=.pkgListToUpdate)),collapse=\"\\n\"))").firstString();
 				c.eval("remove(.pkgListToUpdate)");
-			} catch (REXPMismatchException e) {
+			} catch (RTypeException e) {
 
 				e.printStackTrace();
-			} catch (RserveException e) {
+			} catch (RException e) {
 
 				e.printStackTrace();
 			}
@@ -76,11 +75,11 @@ public class UpdateRPackagesJob extends WorkspaceJob {
 			 * 
 			 * String out = null; try { out =
 			 * c.eval("try(paste(capture.output(update.packages(repos =\"" + server +
-			 * "\")),collapse=\"\\n\"))").asString();
+			 * "\")),collapse=\"\\n\"))").firstString();
 			 * 
-			 * } catch (REXPMismatchException e) {
+			 * } catch (RTypeException e) {
 			 * 
-			 * e.printStackTrace(); } catch (RserveException e) {
+			 * e.printStackTrace(); } catch (RException e) {
 			 * 
 			 * e.printStackTrace(); }
 			 * 
@@ -91,9 +90,9 @@ public class UpdateRPackagesJob extends WorkspaceJob {
 			 * String out = null; try { out =
 			 * c.eval("try(paste(capture.output(install.packages(\"" + items[i] +
 			 * "\",dependencies=TRUE,repos =\"" + server +
-			 * "\")),collapse=\"\\n\"))").asString(); } catch (REXPMismatchException e) {
+			 * "\")),collapse=\"\\n\"))").firstString(); } catch (RTypeException e) {
 			 * 
-			 * e.printStackTrace(); } catch (RserveException e) {
+			 * e.printStackTrace(); } catch (RException e) {
 			 * 
 			 * e.printStackTrace(); }
 			 * 
@@ -111,10 +110,10 @@ public class UpdateRPackagesJob extends WorkspaceJob {
 			 * String out = null; try { out = c.eval(
 			 * "try(paste(capture.output(install.packages(\"" + itemsSpatial[i] +
 			 * "\",dependencies=TRUE,repos =\"" + server + "\",lib=\"" + destdir +
-			 * "\",destdir=\"" + destdir + "\")),collapse=\"\\n\"))").asString(); } catch
-			 * (REXPMismatchException e) {
+			 * "\",destdir=\"" + destdir + "\")),collapse=\"\\n\"))").firstString(); } catch
+			 * (RTypeException e) {
 			 * 
-			 * e.printStackTrace(); } catch (RserveException e) {
+			 * e.printStackTrace(); } catch (RException e) {
 			 * 
 			 * e.printStackTrace(); }
 			 * 
@@ -128,38 +127,14 @@ public class UpdateRPackagesJob extends WorkspaceJob {
 	}
 
 	public static void writeOutput() {
-		writeToConsole();
 
 		try {
 			RBridge.getBackend().voidEval("try(readLines(con = stdin()))");
-		} catch (RserveException e) {
+		} catch (RException e) {
 
 			e.printStackTrace();
 		}
 
-		writeToConsole();
-
-	}
-
-	public static void writeToConsole() {
-		new Thread() {
-			public void run() {
-				Process p = RConnectionJob.getProc();
-				// Write to the output!
-				final OutputStream os = p.getOutputStream();
-				final OutputStreamWriter osw = new OutputStreamWriter(os);
-				final BufferedWriter bw = new BufferedWriter(osw, 100);
-
-				try {
-					bw.write("\n");
-
-					bw.close();
-				} catch (IOException e) {
-					System.err.println("");
-				}
-
-			}
-		}.start();
 
 	}
 

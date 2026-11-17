@@ -1,4 +1,4 @@
-# The package lists of the Bio7 package views (Rserve and embedded R).
+# The package lists of the Bio7 package views (embedded R).
 # The index of a repository is cached on disk (24 hours), shared by the views
 # and by new R sessions: only the first use of a day downloads it.
 # author: M. Austenfeld

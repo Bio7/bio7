@@ -35,14 +35,14 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.rosuda.REngine.REXPMismatchException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.util.Util;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class RLibraryList extends Shell {
 
@@ -61,7 +61,7 @@ public class RLibraryList extends Shell {
 
 		allPackagesList.addMouseListener(new MouseAdapter() {
 			public void mouseDoubleClick(final MouseEvent e) {
-				if (RServe.isAlive()) {
+				if (RTools.isAlive()) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
 						LoadRLibrarysJob Do = new LoadRLibrarysJob(editor);
@@ -105,7 +105,7 @@ public class RLibraryList extends Shell {
 		uninstallButton.setLayoutData(gd_uninstallButton);
 		uninstallButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (RServe.isAlive()) {
+				if (RTools.isAlive()) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
 						RemoveRLibrarysJob Do = new RemoveRLibrarysJob();
@@ -170,13 +170,13 @@ public class RLibraryList extends Shell {
 							c.eval("try(.bio7ListOfWebPackages <- list(sort(.packages(all.available = TRUE))))");
 
 							try {
-								listPackages = c.eval(".bio7ListOfWebPackages[[1]]").asStrings();
-							} catch (REXPMismatchException e1) {
+								listPackages = c.eval(".bio7ListOfWebPackages[[1]]").strings();
+							} catch (RTypeException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
 
-						} catch (RserveException e2) {
+						} catch (RException e2) {
 
 							e2.printStackTrace();
 						}

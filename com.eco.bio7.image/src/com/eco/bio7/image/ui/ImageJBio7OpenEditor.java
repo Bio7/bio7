@@ -74,7 +74,7 @@ public class ImageJBio7OpenEditor extends EditorPart {
 		openView("com.eco.bio7.imagej");
 		activateView("org.eclipse.ui.navigator.ProjectExplorer");
 
-		// RServe.openPDF(dirPath + "/", theName + ".pdf", useBrowser,
+		// RTools.openPDF(dirPath + "/", theName + ".pdf", useBrowser,
 		
 	}
 

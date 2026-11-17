@@ -22,10 +22,10 @@ import org.eclipse.nebula.widgets.grid.GridColumn;
 import org.eclipse.nebula.widgets.grid.GridItem;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.progress.UIJob;
-import org.rosuda.REngine.REXPMismatchException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class TransferDataframeToGridJob extends UIJob {
 
@@ -67,13 +67,13 @@ public class TransferDataframeToGridJob extends UIJob {
 		int lengthX = 0;
 
 		try {
-			lengthY = c.eval("try(length(" + name + "[,1]))").asInteger();
-			lengthX = c.eval("try(length(" + name + "[1,]))").asInteger();
+			lengthY = c.eval("try(length(" + name + "[,1]))").firstInt();
+			lengthX = c.eval("try(length(" + name + "[1,]))").firstInt();
 
-		} catch (REXPMismatchException e) {
+		} catch (RTypeException e) {
 
 			e.printStackTrace();
-		} catch (RserveException e) {
+		} catch (RException e) {
 
 			e.printStackTrace();
 		}
@@ -107,18 +107,18 @@ public class TransferDataframeToGridJob extends UIJob {
 					try {
 						// Get the columns!
 						if (format) {
-							matrix = c.eval("try(format(" + name + "[," + (j + 1) + "],trim = TRUE,digits=" + digits + "))").asStrings();
+							matrix = c.eval("try(format(" + name + "[," + (j + 1) + "],trim = TRUE,digits=" + digits + "))").strings();
 						} else {
 							/* A numeric column with full precision (as.character writes 15 digits) */
 							matrix = RNumbers.texts(c, name + "[," + (j + 1) + "]");
 							if (matrix == null) {
-								matrix = c.eval("try(as.character(" + name + "[," + (j + 1) + "]))").asStrings();
+								matrix = c.eval("try(as.character(" + name + "[," + (j + 1) + "]))").strings();
 							}
 						}
-					} catch (REXPMismatchException e) {
+					} catch (RTypeException e) {
 
 						e.printStackTrace();
-					} catch (RserveException e) {
+					} catch (RException e) {
 
 						e.printStackTrace();
 					}
@@ -137,11 +137,11 @@ public class TransferDataframeToGridJob extends UIJob {
 			} else {
 				String[] names = null;
 				try {
-					names = c.eval("try(names(" + name + "))").asStrings();
-				} catch (REXPMismatchException e1) {
+					names = c.eval("try(names(" + name + "))").strings();
+				} catch (RTypeException e1) {
 
 					e1.printStackTrace();
-				} catch (RserveException e1) {
+				} catch (RException e1) {
 
 					e1.printStackTrace();
 				}
@@ -153,18 +153,18 @@ public class TransferDataframeToGridJob extends UIJob {
 					try {
 						// Get the columns!
 						if (format) {
-							matrix = c.eval("try(format(" + name + "[," + (j + 1) + "],trim = TRUE,digits=" + digits + "))").asStrings();
+							matrix = c.eval("try(format(" + name + "[," + (j + 1) + "],trim = TRUE,digits=" + digits + "))").strings();
 						} else {
 							/* A numeric column with full precision (as.character writes 15 digits) */
 							matrix = RNumbers.texts(c, name + "[," + (j + 1) + "]");
 							if (matrix == null) {
-								matrix = c.eval("try(as.character(" + name + "[," + (j + 1) + "]))").asStrings();
+								matrix = c.eval("try(as.character(" + name + "[," + (j + 1) + "]))").strings();
 							}
 						}
-					} catch (REXPMismatchException e) {
+					} catch (RTypeException e) {
 
 						e.printStackTrace();
-					} catch (RserveException e) {
+					} catch (RException e) {
 
 						e.printStackTrace();
 					}

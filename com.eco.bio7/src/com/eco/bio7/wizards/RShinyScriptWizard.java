@@ -78,7 +78,7 @@ public class RShinyScriptWizard extends Wizard implements INewWizard {
 		}
 
 		try {
-			InputStream stream = openContentStreamRServerFile();
+			InputStream stream = openContentStreamServerFile();
 			if (file.exists()) {
 				file.setContents(stream, true, true, monitor);
 			} else {
@@ -119,7 +119,7 @@ public class RShinyScriptWizard extends Wizard implements INewWizard {
 		monitor.worked(1);
 	}
 
-	private InputStream openContentStreamRServerFile() {
+	private InputStream openContentStreamServerFile() {
 		String ui = "library(shiny)\n" + 
 				"\n" + 
 				"#Draws a number of random points\n" + 

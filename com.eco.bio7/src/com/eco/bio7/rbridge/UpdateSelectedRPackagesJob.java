@@ -22,11 +22,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.REngineException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class UpdateSelectedRPackagesJob extends WorkspaceJob {
 
@@ -44,7 +43,7 @@ public class UpdateSelectedRPackagesJob extends WorkspaceJob {
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
 		monitor.beginTask("Update Selected Packages..", IProgressMonitor.UNKNOWN);
 		
-		if (RServe.isAlive()) {
+		if (RTools.isAlive()) {
 			RBackend c = RBridge.getBackend();
 
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
@@ -54,22 +53,21 @@ public class UpdateSelectedRPackagesJob extends WorkspaceJob {
 			/* If a location is given! */
 
 			// destdir = destdir.replace("\\", "\\\\");
-            /*Here we update the packages but exclude Rserve!*/
 			String out = null;
 			
 			try {
 				try {
 					c.assign(".pkgSelectedToUpdate", selectedPackages);
-				} catch (REngineException e) {
+				} catch (RException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				out = c.eval("try(paste(capture.output(update.packages(repos =\"" + server + "\",checkBuilt=TRUE, ask=FALSE,oldPkgs=.pkgSelectedToUpdate)),collapse=\"\\n\"))").asString();
+				out = c.eval("try(paste(capture.output(update.packages(repos =\"" + server + "\",checkBuilt=TRUE, ask=FALSE,oldPkgs=.pkgSelectedToUpdate)),collapse=\"\\n\"))").firstString();
 				c.eval("remove(.pkgSelectedToUpdate)");
-			} catch (REXPMismatchException e) {
+			} catch (RTypeException e) {
 
 				e.printStackTrace();
-			} catch (RserveException e) {
+			} catch (RException e) {
 
 				e.printStackTrace();
 			}
@@ -81,38 +79,14 @@ public class UpdateSelectedRPackagesJob extends WorkspaceJob {
 	}
 
 	public static void writeOutput() {
-		writeToConsole();
 
 		try {
 			RBridge.getBackend().voidEval("try(readLines(con = stdin()))");
-		} catch (RserveException e) {
+		} catch (RException e) {
 
 			e.printStackTrace();
 		}
 
-		writeToConsole();
-
-	}
-
-	public static void writeToConsole() {
-		new Thread() {
-			public void run() {
-				Process p = RConnectionJob.getProc();
-				// Write to the output!
-				final OutputStream os = p.getOutputStream();
-				final OutputStreamWriter osw = new OutputStreamWriter(os);
-				final BufferedWriter bw = new BufferedWriter(osw, 100);
-
-				try {
-					bw.write("\n");
-
-					bw.close();
-				} catch (IOException e) {
-					System.err.println("");
-				}
-
-			}
-		}.start();
 
 	}
 

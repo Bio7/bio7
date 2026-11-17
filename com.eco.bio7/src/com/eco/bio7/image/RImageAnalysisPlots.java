@@ -17,7 +17,7 @@ import com.eco.bio7.rbridge.backend.RBackend;
 /**
  * The plots of "Cluster Pic" and "PCA" of the Image-Methods view in R (as the
  * plots of the analysis in Python): drawn with the graphics of R in the plot
- * view of the embedded R (not with Rserve).
+ * view of the embedded R.
  */
 final class RImageAnalysisPlots {
 

@@ -27,9 +27,9 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
-import com.eco.bio7.rbridge.RServeUtil;
+import com.eco.bio7.rbridge.REval;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.StartBio7Utils;
@@ -71,7 +71,6 @@ public class InterpretR extends Action {
 		}
 		String loc = aFile.getLocation().toString();
 
-		boolean remote = Bio7Plugin.getDefault().getPreferenceStore().getBoolean("REMOTE");
 		//IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		// boolean rPipe = store.getBoolean("r_pipe");
 
@@ -91,25 +90,20 @@ public class InterpretR extends Action {
 
 			String rCode = doc.get();
 
-			if (RState.isBusy() == false) {
+			/* Waits for R if it is busy (e.g., loading the workspace) */
+			com.eco.bio7.rbridge.RWait.whenFree("the R script", () -> {
 				RState.setBusy(true);
-				final RInterpreterJob Do;
-				if (remote == false) {
-					Do = new RInterpreterJob(rCode, loc);
-
-				} else {
-					Do = new RInterpreterJob(rCode, null);
-				}
+				final RInterpreterJob Do = new RInterpreterJob(rCode, loc);
 				Do.addJobChangeListener(new JobChangeAdapter() {
 					public void done(IJobChangeEvent event) {
 						if (event.getResult().isOK()) {
 
-							int countDev = RServe.getDisplayNumber();
+							int countDev = RTools.getDisplayNumber();
 							RState.setBusy(false);
 							if (countDev > 0) {
-								RServe.closeAndDisplay();
+								RTools.closeAndDisplay();
 							}
-							RServeUtil.listRObjects();
+							REval.listRObjects();
 						} else {
 							RState.setBusy(false);
 						}
@@ -117,18 +111,14 @@ public class InterpretR extends Action {
 				});
 				Do.setUser(true);
 				Do.schedule();
-			} else {
-
-				Bio7Dialog.message("R is busy!");
-
-			}
+			});
 
 			/*
 			 * else {
 			 * 
 			 * MessageBox messageBox = new MessageBox(new Shell(),
 			 * 
-			 * SWT.ICON_WARNING); messageBox.setMessage( "RServer connection failed - Server is not running!"); messageBox.open();
+			 * SWT.ICON_WARNING); messageBox.setMessage( "R is not running!"); messageBox.open();
 			 * 
 			 * }
 			 */

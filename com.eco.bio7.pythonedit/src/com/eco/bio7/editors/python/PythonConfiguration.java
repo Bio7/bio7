@@ -42,7 +42,12 @@ public class PythonConfiguration extends SourceViewerConfiguration {
 	 */
 	@Override
     public String[] getConfiguredContentTypes(ISourceViewer sourceViewer) {
-		return PyPartitionScanner.getTypes();
+		/* The code (the default type) and the partitions: else the hovers, the double click and the indention only work in comments and strings */
+		String[] partitions = PyPartitionScanner.getTypes();
+		String[] types = new String[partitions.length + 1];
+		types[0] = org.eclipse.jface.text.IDocument.DEFAULT_CONTENT_TYPE;
+		System.arraycopy(partitions, 0, types, 1, partitions.length);
+		return types;
 	}
 	
 	/*

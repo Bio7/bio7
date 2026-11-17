@@ -480,7 +480,7 @@ public class PythonPackagesPanel {
 		}
 		appendLog("\npip is missing in " + exe + ": it is installed.");
 		/* Linux: the package of the system (sudo) can be installed in the Terminal of Bio7 */
-		com.eco.bio7.rbridge.RserveInstaller.InstallCommand system = PythonEnvironment.systemPipCommand(exe);
+		com.eco.bio7.rbridge.RInstaller.InstallCommand system = PythonEnvironment.systemPipCommand(exe);
 		boolean terminal = system != null && org.eclipse.core.runtime.Platform.getBundle("org.eclipse.terminal.view.ui") != null;
 		boolean[] terminalStarted = new boolean[1];
 		try {
@@ -519,9 +519,9 @@ public class PythonPackagesPanel {
 	 * Runs a command (with sudo) in the Terminal of Bio7 (not in the UI thread); the
 	 * user confirmed it in the dialog which shows the command
 	 */
-	private boolean runInTerminal(com.eco.bio7.rbridge.RserveInstaller.InstallCommand command) {
+	private boolean runInTerminal(com.eco.bio7.rbridge.RInstaller.InstallCommand command) {
 		try {
-			java.io.File script = com.eco.bio7.rbridge.RserveInstaller.writeTerminalScript(command,
+			java.io.File script = com.eco.bio7.rbridge.RInstaller.writeTerminalScript(command,
 					"Finished. Press 'Install' in the Python Packages again (or create the Bio7 environment again).");
 			new com.eco.bio7.console.ShellUtil().execShellCommand("Install pip", "/bin/bash", script.getAbsolutePath());
 			appendLog("Started in the Terminal: " + command.command() + "\nEnter your password there if asked.");

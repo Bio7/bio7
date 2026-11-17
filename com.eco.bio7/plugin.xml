@@ -265,7 +265,7 @@
          point="org.eclipse.ui.commands">
       <command
             description="Start R"
-            id="com.eco.bio7.Start_RServe_Action"
+            id="com.eco.bio7.Start_R_Action"
             name="Start R">
       </command>
       <sequenceModifier
@@ -273,7 +273,7 @@
   			replace="COMMAND"
   			platforms="cocoa,carbon" />
       <keyBinding
-            commandId="com.eco.bio7.Start_RServe_Action"
+            commandId="com.eco.bio7.Start_R_Action"
             keySequence="CTRL+R"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration">
       </keyBinding>
@@ -476,11 +476,11 @@
       </keyBinding>
       <command
             description="Open the R preferences"
-            id="com.eco.bio7.rserve_openPreferences"
+            id="com.eco.bio7.r_openPreferences"
             name="Open R preferences">
       </command>
       <keyBinding
-            commandId="com.eco.bio7.rserve_openPreferences"
+            commandId="com.eco.bio7.r_openPreferences"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
             keySequence="CTRL+ALT+P">
       </keyBinding>
@@ -562,7 +562,7 @@
             name="Preferences Bio7"/>
       <page
             category="com.eco.bio7.preferences.Bio7PreferencePage"
-            class="com.eco.bio7.preferences.RServePrefs"
+            class="com.eco.bio7.preferences.RPreferences"
             id="com.eco.bio7.R"
             name="Preferences R"/>
       <page
@@ -595,14 +595,8 @@
       </page>
       <page
             category="com.eco.bio7.R"
-            class="com.eco.bio7.preferences.RServeRemotePreferences"
-            id="com.eco.bio7.rserve.remote"
-            name="Preferences Rserve Remote">
-      </page>
-      <page
-            category="com.eco.bio7.R"
-            class="com.eco.bio7.preferences.RServePlotPrefs"
-            id="com.eco.bio7.RServePlot"
+            class="com.eco.bio7.preferences.RPlotPreferences"
+            id="com.eco.bio7.RPlot"
             name="Preferences R Plots">
       </page>
       <page
@@ -1493,17 +1487,17 @@
             nameFilter="*.R"
             id="RContextMenu.contribution">
          <menu
-               label="Profile Script Selection (profvis)"
+               label="Profile"
                path="additions"
-               id="REditorMenu.menu">
+               id="RProfileMenu.menu">
             <separator
                   name="group1">
             </separator>
          </menu>
          <action
-               label="Profile Script Selection (profvis)"
+               label="Profile Selection"
                class="com.eco.bio7.rbridge.actions.ProfileSelectionAction"
-               menubarPath="REditorMenu.menu"
+               menubarPath="RProfileMenu.menu/group1"
                enablesFor="1"
                id="RPopupMenu.newAction">
          </action>
@@ -1513,17 +1507,23 @@
             nameFilter="*.R"
             id="RContextMenu.contribution">
          <menu
-               label="Profile Script (profvis)"
+               label="Profile"
                path="additions"
-               id="REditorMenu.menu">
+               id="RProfileMenu.menu">
             <separator
                   name="group1">
             </separator>
          </menu>
          <action
-               label="Profile Script (profvis)"
+               label="Clear Profile Marks"
+               class="com.eco.bio7.rbridge.actions.ClearProfileMarksAction"
+               menubarPath="RProfileMenu.menu/group1"
+               id="RPopupMenu.clearProfileMarks">
+         </action>
+         <action
+               label="Profile Script"
                class="com.eco.bio7.rbridge.actions.ProfileScriptAction"
-               menubarPath="REditorMenu.menu"
+               menubarPath="RProfileMenu.menu/group1"
                enablesFor="1"
                id="RPopupMenu.newAction">
          </action>
@@ -1534,31 +1534,19 @@
        <action
              class="com.eco.bio7.rbridge.debug.DeleteBreakpointAction"
              id="DeleteBreakpointAction"
-             label="Delete All Breakpoints"
-             menubarPath="debug">
-       </action>
-       <action
-             class="com.eco.bio7.rbridge.debug.DeleteSelBreakpointAction"
-             id="DeleteSelectedBreakpointAction"
-             label="Delete Selected Breakpoint"
-             menubarPath="debug">
-       </action>
-       <action
-             class="com.eco.bio7.rbridge.debug.EditSelBreakpointAction"
-             id="EditConditionalBreakpointAction"
-             label="Edit Conditional Breakpoint"
+             label="Remove All Breakpoints"
              menubarPath="debug">
        </action>
        <action
              class="com.eco.bio7.rbridge.debug.ToggleDebugConditionalBreakpointAction"
              id="AddConditionalBreakpointAction"
-             label="Add Conditional Breakpoint"
+             label="Breakpoint Properties..."
              menubarPath="debug">
        </action>
        <action
              class="com.eco.bio7.rbridge.debug.ToggleDebugBreakpointAction"
              id="AddBreakpointAction"
-             label="Toggle Breakpoint (Double-Click)"
+             label="Toggle Breakpoint"
              menubarPath="debug">
        </action>
     </viewerContribution>
@@ -2000,4 +1988,59 @@
       </menuContribution>
    </extension>
 
+   <!-- The profiler of the Java editor (JavaProfiler): the time marks and the context menu -->
+   <extension
+         id="javaprofileline"
+         name="Java Profile"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.eclipse.core.resources.textmarker"/>
+      <persistent value="false"/>
+   </extension>
+   <extension point="org.eclipse.ui.editors.annotationTypes">
+      <type markerType="com.eco.bio7.javaprofileline" name="com.eco.bio7.javaprofileline"/>
+   </extension>
+   <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="com.eco.bio7.javaprofileline"
+            colorPreferenceKey="com.eco.bio7.javaprofileline.color"
+            colorPreferenceValue="232,89,12"
+            contributesToHeader="false"
+            highlightPreferenceKey="com.eco.bio7.javaprofileline.highlight"
+            highlightPreferenceValue="false"
+            icon="icons/editor/profile_obj.svg"
+            includeOnPreferencePage="true"
+            label="Java Profile (time of a line)"
+            overviewRulerPreferenceKey="com.eco.bio7.javaprofileline.overview"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="2"
+            textPreferenceKey="com.eco.bio7.javaprofileline.text"
+            textPreferenceValue="false"
+            verticalRulerPreferenceKey="com.eco.bio7.javaprofileline.ruler"
+            verticalRulerPreferenceValue="true"/>
+   </extension>
+   <extension point="org.eclipse.ui.popupMenus">
+      <viewerContribution
+            id="com.eco.bio7.javaProfileContribution"
+            targetID="#CompilationUnitEditorContext">
+         <menu
+               id="JavaProfileMenu.menu"
+               label="Profile"
+               path="additions">
+            <separator name="group1"/>
+         </menu>
+         <action
+               class="com.eco.bio7.compile.JavaProfileAction"
+               id="com.eco.bio7.javaProfile.clearProfileMarks"
+               label="Clear Profile Marks"
+               menubarPath="JavaProfileMenu.menu/group1">
+         </action>
+         <action
+               class="com.eco.bio7.compile.JavaProfileAction"
+               icon="icons/editor/profile_obj.svg"
+               id="com.eco.bio7.javaProfile.profile"
+               label="Profile Java (compile and run)"
+               menubarPath="JavaProfileMenu.menu/group1">
+         </action>
+      </viewerContribution>
+   </extension>
 </plugin>

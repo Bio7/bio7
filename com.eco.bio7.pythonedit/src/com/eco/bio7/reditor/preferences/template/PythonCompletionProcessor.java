@@ -116,4 +116,11 @@ public class PythonCompletionProcessor extends TemplateCompletionProcessor {
 		return image;
 	}
 
+
+	/* The templates with the indentation of the current line (multi-line templates in indented code) */
+	@Override
+	protected org.eclipse.jface.text.templates.TemplateContext createContext(org.eclipse.jface.text.ITextViewer viewer, org.eclipse.jface.text.IRegion region) {
+		org.eclipse.jface.text.templates.TemplateContextType type = getContextType(viewer, region);
+		return type == null ? null : new com.eco.bio7.util.IndentingTemplateContext(type, viewer.getDocument(), region.getOffset(), region.getLength());
+	}
 }

@@ -1,5 +1,4 @@
-import static com.eco.bio7.rbridge.RServeUtil.*;
-import org.rosuda.REngine.REXP;
+import static com.eco.bio7.rbridge.REval.*;
 import org.apache.commons.io.FilenameUtils;
 /*
 Gridfile importer script. Using the 'rgdal' package of R.
@@ -7,13 +6,13 @@ Author: M. Austenfeld
 Year:   2005-2025
 */
 
-/*Test if Rserve is alive!*/
-if(RServe.isAliveDialog()==false){
+/*Test if R is running!*/
+if(RTools.isAliveDialog()==false){
 	return;
 }
 evalR(".isInstalled<-as.character(require('terra'))", null);
-rexpr = fromR(".isInstalled");
-isAvail = rexpr.asString();
+rValue = fromR(".isInstalled");
+isAvail = rValue.firstString();
 
 if (isAvail.equals("FALSE")) {
 	Bio7Dialog.message("Can't load 'terra' package!");
@@ -37,5 +36,5 @@ if (files != null) {
 	evalR("try(print(summary(" + name + ")));try(remove(list = c('.fileGdalBio7','.isInstalled')));", null);
 
 }
-RServeUtil.listRObjects();	
+REval.listRObjects();	
 

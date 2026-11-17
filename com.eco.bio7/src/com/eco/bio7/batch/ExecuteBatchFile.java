@@ -40,9 +40,7 @@ import org.eclipse.ui.progress.IProgressService;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
-import org.rosuda.REngine.REXPLogical;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.collection.BrowserUtil;
 import com.eco.bio7.compile.BeanShellInterpreter;
@@ -56,9 +54,11 @@ import com.eco.bio7.floweditor.shapes.ShapesPlugin;
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 import com.eco.bio7.jobs.ImageFlowMacroWorkspaceJob;
 import com.eco.bio7.preferences.PreferenceConstants;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RState;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
 
 public class ExecuteBatchFile {
 
@@ -426,14 +426,14 @@ public class ExecuteBatchFile {
 			String name = fi.getName();
 			final String theName = name.replaceFirst("[.][^.]+$", "");
 
-			if (RServe.isAlive()) {
+			if (RTools.isAlive()) {
 				if (RState.isBusy() == false) {
 
 					RBackend c = RBridge.getBackend();
 
 					try {
-						REXPLogical rl = (REXPLogical) c.eval("require(knitr)");
-						if (!(rl.isTRUE()[0])) {
+						RValue rl = c.eval("require(knitr)");
+						if (!(rl.booleans()[0])) {
 
 							Bio7Dialog.message("Cannot load 'knitr' package!");
 						}
@@ -494,11 +494,11 @@ public class ExecuteBatchFile {
 						/* Clean the path for R and knitr! */
 						String cleanedPath = temp.getPath().replace("\\", "/");
 
-						RServe.print("knit('" + cleanedPath + "','" + theName + "." + fileext + "')");
+						RTools.print("knit('" + cleanedPath + "','" + theName + "." + fileext + "')");
 
-						// RServe.print("try(knit('" + name + "','" + theName + "." + fileext + "'))");
+						// RTools.print("try(knit('" + name + "','" + theName + "." + fileext + "'))");
 
-					} catch (RserveException e1) {
+					} catch (RException e1) {
 
 						e1.printStackTrace();
 					}
@@ -528,7 +528,7 @@ public class ExecuteBatchFile {
 
 					try {
 						c.eval("try(setwd(.tempCurrentWd));");
-					} catch (RserveException e) {
+					} catch (RException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -554,14 +554,14 @@ public class ExecuteBatchFile {
 			String name = fi.getName();
 			final String theName = name.replaceFirst("[.][^.]+$", "");
 
-			if (RServe.isAlive()) {
+			if (RTools.isAlive()) {
 				if (RState.isBusy() == false) {
 
 					RBackend c = RBridge.getBackend();
 
 					try {
-						REXPLogical rl = (REXPLogical) c.eval("require(knitr)");
-						if (!(rl.isTRUE()[0])) {
+						RValue rl = c.eval("require(knitr)");
+						if (!(rl.booleans()[0])) {
 
 							Bio7Dialog.message("Cannot load 'knitr' package!");
 						}
@@ -574,12 +574,12 @@ public class ExecuteBatchFile {
 						 * if (fileext.equals("html")) { c.eval("try(" + knitrOptions + ")"); }
 						 */
 						System.out.println("try(knit('" + dir + "','" + theName + "." + fileext + "'))");
-						RServe.print("try(knit('" + dir + "','" + theName + "." + fileext + "'))");
+						RTools.print("try(knit('" + dir + "','" + theName + "." + fileext + "'))");
 						c.eval("try(setwd(.tempCurrentWd));");
 
-						// RServe.print("try(knit('" + name + "','" + theName + "." + fileext + "'))");
+						// RTools.print("try(knit('" + name + "','" + theName + "." + fileext + "'))");
 
-					} catch (RserveException e1) {
+					} catch (RException e1) {
 
 						e1.printStackTrace();
 					}
@@ -635,7 +635,7 @@ public class ExecuteBatchFile {
 							boolean useBrowser = store.getBoolean("PDF_USE_BROWSER");
 							String openInJavaFXBrowser = store.getString("BROWSER_SELECTION");
 
-							RServe.openPDF(tempDirLoc + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser, true,
+							RTools.openPDF(tempDirLoc + "/", theName + ".pdf", useBrowser, openInJavaFXBrowser, true,
 									false);
 
 							// Program.launch(tempDirLoc + "/" + theName + ".pdf");

@@ -39,14 +39,14 @@ public class Bio7Action {
 	}
 
 	/**
-	 * Starts or stops the Rserve application.
+	 * Starts R (the toolbar action "Start R").
 	 */
-	public static void callRserve() {
+	public static void startR() {
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(new Runnable() {
 
 			public void run() {
-				ApplicationActionBarAdvisor.getStartrserve().run();
+				ApplicationActionBarAdvisor.getStartR().run();
 			}
 		});
 

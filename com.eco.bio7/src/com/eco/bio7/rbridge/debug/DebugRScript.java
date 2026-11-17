@@ -51,7 +51,7 @@ import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
 
 /*
@@ -117,13 +117,6 @@ public class DebugRScript extends Action {
 		DebugProgress.endSession();
 		final IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 
-		/* Automatically disconnect from Rserve for debugging! */
-		if (RServe.isAlive()) {
-			Bio7Action.callRserve();
-			store.setValue("RSERVE_ALIVE_DEBUG", true);
-		} else {
-			store.setValue("RSERVE_ALIVE_DEBUG", false);
-		}
 
 		editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if (editor.isDirty()) {
@@ -141,7 +134,7 @@ public class DebugRScript extends Action {
 		}
 		final String loc = aFile.getLocation().toString();
 
-		/* The debugger works in the console: without Rserve (stopped above) or with embedded R (its console) */
+		/* The debugger works in the console of embedded R */
 		if (d == null || d.isEmbedded()) {
 
 			final String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
@@ -150,7 +143,7 @@ public class DebugRScript extends Action {
 			if (embedded || selectionConsole.equals("R")) {
 
 				if (resource != null) {
-					final Map<Integer, String> map = new TreeMap<Integer, String>(findMyMarkers(resource));
+					final Map<Integer, RBreakpoint> map = new TreeMap<Integer, RBreakpoint>(findBreakpoints(resource));
 					if (map.isEmpty()) {
 						Bio7Dialog.message("Please set a breakpoint first (double-click in the ruler of the editor).");
 						return;
@@ -256,6 +249,22 @@ public class DebugRScript extends Action {
 				}
 			}
 		});
+	}
+
+	/* The breakpoints of the script: line -> condition, hit count, log point */
+	public Map<Integer, RBreakpoint> findBreakpoints(IResource target) {
+		Map<Integer, RBreakpoint> map = new HashMap<Integer, RBreakpoint>();
+		try {
+			for (IMarker m : target.findMarkers(RBreakpoint.MARKER, false, IResource.DEPTH_ZERO)) {
+				int line = m.getAttribute(IMarker.LINE_NUMBER, -1);
+				if (line > 0) {
+					map.put(line, RBreakpoint.of(m));
+				}
+			}
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+		return map;
 	}
 
 	public Map<Integer, String> findMyMarkers(IResource target) {

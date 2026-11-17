@@ -16,16 +16,16 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Text;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RScript;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RShellView;
 import com.eco.bio7.rbridge.RState;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.GridData;
+import com.eco.bio7.rffm.RException;
 
 public class RPlot extends Composite {
 
@@ -83,7 +83,7 @@ public class RPlot extends Composite {
 		plotButton.addSelectionListener(new SelectionAdapter() {
 
 			public void widgetSelected(final SelectionEvent e) {
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						List listShell = RShellView.getListShell();
 						String[] data = listShell.getSelection();
@@ -100,7 +100,7 @@ public class RPlot extends Composite {
 							 
 
 							if (text_1.isEnabled() == false) {
-								RServe.printJob("boxplot(" + data[0] + ",main=\"" + titleText.getText() + "\",xlab=\""
+								RTools.printJob("boxplot(" + data[0] + ",main=\"" + titleText.getText() + "\",xlab=\""
 										+ xText.getText() + "\",ylab=\"" + yText.getText() + "\")");
 
 							} else {
@@ -143,7 +143,7 @@ public class RPlot extends Composite {
 		// two(x,y) arguments can be plotted.");
 		xyButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						List listShell = RShellView.getListShell();
 
@@ -162,7 +162,7 @@ public class RPlot extends Composite {
 							if (selections.length == 2) {
 								if (text_1.isEnabled() == false) {
 
-									RServe.printJob("plot(" + selections[0] + "," + selections[1] + ",main=\""
+									RTools.printJob("plot(" + selections[0] + "," + selections[1] + ",main=\""
 											+ titleText.getText() + "\",xlab=\"" + xText.getText() + "\",ylab=\""
 											+ yText.getText() + "\")");
 								} else {
@@ -175,7 +175,7 @@ public class RPlot extends Composite {
 
 								if (text_1.isEnabled() == false) {
 
-									RServe.printJob("plot(" + selections[0] + ",main=\"" + titleText.getText()
+									RTools.printJob("plot(" + selections[0] + ",main=\"" + titleText.getText()
 											+ "\",xlab=\"" + xText.getText() + "\",ylab=\"" + yText.getText() + "\")");
 								} else {
 									text_1.setText("plot(" + selections[0] + ",main=\"" + titleText.getText()
@@ -202,7 +202,7 @@ public class RPlot extends Composite {
 		perspButton.setLayoutData(gd_perspButton);
 		perspButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						List listShell = RShellView.getListShell();
 						String[] data = listShell.getSelection();
@@ -219,7 +219,7 @@ public class RPlot extends Composite {
 							 
 
 							if (text_1.isEnabled() == false) {
-								RServe.printJob("persp(" + data[0] + ",main=\"" + titleText.getText()
+								RTools.printJob("persp(" + data[0] + ",main=\"" + titleText.getText()
 										+ "\",theta = 30, phi = 30, expand = 0.5, col = \"grey\")");
 							} else {
 								text_1.setText("persp(" + data[0] + ",main=\"" + titleText.getText()
@@ -247,12 +247,12 @@ public class RPlot extends Composite {
 		voronoiButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						RBackend c = RBridge.getBackend();
 						try {
 							c.eval("try(library(tripack))");
-						} catch (RserveException e1) {
+						} catch (RException e1) {
 
 							e1.printStackTrace();
 						}
@@ -274,14 +274,14 @@ public class RPlot extends Composite {
 								c.eval("try(tri.vm <- voronoi.mosaic(" + selections[0] + "," + selections[1]
 										+ ",duplicate=\"remove\"))");
 								c.eval("try(tri.vm.areas <- voronoi.area(tri.vm))");
-							} catch (RserveException e1) {
+							} catch (RException e1) {
 
 								e1.printStackTrace();
 							}
 
 							if (text_1.isEnabled() == false) {
 
-								RServe.printJob("plot(tri.vm,main=\"" + titleText.getText() + "\",xlab=\""
+								RTools.printJob("plot(tri.vm,main=\"" + titleText.getText() + "\",xlab=\""
 										+ xText.getText() + "\",ylab=\"" + yText.getText() + "\");" + "text("
 										+ selections[0] + "," + selections[1] + ", tri.vm.areas, cex=0.5);" + "points("
 										+ selections[0] + "," + selections[1] + ",cex=0.5)");
@@ -310,7 +310,7 @@ public class RPlot extends Composite {
 		// histButton.setToolTipText("Draws a histogram from a vector");
 		histButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						List listShell = RShellView.getListShell();
 						String[] data = listShell.getSelection();
@@ -326,7 +326,7 @@ public class RPlot extends Composite {
 							 * spinnerY.getSelection()); }
 							 
 							if (text_1.isEnabled() == false) {
-								RServe.printJob("hist(" + data[0] + ",main=\"" + titleText.getText() + "\",xlab=\""
+								RTools.printJob("hist(" + data[0] + ",main=\"" + titleText.getText() + "\",xlab=\""
 										+ xText.getText() + "\",ylab=\"" + yText.getText() + "\")");
 							} else {
 								text_1.setText("hist(" + data[0] + ",main=\"" + titleText.getText() + "\",xlab=\""
@@ -350,7 +350,7 @@ public class RPlot extends Composite {
 		// pieButton.setToolTipText("Draws a piechart from a vector");
 		pieButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						List listShell = RShellView.getListShell();
 						String[] data = listShell.getSelection();
@@ -366,7 +366,7 @@ public class RPlot extends Composite {
 							 * spinnerY.getSelection()); }
 							 
 							if (text_1.isEnabled() == false) {
-								RServe.printJob("pie(" + data[0] + ",main=\"" + titleText.getText() + "\")");
+								RTools.printJob("pie(" + data[0] + ",main=\"" + titleText.getText() + "\")");
 							} else {
 								text_1.setText("pie(" + data[0] + ",main=\"" + titleText.getText() + "\")");
 							}
@@ -389,7 +389,7 @@ public class RPlot extends Composite {
 		contourButton.setToolTipText("Draws a contour plot.\nA matrix is required by default");
 		contourButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						List listShell = RShellView.getListShell();
 						String[] data = listShell.getSelection();
@@ -406,7 +406,7 @@ public class RPlot extends Composite {
 							 
 
 							if (text_1.isEnabled() == false) {
-								RServe.printJob("contour(" + data[0] + ",main=\"" + titleText.getText() + "\")");
+								RTools.printJob("contour(" + data[0] + ",main=\"" + titleText.getText() + "\")");
 							} else {
 								text_1.setText("contour(" + data[0] + ",main=\"" + titleText.getText() + "\")");
 							}
@@ -428,7 +428,7 @@ public class RPlot extends Composite {
 		imageButton.setToolTipText("Draws the image plot from a matrix");
 		imageButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						List listShell = RShellView.getListShell();
 						String[] data = listShell.getSelection();
@@ -445,7 +445,7 @@ public class RPlot extends Composite {
 							 
 
 							if (text_1.isEnabled() == false) {
-								RServe.printJob(
+								RTools.printJob(
 										"image(" + data[0] + ",main=\"" + titleText.getText() + "\",useRaster=TRUE)");
 							} else {
 								text_1.setText("image(" + data[0] + ",main=\"" + titleText.getText() + "\")");
@@ -498,7 +498,7 @@ public class RPlot extends Composite {
 		plotButton_1.setLayoutData(gd_plotButton_1);
 		plotButton_1.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				if (RServe.isAliveDialog()) {
+				if (RTools.isAliveDialog()) {
 					if (RState.isBusy() == false) {
 						
 						 * if (pdfCheckBox.getSelection() == false) {

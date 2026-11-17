@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
  * Finds the R installations of the computer and checks them: each candidate
  * (the path of the preferences, R_HOME, the PATH, the registry on Windows and
  * the usual folders) is started once with Rscript and reports its version,
- * architecture, library paths and the installed Rserve package.
+ * architecture and library paths.
  */
 public final class RLocator {
 
@@ -41,12 +41,7 @@ public final class RLocator {
 	private static final String PROBE = "cat('" + MARKER + "\\n');" + "cat('version=', as.character(getRversion()), '\\n', sep='');"
 			+ "cat('arch=', R.version$arch, '\\n', sep='');" + "cat('platform=', R.version$platform, '\\n', sep='');"
 			+ "cat('home=', R.home(), '\\n', sep='');" + "cat('lib=', paste(.libPaths(), collapse='|'), '\\n', sep='');"
-			+ "cat('userLib=', path.expand(strsplit(Sys.getenv('R_LIBS_USER'), .Platform$path.sep)[[1]][1]), '\\n', sep='');"
-			+ "p <- suppressWarnings(tryCatch(utils::packageDescription('Rserve'), error=function(e) NULL));"
-			+ "if (is.list(p)) { cat('rserve=', p$Version, '\\n', sep=''); cat('rserveBuilt=', p$Built, '\\n', sep='');"
-			+ " cat('rserveLib=', dirname(system.file(package='Rserve')), '\\n', sep='');"
-			+ " l <- tryCatch({ suppressWarnings(loadNamespace('Rserve')); 'OK' }, error=function(e) gsub('[\\r\\n]+', ' ', conditionMessage(e)));"
-			+ " cat('rserveLoad=', l, '\\n', sep='') }";
+			+ "cat('userLib=', path.expand(strsplit(Sys.getenv('R_LIBS_USER'), .Platform$path.sep)[[1]][1]), '\\n', sep='')";
 
 	private RLocator() {
 	}
@@ -63,53 +58,14 @@ public final class RLocator {
 	 * @param libraryPaths    the library paths (.libPaths())
 	 * @param userLibrary     the user library (R_LIBS_USER, may not exist yet) or
 	 *                        null
-	 * @param rserveVersion   the version of the installed Rserve package or null
-	 * @param rserveBuilt     the "Built" field of the Rserve package (the R version
-	 *                        and platform it was built with) or null
-	 * @param rserveLibrary   the library which contains the Rserve package or null
-	 * @param rserveLoadError the error if the installed Rserve package can't be
-	 *                        loaded (e.g., another architecture), else null
 	 * @param error           the error if R could not be started, else null
 	 */
 	public record RInstallation(String home, String version, String arch, String platform, List<String> libraryPaths, String userLibrary,
-			String rserveVersion, String rserveBuilt, String rserveLibrary, String rserveLoadError, String error) {
+			String error) {
 
 		/** Returns true if R could be started. */
 		public boolean isValid() {
 			return version != null;
-		}
-
-		/** Returns true if the Rserve package is installed. */
-		public boolean hasRserve() {
-			return rserveVersion != null;
-		}
-
-		/** Returns true if the Rserve package is installed and can be loaded. */
-		public boolean isRserveUsable() {
-			return hasRserve() && rserveLoadError == null;
-		}
-
-		/**
-		 * Returns true if the installed Rserve package was built for another minor
-		 * version of R (e.g., built with R 4.4, running in R 4.6): it should be
-		 * installed again.
-		 */
-		public boolean isRserveBuiltForOtherR() {
-			String built = rserveBuiltRVersion();
-			return version != null && built != null && !minor(built).equals(minor(version));
-		}
-
-		/** The version of R the Rserve package was built with (e.g., 4.6.0) or null. */
-		public String rserveBuiltRVersion() {
-			if (rserveBuilt == null) {
-				return null;
-			}
-			/* "R 4.6.0; aarch64-apple-darwin23; ..." */
-			String built = rserveBuilt.trim();
-			if (!built.startsWith("R ")) {
-				return null;
-			}
-			return built.substring(2).split(";")[0].trim();
 		}
 
 		/** The minor version of R (e.g., 4.6) or null. */
@@ -138,38 +94,13 @@ public final class RLocator {
 			return normalizeArch(arch);
 		}
 
-		/** A short description (e.g., "R 4.6.0 (aarch64), Rserve 1.8-15"). */
+		/** A short description (e.g., "R 4.6.0 (aarch64) in /usr/lib/R"). */
 		public String describe() {
 			if (!isValid()) {
 				return "R could not be started in " + (home == null || home.isEmpty() ? "the PATH" : home) + (error != null ? ": " + error : "");
 			}
-			return "R " + version + " (" + arch + ") in " + home + ", " + describeRserve();
+			return "R " + version + " (" + arch + ") in " + home;
 		}
-
-		/** A short description of the installed Rserve package. */
-		public String describeRserve() {
-			if (!hasRserve()) {
-				return "Rserve is not installed";
-			}
-			String text = "Rserve " + rserveVersion;
-			if (rserveLoadError != null) {
-				return text + " (can't be loaded: " + rserveLoadError + ")";
-			}
-			if (isRserveBuiltForOtherR()) {
-				return text + " (built for R " + rserveBuiltRVersion() + ")";
-			}
-			return text;
-		}
-	}
-
-	/**
-	 * The result of the check of the build tools (for compiling Rserve).
-	 *
-	 * @param available true if a C compiler and make were found
-	 * @param detail    what was found (or not)
-	 * @param help      how to install the tools (empty if available)
-	 */
-	public record BuildTools(boolean available, String detail, String help) {
 	}
 
 	/**
@@ -203,7 +134,7 @@ public final class RLocator {
 	/*
 	 * The R code which adds the install location of the packages (Bio7
 	 * preferences) to the library paths like the Bio7 console does at its start
-	 * (else the probe doesn't see the packages installed there, e.g., Rserve)
+	 * (else the probe doesn't see the packages installed there)
 	 */
 	private static String bio7LibraryPaths() {
 		try {
@@ -219,7 +150,7 @@ public final class RLocator {
 	}
 
 	private static RInstallation failed(String home, String error) {
-		return new RInstallation(home, null, null, null, List.of(), null, null, null, null, null, error);
+		return new RInstallation(home, null, null, null, List.of(), null, error);
 	}
 
 	/* The values of the probe (the lines after the marker) */
@@ -246,14 +177,9 @@ public final class RLocator {
 				libs.add(lib.trim());
 			}
 		}
-		String rserve = values.get("rserve");
-		boolean hasRserve = !(rserve == null || rserve.isEmpty() || rserve.equals("NA"));
-		String load = values.get("rserveLoad");
-		String loadError = !hasRserve || load == null || load.equals("OK") ? null : load;
 		String userLib = values.get("userLib");
 		return new RInstallation(values.getOrDefault("home", home), version, values.get("arch"), values.get("platform"), libs,
-				userLib == null || userLib.isEmpty() || userLib.equals("NA") ? null : userLib, hasRserve ? rserve : null, values.get("rserveBuilt"),
-				values.get("rserveLib"), loadError, null);
+				userLib == null || userLib.isEmpty() || userLib.equals("NA") ? null : userLib, null);
 	}
 
 	/**
@@ -413,62 +339,6 @@ public final class RLocator {
 			}
 		}
 		return null;
-	}
-
-	/**
-	 * Checks if Rserve can be compiled with this R: the Xcode command line tools on
-	 * macOS, else the C compiler of R (R CMD config CC) and make (Rtools on
-	 * Windows).
-	 */
-	public static BuildTools checkBuildTools(RInstallation r) {
-		String os = r.os();
-		if (os.equals("mac")) {
-			ProcessOutput out = run(List.of("xcode-select", "-p"), 20);
-			if (out.error() == null && out.exitCode() == 0 && !out.output().isBlank()) {
-				return new BuildTools(true, "Xcode command line tools in " + out.output().strip(), "");
-			}
-			return new BuildTools(false, "The Xcode command line tools are not installed.",
-					"Install them with the shell command: xcode-select --install");
-		}
-		String rscript = rscript(r.home());
-		if (rscript == null) {
-			return new BuildTools(false, "Rscript was not found.", "");
-		}
-		String script = "cat('" + MARKER + "\\n');" + "cc <- tryCatch(system2(file.path(R.home('bin'), 'R'), c('CMD', 'config', 'CC'), stdout=TRUE)[1], error=function(e) '');"
-				+ "exe <- strsplit(trimws(cc), ' +')[[1]][1];" + "cat('cc=', cc, '\\n', sep='');"
-				+ "cat('ccPath=', if (is.na(exe) || !nzchar(exe)) '' else Sys.which(exe), '\\n', sep='');"
-				+ "cat('make=', Sys.which(Sys.getenv('MAKE', 'make')), '\\n', sep='')";
-		ProcessOutput out = run(List.of(rscript, "--no-save", "--no-restore", "-e", script), 60);
-		if (out.error() != null) {
-			return new BuildTools(false, out.error(), "");
-		}
-		Map<String, String> values = new LinkedHashMap<>();
-		int start = out.output().indexOf(MARKER);
-		for (String line : (start < 0 ? "" : out.output().substring(start)).split("\\R")) {
-			int eq = line.indexOf('=');
-			if (eq > 0) {
-				values.put(line.substring(0, eq).trim(), line.substring(eq + 1).trim());
-			}
-		}
-		String cc = values.getOrDefault("ccPath", "");
-		String make = values.getOrDefault("make", "");
-		if (!cc.isEmpty() && !make.isEmpty()) {
-			return new BuildTools(true, "Compiler " + cc + ", make " + make, "");
-		}
-		String missing = (cc.isEmpty() ? "the C compiler (" + values.getOrDefault("cc", "?") + ")" : "") + (cc.isEmpty() && make.isEmpty() ? " and " : "")
-				+ (make.isEmpty() ? "make" : "");
-		if (os.equals("windows")) {
-			return new BuildTools(false, "Not found: " + missing + ".", "Install Rtools " + rtoolsVersion(r) + " for R " + r.minorVersion()
-					+ " from https://cran.r-project.org/bin/windows/Rtools/ and start Bio7 again.");
-		}
-		return new BuildTools(false, "Not found: " + missing + ".",
-				"Install the build tools, e.g., Debian/Ubuntu: sudo apt install build-essential r-base-dev, Fedora: sudo dnf install gcc make R-devel");
-	}
-
-	/* The Rtools version of an R version on Windows (e.g., R 4.5 -> 45) */
-	private static String rtoolsVersion(RInstallation r) {
-		String minor = r.minorVersion();
-		return minor == null ? "" : minor.replace(".", "");
 	}
 
 	/** The minor version of a version (e.g., 4.6.0 -> 4.6). */

@@ -6,7 +6,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.rosuda.REngine.Rserve.RConnection;
 
 /**
  * @author Bio7 A helper class to evaluate R scripts.
@@ -15,11 +14,11 @@ public class ExecuteRScript {
 
 	private RScriptExecuterInterface executer;
 	private int progressSteps;
-	/* Rserve or embedded R */
+	/* embedded R */
 	private com.eco.bio7.rbridge.backend.RBackend backend;
 
 	/**
-	 * Executes a script with the connection of Bio7 (Rserve or embedded R) in a job,
+	 * Executes a script with the connection of Bio7 (embedded R) in a job,
 	 * e.g., a lambda (RBackend r, IProgressMonitor monitor) -&gt; { r.eval("..."); }.
 	 *
 	 * @param progressSteps steps as integer or 'IProgressMonitor.UNKNOWN' (-1)
@@ -50,15 +49,13 @@ public class ExecuteRScript {
 		this.executer = executer;
 		this.progressSteps = progressSteps;
 		this.listRObjects = true;
-		if (RServe.isAlive()) {
+		if (RTools.isAlive()) {
 			backend = RBridge.getBackend();
-			if (RState.isBusy() == false) {
-				/* Notify that R is busy! */
+			/* Waits for R if it is busy (it was not executed before, only a message on stdout) */
+			RWait.whenFree("the R script", () -> {
 				RState.setBusy(true);
 				executeRScript();
-			} else {
-				System.out.println("R is busy. Can't execute the R script!");
-			}
+			});
 
 		}
 	}
@@ -76,15 +73,13 @@ public class ExecuteRScript {
 		this.executer = executer;
 		this.progressSteps = progressSteps;
 		this.listRObjects = listRObjects;
-		if (RServe.isAlive()) {
+		if (RTools.isAlive()) {
 			backend = RBridge.getBackend();
-			if (RState.isBusy() == false) {
-				/* Notify that R is busy! */
+			/* Waits for R if it is busy (it was not executed before, only a message on stdout) */
+			RWait.whenFree("the R script", () -> {
 				RState.setBusy(true);
 				executeRScript();
-			} else {
-				System.out.println("R is busy. Can't execute the R script!");
-			}
+			});
 
 		}
 	}
@@ -109,14 +104,14 @@ public class ExecuteRScript {
 			public void done(IJobChangeEvent event) {
 
 				if (event.getResult().isOK()) {
-					int countDev = RServe.getDisplayNumber();
+					int countDev = RTools.getDisplayNumber();
 					RState.setBusy(false);
 					if (countDev > 0) {
-						RServe.closeAndDisplay();
+						RTools.closeAndDisplay();
 					}
 					/*List the R objects in the R-Shell view!*/
 					if (listRObjects) {
-						RServeUtil.listRObjects();
+						REval.listRObjects();
 					}
 					// BatchModel.resumeFlow();
 

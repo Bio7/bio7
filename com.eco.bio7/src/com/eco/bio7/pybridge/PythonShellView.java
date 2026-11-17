@@ -26,9 +26,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.nebula.widgets.grid.Grid;
-import org.eclipse.nebula.widgets.grid.GridColumn;
-import org.eclipse.nebula.widgets.grid.GridItem;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyledText;
@@ -52,9 +49,6 @@ import com.eco.bio7.preferences.PreferenceConstants;
 import com.eco.bio7.pyffm.PyException;
 import com.eco.bio7.pyffm.PySession;
 import com.eco.bio7.pyffm.PyValue;
-import com.eco.bio7.rbridge.Bio7Grid;
-import com.eco.bio7.rbridge.RTable;
-import com.eco.bio7.rbridge.Spread;
 
 /**
  * The Python-Shell view (as the R-Shell): evaluates Python code in the embedded
@@ -75,6 +69,7 @@ public class PythonShellView extends ViewPart {
 	private int historyIndex;
 	private String filter = "all";
 	private Font font;
+	private PythonShellCompletion completion;
 	/* The calls of the view run one after another (not in the UI thread) */
 	private final ExecutorService worker = Executors.newSingleThreadExecutor(r -> {
 		Thread t = new Thread(r, "Python-Shell");
@@ -89,8 +84,13 @@ public class PythonShellView extends ViewPart {
 		input = new com.eco.bio7.rbridge.views.RShellText(parent, SWT.SINGLE | SWT.BORDER);
 		GridData gdInput = new GridData(SWT.FILL, SWT.FILL, true, false, 6, 1);
 		input.setLayoutData(gdInput);
-		input.setToolTipText("Python code (Enter: evaluate, Up/Down: history)");
+		input.setToolTipText("Python code (Enter: evaluate, Up/Down: history, " + com.eco.bio7.rbridge.completion.ShellCompletion.getActivationKeystroke().format() + ": code completion)");
+		/* Before the key listener: an open popup takes Return and the arrow keys */
+		completion = new PythonShellCompletion(input);
 		input.addListener(SWT.KeyDown, e -> {
+			if (!e.doit || completion.isOpen()) {
+				return;
+			}
 			if (e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR) {
 				e.doit = false;
 				evaluate();
@@ -193,6 +193,12 @@ public class PythonShellView extends ViewPart {
 			}
 			py = EmbeddedPython.session();
 		}
+		loadModule(py);
+		return py;
+	}
+
+	/* Loads the functions of the view (the module _bio7shell) if necessary (in the thread of Python) */
+	static void loadModule(PySession py) throws Exception {
 		PyValue loaded = py.eval("'_bio7shell' in __import__('sys').modules");
 		if (!(loaded instanceof PyValue.Array a && a.getDouble(0) != 0)) {
 			String source;
@@ -203,7 +209,24 @@ public class PythonShellView extends ViewPart {
 			py.exec("import types as _t, sys as _s\n_m = _t.ModuleType('_bio7shell')\nexec(compile(_bio7_src, '<_bio7shell>', 'exec'), _m.__dict__)\n"
 					+ "_s.modules['_bio7shell'] = _m\ndel _t, _s, _m, _bio7_src");
 		}
-		return py;
+	}
+
+	/**
+	 * The cells of an object of the workspace for the table (mode: head, frame,
+	 * matrix, rows, columns). In the thread of Python (e.g., a query of the
+	 * debugger).
+	 */
+	public static List<String[]> tableRows(PySession py, String name, String mode) throws Exception {
+		loadModule(py);
+		py.assign("_bio7_args", new PyValue.PyList(List.of(PyValue.of(name), PyValue.of(mode))));
+		PyValue v = py.eval("__import__('_bio7shell').cells(*_bio7_args)");
+		List<String[]> rows = new ArrayList<>();
+		if (v instanceof PyValue.PyList l) {
+			for (PyValue r : l.values()) {
+				rows.add(r instanceof PyValue.Str st ? st.values() : new String[] { text(r) });
+			}
+		}
+		return rows;
 	}
 
 	/* Calls a function of the view module with string arguments */
@@ -419,6 +442,12 @@ public class PythonShellView extends ViewPart {
 		item(table, "Matrix", () -> toTable("matrix"));
 		item(table, "Vector to Rows", () -> toTable("rows"));
 		item(table, "Vector to Columns", () -> toTable("columns"));
+		new MenuItem(table, SWT.SEPARATOR);
+		/* Several selected objects (x, y, ...) and the elements of a list: a column or row each, the names as header */
+		item(table, "Selected as Columns", () -> toTableMany("columns"));
+		item(table, "Selected as Rows", () -> toTableMany("rows"));
+		item(table, "List Elements as Columns", () -> toTableMany("list_columns"));
+		item(table, "List Elements as Rows", () -> toTableMany("list_rows"));
 		new MenuItem(menu, SWT.SEPARATOR);
 		item(menu, "To R", this::toR);
 		item(menu, "To ImageJ", this::toImageJ);
@@ -508,50 +537,41 @@ public class PythonShellView extends ViewPart {
 			return;
 		}
 		async(() -> {
-			PyValue v = call("cells", name, mode);
-			List<String[]> rows = new ArrayList<>();
-			if (v instanceof PyValue.PyList l) {
-				for (PyValue r : l.values()) {
-					rows.add(r instanceof PyValue.Str s ? s.values() : new String[] { text(r) });
-				}
-			}
+			List<String[]> rows = tableRows(python(), name, mode);
 			Display.getDefault().asyncExec(() -> fillTable(name, rows));
 		});
 	}
 
-	private void fillTable(String name, List<String[]> rows) {
-		if (rows.isEmpty()) {
-			print(name + ": no data for the table\n");
+	/*
+	 * Several selected objects (columns, rows: one each) or the elements of the
+	 * selected list (list_columns, list_rows) into a new sheet, the names as header
+	 */
+	private void toTableMany(String mode) {
+		List<String> sel = selectedNames();
+		if (sel.isEmpty()) {
+			MessageDialog.openInformation(getSite().getShell(), "Python-Shell", "Please select one or more objects in the list.");
 			return;
 		}
-		int cols = rows.stream().mapToInt(r -> r.length).max().orElse(1);
-		try {
-			getSite().getPage().showView(RTable.ID);
-		} catch (Exception e) {
-			print("The table could not be opened: " + e.getMessage() + "\n");
-			return;
-		}
-		if (RTable.getTabFolder() == null) {
-			return;
-		}
-		Grid grid = new Spread().spread(RTable.getTabFolder(), cols, rows.size(), name);
-		RTable.setGrid(grid);
-		if (grid == null) {
-			return;
-		}
-		for (int i = grid.getColumnCount(); i < cols; i++) {
-			GridColumn column = new GridColumn(grid, SWT.NONE);
-			column.setText(Bio7Grid.columnName(i));
-			column.setWidth(50);
-		}
-		for (int i = grid.getItemCount(); i < rows.size(); i++) {
-			new GridItem(grid, SWT.NONE);
-		}
-		for (int r = 0; r < rows.size(); r++) {
-			String[] row = rows.get(r);
-			for (int c = 0; c < row.length; c++) {
-				grid.getItem(r).setText(c, row[c] == null ? "" : row[c]);
+		boolean list = mode.startsWith("list");
+		String arg = list ? sel.get(0) : String.join("\n", sel);
+		String sheet = list ? sel.get(0) : com.eco.bio7.rbridge.TableTransfer.sheetName(sel);
+		async(() -> {
+			PyValue v = call("cells_many", arg, mode);
+			List<String[]> rows = new ArrayList<>();
+			if (v instanceof PyValue.PyList l) {
+				for (PyValue r : l.values()) {
+					rows.add(r instanceof PyValue.Str st ? st.values() : new String[] { text(r) });
+				}
 			}
+			Display.getDefault().asyncExec(() -> fillTable(sheet, rows));
+		});
+	}
+
+	/** Shows the rows in a new sheet of the Bio7 table (UI thread). */
+	public static void fillTable(String name, List<String[]> rows) {
+		String error = com.eco.bio7.rbridge.TableTransfer.show(name, rows);
+		if (error != null) {
+			EmbeddedPython.print(error + "\n", true);
 		}
 	}
 

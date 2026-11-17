@@ -168,28 +168,25 @@ public class ScriptAction extends Action implements IMenuCreator {
 				 */
 
 				if (file.getName().endsWith(".R") || file.getName().endsWith(".r")) {
-					if (RServe.isAliveDialog()) {
-						if (RState.isBusy() == false) {
+					if (RTools.isAliveDialog()) {
+						/* Waits for R if it is busy (e.g., loading the workspace) */
+						RWait.whenFree("the R script", () -> {
 							RState.setBusy(true);
 							final RInterpreterJob Do = new RInterpreterJob(null, file.toString());
 							Do.addJobChangeListener(new JobChangeAdapter() {
 								public void done(IJobChangeEvent event) {
-									if (event.getResult().isOK()) {
-										int countDev = RServe.getDisplayNumber();
-										RState.setBusy(false);
-										if (countDev > 0) {
-											RServe.closeAndDisplay();
-										}
-										RServeUtil.listRObjects();
+									/* Free again also after an error or a stop (else R stayed busy) */
+									int countDev = RTools.getDisplayNumber();
+									RState.setBusy(false);
+									if (event.getResult().isOK() && countDev > 0) {
+										RTools.closeAndDisplay();
 									}
+									REval.listRObjects();
 								}
 							});
 							Do.setUser(true);
 							Do.schedule();
-						} else {
-
-							Bio7Dialog.message("R is busy!");
-						}
+						});
 
 					}
 				} else if (file.getName().endsWith(".ijm")) {

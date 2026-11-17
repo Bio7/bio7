@@ -46,9 +46,7 @@ import com.eco.bio7.rbridge.backend.RBackend;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.rbridge.RServe;
 import com.eco.bio7.rbridge.RBridge;
-import com.eco.bio7.rbridge.TerminateRserve;
 import com.eco.bio7.rcp.ApplicationWorkbenchWindowAdvisor;
 import com.eco.bio7.scriptengines.ScriptEngineConnection;
 import com.eco.bio7.util.Util;
@@ -171,10 +169,9 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 		new MenuItem(fMenu, SWT.SEPARATOR);
 
 		/* Embedded R runs in the process of Bio7: it can't be stopped (only interrupted) */
-		boolean embeddedR = com.eco.bio7.rbridge.backend.Backends.isConsoleREmbedded();
 		MenuItem menuItem4 = new MenuItem(fMenu, SWT.PUSH);
-		menuItem4.setText("Stop Native Process (R, Python, Shell)");
-		if (embeddedR && "R".equals(ConsolePageParticipant.getInterpreterSelection())) {
+		menuItem4.setText("Stop Native Process (Python, Shell)");
+		if ("R".equals(ConsolePageParticipant.getInterpreterSelection())) {
 			menuItem4.setText("Stop Native Process (embedded R: restart Bio7 to restart R)");
 			menuItem4.setEnabled(false);
 		}
@@ -200,25 +197,8 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 								cpp.setNativeShellProcess(null);
 							}
 						} else if (selectionConsole.equals("R")) {
-
-							if (cpp.getRProcess() == null && com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning()) {
-								com.eco.bio7.batch.Bio7Dialog.message(com.eco.bio7.rbridge.backend.Backends.CANNOT_TERMINATE);
-							} else if (cpp.getRProcess() != null) {
-								try {
-									cpp.getRProcess().destroy();
-									RBackend con = RBridge.getBackend();
-									if (con != null) {
-										con.close();
-										RServe.setConnection(null);
-										WorldWindView.setRConnection(null);
-										RServe.setRrunning(false);
-									}
-								} catch (Exception e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
-								cpp.setRProcess(null);
-							}
+							/* Embedded R runs in the process of Bio7 */
+							com.eco.bio7.batch.Bio7Dialog.message(com.eco.bio7.rbridge.backend.Backends.CANNOT_TERMINATE);
 						} else if (selectionConsole.equals("Python")) {
 							if (cpp.getPythonProcess() != null) {
 								try {
@@ -242,118 +222,6 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 			}
 		});
-
-		MenuItem menuItem5 = new MenuItem(fMenu, SWT.PUSH);
-		menuItem5.setText("Stop All Native R Processes");
-		if (embeddedR) {
-			menuItem5.setText("Stop All Native R Processes (not with embedded R)");
-			menuItem5.setEnabled(false);
-		}
-
-		menuItem5.addSelectionListener(new SelectionListener() {
-
-			public void widgetSelected(SelectionEvent e) {
-
-				boolean destroy = Bio7Dialog
-						.decision("Should all running Rterm (Windows) or R (Linux, Mac) processes be destroyed?\n"
-								+ "If you you confirm all Rterm, R processes on the OS will be terminated!\n"
-								+ "Use only if no other Rterm, R instances are running!");
-
-				if (destroy) {
-
-					if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-
-						TerminateRserve.killProcessRtermWindows();
-					}
-
-					else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Linux")) {
-						TerminateRserve.killProcessRtermLinux();
-					}
-
-					else if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Mac")) {
-						TerminateRserve.killProcessRtermMac();
-					}
-
-					ConsolePageParticipant cpp = ConsolePageParticipant.getConsolePageParticipantInstance();
-					String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
-
-					if (selectionConsole.equals("R")) {
-
-						if (cpp.getRProcess() == null && com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning()) {
-							com.eco.bio7.batch.Bio7Dialog.message(com.eco.bio7.rbridge.backend.Backends.CANNOT_TERMINATE);
-						} else if (cpp.getRProcess() != null) {
-							try {
-								cpp.getRProcess().destroy();
-								RBackend con = RBridge.getBackend();
-								if (con != null) {
-									con.close();
-									RServe.setConnection(null);
-									WorldWindView.setRConnection(null);
-									RServe.setRrunning(false);
-								}
-							} catch (Exception e2) {
-								// TODO Auto-generated catch block
-								e2.printStackTrace();
-							}
-							cpp.setRProcess(null);
-						}
-						Bio7Dialog.message("Terminated R process!");
-					} else {
-						Bio7Dialog.message("Please select the R console to terminate the process");
-					}
-
-				}
-
-			}
-
-			public void widgetDefaultSelected(SelectionEvent e) {
-
-			}
-		});
-		// new MenuItem(fMenu, SWT.SEPARATOR);
-		/*
-		 * MenuItem installRserveMenuItem = new MenuItem(fMenu, SWT.CASCADE);
-		 * installRserveMenuItem.setText("Install Rserve for MacOSX or Linux");
-		 * 
-		 * installRserveMenuItem.setText("Install Rserve (coop. mode) for R < 3.5.0");
-		 * 
-		 * installRserveMenuItem.addSelectionListener(new SelectionListener() {
-		 * 
-		 * public void widgetSelected(SelectionEvent e) { installRPrevious();
-		 * 
-		 * }
-		 * 
-		 * public void widgetDefaultSelected(SelectionEvent e) {
-		 * 
-		 * } });
-		 * 
-		 * MenuItem installRserveMenuItem2 = new MenuItem(fMenu, SWT.CASCADE);
-		 * 
-		 * installRserveMenuItem2.setText("Install Rserve (coop. mode) for R >= 3.5.0");
-		 * 
-		 * installRserveMenuItem2.addSelectionListener(new SelectionListener() {
-		 * 
-		 * public void widgetSelected(SelectionEvent e) { installRServeCurrent();
-		 * 
-		 * }
-		 * 
-		 * public void widgetDefaultSelected(SelectionEvent e) {
-		 * 
-		 * } });
-		 * 
-		 * MenuItem installRserveMenuItem3 = new MenuItem(fMenu, SWT.CASCADE);
-		 * 
-		 * installRserveMenuItem3.
-		 * setText("Install Rserve (coop. mode) for R >= 3.5.0 for SSL 1.1");
-		 * 
-		 * installRserveMenuItem3.addSelectionListener(new SelectionListener() {
-		 * 
-		 * public void widgetSelected(SelectionEvent e) { installRServeLinuxSSL11(); }
-		 * 
-		 * public void widgetDefaultSelected(SelectionEvent e) {
-		 * 
-		 * } });
-		 */
 
 		new MenuItem(fMenu, SWT.SEPARATOR);
 		MenuItem menuEncoding = new MenuItem(fMenu, SWT.CASCADE);
@@ -514,164 +382,4 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 
 		return null;
 	}
-
-	public static void installRPrevious() {
-		String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
-		if (selectionConsole.equals("R")) {
-			String OS = ApplicationWorkbenchWindowAdvisor.getOS();
-			String outputPath;
-			if (OS.equals("Mac")) {
-				String tempDir = System.getProperty("java.io.tmpdir");
-				outputPath = tempDir + "/" + "Rserve_Mac_cooperative.tgz";
-				System.out.println("Download file from: https://raw.github.com/Bio7/Rserve_Cooperative/master");
-				System.out.println("Download file to: " + outputPath);
-				try {
-					FileUtils.copyURLToFile(URI
-							.create("https://raw.github.com/Bio7/Rserve_Cooperative/master/Rserve_Mac_cooperative.tgz")
-							.toURL(), new File(outputPath));
-				} catch (MalformedURLException e2) {
-
-					e2.printStackTrace();
-				} catch (IOException e2) {
-
-					e2.printStackTrace();
-				}
-			} else if (OS.equals("Linux")) {
-				String tempDir = System.getProperty("java.io.tmpdir");
-				outputPath = tempDir + "/" + "Rserve_Linux_cooperative.tar.gz";
-				System.out.println("Download file from: https://raw.github.com/Bio7/Rserve_Cooperative/master");
-				System.out.println("Download file to: " + outputPath);
-				try {
-					FileUtils.copyURLToFile(URI.create(
-							"https://raw.github.com/Bio7/Rserve_Cooperative/master/Rserve_Linux_cooperative.tar.gz")
-							.toURL(), new File(outputPath));
-				} catch (MalformedURLException e2) {
-
-					e2.printStackTrace();
-				} catch (IOException e2) {
-
-					e2.printStackTrace();
-				}
-				// fileURL =
-				// bundle.getEntry("RserveLinMac/Rserve_1.8-4_Linux_cooperative.tar.gz");
-			} else {
-				Bio7Dialog.message("Only for Linux and MacOSX necessary!");
-				return;
-
-			}
-
-			System.out.println("Download succesful! Installation of package started!");
-			String path = outputPath;// file.getAbsolutePath();
-
-			String install = "install.packages(\"" + path
-					+ "\",dependencies=TRUE,INSTALL_opts = c('--no-lock'),repos=NULL)";
-
-			ConsolePageParticipant.pipeInputToConsole(install, true, true);
-			System.out.println(install);
-		} else {
-			Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
-		}
-	}
-
-	public static void installRServeCurrent() {
-		String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
-		if (selectionConsole.equals("R")) {
-			String OS = ApplicationWorkbenchWindowAdvisor.getOS();
-			String outputPath;
-			if (OS.equals("Mac")) {
-				String tempDir = System.getProperty("java.io.tmpdir");
-				outputPath = tempDir + "/" + "Rserve_Mac_cooperative.tgz";
-				System.out.println("Download file from: https://bio7.github.io/rserve/");
-				System.out.println("Download file to: " + outputPath);
-				try {
-					FileUtils.copyURLToFile(
-							URI.create("https://bio7.github.io/rserve/Rserve_Mac_cooperative.tgz").toURL(),
-							new File(outputPath));
-				} catch (MalformedURLException e2) {
-
-					e2.printStackTrace();
-				} catch (IOException e2) {
-
-					e2.printStackTrace();
-				}
-			} else if (OS.equals("Linux")) {
-				String tempDir = System.getProperty("java.io.tmpdir");
-				outputPath = tempDir + "/" + "Rserve_Linux_cooperative.tar.gz";
-				System.out.println("Download file from: https://bio7.github.io/rserve/");
-				System.out.println("Download file to: " + outputPath);
-				try {
-					FileUtils.copyURLToFile(
-							URI.create("https://bio7.github.io/rserve/Rserve_Linux_cooperative.tar.gz").toURL(),
-							new File(outputPath));
-				} catch (MalformedURLException e2) {
-
-					e2.printStackTrace();
-				} catch (IOException e2) {
-
-					e2.printStackTrace();
-				}
-				// fileURL =
-				// bundle.getEntry("RserveLinMac/Rserve_1.8-4_Linux_cooperative.tar.gz");
-			} else {
-				Bio7Dialog.message("Only for Linux and MacOSX necessary!");
-				return;
-
-			}
-
-			System.out.println("Download succesful! Installation of package started!");
-			String path = outputPath;// file.getAbsolutePath();
-
-			String install = "install.packages(\"" + path
-					+ "\",dependencies=TRUE,INSTALL_opts = c('--no-lock'),repos=NULL)";
-
-			ConsolePageParticipant.pipeInputToConsole(install, true, true);
-			System.out.println(install);
-		} else {
-			Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
-		}
-	}
-
-	/* Install Rserve for Linux compiled with SSL 1.1 (e.g., since Ubuntu 19.04)! */
-	public static void installRServeLinuxSSL11() {
-		String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
-		if (selectionConsole.equals("R")) {
-			String OS = ApplicationWorkbenchWindowAdvisor.getOS();
-			String outputPath;
-			if (OS.equals("Linux")) {
-				String tempDir = System.getProperty("java.io.tmpdir");
-				outputPath = tempDir + "/" + "Rserve_Linux_cooperative_ssl.tar.gz";
-				System.out.println("Download file from: https://bio7.github.io/rserve/");
-				System.out.println("Download file to: " + outputPath);
-				try {
-					FileUtils.copyURLToFile(
-							URI.create("https://bio7.github.io/rserve/Rserve_Linux_cooperative_ssl.tar.gz").toURL(),
-							new File(outputPath));
-				} catch (MalformedURLException e2) {
-
-					e2.printStackTrace();
-				} catch (IOException e2) {
-
-					e2.printStackTrace();
-				}
-				// fileURL =
-				// bundle.getEntry("RserveLinMac/Rserve_1.8-4_Linux_cooperative.tar.gz");
-			} else {
-				Bio7Dialog.message("Only for Linux necessary!");
-				return;
-
-			}
-
-			System.out.println("Download succesful! Installation of package started!");
-			String path = outputPath;// file.getAbsolutePath();
-
-			String install = "install.packages(\"" + path
-					+ "\",dependencies=TRUE,INSTALL_opts = c('--no-lock'),repos=NULL)";
-
-			ConsolePageParticipant.pipeInputToConsole(install, true, true);
-			System.out.println(install);
-		} else {
-			Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
-		}
-	}
-
 }

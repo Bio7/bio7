@@ -13,33 +13,47 @@
 
 package com.eco.bio7.rbridge;
 
-import org.rosuda.REngine.REXP;
-import org.rosuda.REngine.REngineException;
-import org.rosuda.REngine.Rserve.RConnection;
-import org.rosuda.REngine.Rserve.RserveException;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RValue;
 
 /**
- * The evaluation in R which the bundles of Bio7 (e.g., the R editor) use: an
- * Rserve connection or embedded R (com.eco.bio7.rbridge.backend.RBackend). The
- * methods and exceptions are those of RConnection.
+ * The evaluation in R which the bundles of Bio7 (e.g., the R editor) use
+ * (com.eco.bio7.rbridge.backend.RBackend). The values are RValue (plugin
+ * com.eco.bio7.rffm), an error of R is an RException.
  */
 public interface REvaluator {
 
-	REXP eval(String code) throws RserveException;
+	/** Evaluates R code and returns the result. */
+	RValue eval(String code) throws RException;
 
-	void voidEval(String code) throws RserveException;
+	/** Evaluates R code without transferring the result. */
+	void voidEval(String code) throws RException;
 
-	void assign(String name, String value) throws RserveException;
+	/** Assigns a value to a variable of the global environment. */
+	void assign(String name, RValue value) throws RException;
 
-	void assign(String name, REXP value) throws RserveException;
+	/** Assigns a text (a character vector of length 1). */
+	default void assign(String name, String value) throws RException {
+		assign(name, RValue.of(value));
+	}
 
-	void assign(String name, String[] values) throws REngineException;
+	default void assign(String name, String[] values) throws RException {
+		assign(name, RValue.of(values));
+	}
 
-	void assign(String name, double[] values) throws REngineException;
+	default void assign(String name, double[] values) throws RException {
+		assign(name, RValue.of(values));
+	}
 
-	void assign(String name, int[] values) throws REngineException;
+	default void assign(String name, int[] values) throws RException {
+		assign(name, RValue.of(values));
+	}
 
-	/** Returns true if R is embedded in the process of Bio7 (not Rserve). */
+	default void assign(String name, byte[] values) throws RException {
+		assign(name, RValue.of(values));
+	}
+
+	/** Returns true if R is embedded in the process of Bio7. */
 	default boolean isEmbedded() {
 		return false;
 	}
@@ -51,8 +65,8 @@ public interface REvaluator {
 	long EDITOR_TIMEOUT_MS = 10_000;
 
 	/**
-	 * An evaluator whose evaluations wait at most timeoutMillis for R (embedded R;
-	 * Rserve: this evaluator, unchanged).
+	 * An evaluator whose evaluations wait at most timeoutMillis for R (default:
+	 * this evaluator, unchanged).
 	 */
 	default REvaluator withTimeout(long timeoutMillis) {
 		return this;
@@ -68,8 +82,8 @@ public interface REvaluator {
 
 	/**
 	 * Runs the R calls of an editor feature: embedded R in the current thread (it
-	 * accepts calls from any thread, the UI isn't blocked), Rserve in the UI thread
-	 * as before. An exception of r is printed, not thrown (the caller resets
+	 * accepts calls from any thread, the UI isn't blocked), without R in the UI
+	 * thread. An exception of r is printed, not thrown (the caller resets
 	 * RState.setBusy afterwards; e.g., a result missing after a timeout).
 	 */
 	static void run(REvaluator c, Runnable r) {
@@ -82,41 +96,5 @@ public interface REvaluator {
 		} catch (RuntimeException e) {
 			e.printStackTrace();
 		}
-	}
-
-	/** An evaluator for an Rserve connection. */
-	static REvaluator of(RConnection c) {
-		if (c == null) {
-			return null;
-		}
-		return new REvaluator() {
-			public REXP eval(String code) throws RserveException {
-				return c.eval(code);
-			}
-
-			public void voidEval(String code) throws RserveException {
-				c.voidEval(code);
-			}
-
-			public void assign(String name, String value) throws RserveException {
-				c.assign(name, value);
-			}
-
-			public void assign(String name, REXP value) throws RserveException {
-				c.assign(name, value);
-			}
-
-			public void assign(String name, String[] values) throws REngineException {
-				c.assign(name, values);
-			}
-
-			public void assign(String name, double[] values) throws REngineException {
-				c.assign(name, values);
-			}
-
-			public void assign(String name, int[] values) throws REngineException {
-				c.assign(name, values);
-			}
-		};
 	}
 }

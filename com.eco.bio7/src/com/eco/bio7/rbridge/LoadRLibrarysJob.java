@@ -22,12 +22,12 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.rbridge.views.PackageInstallView;
 import com.eco.bio7.reditor.antlr.Parse;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.rpreferences.template.CalculateRProposals;
+import com.eco.bio7.rffm.RException;
 
 public class LoadRLibrarysJob extends WorkspaceJob {
 
@@ -43,7 +43,7 @@ public class LoadRLibrarysJob extends WorkspaceJob {
 
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
 		monitor.beginTask("Load Libraries..", IProgressMonitor.UNKNOWN);
-		if (RServe.isAlive()) {
+		if (RTools.isAlive()) {
 			Display display = PlatformUI.getWorkbench().getDisplay();
 			display.syncExec(new Runnable() {
 
@@ -57,10 +57,10 @@ public class LoadRLibrarysJob extends WorkspaceJob {
 							c.eval("try(library(" + tableItems[i].getText(0) + "))");
 
 							/*
-							 * Function loaded at Rserve startup. Writes the available functions to a file!
+							 * Function loaded at the start of R. Writes the available functions to a file!
 							 */
 							c.eval(".bio7WriteFunctionDef();");
-						} catch (RserveException e) {
+						} catch (RException e) {
 
 							e.printStackTrace();
 						}

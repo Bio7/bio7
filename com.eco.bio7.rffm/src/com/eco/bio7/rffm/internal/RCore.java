@@ -200,6 +200,13 @@ public final class RCore {
 	public MemorySegment data(MemorySegment x, int type) {
 		try {
 			long len = length(x);
+			if (len == 0) {
+				/*
+				 * Empty: R's data pointer of an empty vector is a dummy address (e.g., 1 with R
+				 * 4.6 on arm64): not aligned, copies of 0 elements would still fail
+				 */
+				return MemorySegment.NULL;
+			}
 			MemorySegment p = switch (type) {
 			case RNative.REALSXP -> (MemorySegment) n.REAL.invokeExact(x);
 			case RNative.INTSXP -> (MemorySegment) n.INTEGER.invokeExact(x);

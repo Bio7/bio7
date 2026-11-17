@@ -83,7 +83,6 @@ public class DebugTraceRScript implements IEditorActionDelegate {
 		}
 		String loc = aFile.getLocation().toString();
 
-		boolean remote = Bio7Plugin.getDefault().getPreferenceStore().getBoolean("REMOTE");
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		// boolean rPipe = store.getBoolean("r_pipe");
 		ConsolePageParticipant.pipeInputToConsole("source('"+loc+"')", true, true);

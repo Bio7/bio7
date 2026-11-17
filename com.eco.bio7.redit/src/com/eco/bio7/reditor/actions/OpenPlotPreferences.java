@@ -12,7 +12,7 @@ public class OpenPlotPreferences extends Action {
 
 	public OpenPlotPreferences(String text) {
 		super(text);
-		setActionDefinitionId("com.eco.bio7.reditor.rserve.plot.preferences");
+		setActionDefinitionId("com.eco.bio7.reditor.r.plot.preferences");
 		setId("com.eco.bio7.reditor.plot.preferences");
 
 		//setText("R Plot Preferences");
@@ -21,7 +21,7 @@ public class OpenPlotPreferences extends Action {
 
 	public void run() {
 		PreferenceDialog dialog =
-				PreferencesUtil.createPreferenceDialogOn(null,"com.eco.bio7.RServePlot",null,null);
+				PreferencesUtil.createPreferenceDialogOn(null,"com.eco.bio7.RPlot",null,null);
 				dialog.open(); 
 		
 	}

@@ -12,7 +12,7 @@ import com.eco.bio7.rbridge.backend.RBackend;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.libreoffice.LibreOfficeValueToRJob;
 import com.eco.bio7.rbridge.RBridge;
-import com.eco.bio7.rbridge.RServeUtil;
+import com.eco.bio7.rbridge.REval;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.views.RShellView;
 
@@ -39,7 +39,7 @@ public class OfficeValueToRAction extends Action {
 						if (event.getResult().isOK()) {
 
 							RState.setBusy(false);
-							RServeUtil.listRObjects();
+							REval.listRObjects();
 						} else {
 							RState.setBusy(false);
 						}

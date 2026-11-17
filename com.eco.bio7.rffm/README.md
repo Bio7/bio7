@@ -2,7 +2,7 @@
 
 Loads an existing R installation (built as a shared library: the CRAN builds for
 Windows and macOS, the Linux distributions, rig) into the Java process and calls
-R with the Foreign Function and Memory API of Java 22+. No Rserve, no JNI, no
+R with the Foreign Function and Memory API of Java 22+. No JNI, no
 compiled native code. The bundle depends only on the JDK (no Eclipse, no SWT),
 so it can be used by any RCP, SWT, Swing or plain Java application.
 

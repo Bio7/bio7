@@ -15,11 +15,9 @@ package com.eco.bio7.rbridge;
 
 import java.util.Locale;
 
-import org.rosuda.REngine.REXP;
-import org.rosuda.REngine.REXPDouble;
-import org.rosuda.REngine.REngineException;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RConnection;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
 
 /**
  * The numbers of the transfer between the Bio7 table and R with full precision:
@@ -43,7 +41,7 @@ public final class RNumbers {
 		for (int i = 0; i < texts.length; i++) {
 			String t = texts[i] == null ? "" : texts[i].trim();
 			if (t.equals("NA")) {
-				d[i] = REXPDouble.NA;
+				d[i] = RValue.NA_REAL;
 				continue;
 			}
 			String lower = t.toLowerCase(Locale.ROOT);
@@ -72,25 +70,15 @@ public final class RNumbers {
 	 *
 	 * @return false if the column is not numeric (nothing assigned)
 	 */
-	/** For an Rserve connection (compatibility). */
-	public static boolean assign(RConnection connection, String name, String[] texts) {
-		return assign(RBackend.of(connection), name, texts);
-	}
-
-	/** For an Rserve connection (compatibility). */
-	public static String[] texts(RConnection connection, String expression) {
-		return texts(RBackend.of(connection), expression);
-	}
-
 	public static boolean assign(RBackend connection, String name, String[] texts) {
 		double[] d = parse(texts);
 		if (d == null) {
 			return false;
 		}
 		try {
-			connection.assign(name, new REXPDouble(d));
+			connection.assign(name, RValue.of(d));
 			return true;
-		} catch (REngineException e) {
+		} catch (RException e) {
 			return false;
 		}
 	}
@@ -104,16 +92,15 @@ public final class RNumbers {
 	 */
 	public static String[] texts(RBackend connection, String expression) {
 		try {
-			REXP plain = connection.eval("try(is.double(" + expression + ") && is.null(oldClass(" + expression + ")))");
-			if (plain == null || !plain.isLogical() || ((org.rosuda.REngine.REXPLogical) plain).isTRUE().length == 0
-					|| !((org.rosuda.REngine.REXPLogical) plain).isTRUE()[0]) {
+			RValue plain = connection.eval("try(is.double(" + expression + ") && is.null(oldClass(" + expression + ")))");
+			if (plain == null || !plain.isTrue()) {
 				return null;
 			}
-			REXP x = connection.eval("try(" + expression + ")");
-			if (!(x instanceof REXPDouble)) {
+			RValue x = connection.eval("try(" + expression + ")");
+			if (!(x instanceof RValue.Num)) {
 				return null;
 			}
-			double[] d = x.asDoubles();
+			double[] d = x.doubles();
 			String[] s = new String[d.length];
 			for (int i = 0; i < d.length; i++) {
 				s[i] = format(d[i]);
@@ -129,7 +116,7 @@ public final class RNumbers {
 	 * numbers: NA, NaN, Inf, integers without ".0").
 	 */
 	public static String format(double v) {
-		if (REXPDouble.isNA(v)) {
+		if (RValue.isNA(v)) {
 			return "NA";
 		}
 		if (Double.isNaN(v)) {

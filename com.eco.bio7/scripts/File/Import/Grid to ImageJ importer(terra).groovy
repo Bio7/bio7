@@ -4,19 +4,18 @@ Author: M. Austenfeld
 Year:   2005-2025
 */
 import com.eco.bio7.worldwind.WorldWindOptionsView;
-import static com.eco.bio7.rbridge.RServeUtil.*;
-import org.rosuda.REngine.REXP;
+import static com.eco.bio7.rbridge.REval.*;
 import org.apache.commons.io.FilenameUtils;
 import static com.eco.bio7.image.ImageMethods.*;
 
-/*Test if Rserve is alive!*/
-if(RServe.isAliveDialog()==false){
+/*Test if R is running!*/
+if(RTools.isAliveDialog()==false){
 	return;
 }
 /*Test if rgdal package for the import is installed!*/
 evalR(".isInstalled<-as.character(require('terra'))", null);
-rexpr = fromR(".isInstalled");
-isAvail = rexpr.asString();
+rValue = fromR(".isInstalled");
+isAvail = rValue.firstString();
 
 if (isAvail.equals("FALSE")) {
 	Bio7Dialog.message("Can't load 'terra' package!");
@@ -46,10 +45,10 @@ evalR("imageSizeX<-.imageDimension[1]",null);
 
 /*Access bounding box for WorldWind!*/
 evalR("try(.bboxImage<-ext(" + name + "))",null);
-minLat =  fromR(".bboxImage[2]").asDouble();
-maxLat =  fromR(".bboxImage[4]").asDouble();
-minLon =  fromR(".bboxImage[1]").asDouble();
-maxLon =  fromR(".bboxImage[3]").asDouble();
+minLat =  fromR(".bboxImage[2]").firstDouble();
+maxLat =  fromR(".bboxImage[4]").firstDouble();
+minLon =  fromR(".bboxImage[1]").firstDouble();
+maxLon =  fromR(".bboxImage[3]").firstDouble();
 /*Transfer Lat Lon to WorldWind if active!*/
 if (WorldWindOptionsView.getOptionsInstance() != null) {
 	WorldWindOptionsView.setMinLat(Double.toString(minLat));
@@ -68,4 +67,4 @@ imageFromR(2, name, 0);
 
 /*Cleanup and remove temporary variables!*/
 //evalR("try(remove(list = c('.isInstalled','.cellSize','.imageDimension','.datadf','.bboxImage')));", null);
-RServeUtil.listRObjects();
+REval.listRObjects();

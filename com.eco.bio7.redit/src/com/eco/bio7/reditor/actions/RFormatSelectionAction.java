@@ -45,15 +45,15 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.rosuda.REngine.REXPLogical;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.antlr.refactor.RefactorParse;
 import com.eco.bio7.reditor.format.RFormatterSupport;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.util.Util;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class RFormatSelectionAction implements IObjectActionDelegate, IEditorActionDelegate {
   
@@ -67,7 +67,7 @@ public class RFormatSelectionAction implements IObjectActionDelegate, IEditorAct
 
 	@Override
 	public void setActiveEditor(IAction action, IEditorPart targetEditor) {
-		action.setActionDefinitionId("com.eco.bio7.reditor.rserve.format.selection");
+		action.setActionDefinitionId("com.eco.bio7.reditor.r.format.selection");
 		if (targetEditor != null)
 			targetEditor.getSite().getKeyBindingService().registerAction(action);
 	}
@@ -150,7 +150,7 @@ public class RFormatSelectionAction implements IObjectActionDelegate, IEditorAct
 		if (con != null) {
 			Job job = new Job("formatR") {
 
-				REXPLogical bol = null;
+				RValue bol = null;
 				String fileOutput;
 
 				@Override
@@ -162,12 +162,12 @@ public class RFormatSelectionAction implements IObjectActionDelegate, IEditorAct
 							RState.setBusy(true);
 							if (styler == false) {
 								try {
-									bol = (REXPLogical) con.eval("require(formatR)");
-								} catch (RserveException e1) {
+									bol = con.eval("require(formatR)");
+								} catch (RException e1) {
 									// TODO Auto-generated catch block
 									e1.printStackTrace();
 								}
-								if (bol.isTRUE()[0]) {
+								if (bol.booleans()[0]) {
 									String comments = String.valueOf(store.getBoolean("FORMAT_COMMENTS")).toUpperCase();
 									String blankLines = String.valueOf(store.getBoolean("FORMAT_BLANK_LINES")).toUpperCase();
 									String replaceAssig = String.valueOf(store.getBoolean("FORMAT_REPLACE_ASSIGNMENT")).toUpperCase();
@@ -180,8 +180,8 @@ public class RFormatSelectionAction implements IObjectActionDelegate, IEditorAct
 										con.assign(".temprormattext", toFormat);
 										con.eval("library(formatR);try(tidy_source(text = c(.temprormattext)" + ",comment = " + comments + ",blank = " + blankLines + ",arrow = " + replaceAssig
 												+ ",brace.newline = " + bracesNewline + ",indent = " + numSpaces + ",width.cutoff = " + minLine + ",file=.temprformatfile))");
-										fileOutput = (String) con.eval(".temprformatfile").asString();
-									} catch (RserveException | REXPMismatchException e2) {
+										fileOutput = (String) con.eval(".temprformatfile").firstString();
+									} catch (RException | RTypeException e2) {
 										// TODO Auto-generated catch block
 										e2.printStackTrace();
 									}
@@ -216,25 +216,25 @@ public class RFormatSelectionAction implements IObjectActionDelegate, IEditorAct
 								if (charset.equals("UTF-8")) {
 
 									try {
-										bol = (REXPLogical) con.eval("require(styler)");
-									} catch (RserveException e1) {
+										bol = con.eval("require(styler)");
+									} catch (RException e1) {
 										// TODO Auto-generated catch block
 										e1.printStackTrace();
 									}
-									if (bol.isTRUE()[0]) {
+									if (bol.booleans()[0]) {
 
 										try {
 
 											con.assign(".temprormattext", toFormat.replace("\r", ""));
 											con.eval("library(styler)");
 											try {
-												out = con.eval("try(style_text(.temprormattext" + stylerArguments + "))").asStrings();
-											} catch (REXPMismatchException e) {
+												out = con.eval("try(style_text(.temprormattext" + stylerArguments + "))").strings();
+											} catch (RTypeException e) {
 
 												e.printStackTrace();
 											}
 
-										} catch (RserveException e2) {
+										} catch (RException e2) {
 
 											e2.printStackTrace();
 										}

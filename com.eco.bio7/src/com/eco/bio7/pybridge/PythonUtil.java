@@ -13,7 +13,6 @@
 package com.eco.bio7.pybridge;
 
 import org.eclipse.swt.widgets.Display;
-import org.rosuda.REngine.REXP;
 
 import com.eco.bio7.pyffm.PyException;
 import com.eco.bio7.pyffm.PySession;
@@ -24,10 +23,11 @@ import com.eco.bio7.rbridge.backend.RBackend;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.measure.ResultsTable;
+import com.eco.bio7.rffm.RValue;
 
 /**
  * The API of the embedded Python of Bio7 for Java, Groovy and BeanShell
- * scripts (as RServeUtil for R; Python scripts use the module bio7). The
+ * scripts (as REval for R; Python scripts use the module bio7). The
  * variables are created in the namespace of the Python console and of the
  * scripts (__main__).
  *
@@ -175,15 +175,15 @@ public final class PythonUtil {
 	/* ---------------- R <-> Python ---------------- */
 
 	/**
-	 * Transfers the value of a Python expression to R (embedded R or Rserve):
+	 * Transfers the value of a Python expression to R (embedded R):
 	 * arrays keep their shape (matrices, arrays), DataFrames become data frames,
 	 * dicts named lists.
 	 */
 	public static void pythonToR(String pythonExpression, String rName) throws Exception {
-		REXP r = PythonConvert.toR(fromPython(pythonExpression));
+		RValue r = PythonConvert.toR(fromPython(pythonExpression));
 		backend().assign(rName, r);
 		/* The new variable in the R-Shell */
-		com.eco.bio7.rbridge.RServeUtil.listRObjects();
+		com.eco.bio7.rbridge.REval.listRObjects();
 	}
 
 	/**
@@ -191,7 +191,7 @@ public final class PythonUtil {
 	 * become numpy arrays, data frames pandas DataFrames, named lists dicts.
 	 */
 	public static void rToPython(String rExpression, String pythonName) throws Exception {
-		REXP r = backend().eval(rExpression);
+		RValue r = backend().eval(rExpression);
 		py().assign(pythonName, PythonConvert.fromR(r));
 		PythonShellView.refreshOpenViews();
 	}

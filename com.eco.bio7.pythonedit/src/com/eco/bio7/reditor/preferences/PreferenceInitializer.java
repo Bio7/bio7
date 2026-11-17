@@ -33,6 +33,9 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 			WorkbenchPreferencePython.updateEditorColors();
 		});
 
+		/* All hovers of the editor (the context menu of the editor) */
+		storePython.setDefault(com.eco.bio7.pythonedit.analysis.PythonEditorSupport.HOVERS, true);
+
 		PreferenceConverter.setDefault(storePython, "colourkeyfont", f);
 		PreferenceConverter.setDefault(storePython, "colourkeyfont1", f);
 		PreferenceConverter.setDefault(storePython, "colourkeyfont2", f);

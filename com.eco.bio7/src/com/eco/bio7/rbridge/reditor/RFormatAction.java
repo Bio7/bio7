@@ -38,9 +38,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.rosuda.REngine.REXPLogical;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
@@ -48,6 +46,8 @@ import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rbridge.RBridge;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditors.REditor;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
 
 public class RFormatAction  implements IObjectActionDelegate, IEditorActionDelegate {
 
@@ -110,7 +110,7 @@ public class RFormatAction  implements IObjectActionDelegate, IEditorActionDeleg
 		if (RBridge.getBackend() != null) {
 			Job job = new Job("formatR") {
 				private String url;
-				REXPLogical bol = null;
+				RValue bol = null;
 
 				@Override
 				protected IStatus run(IProgressMonitor monitor) {
@@ -121,12 +121,12 @@ public class RFormatAction  implements IObjectActionDelegate, IEditorActionDeleg
 						if (RState.isBusy() == false) {
 							RState.setBusy(true);
 							try {
-								bol = (REXPLogical) c.eval("require(formatR)");
-							} catch (RserveException e1) {
+								bol = c.eval("require(formatR)");
+							} catch (RException e1) {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
-							if (bol.isTRUE()[0]) {
+							if (bol.booleans()[0]) {
 
 								try {
 									c.eval("library(formatR);try(tidy_source(source = \"" + loc + "\",file = \"" + loc + "\"))");
@@ -139,7 +139,7 @@ public class RFormatAction  implements IObjectActionDelegate, IEditorActionDeleg
 											//setClipboardData(doc);
 										}
 									});*/
-								} catch (RserveException e) {
+								} catch (RException e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}

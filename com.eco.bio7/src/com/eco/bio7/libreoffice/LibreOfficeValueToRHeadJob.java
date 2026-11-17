@@ -24,16 +24,16 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
-import org.rosuda.REngine.REngineException;
 import com.eco.bio7.rbridge.backend.RBackend;
 
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.preferences.PreferenceConstants;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
 import com.sun.star.frame.XModel;
 import com.sun.star.uno.UnoRuntime;
+import com.eco.bio7.rffm.RException;
 
 public class LibreOfficeValueToRHeadJob extends WorkspaceJob {
 
@@ -199,7 +199,7 @@ public class LibreOfficeValueToRHeadJob extends WorkspaceJob {
 						}
 					}
 
-					if (RServe.isRrunning()) {
+					if (RTools.isRrunning()) {
 						RBackend connection = RBridge.getBackend();
 						String stringBuild = "."+generateRandomString();
 						String stringRowNames = "."+generateRandomString();
@@ -217,7 +217,7 @@ public class LibreOfficeValueToRHeadJob extends WorkspaceJob {
 						try {
 							/* Transfer the edited col names! */
 							connection.assign(stringRowNames, colnames);
-						} catch (REngineException e) {
+						} catch (RException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}

@@ -28,13 +28,13 @@ import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.rosuda.REngine.REXPLogical;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.format.RFormatterSupport;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.util.Util;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
 
 public class RFormatAction implements IObjectActionDelegate, IEditorActionDelegate {
 
@@ -46,7 +46,7 @@ public class RFormatAction implements IObjectActionDelegate, IEditorActionDelega
 
 	@Override
 	public void setActiveEditor(IAction action, IEditorPart targetEditor) {
-		action.setActionDefinitionId("com.eco.bio7.reditor.rserve.format");
+		action.setActionDefinitionId("com.eco.bio7.reditor.r.format");
 		if (targetEditor != null)
 			targetEditor.getSite().getKeyBindingService().registerAction(action);
 	}
@@ -104,7 +104,7 @@ public class RFormatAction implements IObjectActionDelegate, IEditorActionDelega
 		if (con != null) {
 			Job job = new Job("formatR") {
 
-				REXPLogical bol = null;
+				RValue bol = null;
 
 				@Override
 				protected IStatus run(IProgressMonitor monitor) {
@@ -115,12 +115,12 @@ public class RFormatAction implements IObjectActionDelegate, IEditorActionDelega
 							RState.setBusy(true);
 							if (styler == false) {
 								try {
-									bol = (REXPLogical) con.eval("require(formatR)");
-								} catch (RserveException e1) {
+									bol = con.eval("require(formatR)");
+								} catch (RException e1) {
 									// TODO Auto-generated catch block
 									e1.printStackTrace();
 								}
-								if (bol.isTRUE()[0]) {
+								if (bol.booleans()[0]) {
 
 									String comments = String.valueOf(store.getBoolean("FORMAT_COMMENTS")).toUpperCase();
 									String blankLines = String.valueOf(store.getBoolean("FORMAT_BLANK_LINES")).toUpperCase();
@@ -140,7 +140,7 @@ public class RFormatAction implements IObjectActionDelegate, IEditorActionDelega
 										 * 
 										 * public void run() { //setClipboardData(doc); } });
 										 */
-									} catch (RserveException e) {
+									} catch (RException e) {
 										// TODO Auto-generated catch block
 										e.printStackTrace();
 									}
@@ -152,18 +152,18 @@ public class RFormatAction implements IObjectActionDelegate, IEditorActionDelega
 
 								if (charset.equals("UTF-8")) {
 									try {
-										bol = (REXPLogical) con.eval("require(styler)");
-									} catch (RserveException e1) {
+										bol = con.eval("require(styler)");
+									} catch (RException e1) {
 										// TODO Auto-generated catch block
 										e1.printStackTrace();
 									}
-									if (bol.isTRUE()[0]) {
+									if (bol.booleans()[0]) {
 
 										try {
 
 											con.eval("" + "library(styler);" + "try(capture.output(style_file(\"" + loc + "\"" + stylerArguments + ")))");
 
-										} catch (RserveException e) {
+										} catch (RException e) {
 											// TODO Auto-generated catch block
 											e.printStackTrace();
 										}

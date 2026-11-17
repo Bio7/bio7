@@ -10,8 +10,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.rbridge.RServe;
-import com.eco.bio7.rbridge.RServeUtil;
+import com.eco.bio7.rbridge.RTools;
+import com.eco.bio7.rbridge.REval;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.rbridge.views.RShellView;
 
@@ -39,30 +39,26 @@ public class ExecuteRScriptAction extends Action {
 
 		else {
 			String path = file.toString().replace("\\", "/");
-			if (RServe.isAlive()) {
+			if (RTools.isAlive()) {
 
-				if (RState.isBusy() == false) {
+				/* Waits for R if it is busy (e.g., loading the workspace) */
+				com.eco.bio7.rbridge.RWait.whenFree("the R script", () -> {
 					RState.setBusy(true);
 					final RInterpreterJob Do = new RInterpreterJob(null, path);
 					Do.addJobChangeListener(new JobChangeAdapter() {
 						public void done(IJobChangeEvent event) {
-							if (event.getResult().isOK()) {
-								int countDev = RServe.getDisplayNumber();
-								RState.setBusy(false);
-								if (countDev > 0) {
-									RServe.closeAndDisplay();
-								}
-
+							/* Free again also after an error or a stop (else R stayed busy) */
+							int countDev = RTools.getDisplayNumber();
+							RState.setBusy(false);
+							if (event.getResult().isOK() && countDev > 0) {
+								RTools.closeAndDisplay();
 							}
-							RServeUtil.listRObjects();
+							REval.listRObjects();
 						}
 					});
 					Do.setUser(true);
 					Do.schedule();
-				} else {
-
-					Bio7Dialog.message("R is busy!");
-				}
+				});
 
 			} else {
 

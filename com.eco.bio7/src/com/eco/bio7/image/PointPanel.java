@@ -338,7 +338,7 @@ import org.locationtech.jts.geom.Geometry;
  * 
  *//**
 	 * Returns the points, alpha values, species and ellipses as a 2-dimensional
-	 * array for the transfer to R by means of Rserve.
+	 * array for the transfer to R (embedded R).
 	 * 
 	 * @return an integer array with the values.
 	 */

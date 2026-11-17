@@ -17,10 +17,10 @@ import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.rbridge.views.RShellView;
 import com.eco.bio7.rcp.StartBio7Utils;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 public class REvaluateExpressionsJob extends WorkspaceJob {
 
@@ -54,15 +54,15 @@ public class REvaluateExpressionsJob extends WorkspaceJob {
 		try {
 			// out = RBridge.getBackend().eval("paste(capture.output(print(" + trybegin +
 			// trybegin + "(" + expressionArray[i] + ")" + tryend + tryend +
-			// ")),collapse=\"\\n\")").asString();
-			out = RBridge.getBackend().eval("paste(capture.output(print(" + trybegin + "(" + expressionArray[i] + ")" + tryend + ")),collapse=\"\\n\")").asString();
-		} catch (REXPMismatchException e) {
+			// ")),collapse=\"\\n\")").firstString();
+			out = RBridge.getBackend().eval("paste(capture.output(print(" + trybegin + "(" + expressionArray[i] + ")" + tryend + ")),collapse=\"\\n\")").firstString();
+		} catch (RTypeException e) {
 
 			e.printStackTrace();
-		} catch (RserveException e) {
+		} catch (RException e) {
 			System.out.println("Error : " + e.getMessage());
 		}
-		RServe.setRout(out);
+		RTools.setRout(out);
 
 		//
 

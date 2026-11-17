@@ -29,7 +29,7 @@ import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 
 /**
- * The API of the embedded R of Bio7 (the FFM bridge, no Rserve) for Java,
+ * The API of the embedded R of Bio7 (the FFM bridge) for Java,
  * Groovy and BeanShell scripts, as {@link com.eco.bio7.pybridge.PythonUtil}
  * for Python. Plain Java types: the variables are created in the global
  * environment of R (visible in the console and the R-Shell).
@@ -311,7 +311,7 @@ public final class RUtil {
 	/* The new variables in the R-Shell */
 	private static void changed() {
 		try {
-			RServeUtil.listRObjects();
+			REval.listRObjects();
 		} catch (RuntimeException | LinkageError e) {
 			/* No view */
 		}

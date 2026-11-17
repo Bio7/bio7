@@ -15,9 +15,9 @@ import org.eclipse.ui.IWorkbenchWindow;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.compile.RInterpreterJob;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.rbridge.RServe;
+import com.eco.bio7.rbridge.RTools;
 import com.eco.bio7.rbridge.RBridge;
-import com.eco.bio7.rbridge.RServeUtil;
+import com.eco.bio7.rbridge.REval;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.util.Util;
 
@@ -29,7 +29,7 @@ public class ClipboardRScipt extends Action {
 	public ClipboardRScipt(String text, IWorkbenchWindow window) {
 		super(text);
 
-		setId("com.eco.bio7.rserve_clipboardR");
+		setId("com.eco.bio7.r_clipboardR");
 		setActionDefinitionId("com.eco.bio7.execute_r_clipboard");
 	}
 
@@ -81,12 +81,12 @@ public class ClipboardRScipt extends Action {
 					public void done(IJobChangeEvent event) {
 						if (event.getResult().isOK()) {
 
-							int countDev = RServe.getDisplayNumber();
+							int countDev = RTools.getDisplayNumber();
 							RState.setBusy(false);
 							if (countDev > 0) {
-								RServe.closeAndDisplay();
+								RTools.closeAndDisplay();
 							}
-							RServeUtil.listRObjects();
+							REval.listRObjects();
 
 						} else {
 							RState.setBusy(false);

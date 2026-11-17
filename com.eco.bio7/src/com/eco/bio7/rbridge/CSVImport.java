@@ -13,7 +13,7 @@
 
 package com.eco.bio7.rbridge;
 
-import static com.eco.bio7.rbridge.RServeUtil.listRObjects;
+import static com.eco.bio7.rbridge.REval.listRObjects;
 
 import java.nio.charset.Charset;
 import java.util.List;

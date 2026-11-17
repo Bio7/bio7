@@ -456,7 +456,7 @@ public final class PythonEnvironment {
 	 * (Linux, needs sudo: run in the Terminal), null if unknown (not Linux, an
 	 * unknown distribution).
 	 */
-	public static com.eco.bio7.rbridge.RserveInstaller.InstallCommand systemPipCommand(String executable) {
+	public static com.eco.bio7.rbridge.RInstaller.InstallCommand systemPipCommand(String executable) {
 		if (!System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).startsWith("linux")) {
 			return null;
 		}
@@ -484,17 +484,17 @@ public final class PythonEnvironment {
 			switch (id) {
 			case "debian", "ubuntu", "linuxmint", "pop", "raspbian" -> {
 				String pkg = minor.matches("3\\.\\d+") ? "python" + minor + "-venv" : "python3-venv";
-				return new com.eco.bio7.rbridge.RserveInstaller.InstallCommand("Debian/Ubuntu: venv and pip of Python " + minor,
+				return new com.eco.bio7.rbridge.RInstaller.InstallCommand("Debian/Ubuntu: venv and pip of Python " + minor,
 						"sudo apt update && sudo apt install -y " + pkg + " python3-pip");
 			}
 			case "fedora", "rhel", "centos", "rocky", "almalinux" -> {
-				return new com.eco.bio7.rbridge.RserveInstaller.InstallCommand("Fedora/RHEL: pip of Python", "sudo dnf install -y python3-pip");
+				return new com.eco.bio7.rbridge.RInstaller.InstallCommand("Fedora/RHEL: pip of Python", "sudo dnf install -y python3-pip");
 			}
 			case "opensuse", "suse", "opensuse-leap", "opensuse-tumbleweed", "sles" -> {
-				return new com.eco.bio7.rbridge.RserveInstaller.InstallCommand("openSUSE: pip of Python", "sudo zypper install -y python3-pip");
+				return new com.eco.bio7.rbridge.RInstaller.InstallCommand("openSUSE: pip of Python", "sudo zypper install -y python3-pip");
 			}
 			case "arch", "manjaro", "endeavouros" -> {
-				return new com.eco.bio7.rbridge.RserveInstaller.InstallCommand("Arch Linux: pip of Python", "sudo pacman -S --needed python-pip");
+				return new com.eco.bio7.rbridge.RInstaller.InstallCommand("Arch Linux: pip of Python", "sudo pacman -S --needed python-pip");
 			}
 			default -> {
 			}

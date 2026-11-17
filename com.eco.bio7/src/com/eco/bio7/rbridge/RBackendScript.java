@@ -18,8 +18,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import com.eco.bio7.rbridge.backend.RBackend;
 
 /**
- * An R script for ExecuteRScript.run(...) with the connection of Bio7 (Rserve or
- * embedded R), e.g., as a lambda:
+ * An R script for ExecuteRScript.run(...) with the connection of Bio7 (embedded
+ * R), e.g., as a lambda:
  *
  * <pre>
  * ExecuteRScript.run((RBackend r, IProgressMonitor monitor) -&gt; {

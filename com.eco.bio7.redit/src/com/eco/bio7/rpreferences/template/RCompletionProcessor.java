@@ -29,9 +29,6 @@ import org.eclipse.jface.text.templates.TemplateProposal;
 import org.eclipse.jface.window.DefaultToolTip;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
-import org.rosuda.REngine.REXP;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RserveException;
 import com.eco.bio7.rbridge.RState;
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.reditor.antlr.Parse;
@@ -39,6 +36,9 @@ import com.eco.bio7.reditor.antlr.ref.RRefPhaseListen;
 import com.eco.bio7.reditors.REditor;
 import com.eco.bio7.reditors.TemplateEditorUI;
 import com.eco.bio7.util.Util;
+import com.eco.bio7.rffm.RValue;
+import com.eco.bio7.rffm.RException;
+import com.eco.bio7.rffm.RTypeException;
 
 /**
  * A completion processor for R templates.
@@ -592,20 +592,20 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 					if (c != null) {
 						// ArrayList<CompletionProposal> list = new ArrayList<CompletionProposal>();
 						try {
-							varsWorkspace = (String[]) c.eval("try(ls(),silent=TRUE)").asStrings();
+							varsWorkspace = (String[]) c.eval("try(ls(),silent=TRUE)").strings();
 							varsWorkspaceClass = (String[]) c.eval("try(as.character(lapply(mget(ls()),class)))")
-									.asStrings();
+									.strings();
 
 							if (isInPipedFunction) {
 
-								REXP rexp = null;
+								RValue rValue = null;
 								/* We accept dataframes! */
-								rexp = c.eval("try(if (is.data.frame(" + pipedDataName + ")){colnames(" + pipedDataName
+								rValue = c.eval("try(if (is.data.frame(" + pipedDataName + ")){colnames(" + pipedDataName
 										+ ")} ,silent=TRUE)");
 
-								if (rexp.isNull() == false) {
+								if (rValue.isNull() == false) {
 
-									pipeArguments = rexp.asStrings();
+									pipeArguments = rValue.strings();
 									if (pipeArguments[0].startsWith("Error") == false) {
 										pipeArgumentContext = new String[pipeArguments.length];
 										for (int i = 0; i < pipeArguments.length; i++) {
@@ -622,7 +622,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 
 							}
 
-						} catch (RserveException | REXPMismatchException e) {
+						} catch (RException | RTypeException e) {
 							// TODO Auto-generated catch block
 							// e.printStackTrace();
 							System.out.println("Error in R-Shell view code completion!\nR Message: " + e.getMessage());
@@ -666,7 +666,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 						String res = prefix.substring(0, prefix.lastIndexOf("::"));
 						try {
 							String[] result = (String[]) c.eval("try(grep(\"^[a-zA-Z]\",sort(getNamespaceExports(\""
-									+ res + "\")),all,value=TRUE),silent=TRUE)").asStrings();
+									+ res + "\")),all,value=TRUE),silent=TRUE)").strings();
 							if (result != null && result.length > 0) {
 								if (result[0].startsWith("Error") == false) {
 
@@ -688,7 +688,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 								}
 
 							}
-						} catch (RserveException | REXPMismatchException e) {
+						} catch (RException | RTypeException e) {
 
 							System.out.println(e.getMessage());
 
@@ -725,7 +725,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 						String res = prefix.substring(0, prefix.lastIndexOf(":::"));
 						try {
 							String[] result = (String[]) c.eval("try(grep(\"^[a-zA-Z]\",ls(getNamespace(\"" + res
-									+ "\"), all.names=TRUE),value=TRUE),silent=TRUE)").asStrings();
+									+ "\"), all.names=TRUE),value=TRUE),silent=TRUE)").strings();
 							if (result != null && result.length > 0) {
 								if (result[0].startsWith("Error") == false) {
 
@@ -746,7 +746,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 								}
 
 							}
-						} catch (RserveException | REXPMismatchException e) {
+						} catch (RException | RTypeException e) {
 							// TODO Auto-generated catch block
 							System.out.println(e.getMessage());
 							// e.printStackTrace();
@@ -781,7 +781,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 					if (c != null) {
 						String res = prefix.substring(0, prefix.lastIndexOf("@"));
 						try {
-							String[] result = (String[]) c.eval("try(slotNames(" + res + "),silent=TRUE)").asStrings();
+							String[] result = (String[]) c.eval("try(slotNames(" + res + "),silent=TRUE)").strings();
 							if (result != null && result.length > 0) {
 								if (result[0].startsWith("Error") == false) {
 
@@ -793,7 +793,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 												&& result[j].substring(0, length).equalsIgnoreCase(afterLastIndex)) {
 
 											String resultStr = (String) c.eval("try(capture.output(str(" + res + "@"
-													+ result[j] + ")),silent=TRUE)").asString();
+													+ result[j] + ")),silent=TRUE)").firstString();
 											if (resultStr != null) {
 
 												list.add(new CompletionProposal(result[j], offSet - length, length,
@@ -813,7 +813,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 								}
 
 							}
-						} catch (RserveException | REXPMismatchException e) {
+						} catch (RException | RTypeException e) {
 							// TODO Auto-generated catch block
 							System.out.println(e.getMessage());
 							// e.printStackTrace();
@@ -848,7 +848,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 					if (c != null) {
 						String res = prefix.substring(0, prefix.lastIndexOf("$"));
 						try {
-							String[] result = (String[]) c.eval("try(ls(" + res + "),silent=TRUE)").asStrings();
+							String[] result = (String[]) c.eval("try(ls(" + res + "),silent=TRUE)").strings();
 							if (result != null && result.length > 0) {
 								if (result[0].startsWith("Error") == false) {
 									// creatPopupS3Table(viewer, offSet, result);
@@ -860,7 +860,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 												&& result[j].substring(0, length).equalsIgnoreCase(afterLastIndex)) {
 
 											String resultStr = (String) c.eval("try(capture.output(str(" + res + "$"
-													+ result[j] + ")),silent=TRUE)").asString();
+													+ result[j] + ")),silent=TRUE)").firstString();
 											if (resultStr != null) {
 												list.add(new CompletionProposal(result[j], offSet - length, length,
 														result[j].length(), s3Image, result[j], null, resultStr));
@@ -878,7 +878,7 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 								}
 
 							}
-						} catch (RserveException | REXPMismatchException e) {
+						} catch (RException | RTypeException e) {
 							// TODO Auto-generated catch block
 							System.out.println(e.getMessage());
 							// e.printStackTrace();
@@ -922,14 +922,14 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 
 									c.eval("try(.bio7ListOfWebPackagesNames<-.bio7ListOfWebPackages[[1]])");
 									c.eval("try(.bio7TitleResult<-lapply(.bio7ListOfWebPackagesNames,packageDescription,fields = c(\"Title\")))");
-									packageTitle = c.eval("try(as.character(.bio7TitleResult))").asStrings();
+									packageTitle = c.eval("try(as.character(.bio7TitleResult))").strings();
 
-									dirPackageFiles = c.eval("try(.bio7ListOfWebPackagesNames)").asStrings();
+									dirPackageFiles = c.eval("try(.bio7ListOfWebPackagesNames)").strings();
 
-								} catch (RserveException e2) {
+								} catch (RException e2) {
 
 									e2.printStackTrace();
-								} catch (REXPMismatchException e) {
+								} catch (RTypeException e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
@@ -987,10 +987,10 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 									c.eval("try(.bio7Pkgs <- setdiff(.packages(TRUE), c(\"base\", \"stats\")))");
 									c.eval("try(.bio7PkgsTemp<-data(package = .bio7Pkgs)$result)");
 									c.eval("try(.bio7PkgsTemp<-.bio7PkgsTemp[order(.bio7PkgsTemp[,3]), ])");
-									item = c.eval("try(.bio7PkgsTemp[, \"Item\"])").asStrings();
-									packages = c.eval("try(.bio7PkgsTemp[, \"Package\"])").asStrings();
-									title = c.eval("try(.bio7PkgsTemp[, \"Title\"])").asStrings();
-								} catch (RserveException | REXPMismatchException e) {
+									item = c.eval("try(.bio7PkgsTemp[, \"Item\"])").strings();
+									packages = c.eval("try(.bio7PkgsTemp[, \"Package\"])").strings();
+									title = c.eval("try(.bio7PkgsTemp[, \"Title\"])").strings();
+								} catch (RException | RTypeException e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
@@ -1054,23 +1054,23 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 							/* If we have only one argument! */
 							if (bracketCommaCount == 0) {
 								try {
-									REXP rexp = null;
+									RValue rValue = null;
 									/* Here we leave out matrices and arrays (matrices are arrays)! */
 									try {
-										rexp = con.eval("try(if (is.data.frame(" + matDfName + ")){colnames("
+										rValue = con.eval("try(if (is.data.frame(" + matDfName + ")){colnames("
 												+ matDfName + ")} else if (is.list(" + matDfName + ")) {names("
 												+ matDfName + ")} else if (is.vector(" + matDfName + ")) {names("
 												+ matDfName + ")} ,silent=TRUE)");
-									} catch (RserveException e) {
+									} catch (RException e) {
 										// TODO Auto-generated catch block
 										e.printStackTrace();
 									}
-									if (rexp.isNull() == false) {
-										item = rexp.asStrings();
+									if (rValue.isNull() == false) {
+										item = rValue.strings();
 
 									}
 
-								} catch (REXPMismatchException e) {
+								} catch (RTypeException e) {
 
 									e.printStackTrace();
 								}
@@ -1084,22 +1084,22 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 							/* If we have only one argument! */
 							if (bracketCommaCount == 0) {
 								try {
-									REXP rexp = null;
+									RValue rValue = null;
 									try {
-										rexp = con.eval("try(if (is.data.frame(" + matDfName + ")||is.matrix("
+										rValue = con.eval("try(if (is.data.frame(" + matDfName + ")||is.matrix("
 												+ matDfName + ")){colnames(" + matDfName + ")} else if(is.array("
 												+ matDfName + ")){rownames(" + matDfName + ")} else{names(" + matDfName
 												+ ")} ,silent=TRUE)");
-									} catch (RserveException e) {
+									} catch (RException e) {
 										// TODO Auto-generated catch block
 										e.printStackTrace();
 									}
-									if (rexp.isNull() == false) {
-										item = rexp.asStrings();
+									if (rValue.isNull() == false) {
+										item = rValue.strings();
 
 									}
 
-								} catch (REXPMismatchException e) {
+								} catch (RTypeException e) {
 
 									e.printStackTrace();
 								}
@@ -1108,36 +1108,36 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 								/* Left argument from nearest offset calculation!! */
 								if (state == 0) {
 									try {
-										REXP rexp = null;
+										RValue rValue = null;
 										try {
-											rexp = con.eval("try(rownames(" + matDfName + "),silent=TRUE)");
-										} catch (RserveException e) {
+											rValue = con.eval("try(rownames(" + matDfName + "),silent=TRUE)");
+										} catch (RException e) {
 											// TODO Auto-generated catch block
 											e.printStackTrace();
 										}
-										if (rexp.isNull() == false) {
-											item = rexp.asStrings();
+										if (rValue.isNull() == false) {
+											item = rValue.strings();
 										}
 
-									} catch (REXPMismatchException e) {
+									} catch (RTypeException e) {
 
 										e.printStackTrace();
 									}
 									/* Right argument from nearest offset calculation! */
 								} else if (state == 1) {
 									try {
-										REXP rexp = null;
+										RValue rValue = null;
 										try {
-											rexp = con.eval("try(colnames(" + matDfName + "),silent=TRUE)");
-										} catch (RserveException e) {
+											rValue = con.eval("try(colnames(" + matDfName + "),silent=TRUE)");
+										} catch (RException e) {
 											// TODO Auto-generated catch block
 											e.printStackTrace();
 										}
-										if (rexp.isNull() == false) {
-											item = rexp.asStrings();
+										if (rValue.isNull() == false) {
+											item = rValue.strings();
 										}
 
-									} catch (REXPMismatchException e) {
+									} catch (RTypeException e) {
 
 										e.printStackTrace();
 									}
@@ -1148,20 +1148,20 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 								 */
 							} else {
 								try {
-									REXP rexp = null;
+									RValue rValue = null;
 									try {
 
-										rexp = con.eval(
+										rValue = con.eval(
 												"try(dimnames(" + matDfName + ")[[" + (state + 1) + "]],silent=TRUE)");
-									} catch (RserveException e) {
+									} catch (RException e) {
 										// TODO Auto-generated catch block
 										e.printStackTrace();
 									}
-									if (rexp.isNull() == false) {
-										item = rexp.asStrings();
+									if (rValue.isNull() == false) {
+										item = rValue.strings();
 									}
 
-								} catch (REXPMismatchException e) {
+								} catch (RTypeException e) {
 
 									e.printStackTrace();
 								}
@@ -1209,8 +1209,8 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 								/*
 								 * String resultStr = null; try { resultStr = (String)
 								 * con.eval("try(capture.output(str(" + matDfName +
-								 * ")),silent=TRUE)").asString(); } catch (RserveException |
-								 * REXPMismatchException e) { // TODO Auto-generated catch block
+								 * ")),silent=TRUE)").firstString(); } catch (RException |
+								 * RTypeException e) { // TODO Auto-generated catch block
 								 * e.printStackTrace(); }
 								 */
 
@@ -1694,4 +1694,11 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 
 	}
 
+
+	/* The templates with the indentation of the current line (multi-line templates in indented code) */
+	@Override
+	protected org.eclipse.jface.text.templates.TemplateContext createContext(org.eclipse.jface.text.ITextViewer viewer, org.eclipse.jface.text.IRegion region) {
+		org.eclipse.jface.text.templates.TemplateContextType type = getContextType(viewer, region);
+		return type == null ? null : new com.eco.bio7.util.IndentingTemplateContext(type, viewer.getDocument(), region.getOffset(), region.getLength());
+	}
 }

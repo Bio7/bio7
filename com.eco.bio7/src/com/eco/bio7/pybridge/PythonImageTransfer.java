@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.window.Window;
-import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Display;
 
 import com.eco.bio7.batch.Bio7Dialog;
@@ -60,7 +59,8 @@ public final class PythonImageTransfer {
 			return true;
 		}
 		String[] error = new String[1];
-		BusyIndicator.showWhile(Display.getDefault(), () -> error[0] = EmbeddedPython.start());
+		/* In a job: the user interface stays usable during the start (e.g., a slow computer) */
+		error[0] = com.eco.bio7.rcp.BackgroundStart.run("Starting Python", EmbeddedPython::start);
 		if (error[0] != null) {
 			Bio7Dialog.message("Python could not be started:\n" + error[0]);
 			return false;

@@ -41,12 +41,7 @@ public class DebugStopAction extends Action {
 	}
 
 	public void run() {
-		/*Restore a Rserve connection if it was alive before debugging start!*/
-		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		boolean wasRserveAlive=store.getBoolean("RSERVE_ALIVE_DEBUG");
-		if(wasRserveAlive){
-			Bio7Action.callRserve();
-		}
+				IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 
 		String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 
@@ -58,9 +53,12 @@ public class DebugStopAction extends Action {
 				Thread q = new Thread(() -> com.eco.bio7.rbridge.backend.EmbeddedR.consoleCapture("Q", 10000, true), "R Debug Stop");
 				q.setDaemon(true);
 				q.start();
-			} else {
+			} else if (com.eco.bio7.rbridge.backend.EmbeddedR.isBusy()) {
+				/* Only a running step (e.g., Continue): an interrupt of an idle R would cancel the next command */
 				com.eco.bio7.rbridge.backend.EmbeddedR.interrupt();
 			}
+			/* The next plot starts on a new page (not in the half filled layout of the script) */
+			DebugProgress.resetPlotLayoutWhenFree();
 			DebugVariablesView.clear();
 			DebugProgress.printToTextView("\u25A0 Debug session stopped.");
 			IEditorPart edit = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();

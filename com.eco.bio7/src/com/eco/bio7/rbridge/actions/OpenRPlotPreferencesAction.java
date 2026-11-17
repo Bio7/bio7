@@ -14,20 +14,20 @@ import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.internal.dialogs.WorkbenchPreferenceDialog;
 import com.eco.bio7.preferences.PreferencePageShell;
 import com.eco.bio7.preferences.RPackagesPreferencePage;
-import com.eco.bio7.preferences.RServePrefs;
+import com.eco.bio7.preferences.RPreferences;
 import com.eco.bio7.rpreferences.TemplatesPreferencePage;
 import com.eco.bio7.rpreferences.WorkbenchPreferenceR;
 
 /**
  * Open the preferences dialog
  */
-public class OpenRservePlotPreferencesAction extends Action implements ActionFactory.IWorkbenchAction {
+public class OpenRPlotPreferencesAction extends Action implements ActionFactory.IWorkbenchAction {
 
 	private IWorkbenchWindow workbenchWindow;
 
-	public OpenRservePlotPreferencesAction() {
-		super("Rserve");
-		setId("com.eco.bio7.r.rserve");
+	public OpenRPlotPreferencesAction() {
+		super("R Plot Preferences");
+		setId("com.eco.bio7.r.plotpreferences");
 		setText("Preferences");
 
 	}
@@ -40,14 +40,14 @@ public class OpenRservePlotPreferencesAction extends Action implements ActionFac
 
 	protected void configureWorkspaceSettings() {
 
-		RServePrefs pref = new RServePrefs();
+		RPreferences pref = new RPreferences();
 		IPreferencePage page = pref;
 		page.setTitle("R preferences");
 		// page.setImageDescriptor(image);
 		
 		
 
-		showPreferencePage("com.eco.bio7.RServe",page);
+		showPreferencePage("com.eco.bio7.RTools",page);
 	}
 
 	protected void showPreferencePage(String id, IPreferencePage page) {

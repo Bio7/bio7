@@ -467,6 +467,22 @@ def analyze(source_text, path, known):
             fixes.append({"title": "Replace '" + m.group(1) + "' with '" + closers[m.group(2)] + "'", "edits": [edit(line, col, line, col + 1, closers[m.group(2)])]})
         diags.append(diag("error", "syntax", msg, (line, col, end_line, end_col), fixes))
         return {"diagnostics": diags, "tools": tools(), "outline": None}
+    # Errors of the compiler which the parser accepts ('return' or 'yield' outside a function,
+    # 'break' outside a loop, duplicate arguments, nonlocal/global declarations, ...)
+    compile_line = None
+    try:
+        compile(tree, path or "<editor>", "exec", dont_inherit=True)
+    except SyntaxError as e:
+        compile_line = e.lineno or 1
+        col = source.col(compile_line, max((e.offset or 1) - 1, 0))
+        end_line = getattr(e, "end_lineno", None) or compile_line
+        end_off = getattr(e, "end_offset", None)
+        end_col = source.col(end_line, end_off - 1) if end_off else col + 1
+        if end_line < compile_line or (end_line == compile_line and end_col <= col):
+            end_line, end_col = compile_line, col + 1
+        diags.append(diag("error", "syntax", e.msg or "invalid syntax", (compile_line, col, end_line, end_col)))
+    except Exception:
+        pass  # e.g., too deeply nested code: no compiler check
     try:
         tree_outline = outline(tree, source)
     except Exception:
@@ -484,6 +500,8 @@ def analyze(source_text, path, known):
             use_ruff = False
         else:
             for d in ruff_diags:
+                if compile_line is not None and d["code"] in ("F701", "F702", "F704", "F706", "PLE0117", "PLE0118", "invalid-syntax", "syntax"):
+                    continue  # the error of the compiler is shown (ruff reports it again)
                 if d["code"] == "F821":
                     m = re.search(r"`([^`]+)`", d["message"])
                     name = m.group(1) if m else None
@@ -828,6 +846,51 @@ def word_at(source, line, col):
     return text[start:end].strip(".")
 
 
+def _local_help(tree, source_text, word, line):
+    """The help of a name defined in the file (without jedi): functions, classes and
+    methods (signature and docstring), else the assignment of a variable."""
+    name = word.split(".")[-1]
+    defs, assigns = [], []
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and node.name == name:
+            defs.append(node)
+        elif isinstance(node, (ast.Assign, ast.AnnAssign)) and "." not in word:
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            if any(isinstance(t, ast.Name) and t.id == name for t in targets):
+                assigns.append(node)
+    if defs:
+        # the definition before the line (else the first)
+        before = [d for d in defs if d.lineno <= line]
+        d = max(before, key=lambda n: n.lineno) if before else defs[0]
+        if isinstance(d, ast.ClassDef):
+            init = next((n for n in d.body if isinstance(n, ast.FunctionDef) and n.name == "__init__"), None)
+            head = "class " + d.name + ("(" + _ast_args(init.args, skip_self=True) + ")" if init else "")
+        else:
+            prefix = "async def " if isinstance(d, ast.AsyncFunctionDef) else "def "
+            head = prefix + d.name + "(" + _ast_args(d.args) + ")" + (" -> " + ast.unparse(d.returns) if d.returns is not None else "")
+        doc = ast.get_docstring(d)
+        return head + ("\n\n" + doc[:3000] if doc else "")
+    if assigns:
+        before = [a for a in assigns if a.lineno <= line]
+        a = max(before, key=lambda n: n.lineno) if before else assigns[0]
+        seg = ast.get_source_segment(source_text, a) or ""
+        return "Line " + str(a.lineno) + ": " + (seg if len(seg) < 400 else seg[:400] + " ...")
+    return None
+
+
+def _ast_args(args, skip_self=False):
+    """The arguments of a definition as text (with defaults and annotations)."""
+    try:
+        text = ast.unparse(args)
+    except Exception:
+        return "..."
+    if skip_self:
+        parts = text.split(", ", 1)
+        if parts and parts[0] in ("self", "cls"):
+            text = parts[1] if len(parts) > 1 else ""
+    return text
+
+
 def help_at(source_text, path, line, col):
     source = Source(source_text)
     folder = os.path.dirname(os.path.abspath(path)) if path else None
@@ -855,10 +918,765 @@ def help_at(source_text, path, line, col):
         obj = None
     if obj is None and keyword.iskeyword(word):
         return {"text": "Python keyword: " + word, "word": word}
+    if obj is None and tree is not None:
+        local = _local_help(tree, source_text, word, line)
+        if local:
+            return {"text": local, "word": word}
     if obj is None:
         return {"text": "", "word": word}
     head = word + _signature(obj) if callable(obj) else word + ": " + type(obj).__name__
     return {"text": head + "\n\n" + _doc(obj, 3000), "word": word}
+
+
+# ---------------------------------------------------------------- refactoring
+# The commands return the new source ({"text": ..., "cursor": [line, col, length]})
+# or {"error": message}. Lines are 1-based, columns characters (0-based).
+
+_COMPREHENSIONS = (ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp, ast.Lambda)
+_SCOPES = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef) + _COMPREHENSIONS
+
+
+def _valid_name(name):
+    if not name or not name.isidentifier() or keyword.iskeyword(name):
+        return "'%s' is not a valid name" % name
+    return None
+
+
+def _index(lines, line, col):
+    """The index in the text of a line (1-based) and a column (characters)."""
+    return sum(len(x) for x in lines[:line - 1]) + col
+
+
+def _apply(text, edits):
+    """Applies edits (line, col, end_line, end_col, new text) from the end."""
+    lines = text.splitlines(True) or [""]
+    spans = sorted(((_index(lines, a, b), _index(lines, c, d), t) for a, b, c, d, t in edits), reverse=True)
+    for start, end, t in spans:
+        text = text[:start] + t + text[end:]
+    return text
+
+
+def _name_at(text, line, col):
+    """The identifier at the position: (name, start column) or (None, None)."""
+    lines = text.splitlines() or [""]
+    if not 1 <= line <= len(lines):
+        return None, None
+    s = lines[line - 1]
+    start = end = min(col, len(s))
+    while start > 0 and (s[start - 1].isalnum() or s[start - 1] == "_"):
+        start -= 1
+    while end < len(s) and (s[end].isalnum() or s[end] == "_"):
+        end += 1
+    name = s[start:end]
+    return (name, start) if name.isidentifier() else (None, None)
+
+
+def _parse(text):
+    try:
+        return ast.parse(text), None
+    except SyntaxError as e:
+        return None, {"error": "The code has a syntax error (line %s): %s" % (e.lineno, e.msg)}
+
+
+def _names_in_file(text):
+    names = set()
+    try:
+        for tok in tokenize.generate_tokens(io.StringIO(text).readline):
+            if tok.type == tokenize.NAME:
+                names.add(tok.string)
+    except (tokenize.TokenError, SyntaxError, IndentationError):
+        pass
+    return names
+
+
+def _import_binding(tree, old):
+    """The import statement and alias which bind the name (or None)."""
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            for a in node.names:
+                bound = a.asname or (a.name.split(".")[0] if isinstance(node, ast.Import) else a.name)
+                if bound == old:
+                    return node, a
+    return None
+
+
+def _own_references(text, tree, line, col, old):
+    """The positions (line, column) of the name at the cursor and of all names
+    which mean the same variable (the rules of the scopes of Python)."""
+    source = Source(text)
+    lines = text.splitlines()
+    parent = {}
+    for node in ast.walk(tree):
+        for c in ast.iter_child_nodes(node):
+            parent[c] = node
+    scope_types = (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda, ast.ClassDef) + _COMPREHENSIONS
+
+    def enclosing(node):
+        n = parent.get(node)
+        while n is not None and not isinstance(n, scope_types):
+            n = parent.get(n)
+        return n or tree
+
+    # the bindings and declarations of each scope
+    bound, declared = {}, {}
+    occurrences = []  # (position, scope of the occurrence, binds?)
+
+    def bind(scope, name):
+        bound.setdefault(scope, set()).add(name)
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Name) and node.id == old:
+            sc = enclosing(node)
+            if not isinstance(node.ctx, ast.Load):
+                bind(sc, old)
+            ln, c, _, _ = source.span(node)
+            occurrences.append(((ln, c), sc))
+        elif isinstance(node, ast.arg) and node.arg == old:
+            sc = enclosing(node)  # the function (or lambda) of the argument
+            bind(sc, old)
+            occurrences.append(((node.lineno, source.col(node.lineno, node.col_offset)), sc))
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and node.name == old:
+            sc = enclosing(node)
+            bind(sc, old)
+            m = re.search(r"\b(?:def|class)\s+(" + re.escape(old) + r")\b", lines[node.lineno - 1])
+            if m:
+                occurrences.append(((node.lineno, m.start(1)), sc))
+        elif isinstance(node, (ast.Import, ast.ImportFrom, ast.Global, ast.Nonlocal)):
+            names = [a.asname or (a.name.split(".")[0] if isinstance(node, ast.Import) else a.name) for a in node.names] \
+                if not isinstance(node, (ast.Global, ast.Nonlocal)) else node.names
+            if old not in names:
+                continue
+            sc = enclosing(node)
+            if isinstance(node, (ast.Global, ast.Nonlocal)):
+                declared.setdefault(sc, {})[old] = "global" if isinstance(node, ast.Global) else "nonlocal"
+            else:
+                bind(sc, old)
+            # the position of the name in the statement (tokens of its lines)
+            seg = "\n".join(lines[node.lineno - 1:node.end_lineno])
+            toks = [t for t in tokenize.generate_tokens(io.StringIO(seg + "\n").readline) if t.type == tokenize.NAME and t.string == old]
+            if isinstance(node, ast.ImportFrom):
+                # 'from m import old' or '... as old': the bound name (the last token of the name)
+                toks = toks[-1:] if toks else toks
+            for t in toks:
+                occurrences.append(((node.lineno + t.start[0] - 1, t.start[1]), sc))
+
+    def resolve(scope):
+        d = declared.get(scope, {}).get(old)
+        if d == "global":
+            return tree
+        first = True
+        s = scope
+        while True:
+            if s is tree:
+                return tree
+            if d == "nonlocal" and s is scope:
+                pass
+            elif old in bound.get(s, ()) and (first or not isinstance(s, ast.ClassDef)):
+                return s
+            first = False
+            s = enclosing(s)
+            if s is not tree and isinstance(s, ast.ClassDef):
+                # a class body is not visible to its methods
+                s = enclosing(s)
+
+    target = None
+    for (ln, c), sc in occurrences:
+        if ln == line and c == col:
+            target = resolve(sc)
+    if target is None:
+        return "No variable at the cursor"
+    return sorted({pos for pos, sc in occurrences if resolve(sc) is target})
+
+
+def refactor_rename(text, path, line, col, new_name):
+    err = _valid_name(new_name)
+    if err:
+        return {"error": err}
+    tree, err = _parse(text)
+    if err:
+        return err
+    old, start = _name_at(text, line, col)
+    if old is None:
+        return {"error": "No name at the cursor"}
+    if old == new_name:
+        return {"text": text}
+    if new_name in _names_in_file(text):
+        return {"error": "'%s' is already used in this file" % new_name}
+    binding = _import_binding(tree, old)
+    positions = None
+    if tools().get("jedi"):
+        import jedi
+        script = jedi.Script(text, path=path)
+        refs = [r for r in script.get_references(line, start, scope="file", include_builtins=False) if r.name == old]
+        if refs:
+            local = any(r.is_definition() for r in refs)
+            if not local:
+                where = [d for d in script.goto(line, start, follow_imports=False)]
+                mod = where[0].module_name if where else "another module"
+                return {"error": "'%s' is defined outside this file (%s)" % (old, mod)}
+            positions = sorted({(r.line, r.column) for r in refs})
+    if positions is None:
+        # Without jedi: the scopes of the syntax tree
+        positions = _own_references(text, tree, line, start, old)
+        if isinstance(positions, str):
+            return {"error": positions}
+    edits = []
+    for ln, c in positions:
+        new = new_name
+        if binding is not None and binding[0].lineno <= ln <= binding[0].end_lineno:
+            node, alias = binding
+            if alias.asname is None:
+                if "." in alias.name:
+                    return {"error": "'%s' is imported as a package (import %s): please rename with 'import %s as name'" % (old, alias.name, alias.name)}
+                new = old + " as " + new_name  # the imported name stays
+        edits.append((ln, c, ln, c + len(old), new))
+    if not edits:
+        return {"error": "'%s' was not found" % old}
+    new_text = _apply(text, edits)
+    return {"text": new_text, "cursor": [line, start, len(new_name)], "count": len(edits), "jedi": bool(tools().get("jedi"))}
+
+
+def _statements(tree):
+    for node in ast.walk(tree):
+        for field in ("body", "orelse", "finalbody"):
+            block = getattr(node, field, None)
+            if isinstance(block, list) and block and isinstance(block[0], ast.stmt):
+                yield node, block
+        if isinstance(node, ast.Try) or type(node).__name__ == "TryStar":
+            for h in node.handlers:
+                yield h, h.body
+        if type(node).__name__ == "Match":
+            for case in node.cases:
+                yield case, case.body
+
+
+def _first_line(stmt):
+    decos = getattr(stmt, "decorator_list", None)
+    return min([stmt.lineno] + [d.lineno for d in decos]) if decos else stmt.lineno
+
+
+def _top_level(tree, line):
+    for stmt in tree.body:
+        if _first_line(stmt) <= line <= stmt.end_lineno:
+            return stmt
+    return None
+
+
+def _indent(s):
+    return s[:len(s) - len(s.lstrip())]
+
+
+def refactor_extract_variable(text, path, line, col, end_line, end_col, name):
+    err = _valid_name(name)
+    if err:
+        return {"error": err}
+    if name in _names_in_file(text):
+        return {"error": "'%s' is already used in this file" % name}
+    tree, err = _parse(text)
+    if err:
+        return err
+    lines = text.splitlines(True)
+    start, end = _index(lines, line, col), _index(lines, end_line, end_col)
+    selected = text[start:end]
+    expr = selected.strip()
+    if not expr:
+        return {"error": "Please select an expression"}
+    try:
+        ast.parse("(" + expr + "\n)", mode="eval")
+    except SyntaxError:
+        return {"error": "The selection is not an expression"}
+    # the innermost statement which contains the selection
+    best = None
+    for node in ast.walk(tree):
+        if isinstance(node, ast.stmt) and node.lineno <= line and node.end_lineno >= end_line:
+            if best is None or (node.lineno, -node.end_lineno) > (best.lineno, -best.end_lineno):
+                best = node
+    if best is None:
+        return {"error": "The selection is not in a statement"}
+    header = lines[best.lineno - 1]
+    if header.lstrip().startswith("elif"):
+        return {"error": "Not possible in the condition of 'elif'"}
+    if isinstance(best, (ast.While,)) and line <= best.test.end_lineno:
+        return {"error": "Not possible in the condition of 'while' (the value would be computed only once)"}
+    if isinstance(best, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and line < best.body[0].lineno:
+        return {"error": "Not possible in a definition of a function or class"}
+    indent = _indent(header)
+    lead = selected[:len(selected) - len(selected.lstrip())]
+    trail = selected[len(selected.rstrip()):]
+    new_text = text[:start] + lead + name + trail + text[end:]
+    insert = _index(lines, best.lineno, 0)
+    new_text = new_text[:insert] + indent + name + " = " + expr + "\n" + new_text[insert:]
+    lead_lines = lead.count("\n")
+    cur_col = len(lead.rsplit("\n", 1)[-1]) if lead_lines else col + len(lead)
+    return {"text": new_text, "cursor": [line + 1 + lead_lines, cur_col, len(name)]}
+
+
+class _Flow(ast.NodeVisitor):
+    """The names of statements in the order of the evaluation: reads before the
+    first write (the parameters), the writes; nested scopes only read."""
+
+    def __init__(self):
+        self.reads, self.writes, self.order = [], set(), []
+        self.bad = None
+        self.loop = 0
+
+    def read(self, name):
+        if name not in self.writes and name not in self.reads:
+            self.reads.append(name)
+
+    def write(self, name):
+        self.writes.add(name)
+
+    def visit_Name(self, node):
+        if isinstance(node.ctx, ast.Load):
+            self.read(node.id)
+        else:
+            self.write(node.id)
+
+    def visit_Assign(self, node):
+        self.visit(node.value)
+        for t in node.targets:
+            self.visit(t)
+
+    def visit_AnnAssign(self, node):
+        if node.value is not None:
+            self.visit(node.value)
+        self.visit(node.target)
+
+    def visit_AugAssign(self, node):
+        self.visit(node.value)
+        if isinstance(node.target, ast.Name):
+            self.read(node.target.id)
+            self.write(node.target.id)
+        else:
+            self.visit(node.target)
+
+    def visit_NamedExpr(self, node):
+        self.visit(node.value)
+        self.visit(node.target)
+
+    def _loop(self, node, iterable, target):
+        if iterable is not None:
+            self.visit(iterable)
+        if target is not None:
+            self.visit(target)
+        self.loop += 1
+        for s in node.body:
+            self.visit(s)
+        self.loop -= 1
+        for s in node.orelse:
+            self.visit(s)
+
+    def visit_For(self, node):
+        self._loop(node, node.iter, node.target)
+
+    visit_AsyncFor = visit_For
+
+    def visit_While(self, node):
+        self.visit(node.test)
+        self._loop(node, None, None)
+
+    def visit_With(self, node):
+        for item in node.items:
+            self.visit(item.context_expr)
+            if item.optional_vars is not None:
+                self.visit(item.optional_vars)
+        for s in node.body:
+            self.visit(s)
+
+    def _nested(self, node):
+        # a nested scope: its free names are read
+        inner = set()
+        for n in ast.walk(node):
+            if isinstance(n, ast.Name) and not isinstance(n.ctx, ast.Load):
+                inner.add(n.id)
+            elif isinstance(n, ast.arg):
+                inner.add(n.arg)
+        for n in ast.walk(node):
+            if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load) and n.id not in inner:
+                self.read(n.id)
+
+    def visit_FunctionDef(self, node):
+        for d in node.decorator_list:
+            self.visit(d)
+        self._nested(node)
+        self.write(node.name)
+
+    visit_AsyncFunctionDef = visit_FunctionDef
+
+    def visit_ClassDef(self, node):
+        for d in node.decorator_list + node.bases:
+            self.visit(d)
+        self._nested(node)
+        self.write(node.name)
+
+    def visit_Lambda(self, node):
+        self._nested(node)
+
+    visit_ListComp = visit_SetComp = visit_DictComp = visit_GeneratorExp = visit_Lambda
+
+    def visit_Import(self, node):
+        for a in node.names:
+            self.write(a.asname or a.name.split(".")[0])
+
+    def visit_ImportFrom(self, node):
+        for a in node.names:
+            self.write(a.asname or a.name)
+
+    def visit_Return(self, node):
+        self.bad = "'return' in the selection"
+
+    def visit_Yield(self, node):
+        self.bad = "'yield' in the selection"
+
+    visit_YieldFrom = visit_Yield
+
+    def visit_Await(self, node):
+        self.bad = "'await' in the selection"
+
+    def visit_Global(self, node):
+        self.bad = "'global' or 'nonlocal' in the selection"
+
+    visit_Nonlocal = visit_Global
+
+    def visit_Break(self, node):
+        if self.loop == 0:
+            self.bad = "'break' or 'continue' without its loop in the selection"
+
+    visit_Continue = visit_Break
+
+
+def _scope_locals(scope):
+    """The local variables of a function or the module (assigned, the arguments; not imports, functions, classes)."""
+    names = set()
+    if isinstance(scope, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        a = scope.args
+        for arg in a.posonlyargs + a.args + a.kwonlyargs + [x for x in (a.vararg, a.kwarg) if x]:
+            names.add(arg.arg)
+    stack = list(scope.body)
+    while stack:
+        n = stack.pop()
+        if isinstance(n, _SCOPES):
+            continue
+        if isinstance(n, ast.Name) and not isinstance(n.ctx, ast.Load):
+            names.add(n.id)
+        stack.extend(ast.iter_child_nodes(n))
+    return names
+
+
+def refactor_extract_function(text, path, line, end_line, name):
+    err = _valid_name(name)
+    if err:
+        return {"error": err}
+    if name in _names_in_file(text):
+        return {"error": "'%s' is already used in this file" % name}
+    tree, err = _parse(text)
+    if err:
+        return err
+    lines = text.splitlines(True)
+    # the selected statements: complete statements of one block
+    chosen = None
+    for parent, block in _statements(tree):
+        inside = [s for s in block if _first_line(s) >= line and s.end_lineno <= end_line]
+        partial = [s for s in block if s not in inside and _first_line(s) <= end_line and s.end_lineno >= line]
+        if inside and not partial:
+            chosen = (parent, inside)
+            break
+    if chosen is None:
+        return {"error": "Please select complete statements (of one block)"}
+    parent, stmts = chosen
+    if isinstance(parent, ast.ClassDef):
+        return {"error": "Not possible in the body of a class"}
+    first, last = _first_line(stmts[0]), stmts[-1].end_lineno
+    # the scope (function or module) of the statements
+    scope = tree
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.body[0].lineno <= first and last <= node.end_lineno:
+            if scope is tree or node.lineno > scope.lineno:
+                scope = node
+    flow = _Flow()
+    for s in stmts:
+        flow.visit(s)
+    if flow.bad:
+        return {"error": "Not possible: " + flow.bad}
+    local = _scope_locals(scope)
+    params = [n for n in flow.reads if n in local]
+    # the results: written names which are read after the selection (or elsewhere at module level)
+    after = set()
+    for node in ast.walk(scope if scope is not tree else tree):
+        if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load):
+            if node.lineno > last or (scope is tree and node.lineno < first):
+                after.add(node.id)
+    results = sorted(n for n in flow.writes if n in after and n in (local | {s.name for s in stmts if hasattr(s, "name")}))
+    # the body: the selected lines (dedented), the return
+    body_lines = lines[first - 1:last]
+    base = min((len(_indent(x)) for x in body_lines if x.strip()), default=0)
+    body = "".join(("    " + x[base:]) if x.strip() else "\n" for x in body_lines)
+    if not body.endswith("\n"):
+        body += "\n"
+    if results:
+        body += "    return " + ", ".join(results) + "\n"
+    definition = "def " + name + "(" + ", ".join(params) + "):\n" + body + "\n\n"
+    call = _indent(lines[first - 1]) + (", ".join(results) + " = " if results else "") + name + "(" + ", ".join(params) + ")\n"
+    # the new function before the statement of the module which contains the selection
+    top = _top_level(tree, first)
+    top_line = _first_line(top)
+    # comments directly above the statement stay with it
+    while top_line > 1 and lines[top_line - 2].lstrip().startswith("#"):
+        top_line -= 1
+    end_index = _index(lines, last, 0) + len(lines[last - 1])
+    new_text = text[:_index(lines, first, 0)] + call + text[end_index:]
+    insert = _index(lines, top_line, 0)
+    # two blank lines before the new function (PEP 8)
+    blank = 0
+    while top_line - 1 - blank >= 1 and not lines[top_line - 2 - blank].strip():
+        blank += 1
+    if top_line > 1 and blank < 2:
+        definition = "\n" * (2 - blank) + definition
+    new_text = new_text[:insert] + definition + new_text[insert:]
+    def_lines = definition.count("\n")
+    top_line += (2 - blank) if top_line > 1 and blank < 2 else 0
+    return {"text": new_text, "cursor": [top_line, 4, len(name)] if top_line < first else [first + def_lines, len(_indent(lines[first - 1])), len(name)],
+            "params": params, "results": results}
+
+
+_SIMPLE = (ast.Name, ast.Constant, ast.Attribute, ast.Subscript, ast.Call, ast.List, ast.Dict, ast.Set, ast.ListComp, ast.SetComp,
+           ast.DictComp, ast.GeneratorExp, ast.JoinedStr)
+
+
+def refactor_inline(text, path, line, col):
+    tree, err = _parse(text)
+    if err:
+        return err
+    name, start = _name_at(text, line, col)
+    if name is None:
+        return {"error": "No variable at the cursor"}
+    scope = tree
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.body[0].lineno <= line <= node.end_lineno:
+            if scope is tree or node.lineno > scope.lineno:
+                scope = node
+    stores, loads = [], []
+    stack = [(c, False) for c in scope.body]
+    while stack:
+        n, nested = stack.pop()
+        if isinstance(n, ast.Name) and n.id == name:
+            (loads if isinstance(n.ctx, ast.Load) else stores).append((n, nested))
+        elif isinstance(n, (ast.Global, ast.Nonlocal)) and name in n.names:
+            return {"error": "'%s' is declared global or nonlocal" % name}
+        elif isinstance(n, ast.arg) and n.arg == name and not nested:
+            return {"error": "'%s' is a parameter" % name}
+        nest = nested or isinstance(n, _SCOPES)
+        stack.extend((c, nest) for c in ast.iter_child_nodes(n))
+    own = [n for n, nested in stores if not nested]
+    if len(own) != 1:
+        return {"error": "'%s' must be assigned exactly once (%d assignments)" % (name, len(own))}
+    target = own[0]
+    if any(nested for _, nested in stores):
+        return {"error": "'%s' is assigned in a nested function too" % name}
+    assign = None
+    for node in ast.walk(scope):
+        if isinstance(node, ast.Assign) and len(node.targets) == 1 and node.targets[0] is target:
+            assign = node
+    if assign is None:
+        return {"error": "'%s' is not assigned with 'name = value'" % name}
+    uses = [n for n, _ in loads]
+    if not uses:
+        return {"error": "'%s' is not used" % name}
+    if any((n.lineno, n.col_offset) < (assign.end_lineno, assign.end_col_offset) for n in uses):
+        return {"error": "'%s' is used before the assignment" % name}
+    value = ast.get_source_segment(text, assign.value)
+    v = assign.value
+    simple = isinstance(v, _SIMPLE) or isinstance(v, ast.Tuple) and value.startswith("(")
+    always = isinstance(v, (ast.Tuple, ast.NamedExpr)) and not simple
+    parent = {}
+    for node in ast.walk(scope):
+        for c in ast.iter_child_nodes(node):
+            parent[c] = node
+
+    def wrapped(use):
+        """Parentheses only where the value is part of an operation (e.g., not as an argument)."""
+        if simple:
+            return value
+        p = parent.get(use)
+        safe = (isinstance(p, ast.Call) and use in p.args or isinstance(p, ast.keyword) or isinstance(p, (ast.List, ast.Set))
+                or isinstance(p, (ast.Assign, ast.AnnAssign, ast.Return, ast.Expr)) and getattr(p, "value", None) is use
+                or isinstance(p, ast.Subscript) and p.slice is use or isinstance(p, ast.FormattedValue))
+        return value if safe and not always else "(" + value + ")"
+
+    source = Source(text)
+    edits = []
+    for n in uses:
+        ln, c, eln, ec = source.span(n)
+        edits.append((ln, c, eln, ec, wrapped(n)))
+    rm = remove_statement_edit(assign, source)
+    edits.append((rm["line"], rm["col"], rm["endLine"], rm["endCol"], rm["text"]))
+    new_text = _apply(text, edits)
+    return {"text": new_text, "count": len(uses), "cursor": [assign.lineno, 0, 0]}
+
+
+def refactor_surround(text, path, line, end_line):
+    lines = text.splitlines(True)
+    if not lines:
+        return {"error": "No code"}
+    end_line = min(end_line, len(lines))
+    block = lines[line - 1:end_line]
+    if not any(x.strip() for x in block):
+        return {"error": "Please select one or more lines"}
+    indent = min((_indent(x) for x in block if x.strip()), key=len)
+    body = "".join(("    " + x) if x.strip() else x for x in block)
+    if not body.endswith("\n"):
+        body += "\n"
+    new_block = indent + "try:\n" + body + indent + "except Exception as e:\n" + indent + "    print(e)\n"
+    new_text = "".join(lines[:line - 1]) + new_block + "".join(lines[end_line:])
+    ok_before = _parse(text)[0] is not None
+    if ok_before and _parse(new_text)[0] is None:
+        return {"error": "Please select complete statements"}
+    print_line = line + len(block) + 2
+    return {"text": new_text, "cursor": [print_line, len(indent) + 4, 8]}
+
+
+def refactor_docstring(text, path, line):
+    tree, err = _parse(text)
+    if err:
+        return err
+    target, parent_of = None, {}
+    for node in ast.walk(tree):
+        for c in ast.iter_child_nodes(node):
+            parent_of[c] = node
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and _first_line(node) <= line <= node.end_lineno:
+            if target is None or node.lineno > target.lineno:
+                target = node
+    if target is None:
+        return {"error": "The cursor is not in a function or class"}
+    if ast.get_docstring(target) is not None:
+        return {"error": "'%s' has a docstring" % target.name}
+    first = target.body[0]
+    if first.lineno == target.lineno:
+        return {"error": "The body is on the line of the definition"}
+    lines = text.splitlines(True)
+    first_line = _first_line(first)
+    indent = _indent(lines[first_line - 1])
+    out = [indent + '"""Summary.\n']
+    if isinstance(target, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        a = target.args
+        args = a.posonlyargs + a.args
+        if args and isinstance(parent_of.get(target), ast.ClassDef) and args[0].arg in ("self", "cls"):
+            args = args[1:]
+        params = [(x.arg, x.annotation) for x in args]
+        if a.vararg:
+            params.append(("*" + a.vararg.arg, a.vararg.annotation))
+        params += [(x.arg, x.annotation) for x in a.kwonlyargs]
+        if a.kwarg:
+            params.append(("**" + a.kwarg.arg, a.kwarg.annotation))
+        if params:
+            out += ["\n", indent + "Parameters\n", indent + "----------\n"]
+            for p, ann in params:
+                out.append(indent + p + (" : " + ast.unparse(ann) if ann is not None else "") + "\n")
+                out.append(indent + "    Description.\n")
+        returns = False
+        stack = list(target.body)
+        while stack:
+            n = stack.pop()
+            if isinstance(n, _SCOPES):
+                continue
+            if isinstance(n, ast.Return) and n.value is not None:
+                returns = True
+            stack.extend(ast.iter_child_nodes(n))
+        if returns or target.returns is not None:
+            out += ["\n", indent + "Returns\n", indent + "-------\n"]
+            out.append(indent + (ast.unparse(target.returns) if target.returns is not None else "value") + "\n")
+            out.append(indent + "    Description.\n")
+    out.append(indent + '"""\n')
+    insert = _index(lines, first_line, 0)
+    new_text = text[:insert] + "".join(out) + text[insert:]
+    return {"text": new_text, "cursor": [first_line, len(indent) + 3, len("Summary.")]}
+
+
+def _module_group(name, level, folder):
+    if level > 0:
+        return 3
+    top = name.split(".")[0]
+    if top == "__future__":
+        return 0
+    std = getattr(sys, "stdlib_module_names", None)
+    if std is not None:
+        if top in std:
+            return 1
+    else:
+        try:
+            spec = importlib.util.find_spec(top)
+            origin = (spec.origin or "") if spec else ""
+            if spec and (origin in ("built-in", "frozen") or ("site-packages" not in origin and "dist-packages" not in origin and origin.startswith(sys.base_prefix))):
+                return 1
+        except Exception:
+            pass
+    if folder and (os.path.exists(os.path.join(folder, top + ".py")) or os.path.isdir(os.path.join(folder, top))):
+        return 3
+    return 2
+
+
+def refactor_imports(text, path):
+    if tools().get("ruff"):
+        out = subprocess.run([sys.executable, "-m", "ruff", "check", "--select", "I,F401", "--fix-only", "--no-cache", "--exit-zero",
+                              "--stdin-filename", path or "script.py", "-"], input=text, capture_output=True, text=True, timeout=60)
+        if out.returncode == 0 and out.stdout:
+            return {"text": out.stdout, "tool": "ruff"}
+    tree, err = _parse(text)
+    if err:
+        return err
+    # without ruff: the imports at the start of the module (one line each) sorted in groups
+    body = tree.body
+    i = 1 if body and isinstance(body[0], ast.Expr) and isinstance(getattr(body[0], "value", None), ast.Constant) and isinstance(body[0].value.value, str) else 0
+    block = []
+    while i < len(body) and isinstance(body[i], (ast.Import, ast.ImportFrom)) and body[i].lineno == body[i].end_lineno:
+        block.append(body[i])
+        i += 1
+    if not block:
+        return {"error": "No imports at the start of the module"}
+    lines = text.splitlines(True)
+    folder = os.path.dirname(os.path.abspath(path)) if path else None
+    for s in block:
+        rest = lines[s.lineno - 1][s.end_col_offset:].strip()
+        if rest and not rest.startswith("#") or s.col_offset:
+            return {"error": "The imports are not on lines of their own"}
+    entries = []
+    for s in block:
+        code = lines[s.lineno - 1].strip()
+        if isinstance(s, ast.Import):
+            entries.append((_module_group(s.names[0].name, 0, folder), 0, s.names[0].name.lower(), code))
+        else:
+            entries.append((_module_group(s.module or "", s.level, folder), 1, ("." * s.level + (s.module or "")).lower(), code))
+    groups = {}
+    for g, kind, key, code in sorted(set(entries)):
+        groups.setdefault(g, []).append(code)
+    new_block = "\n\n".join("\n".join(v) for _, v in sorted(groups.items())) + "\n"
+    start, end = block[0].lineno, block[-1].end_lineno
+    new_text = "".join(lines[:start - 1]) + new_block + "".join(lines[end:])
+    return {"text": new_text, "tool": "own", "message": "Sorted and grouped (install ruff to remove unused imports too)"}
+
+
+def refactor(req):
+    kind, text, path = req["kind"], req["source"], req.get("path")
+    if kind == "rename":
+        return refactor_rename(text, path, req["line"], req["col"], req["name"])
+    if kind == "extract_variable":
+        return refactor_extract_variable(text, path, req["line"], req["col"], req["endLine"], req["endCol"], req["name"])
+    if kind == "extract_function":
+        return refactor_extract_function(text, path, req["line"], req["endLine"], req["name"])
+    if kind == "inline":
+        return refactor_inline(text, path, req["line"], req["col"])
+    if kind == "surround":
+        return refactor_surround(text, path, req["line"], req["endLine"])
+    if kind == "docstring":
+        return refactor_docstring(text, path, req["line"])
+    if kind == "imports":
+        return refactor_imports(text, path)
+    if kind == "name_at":
+        name, _ = _name_at(text, req["line"], req["col"])
+        return {"name": name}
+    return {"error": "unknown refactoring " + str(kind)}
 
 
 # ---------------------------------------------------------------- the loop
@@ -886,6 +1704,8 @@ def main():
                 result = help_at(req["source"], req.get("path"), req["line"], req["col"])
             elif cmd == "format":
                 result = format_code(req["source"], req.get("path"))
+            elif cmd == "refactor":
+                result = refactor(req)
             elif cmd == "tools":
                 global _tools
                 _tools = None

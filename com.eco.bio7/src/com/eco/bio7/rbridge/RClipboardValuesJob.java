@@ -18,9 +18,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import com.eco.bio7.rbridge.backend.RBackend;
-import org.rosuda.REngine.Rserve.RserveException;
 
 import com.eco.bio7.util.Util;
+import com.eco.bio7.rffm.RException;
 
 public class RClipboardValuesJob extends WorkspaceJob {
 
@@ -36,7 +36,7 @@ public class RClipboardValuesJob extends WorkspaceJob {
 		 * !
 		 */
 
-		if (RServe.isAliveDialog()) {
+		if (RTools.isAliveDialog()) {
 			RBackend con = RBridge.getBackend();
 			try {
 
@@ -47,14 +47,14 @@ public class RClipboardValuesJob extends WorkspaceJob {
 					con.eval("try(clip<-read.delim(\"clipboard\"))");
 				}
 
-			} catch (RserveException e) {
+			} catch (RException e) {
 
 				e.printStackTrace();
 			}
 
 			System.out.println("Data in dataframe \"clip\":");
 
-			RServe.print("clip");
+			RTools.print("clip");
 		}
 		return Status.OK_STATUS;
 	}
