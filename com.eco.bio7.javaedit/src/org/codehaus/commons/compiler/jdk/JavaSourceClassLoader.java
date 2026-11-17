@@ -75,6 +75,13 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 	private boolean debuggingInfoVars;
 	private boolean debuggingInfoSource;
 	private Collection<String> compilerOptions = new ArrayList<String>();
+
+	/**
+	 * Set by the Java profiler: the classes get line numbers (and the source file
+	 * name) even without "Generate Debugging Information", otherwise the profile
+	 * can't show lines.
+	 */
+	public static volatile boolean lineNumbers;
 	private JavaCompiler compiler;
 	private JavaFileManager fileManager;
 	public static IResource resource;
@@ -206,6 +213,8 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 		if (version == null || version.isBlank()) {
 			version = String.valueOf(JavaVersions.COMPILER_VERSION);
 		}
+		/* Not newer than the running JVM (its javac rejects a newer release) */
+		version = JavaVersions.supported(version);
 		boolean debug = store.getBoolean("compiler_debug");
 		boolean verbose = store.getBoolean("compiler_verbose");
 		boolean warnings = store.getBoolean("compiler_warnings");
@@ -295,6 +304,8 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 
 				if (debug) {
 					optionList.addElement("-g");
+				} else if (lineNumbers) {
+					optionList.addElement("-g:source,lines");
 				} else {
 					optionList.addElement("-g:none");
 				}

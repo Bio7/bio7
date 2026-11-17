@@ -49,6 +49,38 @@ public final class FullscreenMonitors {
 	private FullscreenMonitors() {
 	}
 
+	private static boolean zoomGuard;
+
+	/**
+	 * macOS: SWT draws all windows with one zoom, that of the screen of the active
+	 * window. A fullscreen shell on a monitor with a lower resolution (e.g., the plot
+	 * on a second monitor) would make the views of the Retina screen blurry when they
+	 * are painted (e.g., a table). The zoom is kept at the highest zoom of the
+	 * monitors (SWT changes it before the Settings event). Installed once (UI thread).
+	 */
+	public static void keepHighestZoom(Display display) {
+		if (zoomGuard || !"cocoa".equals(SWT.getPlatform())) {
+			return;
+		}
+		zoomGuard = true;
+		display.addListener(SWT.Settings, _ -> applyHighestZoom(display));
+		applyHighestZoom(display);
+	}
+
+	private static void applyHighestZoom(Display display) {
+		try {
+			int highest = 100;
+			for (Monitor m : display.getMonitors()) {
+				highest = Math.max(highest, m.getZoom());
+			}
+			if (org.eclipse.swt.internal.DPIUtil.getNativeDeviceZoom() != highest) {
+				org.eclipse.swt.internal.DPIUtil.setDeviceZoom(highest);
+			}
+		} catch (Throwable t) {
+			/* Internal API of SWT (not available): as SWT does it */
+		}
+	}
+
 	/**
 	 * Returns 2 to 5 for the SWT keys F2 to F5, else 0.
 	 */
