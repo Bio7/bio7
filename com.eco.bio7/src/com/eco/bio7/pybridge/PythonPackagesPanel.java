@@ -89,7 +89,8 @@ public class PythonPackagesPanel {
 	private Button stdlibButton;
 	private Text installText;
 	private Label pypiLabel;
-	private Text log;
+	/* A StyledText: on macOS the appended text of a native Text keeps the default (black) color in the dark theme */
+	private org.eclipse.swt.custom.StyledText log;
 	private Button cancelButton;
 	private final List<Control> actions = new ArrayList<>();
 	private final Process[] running = new Process[1];
@@ -135,7 +136,7 @@ public class PythonPackagesPanel {
 			}
 		});
 		cancelButton.setEnabled(false);
-		log = new Text(out, SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL | SWT.H_SCROLL);
+		log = new org.eclipse.swt.custom.StyledText(out, SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL | SWT.H_SCROLL);
 		log.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 		log.setFont(org.eclipse.jface.resource.JFaceResources.getTextFont());
 		/* Readable in the dark theme (also in the dialog: no CSS rule there) */
@@ -310,6 +311,7 @@ public class PythonPackagesPanel {
 		Display.getDefault().asyncExec(() -> {
 			if (isOpen()) {
 				log.append(line + "\n");
+				log.setTopIndex(log.getLineCount() - 1);
 			}
 		});
 	}

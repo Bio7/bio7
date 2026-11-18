@@ -223,7 +223,8 @@ public class GdalHandler extends AbstractHandler {
 		@Override
 		protected Control createDialogArea(Composite parent) {
 			Composite c = (Composite) super.createDialogArea(parent);
-			Text t = new Text(c, SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
+			/* A StyledText: readable in the dark theme on macOS (a native Text keeps black text) */
+			org.eclipse.swt.custom.StyledText t = new org.eclipse.swt.custom.StyledText(c, SWT.MULTI | SWT.READ_ONLY | SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
 			t.setText(text);
 			t.setFont(org.eclipse.jface.resource.JFaceResources.getTextFont());
 			com.eco.bio7.util.Util.setReadableTextColors(t);

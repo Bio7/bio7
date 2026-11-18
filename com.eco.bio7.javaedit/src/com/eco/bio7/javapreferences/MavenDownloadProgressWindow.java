@@ -9,7 +9,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 
 /**
  * Small non-modal window that streams live Maven download log lines. Unlike
@@ -21,7 +20,8 @@ import org.eclipse.swt.widgets.Text;
 public class MavenDownloadProgressWindow {
 
     private Shell shell;
-    private Text logText;
+    /* A StyledText: on macOS the appended text of a native Text keeps the default (black) color in the dark theme */
+    private org.eclipse.swt.custom.StyledText logText;
 
     public MavenDownloadProgressWindow(Shell parent, String title) {
         Display.getDefault().syncExec(() -> {
@@ -30,7 +30,7 @@ public class MavenDownloadProgressWindow {
             shell.setLayout(new GridLayout(1, false));
             shell.setSize(650, 420);
 
-            logText = new Text(shell, SWT.MULTI | SWT.READ_ONLY | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
+            logText = new org.eclipse.swt.custom.StyledText(shell, SWT.MULTI | SWT.READ_ONLY | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
             logText.setLayoutData(new GridData(GridData.FILL_BOTH));
             logText.setFont(JFaceResources.getTextFont());
             /* Readable in the dark theme (an own window: no CSS rule there) */
@@ -59,6 +59,7 @@ public class MavenDownloadProgressWindow {
         display.asyncExec(() -> {
             if (logText != null && !logText.isDisposed()) {
                 logText.append(line + "\n");
+                logText.setTopIndex(logText.getLineCount() - 1);
             }
         });
     }
