@@ -68,6 +68,8 @@ public class PythonPackagesPanel {
 	static {
 		BUNDLES.put("Scientific", "numpy scipy pandas matplotlib");
 		BUNDLES.put("Images", "scikit-image tifffile imageio");
+		/* OpenCV without its own windows (the images are shown in ImageJ) */
+		BUNDLES.put("OpenCV", "opencv-python-headless");
 		/* The code analysis of the Python editor: completion (jedi), rules, quick fixes and formatting (ruff) */
 		BUNDLES.put("Editor tools", "jedi ruff");
 	}

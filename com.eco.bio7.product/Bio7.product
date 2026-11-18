@@ -47,7 +47,6 @@ jdk/bin/javaw.exe
 -Dswt.enable.themedScrollBar=true
       </vmArgsLin>
       <vmArgsMac>--module-path=../Eclipse/jdk/Contents/Home/nashorn
--Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=true 
 -Dpython.console.encoding=UTF-8 
 -Dswt.enable.themedScrollBar=true 
 -XstartOnFirstThread
@@ -205,6 +204,7 @@ jdk/bin/javaw.exe
       <feature id="com.eco.bio7.redit.feature" installMode="root"/>
       <feature id="com.eco.bio7.rffm.feature" installMode="root"/>
       <feature id="com.eco.bio7.pyffm.feature" installMode="root"/>
+      <feature id="com.eco.bio7.gdal.feature" installMode="root"/>
       <feature id="com.eco.bio7.util.feature"/>
       <feature id="com.eco.bio7.worldwind.feature" installMode="root"/>
       <feature id="com.eco.bio7.pythonedit.feature" installMode="root"/>
@@ -297,6 +297,7 @@ jdk/bin/javaw.exe
       <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
+      <property name="osgi.instance.area.default" value="@user.home/Bio7/workspace" />
    </configurations>
 
    <repositories>

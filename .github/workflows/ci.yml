@@ -22,5 +22,8 @@ jobs:
       with:
         maven-version: '3.9.16'
 
+    - name: Download the bundled JDKs with Nashorn into com.eco.bio7.jdk
+      run: com.eco.bio7.jdk/fetch_jdks.sh
+
     - name: Build with Maven
       run: mvn -f com.eco.bio7.aggregator/pom.xml install --batch-mode --no-transfer-progress

@@ -87,14 +87,6 @@
             restorable="true"/>
       <view
             allowMultiple="true"
-            category="com.eco.bio7.custom"
-            class="com.eco.bio7.plot.ChartView"
-            icon="icons/views/linechartview.svg"
-            id="com.eco.bio7.custom_chart"
-            name="Custom Chart"
-            restorable="true"/>
-      <view
-            allowMultiple="true"
             category="com.eco.bio7.rapplication"
             class="com.eco.bio7.image.RImageMethodsView"
             icon="icons/views/rview.svg"
@@ -2092,5 +2084,229 @@
             properties="isApp"
             type="org.eclipse.ui.IEditorInput">
       </propertyTester>
+   </extension>
+
+   <!-- GDAL (plugin com.eco.bio7.gdal): ImageJ, WorldWind, information and preferences -->
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            id="com.eco.bio7.gdal.category"
+            name="GDAL">
+      </category>
+      <command
+            categoryId="com.eco.bio7.gdal.category"
+            defaultHandler="com.eco.bio7.geo.GdalHandler"
+            description="Opens a raster of a format of GDAL as ImageJ image (with the georeferencing)"
+            id="com.eco.bio7.gdal.openImageJ"
+            name="Open Raster in ImageJ">
+         <commandParameter
+               id="source"
+               name="Source"
+               optional="true">
+         </commandParameter>
+      </command>
+      <command
+            categoryId="com.eco.bio7.gdal.category"
+            defaultHandler="com.eco.bio7.geo.GdalHandler"
+            description="Writes the current ImageJ image as GeoTIFF (with the georeferencing of GDAL)"
+            id="com.eco.bio7.gdal.exportGeoTiff"
+            name="Export ImageJ Image as GeoTIFF">
+         <commandParameter
+               id="source"
+               name="Source"
+               optional="true">
+         </commandParameter>
+      </command>
+      <command
+            categoryId="com.eco.bio7.gdal.category"
+            defaultHandler="com.eco.bio7.geo.GdalHandler"
+            description="Adds the features of a vector file as ROIs of the current georeferenced image"
+            id="com.eco.bio7.gdal.vectorRois"
+            name="Vector as ImageJ ROIs">
+         <commandParameter
+               id="source"
+               name="Source"
+               optional="true">
+         </commandParameter>
+      </command>
+      <command
+            categoryId="com.eco.bio7.gdal.category"
+            defaultHandler="com.eco.bio7.geo.GdalHandler"
+            description="Adds a raster as layer to WorldWind (reprojected to WGS84)"
+            id="com.eco.bio7.gdal.rasterWorldWind"
+            name="Add Raster to WorldWind">
+         <commandParameter
+               id="source"
+               name="Source"
+               optional="true">
+         </commandParameter>
+      </command>
+      <command
+            categoryId="com.eco.bio7.gdal.category"
+            defaultHandler="com.eco.bio7.geo.GdalHandler"
+            description="Adds the features of a vector file as layer to WorldWind"
+            id="com.eco.bio7.gdal.vectorWorldWind"
+            name="Add Vector to WorldWind">
+         <commandParameter
+               id="source"
+               name="Source"
+               optional="true">
+         </commandParameter>
+      </command>
+      <command
+            categoryId="com.eco.bio7.gdal.category"
+            defaultHandler="com.eco.bio7.geo.GdalHandler"
+            description="The description of a raster or vector file (gdalinfo)"
+            id="com.eco.bio7.gdal.info"
+            name="GDAL Info">
+         <commandParameter
+               id="source"
+               name="Source"
+               optional="true">
+         </commandParameter>
+      </command>
+      <command
+            categoryId="com.eco.bio7.gdal.category"
+            defaultHandler="com.eco.bio7.geo.GdalHandler"
+            description="Activate GDAL, the library, its test and the installation"
+            id="com.eco.bio7.gdal.openPreferences"
+            name="GDAL Preferences">
+         <commandParameter
+               id="source"
+               name="Source"
+               optional="true">
+         </commandParameter>
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:file?after=gdal">
+         <menu
+               id="com.eco.bio7.gdal.menu"
+               label="GDAL">
+            <command
+                  commandId="com.eco.bio7.gdal.openImageJ"
+                  label="Open Raster in ImageJ..."
+                  style="push">
+            </command>
+            <command
+                  commandId="com.eco.bio7.gdal.exportGeoTiff"
+                  label="Export ImageJ Image as GeoTIFF..."
+                  style="push">
+            </command>
+            <command
+                  commandId="com.eco.bio7.gdal.vectorRois"
+                  label="Vector as ImageJ ROIs..."
+                  style="push">
+            </command>
+            <command
+                  commandId="com.eco.bio7.gdal.rasterWorldWind"
+                  label="Add Raster to WorldWind..."
+                  style="push">
+            </command>
+            <command
+                  commandId="com.eco.bio7.gdal.vectorWorldWind"
+                  label="Add Vector to WorldWind..."
+                  style="push">
+            </command>
+            <command
+                  commandId="com.eco.bio7.gdal.info"
+                  label="GDAL Info..."
+                  style="push">
+            </command>
+            <command
+                  commandId="com.eco.bio7.gdal.openPreferences"
+                  label="GDAL Preferences..."
+                  style="push">
+            </command>
+         </menu>
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+         <menu
+               id="com.eco.bio7.gdal.popup"
+               label="GDAL">
+            <command
+                  commandId="com.eco.bio7.gdal.openImageJ"
+                  label="Open Raster in ImageJ..."
+                  style="push">
+               <parameter
+                     name="source"
+                     value="popup">
+               </parameter>
+            </command>
+            <command
+                  commandId="com.eco.bio7.gdal.rasterWorldWind"
+                  label="Add Raster to WorldWind..."
+                  style="push">
+               <parameter
+                     name="source"
+                     value="popup">
+               </parameter>
+            </command>
+            <command
+                  commandId="com.eco.bio7.gdal.vectorWorldWind"
+                  label="Add Vector to WorldWind..."
+                  style="push">
+               <parameter
+                     name="source"
+                     value="popup">
+               </parameter>
+            </command>
+            <command
+                  commandId="com.eco.bio7.gdal.info"
+                  label="GDAL Info..."
+                  style="push">
+               <parameter
+                     name="source"
+                     value="popup">
+               </parameter>
+            </command>
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <count
+                        value="1">
+                  </count>
+                  <iterate
+                        ifEmpty="false">
+                     <adapt
+                           type="org.eclipse.core.resources.IFile">
+                        <or>
+                           <test property="org.eclipse.core.resources.extension" value="tif"/>
+                           <test property="org.eclipse.core.resources.extension" value="tiff"/>
+                           <test property="org.eclipse.core.resources.extension" value="img"/>
+                           <test property="org.eclipse.core.resources.extension" value="nc"/>
+                           <test property="org.eclipse.core.resources.extension" value="hdf"/>
+                           <test property="org.eclipse.core.resources.extension" value="h5"/>
+                           <test property="org.eclipse.core.resources.extension" value="he5"/>
+                           <test property="org.eclipse.core.resources.extension" value="jp2"/>
+                           <test property="org.eclipse.core.resources.extension" value="asc"/>
+                           <test property="org.eclipse.core.resources.extension" value="vrt"/>
+                           <test property="org.eclipse.core.resources.extension" value="dem"/>
+                           <test property="org.eclipse.core.resources.extension" value="grd"/>
+                           <test property="org.eclipse.core.resources.extension" value="bil"/>
+                           <test property="org.eclipse.core.resources.extension" value="hgt"/>
+                           <test property="org.eclipse.core.resources.extension" value="ecw"/>
+                           <test property="org.eclipse.core.resources.extension" value="sid"/>
+                           <test property="org.eclipse.core.resources.extension" value="sdat"/>
+                           <test property="org.eclipse.core.resources.extension" value="mbtiles"/>
+                           <test property="org.eclipse.core.resources.extension" value="gpkg"/>
+                           <test property="org.eclipse.core.resources.extension" value="shp"/>
+                           <test property="org.eclipse.core.resources.extension" value="geojson"/>
+                           <test property="org.eclipse.core.resources.extension" value="kml"/>
+                           <test property="org.eclipse.core.resources.extension" value="kmz"/>
+                           <test property="org.eclipse.core.resources.extension" value="gml"/>
+                           <test property="org.eclipse.core.resources.extension" value="gpx"/>
+                           <test property="org.eclipse.core.resources.extension" value="fgb"/>
+                        </or>
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </menu>
+      </menuContribution>
    </extension>
 </plugin>

@@ -116,7 +116,7 @@ public class ScanClassPath {
 					// TODO Auto-generated catch block
 					e2.printStackTrace();
 				}
-				pathBundle = fileUrl.getFile();
+				pathBundle = filePath(fileUrl) + "/";
 				bundlePaths.add(pathseparator + pathBundle);
 
 				ManifestElement[] elements = null;
@@ -178,27 +178,24 @@ public class ScanClassPath {
 		for (int i = 0; i < bundlesEclipse.length; i++) {
 			Bundle bundle = Platform.getBundle(bundlesEclipse[i]);
 			if (OS.equals("Windows")) {
-				String loc = Platform.getInstallLocation().getURL().getFile() + "/plugins/";
+				String loc = filePath(Platform.getInstallLocation().getURL()) + "/plugins/";
 				String[] bundleName = bundle.toString().split(" ");
 				String locat = (loc + bundleName[0] + ".jar");
-				locat = locat.replace("file", "");
 
 				buf.append(pathseparator + locat + pathseparator);
 			} else if (OS.equals("Mac")) {
-				String loc = Platform.getInstallLocation().getURL().getFile() + "/plugins/";
+				String loc = filePath(Platform.getInstallLocation().getURL()) + "/plugins/";
 				String[] bundleName = bundle.toString().split(" ");
 				String locat = (loc + bundleName[0] + ".jar");
-				locat = locat.replace("file", "");
 
 				buf.append(pathseparator + locat + pathseparator);
 			}
 
 			else if (OS.equals("Linux")) {
 
-				String loc = Platform.getInstallLocation().getURL().getFile() + "/plugins/";
+				String loc = filePath(Platform.getInstallLocation().getURL()) + "/plugins/";
 				String[] bundleName = bundle.toString().split(" ");
 				String locat = (loc + bundleName[0] + ".jar");
-				locat = locat.replace("file", "");
 
 				// java.nio.file.Path path = Paths.get(loc);
 
@@ -293,7 +290,7 @@ public class ScanClassPath {
 					// TODO Auto-generated catch block
 					e2.printStackTrace();
 				}
-				pathBundle = fileUrl.getFile();
+				pathBundle = filePath(fileUrl) + "/";
 				bundlePaths.add(pathseparator + pathBundle);
 
 				ManifestElement[] elements = null;
@@ -374,28 +371,25 @@ public class ScanClassPath {
 		for (int i = 0; i < bundlesEclipse.length; i++) {
 			Bundle bundle = Platform.getBundle(bundlesEclipse[i]);
 			if (OS.equals("Windows")) {
-				String loc = Platform.getInstallLocation().getURL().getFile() + "/plugins/";
+				String loc = filePath(Platform.getInstallLocation().getURL()) + "/plugins/";
 				String[] bundleName = bundle.toString().split(" ");
 				String locat = (loc + bundleName[0] + ".jar");
-				locat = locat.replace("file", "");
 
 				buf.add(pathseparator + locat + pathseparator);
 			}
 
 			else if (OS.equals("Mac")) {
-				String loc = Platform.getInstallLocation().getURL().getFile() + "/plugins/";
+				String loc = filePath(Platform.getInstallLocation().getURL()) + "/plugins/";
 				String[] bundleName = bundle.toString().split(" ");
 				String locat = (loc + bundleName[0] + ".jar");
-				locat = locat.replace("file", "");
 
 				buf.add(pathseparator + locat + pathseparator);
 			}
 
 			else if (OS.equals("Linux")) {
-				String loc = Platform.getInstallLocation().getURL().getFile() + "/plugins/";
+				String loc = filePath(Platform.getInstallLocation().getURL()) + "/plugins/";
 				String[] bundleName = bundle.toString().split(" ");
 				String locat = (loc + bundleName[0] + ".jar");
-				locat = locat.replace("file", "");
 
 				buf.add(pathseparator + locat + pathseparator);
 			}
@@ -533,15 +527,15 @@ public class ScanClassPath {
 	 */
 	private List<String[]> getImageJLibraries() {
 		List<String[]> libs = getBundleLibraries(IMAGEJ_BUNDLE);
-		/* The APIs of the embedded Python and R (FFM bridges, optional bundles) */
+		/* The APIs of the embedded Python and R and of GDAL (FFM bridges, optional bundles) */
 		for (String id : FFM_BUNDLES) {
 			libs.addAll(getBundleLibraries(id));
 		}
 		return libs;
 	}
 
-	/* The bundles of the embedded Python and R (classes in the jar or bin/, no Bundle-ClassPath) */
-	private static final String[] FFM_BUNDLES = { "com.eco.bio7.pyffm", "com.eco.bio7.rffm" };
+	/* The bundles of the FFM bridges of Python, R and GDAL (classes in the jar or bin/, no Bundle-ClassPath) */
+	private static final String[] FFM_BUNDLES = { "com.eco.bio7.pyffm", "com.eco.bio7.rffm", "com.eco.bio7.gdal" };
 
 	/* The class folders or jar of a bundle as {path, source path or null} (see above) */
 	private List<String[]> getBundleLibraries(String bundleId) {
@@ -609,4 +603,16 @@ public class ScanClassPath {
 		return OS;
 	}
 
+
+	/*
+	 * The file path of a file URL of Eclipse (a bundle, the installation): correct
+	 * with spaces and on Windows (C:\\...), unlike URL.getFile() (/C:/..., %20).
+	 */
+	static String filePath(java.net.URL url) {
+		try {
+			return new File(org.eclipse.core.runtime.URIUtil.toURI(url)).getAbsolutePath();
+		} catch (Exception e) {
+			return url.getFile();
+		}
+	}
 }

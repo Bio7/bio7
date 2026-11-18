@@ -141,6 +141,6 @@ This Agreement is governed by the laws of the State of New York and the intellec
 
    <plugin
          id="com.eco.bio7.image"
-         version="1.54.196"/>
+         version="1.54.196.qualifier"/>
 
 </feature>

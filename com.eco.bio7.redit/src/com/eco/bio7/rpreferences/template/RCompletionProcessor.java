@@ -57,18 +57,30 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 
 	private static final String METHOD_IMAGE = "$nl$/icons/field_public_obj.svg"; //$NON-NLS-1$
 
-	// private Image imageArgs =
-	// Bio7REditorPlugin.getImageDescriptor("/icons/template_obj.svg").createImage();
-	private Image imageVariablesWorkspace = Bio7REditorPlugin.getImageDescriptor("/icons/types.svg").createImage();
-	private Image imageVariablesEditor = Bio7REditorPlugin.getImageDescriptor("/icons/field_public_obj.svg")
-			.createImage();
-	private Image imageFunctionsEditor = Bio7REditorPlugin.getImageDescriptor("/icons/methpub_obj.svg").createImage();
-	private Image s4Image = Bio7REditorPlugin.getImageDescriptor("/icons/s4.svg").createImage();
-	private Image s3Image = Bio7REditorPlugin.getImageDescriptor("/icons/s3.svg").createImage();
-	private Image varImage = Bio7REditorPlugin.getImageDescriptor("/icons/varfunccall.svg").createImage();
-	private Image libImage = Bio7REditorPlugin.getImageDescriptor("/icons/package_obj.svg").createImage();
-	private Image dataImage = Bio7REditorPlugin.getImageDescriptor("/icons/settings_obj.svg").createImage();
-	private Image arrayImage = Bio7REditorPlugin.getImageDescriptor("/icons/goto_input.svg").createImage();
+	/*
+	 * The images of the proposals: shared by all processors (the R editors and the
+	 * R chunks of markdown documents) in the image registry of the plugin, which
+	 * disposes them. Images per processor were not disposed by the markdown editor.
+	 */
+	private static Image image(String path) {
+		org.eclipse.jface.resource.ImageRegistry registry = Bio7REditorPlugin.getDefault().getImageRegistry();
+		Image image = registry.get(path);
+		if (image == null) {
+			registry.put(path, Bio7REditorPlugin.getImageDescriptor(path));
+			image = registry.get(path);
+		}
+		return image;
+	}
+
+	private final Image imageVariablesWorkspace = image("/icons/types.svg");
+	private final Image imageVariablesEditor = image("/icons/field_public_obj.svg");
+	private final Image imageFunctionsEditor = image("/icons/methpub_obj.svg");
+	private final Image s4Image = image("/icons/s4.svg");
+	private final Image s3Image = image("/icons/s3.svg");
+	private final Image varImage = image("/icons/varfunccall.svg");
+	private final Image libImage = image("/icons/package_obj.svg");
+	private final Image dataImage = image("/icons/settings_obj.svg");
+	private final Image arrayImage = image("/icons/goto_input.svg");
 
 	private int count = 0;// Variable to count the listed template.
 
@@ -1682,16 +1694,8 @@ public class RCompletionProcessor extends TemplateCompletionProcessor implements
 		return result;
 	}
 
+	/** Nothing to dispose: the images are shared (the image registry of the plugin disposes them). */
 	public void disposeImages() {
-
-		imageVariablesEditor.dispose();
-		imageFunctionsEditor.dispose();
-		s4Image.dispose();
-		s3Image.dispose();
-		varImage.dispose();
-		libImage.dispose();
-		dataImage.dispose();
-
 	}
 
 

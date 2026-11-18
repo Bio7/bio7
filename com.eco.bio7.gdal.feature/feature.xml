@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="com.eco.bio7.gdal.feature"
+      label="Bio7 GDAL (FFM)"
+      version="1.0.0.qualifier"
+      provider-name="Bio7">
+
+   <description>
+      GDAL for Java: the GDAL library of an installation (conda, Homebrew, the
+packages of Linux, QGIS, OSGeo4W) called with the Foreign Function and Memory
+API (Java 22+): raster and vector formats, coordinate systems and the tools of
+GDAL (translate, warp, ogr2ogr). No JNI library, no compiled code.
+   </description>
+
+   <license url="https://www.eclipse.org/legal/epl-2.0/">
+      Eclipse Public License 2.0
+   </license>
+
+   <plugin
+         id="com.eco.bio7.gdal"
+         version="0.0.0"/>
+
+</feature>

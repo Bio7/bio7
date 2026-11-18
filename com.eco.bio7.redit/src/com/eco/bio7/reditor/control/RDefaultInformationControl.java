@@ -47,8 +47,23 @@ import com.eco.bio7.util.Util;
  */
 /*Bio7 hoover popup!*/
 public class RDefaultInformationControl extends AbstractInformationControl implements DisposeListener {
-    /*Will be disposed in a dispose event of the Styledtext!*/
-	Image publicMethodIcon = Bio7REditorPlugin.getImageDescriptor("/icons/methpub_obj.svg").createImage();
+	/*
+	 * The icon of the first line: shared (the image registry of the plugin disposes
+	 * it). An image of its own was disposed by the verify listener at the next text
+	 * of the same popup (the icon was then missing) or never (no text set).
+	 */
+	private static Image publicMethodIcon() {
+		org.eclipse.jface.resource.ImageRegistry registry = Bio7REditorPlugin.getDefault().getImageRegistry();
+		Image image = registry.get("/icons/methpub_obj.svg");
+		if (image == null) {
+			registry.put("/icons/methpub_obj.svg", Bio7REditorPlugin.getImageDescriptor("/icons/methpub_obj.svg"));
+			image = registry.get("/icons/methpub_obj.svg");
+		}
+		return image;
+	}
+
+	/* The paint listener of the icon is added once (setInformation is called for each new text) */
+	private boolean iconPainter;
 
 	/**
 	 * An information presenter determines the style presentation of information
@@ -417,46 +432,20 @@ public class RDefaultInformationControl extends AbstractInformationControl imple
 		fText.replaceTextRange(0, 0, "\uFFFC");
 		int offset = 0;
 
-		addImage(publicMethodIcon, offset, fText,length);
-		// use a verify listener to dispose the images
-		fText.addVerifyListener(event -> {
-			if (event.start == event.end)
-				return;
-			String text = fText.getText(event.start, event.end - 1);
-			int index = text.indexOf('\uFFFC');
-			while (index != -1) {
-				StyleRange style = fText.getStyleRangeAtOffset(event.start + index);
-				if (style != null) {
-					Image image = (Image) style.data;
-					if (image != null)
-						image.dispose();
+		addImage(publicMethodIcon(), offset, fText, length);
+		if (!iconPainter) {
+			iconPainter = true;
+			/* Draws the icon (the shared image is not disposed here) */
+			fText.addPaintObjectListener(event -> {
+				StyleRange style = event.style;
+				Image image = style == null ? null : (Image) style.data;
+				if (image != null && !image.isDisposed()) {
+					int x = event.x;
+					int y = event.y + event.ascent - style.metrics.ascent;
+					event.gc.drawImage(image, x, y);
 				}
-				index = text.indexOf('\uFFFC', index + 1);
-			}
-		});
-		
-		// draw images on paint event
-		fText.addPaintObjectListener(event -> {
-			StyleRange style = event.style;
-			Image image = (Image) style.data;
-			if (!image.isDisposed()) {
-				int x = event.x;
-				int y = event.y + event.ascent - style.metrics.ascent;
-				event.gc.drawImage(image, x, y);
-			}
-		});
-		fText.addListener(SWT.Dispose, event -> {
-			StyleRange[] styles = fText.getStyleRanges();
-			for (int i = 0; i < styles.length; i++) {
-				StyleRange style = styles[i];
-				if (style.data != null) {
-					Image image = (Image) style.data;
-					if (image != null)
-						image.dispose();
-				}
-			}
-		});
-		
+			});
+		}
 
 		/*
 		 * Apply a bold style for the first line!

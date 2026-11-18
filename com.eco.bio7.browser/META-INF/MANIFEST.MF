@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Browser Plug-in
 Bundle-SymbolicName: com.eco.bio7.browser;singleton:=true
-Bundle-Version: 2.0.0
+Bundle-Version: 2.0.0.qualifier
 Bundle-Activator: com.eco.bio7.browser.Activator
 Bundle-Vendor: ECO
 Eclipse-BuddyPolicy: ext
@@ -23,8 +23,7 @@ Require-Bundle: org.eclipse.ui,
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Export-Package: com.eco.bio7.browser,
  com.eco.bio7.browser.editor,
- com.swtdesigner,
- org.eclipse.swt.widgets.baseline
+ com.swtdesigner
 Bundle-ClassPath: bin/
 Import-Package: org.eclipse.e4.ui.css.swt.theme
 Bundle-ActivationPolicy: lazy

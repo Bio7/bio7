@@ -111,6 +111,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 	private org.eclipse.jface.action.IAction restartDebugAction;
 
+	private MenuManager switchWorkspaceMenu;
+
 	private IWorkbenchAction print;
 
 	private IWorkbenchAction New;
@@ -339,6 +341,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		/* Restarts Bio7 with (or without) a port for a Java debugger! */
 		restartDebugAction = DebugRestart.createAction(window);
+		switchWorkspaceMenu = WorkspaceSwitcher.createMenu(window);
 
 		newWindowAction = ActionFactory.OPEN_NEW_WINDOW.create(window);
 		register(newWindowAction);
@@ -712,10 +715,12 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		fileMenu.add(saveas);
 		fileMenu.add(new Separator());
 		fileMenu.add(refreshAction);
-		// fileMenu.add(switchWorkspaceAction);
+		fileMenu.add(switchWorkspaceMenu);
 		fileMenu.add(new Separator());
 		fileMenu.add(Import);
 		fileMenu.add(Export);
+		/* The GDAL menu (plugin com.eco.bio7.gdal, see plugin.xml) */
+		fileMenu.add(new GroupMarker("gdal"));
 		fileMenu.add(new Separator());
 		fileMenu.add(restartDebugAction);
 		fileMenu.add(new Separator());

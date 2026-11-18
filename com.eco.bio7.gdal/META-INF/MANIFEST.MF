@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: GDAL (Foreign Function and Memory API)
+Bundle-SymbolicName: com.eco.bio7.gdal;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Bio7
+Bundle-RequiredExecutionEnvironment: JavaSE-25
+Automatic-Module-Name: com.eco.bio7.gdal
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.ui
+Bundle-ActivationPolicy: lazy
+Export-Package: com.eco.bio7.gdal,
+ com.eco.bio7.gdal.internal;x-internal:=true,
+ com.eco.bio7.gdal.ui,
+ org.gdal.gdal,
+ org.gdal.gdalconst,
+ org.gdal.ogr,
+ org.gdal.osr

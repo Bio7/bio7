@@ -4,7 +4,7 @@ Created-By: 1.6.0_02-b05 (Sun Microsystems Inc.)
 Bundle-ManifestVersion: 2
 Bundle-Name: ImageJ Macro Editor
 Bundle-SymbolicName: com.eco.bio7.ijmacro.editor;singleton:=true
-Bundle-Version: 2.0.287
+Bundle-Version: 2.0.287.qualifier
 Bundle-Activator: com.eco.bio7.ijmacro.editor.IJMacroEditorPlugin
 Bundle-Vendor: ECO
 Bundle-Localization: plugin

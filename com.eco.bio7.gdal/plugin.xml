@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <!-- The preferences of GDAL: activation, loading at startup, the library, its test and the installation -->
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="com.eco.bio7.preferences.Bio7PreferencePage"
+            class="com.eco.bio7.gdal.ui.GdalPreferencePage"
+            id="com.eco.bio7.gdal.preferences"
+            name="Preferences GDAL">
+      </page>
+   </extension>
+   <!-- GDAL loaded at startup (only if activated and selected in the preferences) -->
+   <extension
+         point="org.eclipse.ui.startup">
+      <startup
+            class="com.eco.bio7.gdal.ui.GdalStartup">
+      </startup>
+   </extension>
+</plugin>

@@ -1,0 +1,122 @@
+name: Release
+# Builds Bio7 for Linux (x86_64, aarch64), Windows (x86_64) and macOS (aarch64)
+# on a Mac, with the bundled JDK and Nashorn (com.eco.bio7.jdk/fetch_jdks.sh),
+# prepares and signs the macOS app (com.eco.bio7.product/macos/package_macos.sh)
+# and collects the files with SHA-256 checksums (com.eco.bio7.product/release).
+#
+#   A tag v<version> (e.g. v4.0.0, the version of Bio7.product): a draft release
+#   with the files; check it on GitHub (Releases) and publish it.
+#   A tag v<version>-<suffix> (e.g. v4.0.0-beta.1, v4.0.0-rc.1): the same as pre-release.
+#   Run by hand (Actions > Release > Run workflow): only the build, the files are
+#   an artifact of the run (to test before a release).
+#
+# Optional secrets for a Developer ID signature and the notarization of the
+# macOS app (without them: ad hoc, users click "Open Anyway" once):
+#   MACOS_CERTIFICATE (the .p12, base64), MACOS_CERTIFICATE_PASSWORD, MACOS_SIGN_IDENTITY,
+#   MACOS_NOTARY_APPLE_ID, MACOS_NOTARY_TEAM_ID, MACOS_NOTARY_PASSWORD
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-latest
+    env:
+      MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+      MACOS_NOTARY_APPLE_ID: ${{ secrets.MACOS_NOTARY_APPLE_ID }}
+
+    steps:
+    - name: Checkout Bio7
+      uses: actions/checkout@v7
+
+    - name: The version
+      run: |
+        PRODUCT=$(sed -n 's/.*<product [^>]*version="\([0-9.]*\)\.qualifier".*/\1/p' com.eco.bio7.product/Bio7.product)
+        if [ "$GITHUB_REF_TYPE" = tag ]; then
+          # v4.0.0 (a release) or v4.0.0-beta.1, v4.0.0-rc.1 (a pre-release): 4.0.0 must be the version of Bio7.product
+          VERSION="${GITHUB_REF_NAME#v}"
+          if [ "${VERSION%%-*}" != "$PRODUCT" ] || ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]]; then
+            echo "::error::The tag $GITHUB_REF_NAME doesn't match the version of Bio7.product ($PRODUCT): use v$PRODUCT or v$PRODUCT-beta.1, v$PRODUCT-rc.1"
+            exit 1
+          fi
+          if [ "$VERSION" != "$PRODUCT" ]; then echo "PRERELEASE=--prerelease" >> "$GITHUB_ENV"; fi
+        else
+          VERSION="$PRODUCT-dev.$(date -u +%Y%m%d%H%M)"
+        fi
+        echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+        echo "Bio7 $VERSION"
+
+    - name: Set up OpenJDK
+      uses: actions/setup-java@v6.2.0
+      with:
+        distribution: 'temurin'
+        java-version: '25'
+        java-package: 'jdk'
+
+    - name: Set up Maven
+      uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1 # v5
+      with:
+        maven-version: '3.9.16'
+
+    - name: Download the bundled JDKs with Nashorn into com.eco.bio7.jdk
+      run: com.eco.bio7.jdk/fetch_jdks.sh
+
+    - name: Build with Maven
+      run: mvn -f com.eco.bio7.aggregator/pom.xml clean install --batch-mode --no-transfer-progress
+
+    - name: Import the Developer ID certificate
+      if: env.MACOS_CERTIFICATE != ''
+      env:
+        MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+      run: |
+        KEYCHAIN="$RUNNER_TEMP/build.keychain-db"
+        KEYCHAIN_PASSWORD="$(uuidgen)"
+        echo "$MACOS_CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/certificate.p12"
+        security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+        security set-keychain-settings -lut 21600 "$KEYCHAIN"
+        security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+        security import "$RUNNER_TEMP/certificate.p12" -P "$MACOS_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN"
+        security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+        security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+        security default-keychain -s "$KEYCHAIN"
+        rm "$RUNNER_TEMP/certificate.p12"
+
+    - name: Store the notarization credentials
+      if: env.MACOS_CERTIFICATE != '' && env.MACOS_NOTARY_APPLE_ID != ''
+      env:
+        MACOS_NOTARY_TEAM_ID: ${{ secrets.MACOS_NOTARY_TEAM_ID }}
+        MACOS_NOTARY_PASSWORD: ${{ secrets.MACOS_NOTARY_PASSWORD }}
+      run: |
+        xcrun notarytool store-credentials bio7 --apple-id "$MACOS_NOTARY_APPLE_ID" \
+          --team-id "$MACOS_NOTARY_TEAM_ID" --password "$MACOS_NOTARY_PASSWORD"
+        echo "BIO7_NOTARY_PROFILE=bio7" >> "$GITHUB_ENV"
+
+    - name: Prepare and package the macOS app
+      env:
+        # empty: an ad hoc signature
+        BIO7_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+      run: com.eco.bio7.product/macos/package_macos.sh
+
+    - name: Collect the release files and their checksums
+      run: com.eco.bio7.product/release/collect_assets.sh "$VERSION" dist
+
+    - name: Upload the files (artifact of the run)
+      uses: actions/upload-artifact@v4
+      with:
+        name: bio7-${{ env.VERSION }}
+        path: dist/
+        if-no-files-found: error
+
+    - name: Create the draft release
+      if: github.ref_type == 'tag'
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        sed "s/VERSION/$VERSION/g" com.eco.bio7.product/release/release_notes.md > "$RUNNER_TEMP/notes.md"
+        gh release create "$GITHUB_REF_NAME" dist/* --draft $PRERELEASE --title "Bio7 $VERSION" \
+          --notes-file "$RUNNER_TEMP/notes.md" --generate-notes

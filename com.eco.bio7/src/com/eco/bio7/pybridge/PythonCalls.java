@@ -61,21 +61,87 @@ public final class PythonCalls implements PyCallHandler {
 		}
 		case "show_image": {
 			String title = arg(args, 0);
-			ImagePlus imp = PythonConvert.toImage(value, title == null ? "Python" : title);
-			/* The display range (contrast): given (min, max), "auto" (the range of the data) or the default of ImageJ */
-			String min = arg(args, 1), max = arg(args, 2);
-			if ("auto".equals(min)) {
-				ij.process.ImageStatistics st = new ij.process.StackStatistics(imp);
-				imp.setDisplayRange(st.min, st.max);
-			} else if (min != null && max != null) {
-				imp.setDisplayRange(Double.parseDouble(min), Double.parseDouble(max));
+			show(PythonConvert.toImage(value, title == null ? "Python" : title), arg(args, 1), arg(args, 2));
+			return null;
+		}
+		case "stack_begin": {
+			/*
+			 * A large stack in parts (a Java array holds at most 2 GB): stack_begin, then
+			 * stack_add for each part (slices), stack_show (or stack_cancel)
+			 */
+			String key = java.util.UUID.randomUUID().toString();
+			PARTS.put(key, new ij.ImageStack[1]);
+			return new PyValue.Str(new String[] { key });
+		}
+		case "stack_add": {
+			ij.ImageStack[] holder = PARTS.get(required(args, 0, "key"));
+			if (holder == null) {
+				throw new IllegalStateException("No stack in parts was started");
 			}
-			/* Shown before the call returns (as ImagePlus.show()): a following macro or bio7.image() finds it */
+			ij.ImageStack part = PythonConvert.toImage(value, "part").getStack();
+			if (holder[0] == null) {
+				holder[0] = new ij.ImageStack(part.getWidth(), part.getHeight());
+			} else if (holder[0].getWidth() != part.getWidth() || holder[0].getHeight() != part.getHeight()) {
+				throw new IllegalArgumentException("The parts of the stack have different sizes");
+			}
+			for (int i = 1; i <= part.getSize(); i++) {
+				holder[0].addSlice(null, part.getProcessor(i));
+			}
+			return null;
+		}
+		case "stack_show": {
+			ij.ImageStack[] holder = PARTS.remove(required(args, 0, "key"));
+			if (holder == null || holder[0] == null) {
+				throw new IllegalStateException("The stack has no slices");
+			}
+			String title = arg(args, 1);
+			ImagePlus imp = new ImagePlus(title == null ? "Python" : title, holder[0]);
+			imp.resetDisplayRange();
+			show(imp, arg(args, 2), arg(args, 3));
+			return null;
+		}
+		case "stack_cancel":
+			PARTS.remove(required(args, 0, "key"));
+			return null;
+		case "update_image": {
+			/*
+			 * The pixels of an open image replaced (a video, a live view): the same window,
+			 * its zoom and contrast are kept. A new image if none with the title is open or
+			 * the size or type changed.
+			 */
+			String title = arg(args, 0) == null ? "Python" : arg(args, 0);
+			ImagePlus frame = PythonConvert.toImage(value, title);
+			ImagePlus open = WindowManager.getImage(title);
+			boolean auto = "auto".equals(arg(args, 1));
+			if (open != null && open.getWindow() != null && open.getWidth() == frame.getWidth() && open.getHeight() == frame.getHeight()
+					&& open.getStackSize() == frame.getStackSize() && open.getBitDepth() == frame.getBitDepth()) {
+				double min = open.getDisplayRangeMin(), max = open.getDisplayRangeMax();
+				if (frame.getStackSize() == 1) {
+					open.setProcessor(frame.getProcessor());
+				} else {
+					open.setStack(frame.getStack());
+				}
+				if (auto) {
+					frame.getProcessor().resetMinAndMax();
+					open.setDisplayRange(frame.getDisplayRangeMin(), frame.getDisplayRangeMax());
+				} else {
+					open.setDisplayRange(min, max);
+				}
+				open.updateAndDraw();
+				return null;
+			}
+			if (open != null) {
+				ImagePlus old = open;
+				Display.getDefault().syncExec(() -> {
+					old.changes = false;
+					old.close();
+				});
+			}
 			Display display = Display.getDefault();
 			if (display.getThread() == Thread.currentThread()) {
-				imp.show();
+				frame.show();
 			} else {
-				display.syncExec(imp::show);
+				display.syncExec(frame::show);
 			}
 			return null;
 		}
@@ -192,6 +258,26 @@ public final class PythonCalls implements PyCallHandler {
 			throw new IllegalArgumentException("The " + what + " is missing");
 		}
 		return a;
+	}
+
+	/* The stacks in parts (stack_begin, stack_add, stack_show) */
+	private static final Map<String, ij.ImageStack[]> PARTS = new ConcurrentHashMap<>();
+
+	/* Shows an image with a display range: given (min, max), "auto" (the range of the data) or the default of ImageJ */
+	private static void show(ImagePlus imp, String min, String max) {
+		if ("auto".equals(min)) {
+			ij.process.ImageStatistics st = new ij.process.StackStatistics(imp);
+			imp.setDisplayRange(st.min, st.max);
+		} else if (min != null && max != null) {
+			imp.setDisplayRange(Double.parseDouble(min), Double.parseDouble(max));
+		}
+		/* Shown before the call returns (as ImagePlus.show()): a following macro or bio7.image() finds it */
+		Display display = Display.getDefault();
+		if (display.getThread() == Thread.currentThread()) {
+			imp.show();
+		} else {
+			display.syncExec(imp::show);
+		}
 	}
 
 	private static ImagePlus image(String title) {

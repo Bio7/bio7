@@ -135,8 +135,41 @@ public final class DebugRestart {
 		}
 	}
 
-	/* Starts a helper which launches Bio7 again after this instance has exited, then closes Bio7! */
+	/**
+	 * Restarts Bio7 in another workspace (File > Switch Workspace): the open
+	 * editors are saved, Bio7 closes and starts again with -data. The debug port is
+	 * kept in the debug mode.
+	 */
+	public static void restartInWorkspace(IWorkbenchWindow window, File workspace) {
+		restart(window, jdwpArgument(), workspace);
+	}
+
+	/**
+	 * Starts Bio7 in a workspace after this instance has exited (at the startup,
+	 * before the workbench: e.g. the workspace is used by another Bio7).
+	 *
+	 * @return false if the launcher was not found
+	 */
+	public static boolean startInWorkspaceAfterExit(File workspace) {
+		String launcher = System.getProperty("eclipse.launcher");
+		if (launcher == null || !new File(launcher).canExecute()) {
+			return false;
+		}
+		try {
+			startHelper(ProcessHandle.current().pid(), relaunchCommand(launcher, jdwpArgument(), workspace));
+			return true;
+		} catch (IOException e) {
+			System.err.println("[Bio7] Start not possible: " + e.getMessage());
+			return false;
+		}
+	}
+
 	private static void restart(IWorkbenchWindow window, String vmArgument) {
+		restart(window, vmArgument, null);
+	}
+
+	/* Starts a helper which launches Bio7 again after this instance has exited (in the workspace or the current one), then closes Bio7! */
+	private static void restart(IWorkbenchWindow window, String vmArgument, File workspace) {
 		String launcher = System.getProperty("eclipse.launcher");
 		if (launcher == null || !new File(launcher).canExecute()) {
 			MessageDialog.openError(window.getShell(), "Restart", "The Bio7 launcher was not found (eclipse.launcher: " + launcher
@@ -147,7 +180,7 @@ public final class DebugRestart {
 			return;
 		}
 		try {
-			startHelper(ProcessHandle.current().pid(), relaunchCommand(launcher, vmArgument));
+			startHelper(ProcessHandle.current().pid(), relaunchCommand(launcher, vmArgument, workspace));
 		} catch (IOException e) {
 			MessageDialog.openError(window.getShell(), "Restart", "Bio7 cannot be restarted: " + e.getMessage());
 			return;
@@ -182,7 +215,7 @@ public final class DebugRestart {
 			return;
 		}
 		try {
-			startHelper(ProcessHandle.current().pid(), relaunchCommand(launcher, jdwpArgument()));
+			startHelper(ProcessHandle.current().pid(), relaunchCommand(launcher, jdwpArgument(), null));
 		} catch (IOException e) {
 			System.err.println("[Bio7] Restart not possible: " + e.getMessage());
 		}
@@ -202,12 +235,16 @@ public final class DebugRestart {
 		return command;
 	}
 
-	private static List<String> relaunchCommand(String launcher, String vmArgument) {
+	/* The launcher with the workspace (null: the current one) and a VM argument */
+	private static List<String> relaunchCommand(String launcher, String vmArgument, File workspace) {
 		List<String> command = new ArrayList<String>();
 		command.add(launcher);
-		if (Platform.getInstanceLocation() != null && Platform.getInstanceLocation().getURL() != null) {
+		if (workspace != null) {
 			command.add("-data");
-			command.add(new File(Platform.getInstanceLocation().getURL().getFile()).getAbsolutePath());
+			command.add(workspace.getAbsolutePath());
+		} else if (WorkspaceSwitcher.current() != null) {
+			command.add("-data");
+			command.add(WorkspaceSwitcher.current().getAbsolutePath());
 		}
 		if (vmArgument != null) {
 			command.add("-vmargs");

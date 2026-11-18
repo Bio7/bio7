@@ -2,10 +2,10 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Nebula Grid
 Bundle-SymbolicName: org.eclipse.nebula.widgets.grid
-Bundle-Version: 1.2.1
+Bundle-Version: 1.2.1.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Require-Bundle: org.eclipse.swt,
- org.eclipse.jface;resolution:=optional,
+ org.eclipse.jface,
  com.eco.bio7.util;bundle-version="2.5.0"
 Export-Package: org.eclipse.nebula.jface.gridviewer,
  org.eclipse.nebula.jface.gridviewer.internal;x-internal:=true,

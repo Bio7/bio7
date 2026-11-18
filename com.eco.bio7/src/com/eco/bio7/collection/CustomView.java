@@ -19,7 +19,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
-import org.jfree.chart.ChartPanel;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.compile.Model;
 import com.eco.bio7.methods.Compiled;
@@ -34,7 +33,6 @@ import com.jogamp.opengl.util.Animator;
  */
 public class CustomView extends ViewPart {// implements ISaveablePart2
 
-	private ChartPanel panelchart = null;
 
 	protected int insertMark = -1;
 
@@ -412,13 +410,6 @@ public class CustomView extends ViewPart {// implements ISaveablePart2
 
 	}
 
-	protected ChartPanel getPanelchart() {
-		return panelchart;
-	}
-
-	protected void setPanelchart(ChartPanel panelchart) {
-		this.panelchart = panelchart;
-	}
 
 	protected void setAwtCurrent(Panel current) {
 		this.awtCurrent = current;

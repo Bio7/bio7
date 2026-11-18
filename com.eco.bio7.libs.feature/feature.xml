@@ -25,7 +25,7 @@
 
    <plugin
          id="com.eco.bio7.libs"
-         version="3.4.0"/>
+         version="3.4.0.qualifier"/>
 
    <plugin
          id="com.eco.bio7.cocoa.macosx.aarch64"

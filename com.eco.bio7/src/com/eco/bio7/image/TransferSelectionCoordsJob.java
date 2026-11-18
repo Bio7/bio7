@@ -9,10 +9,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
-import org.gdal.gdal.Dataset;
-import org.gdal.gdal.gdal;
-import org.gdal.gdalconst.gdalconst;
-import org.gdal.osr.SpatialReference;
+import com.eco.bio7.gdal.Gdal;
+import com.eco.bio7.gdal.GdalDataset;
+import com.eco.bio7.gdal.GdalException;
+import com.eco.bio7.gdal.SpatialReference;
 import com.eco.bio7.rbridge.backend.RBackend;
 import com.eco.bio7.batch.Bio7Dialog;
 import com.eco.bio7.rbridge.RTools;
@@ -135,36 +135,53 @@ public class TransferSelectionCoordsJob extends WorkspaceJob implements IJobChan
 	 * available (also used by the transfer to Python).
 	 */
 	public static Object[] gdalGeoreference(String file) {
-		Dataset ds = (Dataset) gdal.Open(file, gdalconst.GA_ReadOnly);
-		if (ds == null) {
+		requireGdal();
+		try (GdalDataset ds = Gdal.open(file)) {
+			double[] transform = ds.geoTransform();
+			if (transform == null) {
+				/* As GetGeoTransform of GDAL without georeference */
+				transform = new double[] { 0, 1, 0, 0, 0, 1 };
+			}
+			String proj4 = "";
+			try (SpatialReference srs = ds.spatialReference()) {
+				if (srs != null) {
+					proj4 = srs.toProj4();
+				}
+			}
+			return new Object[] { transform, proj4 };
+		} catch (GdalException e) {
 			return null;
 		}
-		double[] transform = new double[6];
-		ds.GetGeoTransform(transform);
-		SpatialReference srs = new SpatialReference();
-		srs.ImportFromWkt(ds.GetProjectionRef());
-		return new Object[] { transform, srs.ExportToProj4() };
+	}
+
+	/*
+	 * GDAL of the plugin com.eco.bio7.gdal: loaded once if it is activated in the
+	 * GDAL preferences (a new library is tested first), else a LinkageError (the
+	 * callers read the georeference with R)
+	 */
+	private static void requireGdal() {
+		if (Gdal.isLoaded()) {
+			return;
+		}
+		if (com.eco.bio7.gdal.ui.GdalPreferences.isEnabled()) {
+			String error = com.eco.bio7.gdal.ui.GdalActivation.loadFirstWorking(com.eco.bio7.gdal.ui.GdalActivation.libraries());
+			if (error == null) {
+				return;
+			}
+			throw new UnsatisfiedLinkError(error);
+		}
+		throw new UnsatisfiedLinkError("GDAL is not activated (Preferences GDAL)");
 	}
 
 	private boolean readGeoreferenceWithGdal(File f) {
-		Dataset poDataset = (Dataset) gdal.Open(f.getAbsolutePath(), gdalconst.GA_ReadOnly);
-		if (poDataset == null) {
+		Object[] geo = gdalGeoreference(f.getAbsolutePath());
+		if (geo == null) {
 			System.out.println("The image could not be read.");
 			return false;
 		}
-		/* The array which contains the transform parameters! */
-		adfGeoTransform = new double[6];
-		/*
-		 * Put the transform parameters in the given array! See:
-		 * http://gdal.org/java/org/gdal/gdal/Dataset.html# GetGeoTransform%28double[]%29
-		 */
-		poDataset.GetGeoTransform(adfGeoTransform);
-		/*
-		 * Get the spatial reference, projection and convert from Wkt to Proj4!
-		 */
-		SpatialReference layerProjection = new SpatialReference();
-		layerProjection.ImportFromWkt(poDataset.GetProjectionRef());
-		proj4String = layerProjection.ExportToProj4();
+		/* The transform parameters (as GetGeoTransform of GDAL) and the projection (Proj4) */
+		adfGeoTransform = (double[]) geo[0];
+		proj4String = (String) geo[1];
 		return true;
 	}
 

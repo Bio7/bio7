@@ -5,7 +5,7 @@ Eclipse-BundleShape: dir
 Bundle-ManifestVersion: 2
 Bundle-Name: Java Plug-in
 Bundle-SymbolicName: com.eco.bio7.javaedit;singleton:=true
-Bundle-Version: 2.0.0
+Bundle-Version: 2.0.0.qualifier
 Bundle-Activator: com.eco.bio7.javaeditor.Bio7EditorPlugin
 Bundle-Vendor: ECO
 Bundle-Localization: plugin

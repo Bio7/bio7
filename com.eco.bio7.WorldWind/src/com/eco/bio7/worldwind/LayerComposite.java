@@ -87,7 +87,12 @@ public class LayerComposite extends Composite {
 		scale.setSelection(100);
 		scale.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
-				si.setOpacity(((double) scale.getSelection()) / 100);
+				/* A layer without a surface image (e.g., vectors of GDAL): the opacity of the layer */
+				if (si != null) {
+					si.setOpacity(((double) scale.getSelection()) / 100);
+				} else {
+					layerImages.setOpacity(((double) scale.getSelection()) / 100);
+				}
 				WorldWindView.getWwd().redraw();
 			}
 		});

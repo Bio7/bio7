@@ -111,8 +111,6 @@ import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.eclipse.ui.part.EditorInputTransfer;
 import org.eclipse.ui.part.MarkerTransfer;
 import org.eclipse.ui.part.ResourceTransfer;
-import org.gdal.gdal.gdal;
-import org.gdal.ogr.ogr;
 import org.osgi.framework.Bundle;
 import com.eco.bio7.rbridge.backend.RBackend;
 
@@ -1486,13 +1484,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 			configurer.getWindow().getShell().setMaximized(true);
 		}
 
-		/*
-		 * Instead of WorldWind in GDALUtils initialize we load the native libraries
-		 * here! We have no native libs for mac arch!
-		 */
-		/*
-		 * if (isArch == false) { gdal.AllRegister(); ogr.RegisterAll(); }
-		 */
 		/* Hide the Perspective Switcher Menu! */
 		/*
 		 * IWorkbenchWindow window = getWindowConfigurer().getWindow(); EModelService

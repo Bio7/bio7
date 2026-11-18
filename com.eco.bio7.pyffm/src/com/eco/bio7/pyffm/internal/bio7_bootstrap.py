@@ -1191,6 +1191,7 @@ _BIO7_SOURCE = r'''
     import bio7
     img = bio7.image()                 # the current ImageJ image as numpy array
     bio7.show_image(img * 2, "Twice")  # a new ImageJ image
+    bio7.update_image(frame, "Video")  # the pixels of an open image replaced (video, live view)
     bio7.show_html(fig)                # a plotly/altair/bokeh/folium chart in the browser view
     bio7.ij_macro('run("Blobs (25K)");')   # an ImageJ macro (also bio7.ij_run, bio7.ij_macro_file)
     imp = bio7.java.ij.IJ.getImage()   # the Java API (ImageJ, Bio7): proxies of Java objects
@@ -1217,11 +1218,48 @@ def show_image(array, title="Python", display_range=None):
     None: the default of ImageJ.
     """
     if display_range is None:
-        return _bio7._call("show_image", title, value=array)
-    if isinstance(display_range, str):
-        return _bio7._call("show_image", title, display_range, "", value=array)
-    lo, hi = display_range
-    return _bio7._call("show_image", title, repr(float(lo)), repr(float(hi)), value=array)
+        dr = ()
+    elif isinstance(display_range, str):
+        dr = (display_range, "")
+    else:
+        dr = (repr(float(display_range[0])), repr(float(display_range[1])))
+    nbytes = getattr(array, "nbytes", 0)
+    shape = getattr(array, "shape", ())
+    rgb_image = len(shape) == 3 and shape[-1] == 3 and str(getattr(array, "dtype", "")) == "uint8"
+    if nbytes > _PART_BYTES and len(shape) >= 3 and not rgb_image:
+        # A large stack in parts (a Java array holds at most 2 GB; the stack can be larger)
+        frame = max(1, nbytes // shape[0])
+        n = max(1, _PART_BYTES // frame)
+        key = _bio7._call("stack_begin")
+        try:
+            for i in range(0, shape[0], n):
+                _bio7._call("stack_add", key, value=array[i:i + n].copy())
+        except BaseException:
+            _bio7._call("stack_cancel", key)
+            raise
+        return _bio7._call("stack_show", key, title, *dr)
+    if nbytes >= 2**31 - 1:
+        raise ValueError("The image is too large for one ImageJ image (%.1f GB, at most 2 GB per image or slice)" % (nbytes / 2**30))
+    return _bio7._call("show_image", title, *dr, value=array)
+
+
+# A stack larger than this is transferred in parts (each part a Java array)
+_PART_BYTES = 256 * 2**20
+
+
+def update_image(array, title="Python", display_range=None):
+    """Replaces the pixels of the open ImageJ image with the title (the same
+    window, zoom and contrast): a video or a live view, frame by frame. Creates
+    the image if it is not open (or the size or type changed).
+
+        for frame in frames:
+            bio7.update_image(frame, "Video")
+
+    display_range: "auto" adapts the contrast to each frame.
+    """
+    if display_range == "auto":
+        return _bio7._call("update_image", title, "auto", value=array)
+    return _bio7._call("update_image", title, value=array)
 
 
 java = _bio7.java

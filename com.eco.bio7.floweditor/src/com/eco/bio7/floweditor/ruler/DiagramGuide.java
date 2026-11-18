@@ -1,6 +1,20 @@
-/**
- * (c)Copyleft uniera.org
- */
+/*******************************************************************************
+ * Copyright (c) 2003, 2024 IBM Corporation and others.
+ *
+ * Adapted from the GEF Logic example (org.eclipse.gef.examples.logic, LogicGuide)
+ * by uniera.org and M. Austenfeld for the Bio7 flow editor.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *     IBM Corporation - initial API and implementation
+ *     uniera.org - adaptation
+ *     M. Austenfeld - Bio7
+ *******************************************************************************/
 package com.eco.bio7.floweditor.ruler;
 
 import java.beans.PropertyChangeListener;
