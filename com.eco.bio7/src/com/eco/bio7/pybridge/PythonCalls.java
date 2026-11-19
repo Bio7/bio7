@@ -49,6 +49,9 @@ public final class PythonCalls implements PyCallHandler {
 	 * value=...).
 	 */
 	public static void register(String name, Function function) {
+		if (PythonJava.NAMES.contains(name)) {
+			throw new IllegalArgumentException("The name " + name + " is used by the Java API of Python (bio7.java), please use another name");
+		}
 		FUNCTIONS.put(name, function);
 	}
 
@@ -208,10 +211,11 @@ public final class PythonCalls implements PyCallHandler {
 			return null;
 		}
 		default: {
-			if (function.startsWith("java_")) {
+			if (PythonJava.NAMES.contains(function)) {
 				/* The Java API (bio7.java): classes, objects, methods, fields */
 				return PythonJava.call(function, args, value);
 			}
+			/* A registered function (any name, also java_..., e.g. java_sum) */
 			Function f = FUNCTIONS.get(function);
 			if (f == null) {
 				throw new IllegalArgumentException("Unknown function of Bio7: " + function);

@@ -50,6 +50,10 @@ final class PythonJava {
 	}
 
 	/** The functions java_* of PythonCalls. */
+	/* The functions of the Java API (bio7.java): reserved for bio7.call */
+	static final java.util.Set<String> NAMES = java.util.Set.of("java_type", "java_members", "java_new", "java_call", "java_get", "java_set", "java_iter",
+			"java_release");
+
 	static PyValue call(String function, String[] args, PyValue value) throws Exception {
 		switch (function) {
 		case "java_type":
