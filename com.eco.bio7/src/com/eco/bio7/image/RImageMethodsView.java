@@ -61,7 +61,7 @@ import ij.WindowManager;
  * @author Bio7
  * 
  */
-public class RImageMethodsView extends ViewPart {
+public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.IconColorModel.OwnTabIcon {
 	public RImageMethodsView() {
 	}
 
@@ -965,11 +965,11 @@ public class RImageMethodsView extends ViewPart {
 			return;
 		}
 		String target = python ? "Python" : "R";
-		/* The icon of the view tab: R (of plugin.xml) or Python */
+		/* The icon of the view tab: R (of plugin.xml, recolored by the theme) or Python (the view sets it, see IconColorModel.OwnTabIcon) */
 		if (defaultTitleImage == null) {
 			defaultTitleImage = getTitleImage();
 		}
-		setTitleImage(python ? TargetTitleImage.python() : defaultTitleImage);
+		setTitleImage(python ? TargetTitleImage.python() : TargetTitleImage.r(this, defaultTitleImage));
 		lblNewLabel.setText("Transfer Selected Data To " + target);
 		lblNewLabel_1.setText("Transfer Image Data From and To " + target);
 		for (java.util.Map.Entry<Button, String[]> e : transferTexts.entrySet()) {

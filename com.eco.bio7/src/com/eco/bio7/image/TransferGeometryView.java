@@ -26,7 +26,7 @@ import com.eco.bio7.rffm.RValue;
 import com.eco.bio7.rffm.RException;
 import com.eco.bio7.rffm.RTypeException;
 
-public class TransferGeometryView extends ViewPart {
+public class TransferGeometryView extends ViewPart implements com.eco.bio7.rcp.IconColorModel.OwnTabIcon {
 
 	public static final String ID = "com.eco.bio7.image.TransferGeometryView"; //$NON-NLS-1$
 	private CCombo combo;
@@ -447,11 +447,11 @@ public class TransferGeometryView extends ViewPart {
 		btnTransfer.setText(python ? "Transfer to Python!" : "Transfer to R!");
 		btnTransfer.setImage(python ? pythonImage : rImage);
 		btnTransfer.getParent().layout(true, true);
-		/* The icon of the view tab: R (of plugin.xml) or Python */
+		/* The icon of the view tab: R (of plugin.xml, recolored by the theme) or Python (the view sets it, see IconColorModel.OwnTabIcon) */
 		if (defaultTitleImage == null) {
 			defaultTitleImage = getTitleImage();
 		}
-		setTitleImage(python ? TargetTitleImage.python() : defaultTitleImage);
+		setTitleImage(python ? TargetTitleImage.python() : TargetTitleImage.r(this, defaultTitleImage));
 	}
 
 	private org.eclipse.swt.graphics.Image defaultTitleImage;

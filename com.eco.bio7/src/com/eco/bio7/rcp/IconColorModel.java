@@ -257,8 +257,27 @@ public final class IconColorModel {
 		}
 	}
 
+	/**
+	 * A view which sets the icon of its tab itself (e.g., R or Python as target of
+	 * the Image-Methods view): its tab icon is not replaced by the recolored
+	 * default icon. The view gets the recolored default icon with
+	 * {@link IconColorModel#recoloredTabIcon(IWorkbenchPart)}.
+	 */
+	public interface OwnTabIcon {
+	}
+
+	/** The recolored default icon (plugin.xml) of a view or editor for its tab, null if the icons are not recolored. */
+	public static Image recoloredTabIcon(IWorkbenchPart part) {
+		String id = part.getSite().getId();
+		URL url = part instanceof IEditorPart ? icon("org.eclipse.ui.editors", "editor", id) : icon("org.eclipse.ui.views", "view", id);
+		return url == null ? null : tabImage(url);
+	}
+
 	/* Displays the recolored icon of the view or editor in the tab! */
 	private static void recolorTab(IWorkbenchPart part) {
+		if (part instanceof OwnTabIcon) {
+			return;
+		}
 		String id = part.getSite().getId();
 		URL url = part instanceof IEditorPart ? icon("org.eclipse.ui.editors", "editor", id) : icon("org.eclipse.ui.views", "view", id);
 		if (url == null) {
