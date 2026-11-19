@@ -165,6 +165,11 @@ public final class GdalLibraryFinder {
 			}
 			f.add(Path.of("C:\\OSGeo4W", "bin"));
 			f.add(Path.of("C:\\OSGeo4W64", "bin"));
+			/* The OSGeo4W installer for the current user (without administrator rights) */
+			String local = System.getenv("LOCALAPPDATA");
+			if (local != null && !local.isBlank()) {
+				f.add(Path.of(local, "Programs", "OSGeo4W", "bin"));
+			}
 			String pf = System.getenv().getOrDefault("ProgramFiles", "C:\\Program Files");
 			f.addAll(matching(Path.of(pf), "QGIS.*", "bin"));
 		} else if (MAC) {
@@ -218,6 +223,46 @@ public final class GdalLibraryFinder {
 	/** The data folder of PROJ (with proj.db) of the installation of the library, null if not found. */
 	public static Path projData(Path library) {
 		return dataFolder(library, "proj", "proj.db");
+	}
+
+	/**
+	 * The folder of PROJ for the files of the user (e.g., datum grids downloaded by
+	 * hand or with projsync): %LOCALAPPDATA%\proj, ~/Library/Application
+	 * Support/proj, ~/.local/share/proj (XDG_DATA_HOME). It may not exist.
+	 */
+	public static Path userProjData() {
+		String home = System.getProperty("user.home", "");
+		if (WINDOWS) {
+			String local = System.getenv("LOCALAPPDATA");
+			return local == null || local.isBlank() ? Path.of(home, "AppData", "Local", "proj") : Path.of(local, "proj");
+		}
+		if (MAC) {
+			return Path.of(home, "Library", "Application Support", "proj");
+		}
+		String xdg = System.getenv("XDG_DATA_HOME");
+		return xdg == null || xdg.isBlank() ? Path.of(home, ".local", "share", "proj") : Path.of(xdg, "proj");
+	}
+
+	/**
+	 * The datum grids of PROJ in the folders (GeoTIFF grids of the PROJ CDN, e.g.,
+	 * us_noaa_conus.tif, de_adv_BETA2007.tif, and NTv2 *.gsb files).
+	 */
+	public static List<Path> datumGrids(Path... dirs) {
+		List<Path> grids = new ArrayList<>();
+		for (Path dir : dirs) {
+			if (dir == null || !Files.isDirectory(dir)) {
+				continue;
+			}
+			try (var files = Files.list(dir)) {
+				files.filter(p -> {
+					String n = p.getFileName().toString().toLowerCase(java.util.Locale.ROOT);
+					return n.matches("[a-z]{2}_[a-z0-9]+_.+\\.tif") || n.endsWith(".gsb");
+				}).forEach(grids::add);
+			} catch (IOException | RuntimeException e) {
+				/* Not readable */
+			}
+		}
+		return grids;
 	}
 
 	private static Path dataFolder(Path library, String name, String... marker) {

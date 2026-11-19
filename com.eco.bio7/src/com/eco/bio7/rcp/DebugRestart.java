@@ -255,6 +255,16 @@ public final class DebugRestart {
 
 	/* The helper waits until the process has exited (the workspace is unlocked) and starts the command! */
 	private static void startHelper(long pid, List<String> command) throws IOException {
+		/*
+		 * Windows: a Java helper (javaw of Bio7's Java). The former PowerShell helper
+		 * started slowly (seconds), could be blocked by virus scanners (a hidden
+		 * PowerShell starting a program) and only waited for the process, not for the
+		 * workspace: the new Bio7 then found the workspace locked and ended, and if the
+		 * exit of Bio7 hung, it never started.
+		 */
+		if (File.separatorChar == '\\' && startJavaHelper(pid, command)) {
+			return;
+		}
 		List<String> helper = new ArrayList<String>();
 		if (File.separatorChar == '\\') {
 			StringBuilder args = new StringBuilder();
@@ -280,6 +290,68 @@ public final class DebugRestart {
 		builder.redirectOutput(ProcessBuilder.Redirect.DISCARD);
 		builder.redirectError(ProcessBuilder.Redirect.DISCARD);
 		builder.start();
+	}
+
+	/*
+	 * Starts RestartHelper with javaw.exe of the running Java (no console window).
+	 * The class is copied from the bundle into a temporary folder (the bundle may be
+	 * a jar). Returns false if it isn't possible (then the PowerShell helper is used).
+	 */
+	private static boolean startJavaHelper(long pid, List<String> command) {
+		try {
+			File javaw = new File(System.getProperty("java.home"), "bin" + File.separator + "javaw.exe");
+			if (!javaw.isFile()) {
+				return false;
+			}
+			File dir = new File(System.getProperty("java.io.tmpdir"), "bio7-restart");
+			File cls = new File(dir, "com" + File.separator + "eco" + File.separator + "bio7" + File.separator + "rcp" + File.separator + "RestartHelper.class");
+			cls.getParentFile().mkdirs();
+			try (java.io.InputStream in = DebugRestart.class.getResourceAsStream("RestartHelper.class")) {
+				if (in == null) {
+					return false;
+				}
+				java.nio.file.Files.copy(in, cls.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+			}
+			List<String> helper = new ArrayList<String>();
+			helper.add(javaw.getAbsolutePath());
+			/* A small, quickly started JVM */
+			helper.add("-Xmx32m");
+			helper.add("-XX:TieredStopAtLevel=1");
+			helper.add("-XX:+UseSerialGC");
+			helper.add("-cp");
+			helper.add(dir.getAbsolutePath());
+			helper.add("com.eco.bio7.rcp.RestartHelper");
+			helper.add(Long.toString(pid));
+			helper.add(lockFile(command));
+			helper.addAll(command);
+			ProcessBuilder builder = new ProcessBuilder(helper);
+			builder.redirectOutput(ProcessBuilder.Redirect.DISCARD);
+			builder.redirectError(ProcessBuilder.Redirect.DISCARD);
+			builder.start();
+			return true;
+		} catch (IOException | RuntimeException e) {
+			System.err.println("[Bio7] Java restart helper not possible (" + e.getMessage() + "): PowerShell is used");
+			return false;
+		}
+	}
+
+	/* The lock file of the workspace of the new Bio7 (-data of the command, else the current one), "-" if unknown */
+	private static String lockFile(List<String> command) {
+		File workspace = null;
+		int data = command.indexOf("-data");
+		if (data >= 0 && data + 1 < command.size()) {
+			workspace = new File(command.get(data + 1));
+		} else {
+			try {
+				org.eclipse.osgi.service.datalocation.Location instance = org.eclipse.core.runtime.Platform.getInstanceLocation();
+				if (instance != null && instance.getURL() != null) {
+					workspace = new File(instance.getURL().getFile());
+				}
+			} catch (RuntimeException e) {
+				/* Unknown */
+			}
+		}
+		return workspace == null ? "-" : new File(workspace, ".metadata" + File.separator + ".lock").getAbsolutePath();
 	}
 
 	private static String psQuote(String s) {

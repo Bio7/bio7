@@ -447,7 +447,14 @@ public class TransferGeometryView extends ViewPart {
 		btnTransfer.setText(python ? "Transfer to Python!" : "Transfer to R!");
 		btnTransfer.setImage(python ? pythonImage : rImage);
 		btnTransfer.getParent().layout(true, true);
+		/* The icon of the view tab: R (of plugin.xml) or Python */
+		if (defaultTitleImage == null) {
+			defaultTitleImage = getTitleImage();
+		}
+		setTitleImage(python ? TargetTitleImage.python() : defaultTitleImage);
 	}
+
+	private org.eclipse.swt.graphics.Image defaultTitleImage;
 
 	@Override
 	public void dispose() {

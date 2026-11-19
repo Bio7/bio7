@@ -386,7 +386,7 @@ public class Bio7ImageJ implements ImageJHost, ImageListener {
 			images = new java.util.ArrayList<>(pendingViews);
 			pendingViews.clear();
 		}
-		images.removeIf(imp -> getTab(imp) == null || imp.getWindow() == null || imp.getWindow().isClosed());
+		images.removeIf(imp -> getTab(imp) == null || imp.getWindow() == null || imp.getWindow().isClosed());
 		if (!images.isEmpty()) {
 			ImageJWindowAction.openAsViews(images);
 		}
@@ -406,7 +406,7 @@ public class Bio7ImageJ implements ImageJHost, ImageListener {
 				return;
 			}
 			if (Fullscreen.isFullscreen(holder)) {
-				Fullscreen.exit();
+				Fullscreen.exit(holder);
 			}
 			CTabItem item = getTab(imp);
 			CustomDetachedImageJView detached = CustomDetachedImageJView.find(imp);

@@ -66,7 +66,7 @@ public class GdalPreferencePage extends FieldEditorPreferencePage implements IWo
 		Composite buttons = new Composite(parent, SWT.NONE);
 		buttons.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 3, 1));
 		buttons.setLayout(new GridLayout(3, false));
-		button(buttons, "Detect...", "Search the GDAL libraries of this computer (conda, Homebrew, the packages of Linux, QGIS, OSGeo4W)", this::detect);
+		button(buttons, "Detect...", "Search the GDAL libraries of this computer (conda, Homebrew, the packages of Linux, QGIS, OSGeo4W, also installed for the current user)", this::detect);
 		button(buttons, "Test", "Test the library in a separate process (without loading it into the application)", this::test);
 		button(buttons, "Install GDAL...", "Install GDAL with a package manager", () -> GdalInstaller.open(getShell()));
 
@@ -83,13 +83,41 @@ public class GdalPreferencePage extends FieldEditorPreferencePage implements IWo
 	}
 
 	private void updateStatus() {
+		Path lib;
+		String text;
 		if (Gdal.isLoaded()) {
-			status.setText("Loaded: GDAL " + Gdal.version() + "\n" + Gdal.library());
+			lib = Gdal.library();
+			text = "Loaded: GDAL " + Gdal.version() + "\n" + lib;
 		} else {
-			Path lib = GdalActivation.library();
-			status.setText("Not loaded. " + (lib != null ? "Library: " + lib : "No GDAL library was found."));
+			lib = GdalActivation.library();
+			text = "Not loaded. " + (lib != null ? "Library: " + lib : "No GDAL library was found.");
 		}
+		if (lib != null) {
+			text += "\n\n" + datumHint(lib);
+		}
+		status.setText(text);
 		status.getParent().layout(true, true);
+	}
+
+	/*
+	 * The datum grids of PROJ: without them datum transformations (e.g., NAD27 or
+	 * DHDN to WGS84) use approximate parameters (about 10 m, partly more)
+	 */
+	static String datumHint(Path lib) {
+		Path proj = GdalLibraryFinder.projData(lib);
+		Path user = GdalLibraryFinder.userProjData();
+		int n = GdalLibraryFinder.datumGrids(proj, user).size();
+		if (n > 0) {
+			return "Datum grids of PROJ: " + n + " (exact datum transformations, about 1 m).";
+		}
+		String install = GdalLibraryFinder.WINDOWS && lib.toString().toLowerCase(java.util.Locale.ROOT).contains("osgeo4w")
+				? "the package 'proj-data' in the OSGeo4W installer (Advanced Install, Libs)"
+				: lib.toString().toLowerCase(java.util.Locale.ROOT).contains("conda") || lib.toString().toLowerCase(java.util.Locale.ROOT).contains("forge")
+						? "the conda package 'proj-data' (conda install -c conda-forge proj-data)"
+						: "the package of the datum grids of PROJ (e.g., 'proj-data')";
+		return "No datum grids of PROJ found: datum transformations (e.g., NAD27 or DHDN to WGS84) use approximate parameters "
+				+ "(about 10 m, partly more). For exact transformations install " + install
+				+ ", or download single grids from https://cdn.proj.org (e.g., us_noaa_conus.tif for NAD27 in the USA) into\n" + user;
 	}
 
 	/* The libraries of this computer: one is selected (tested in a separate process) */

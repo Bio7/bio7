@@ -229,6 +229,11 @@ public class SpatialView extends ViewPart {
 		NewtFullscreen.enter(spat.glWindow, i, null);
 	}
 
+	/** Returns true if the 3D view is displayed in fullscreen mode. */
+	public boolean isFullscreen() {
+		return spat != null && spat.glWindow != null && spat.glWindow.isFullscreen();
+	}
+
 	/**
 	 * The fullscreen keys of all Bio7 views (see NewtFullscreen): 2 (F2) the
 	 * primary monitor (exits in fullscreen mode), 3 (F3) the secondary, 4 (F4) the

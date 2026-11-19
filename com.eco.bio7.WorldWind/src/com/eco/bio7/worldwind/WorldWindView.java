@@ -448,6 +448,11 @@ public class WorldWindView extends ViewPart {
 		NewtFullscreen.enter(worldCanvas.getWindow(), i, WorldWindView::clearMeasurement);
 	}
 
+	/** Returns true if the globe is displayed in fullscreen mode. */
+	public boolean isFullscreen() {
+		return worldCanvas != null && worldCanvas.getWindow() != null && worldCanvas.getWindow().isFullscreen();
+	}
+
 	/**
 	 * The fullscreen keys of all Bio7 views (see NewtFullscreen): 2 (F2) the
 	 * primary monitor (exits in fullscreen mode), 3 (F3) the secondary, 4 (F4) the

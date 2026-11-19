@@ -88,8 +88,9 @@ public final class GdalInstaller extends Dialog {
 			if (condaCommand != null) {
 				w.add(new Way("conda-forge", "A conda environment '" + CONDA_ENV + "' with GDAL (independent of other packages)", condaCommand, null));
 			}
-			w.add(new Way("OSGeo4W", "The OSGeo4W installer (Express install: GDAL); the library is found in C:\\OSGeo4W\\bin", null,
-					"https://trac.osgeo.org/osgeo4w/"));
+			w.add(new Way("OSGeo4W", "The OSGeo4W installer (Express install: GDAL); the library is found in C:\\OSGeo4W\\bin or, installed for the "
+					+ "current user, in %LOCALAPPDATA%\\Programs\\OSGeo4W\\bin. For exact datum transformations (e.g., NAD27, DHDN) also select the "
+					+ "package 'proj-data' (Advanced Install, Libs)", null, "https://trac.osgeo.org/osgeo4w/"));
 			w.add(new Way("Miniforge (conda)", "Install Miniforge, then GDAL with conda-forge", null, "https://conda-forge.org/download/"));
 		} else {
 			if (Files.isExecutable(Path.of("/usr/bin/apt-get"))) {

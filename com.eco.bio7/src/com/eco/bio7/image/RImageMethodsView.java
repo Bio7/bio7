@@ -949,6 +949,7 @@ public class RImageMethodsView extends ViewPart {
 	/* The actions of the target (R, Python) */
 	private org.eclipse.jface.action.Action toR;
 	private org.eclipse.jface.action.Action toPython;
+	private org.eclipse.swt.graphics.Image defaultTitleImage;
 
 	private void setTarget(boolean toPython) {
 		python = toPython;
@@ -964,6 +965,11 @@ public class RImageMethodsView extends ViewPart {
 			return;
 		}
 		String target = python ? "Python" : "R";
+		/* The icon of the view tab: R (of plugin.xml) or Python */
+		if (defaultTitleImage == null) {
+			defaultTitleImage = getTitleImage();
+		}
+		setTitleImage(python ? TargetTitleImage.python() : defaultTitleImage);
 		lblNewLabel.setText("Transfer Selected Data To " + target);
 		lblNewLabel_1.setText("Transfer Image Data From and To " + target);
 		for (java.util.Map.Entry<Button, String[]> e : transferTexts.entrySet()) {

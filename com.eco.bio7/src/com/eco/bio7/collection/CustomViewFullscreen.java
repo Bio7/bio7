@@ -15,6 +15,9 @@ import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
@@ -33,8 +36,11 @@ import com.eco.bio7.util.FullscreenMonitors;
 /**
  * Displays the content of a {@link CustomView} in a fullscreen shell. The
  * content composite of the view is moved into the shell and back to the view
- * when the fullscreen mode is closed. The keys (in a custom view or in the
- * fullscreen mode):
+ * when the fullscreen mode is closed. Several views can be displayed in
+ * fullscreen mode at the same time, each on its own monitor (e.g., a custom
+ * view on the primary and a plot on the secondary monitor). A view displayed on
+ * a monitor which already shows another view replaces it. The keys (in a custom
+ * view or in its fullscreen mode):
  * <ul>
  * <li>F2: fullscreen on the primary monitor (or exit)</li>
  * <li>F3: fullscreen on the secondary monitor</li>
@@ -55,14 +61,20 @@ public class CustomViewFullscreen {
 
 	private static final String MESSAGE = "Displayed in fullscreen mode (press F2 or ESC to exit, F3, F4 or F5 to change the monitor).";
 
-	private static Shell shell;
-	private static CustomView view;
-	private static Composite content;
-	private static Composite oldParent;
-	private static Label placeholder;
-	private static Monitor shellMonitor;
-	/* True when the native fullscreen mode of macOS has been entered (the shell is resized)! */
-	private static boolean entered;
+	/* The fullscreen mode of one view */
+	private static final class Session {
+		Shell shell;
+		CustomView view;
+		Composite content;
+		Composite oldParent;
+		Label placeholder;
+		Monitor monitor;
+		/* True when the native fullscreen mode of macOS has been entered (the shell is resized)! */
+		boolean entered;
+	}
+
+	/* The views in fullscreen mode (in the order they were entered) */
+	private static final Map<CustomView, Session> sessions = new LinkedHashMap<>();
 
 	/*
 	 * On macOS a shell in the native fullscreen mode must have a trim, else the
@@ -78,16 +90,17 @@ public class CustomViewFullscreen {
 				return;
 			}
 			Control control = (Control) e.widget;
-			boolean inFullscreen = isActive() && control.getShell() == shell;
+			Session s = sessionOf(control.getShell());
 			if (e.keyCode == SWT.ESC) {
-				if (inFullscreen) {
+				if (s != null) {
 					/* The ESC key is also forwarded to the content! */
-					Display.getCurrent().asyncExec(CustomViewFullscreen::exit);
+					CustomView v = s.view;
+					Display.getCurrent().asyncExec(() -> exit(v));
 				}
 				return;
 			}
 			int key = FullscreenMonitors.functionKey(e.keyCode);
-			CustomView v = inFullscreen ? view : (isActive() ? null : viewOf(control));
+			CustomView v = s != null ? s.view : viewOf(control);
 			if (key > 0 && v != null) {
 				e.doit = false;
 				/* Not in the filter (F5 opens a dialog)! */
@@ -98,24 +111,22 @@ public class CustomViewFullscreen {
 
 	/* The action of the keys F2 to F5 for the view (displayed in fullscreen mode or not)! */
 	private static void handleKey(int key, CustomView v) {
-		if (!v.isFullscreenEnabled() && !isFullscreen(v)) {
-			return;
-		}
-		if (isActive() && !isFullscreen(v)) {
+		Session s = sessions.get(v);
+		if (s == null && !v.isFullscreenEnabled()) {
 			return;
 		}
 		/* F2: exit (in fullscreen mode) or the primary monitor */
-		if (key == FullscreenMonitors.KEY_PRIMARY && isFullscreen(v)) {
-			exit();
+		if (key == FullscreenMonitors.KEY_PRIMARY && s != null) {
+			exit(v);
 			return;
 		}
 		Display display = Display.getDefault();
-		Monitor monitor = FullscreenMonitors.monitorForKey(key, display, isActive() ? shell : null, isActive() ? shellMonitor : null);
+		Monitor monitor = FullscreenMonitors.monitorForKey(key, display, s != null ? s.shell : null, s != null ? s.monitor : null);
 		if (monitor == null) {
 			return;
 		}
-		if (isFullscreen(v) && same(monitor, shellMonitor)) {
-			exit();
+		if (s != null && same(monitor, s.monitor)) {
+			exit(v);
 		} else {
 			show(v, monitor);
 		}
@@ -137,14 +148,17 @@ public class CustomViewFullscreen {
 			display.asyncExec(() -> {
 				/* The active shell is not reliable if an AWT component has the focus! */
 				Control control = embeddingControl(display, frame);
-				boolean inFullscreen = isActive() && control != null && control.getShell() == shell;
+				if (control == null) {
+					return;
+				}
+				Session s = sessionOf(control.getShell());
 				if (key == 0) {
-					if (inFullscreen) {
-						exit();
+					if (s != null) {
+						exit(s.view);
 					}
 					return;
 				}
-				CustomView v = inFullscreen ? view : (isActive() || control == null ? null : viewOf(control));
+				CustomView v = s != null ? s.view : viewOf(control);
 				if (v != null) {
 					handleKey(key, v);
 				}
@@ -174,14 +188,8 @@ public class CustomViewFullscreen {
 		return null;
 	}
 
-	/* Returns the SWT composite of the embedded frame (fullscreen shell first) or null! */
+	/* Returns the SWT composite of the embedded frame (all shells, the fullscreen shells, too) or null! */
 	private static Control embeddingControl(Display display, Window frame) {
-		if (isActive()) {
-			Control c = embeddingControl(shell, frame);
-			if (c != null) {
-				return c;
-			}
-		}
 		for (Shell s : display.getShells()) {
 			Control c = embeddingControl(s, frame);
 			if (c != null) {
@@ -220,14 +228,25 @@ public class CustomViewFullscreen {
 		return null;
 	}
 
+	/* The fullscreen mode of the shell or null */
+	private static Session sessionOf(Shell shell) {
+		for (Session s : sessions.values()) {
+			if (s.shell == shell) {
+				return s;
+			}
+		}
+		return null;
+	}
+
 	/** Returns true if a custom view is displayed in fullscreen mode. */
 	public static boolean isActive() {
-		return shell != null && !shell.isDisposed();
+		return !sessions.isEmpty();
 	}
 
 	/** Returns true if the given custom view is displayed in fullscreen mode. */
 	public static boolean isFullscreen(CustomView customView) {
-		return isActive() && view == customView;
+		Session s = customView == null ? null : sessions.get(customView);
+		return s != null && s.shell != null && !s.shell.isDisposed();
 	}
 
 	/**
@@ -243,9 +262,18 @@ public class CustomViewFullscreen {
 		return FullscreenMonitors.same(a, b);
 	}
 
+	/* Closes the fullscreen mode of another view on the monitor (one view per monitor) */
+	private static void freeMonitor(Monitor monitor, CustomView except) {
+		for (Session s : new ArrayList<>(sessions.values())) {
+			if (s.view != except && same(s.monitor, monitor)) {
+				exit(s.view);
+			}
+		}
+	}
+
 	/**
 	 * Displays the content of the custom view in fullscreen mode on the monitor of
-	 * the view. Only one view can be displayed in fullscreen mode at a time.
+	 * the view. Another view in fullscreen mode on this monitor is closed.
 	 */
 	public static void enter(CustomView customView) {
 		enter(customView, null);
@@ -253,47 +281,50 @@ public class CustomViewFullscreen {
 
 	/**
 	 * Displays the content of the custom view in fullscreen mode on the given
-	 * monitor (the monitor of the view if null). Only one view can be displayed in
-	 * fullscreen mode at a time.
+	 * monitor (the monitor of the view if null). Another view in fullscreen mode on
+	 * this monitor is closed.
 	 */
 	public static void enter(CustomView customView, Monitor monitor) {
-		if (isActive() || customView == null) {
+		if (customView == null || isFullscreen(customView)) {
 			return;
 		}
 		Composite c = customView.getCustomViewParent();
 		if (c == null || c.isDisposed()) {
 			return;
 		}
-		view = customView;
-		content = c;
-		oldParent = c.getParent();
-		shell = new Shell(c.getDisplay(), MAC ? SWT.SHELL_TRIM : SWT.NO_TRIM | SWT.ON_TOP);
+		Monitor target = monitor != null ? monitor : c.getParent().getMonitor();
+		freeMonitor(target, customView);
+		Session s = new Session();
+		s.view = customView;
+		s.content = c;
+		s.oldParent = c.getParent();
+		s.monitor = target;
+		Shell shell = new Shell(c.getDisplay(), MAC ? SWT.SHELL_TRIM : SWT.NO_TRIM | SWT.ON_TOP);
+		s.shell = shell;
+		sessions.put(customView, s);
 		shell.setText(customView.getPartName());
 		shell.setLayout(new FillLayout());
-		shell.addListener(SWT.Close, e -> restore());
+		shell.addListener(SWT.Close, _ -> restore(s));
 		/* A minimized fullscreen shell would stay open in the background! */
-		shell.addListener(SWT.Iconify, e -> e.display.asyncExec(CustomViewFullscreen::exit));
+		shell.addListener(SWT.Iconify, e -> e.display.asyncExec(() -> exit(customView)));
 		if (MAC) {
 			/* The native fullscreen mode can also be closed by macOS (green button, Ctrl+Cmd+F)! */
-			entered = false;
-			Shell s = shell;
 			shell.addListener(SWT.Resize, e -> {
-				if (s.getFullScreen()) {
-					entered = true;
-				} else if (entered && s == shell) {
-					e.display.asyncExec(CustomViewFullscreen::exit);
+				if (shell.getFullScreen()) {
+					s.entered = true;
+				} else if (s.entered && sessions.get(customView) == s) {
+					e.display.asyncExec(() -> exit(customView));
 				}
 			});
 		}
-		content.setParent(shell);
+		s.content.setParent(shell);
 		/* Shown in the view while the content is displayed in fullscreen mode! */
-		placeholder = new Label(oldParent, SWT.CENTER | SWT.WRAP);
-		placeholder.setText(MESSAGE);
-		placeholder.addListener(SWT.MouseDoubleClick, e -> exit());
-		oldParent.layout(true, true);
-		shellMonitor = monitor != null ? monitor : oldParent.getMonitor();
+		s.placeholder = new Label(s.oldParent, SWT.CENTER | SWT.WRAP);
+		s.placeholder.setText(MESSAGE);
+		s.placeholder.addListener(SWT.MouseDoubleClick, _ -> exit(customView));
+		s.oldParent.layout(true, true);
 		/* The native fullscreen mode of macOS uses the monitor of the shell! */
-		shell.setBounds(shellMonitor.getBounds());
+		shell.setBounds(target.getBounds());
 		if (MAC) {
 			shell.open();
 			shell.setFullScreen(true);
@@ -303,7 +334,7 @@ public class CustomViewFullscreen {
 		}
 		shell.layout(true, true);
 		shell.forceActive();
-		content.setFocus();
+		s.content.setFocus();
 	}
 
 	/**
@@ -311,37 +342,51 @@ public class CustomViewFullscreen {
 	 * the fullscreen mode of the view to the monitor.
 	 */
 	public static void show(CustomView customView, Monitor monitor) {
-		if (!isActive()) {
+		Session s = sessions.get(customView);
+		if (s == null) {
 			enter(customView, monitor);
-		} else if (isFullscreen(customView) && monitor != null && !same(monitor, shellMonitor)) {
+		} else if (monitor != null && !same(monitor, s.monitor)) {
+			freeMonitor(monitor, customView);
 			if (MAC) {
 				/* A native fullscreen shell cannot be moved to another monitor! */
-				exit();
+				exit(customView);
 				Display.getDefault().asyncExec(() -> enter(customView, monitor));
 				return;
 			}
-			shellMonitor = monitor;
-			shell.setFullScreen(false);
-			shell.setBounds(monitor.getBounds());
-			shell.setFullScreen(true);
-			shell.layout(true, true);
-			shell.forceActive();
-			content.setFocus();
+			s.monitor = monitor;
+			s.shell.setFullScreen(false);
+			s.shell.setBounds(monitor.getBounds());
+			s.shell.setFullScreen(true);
+			s.shell.layout(true, true);
+			s.shell.forceActive();
+			s.content.setFocus();
 		}
 	}
 
-	/** Closes the fullscreen mode. */
+	/** Closes the fullscreen mode of all views. */
 	public static void exit() {
-		if (isActive()) {
-			shell.close();
+		for (CustomView v : new ArrayList<>(sessions.keySet())) {
+			exit(v);
+		}
+	}
+
+	/** Closes the fullscreen mode of the view. */
+	public static void exit(CustomView customView) {
+		Session s = sessions.get(customView);
+		if (s != null) {
+			if (s.shell != null && !s.shell.isDisposed()) {
+				s.shell.close();
+			} else {
+				restore(s);
+			}
 		}
 	}
 
 	/** Toggles the fullscreen mode of the custom view (on the primary monitor like F2). */
 	public static void toggle(CustomView customView) {
 		if (isFullscreen(customView)) {
-			exit();
-		} else if (!isActive()) {
+			exit(customView);
+		} else {
 			Monitor[] monitors = getMonitors(Display.getDefault());
 			enter(customView, monitors.length > 0 ? monitors[0] : null);
 		}
@@ -353,36 +398,37 @@ public class CustomViewFullscreen {
 	 * listeners from the shell of the content when it is disposed!
 	 */
 	static void viewDisposed(CustomView customView) {
-		if (isFullscreen(customView)) {
-			if (content != null && !content.isDisposed() && oldParent != null && !oldParent.isDisposed()) {
-				content.setParent(oldParent);
+		Session s = sessions.get(customView);
+		if (s != null) {
+			if (s.content != null && !s.content.isDisposed() && s.oldParent != null && !s.oldParent.isDisposed()) {
+				s.content.setParent(s.oldParent);
 			} else {
-				oldParent = null;
+				s.oldParent = null;
 			}
-			content = null;
-			shell.close();
+			s.content = null;
+			exit(customView);
 		}
 	}
 
 	/* Moves the content back to the view! */
-	private static void restore() {
-		if (placeholder != null && !placeholder.isDisposed()) {
-			placeholder.dispose();
+	private static void restore(Session s) {
+		if (sessions.get(s.view) == s) {
+			sessions.remove(s.view);
 		}
-		if (content != null && !content.isDisposed()) {
-			if (oldParent != null && !oldParent.isDisposed()) {
-				content.setParent(oldParent);
-				oldParent.layout(true, true);
+		if (s.placeholder != null && !s.placeholder.isDisposed()) {
+			s.placeholder.dispose();
+		}
+		if (s.content != null && !s.content.isDisposed()) {
+			if (s.oldParent != null && !s.oldParent.isDisposed()) {
+				s.content.setParent(s.oldParent);
+				s.oldParent.layout(true, true);
 			} else {
 				/* The view has been closed! */
-				content.dispose();
+				s.content.dispose();
 			}
 		}
-		view = null;
-		content = null;
-		oldParent = null;
-		placeholder = null;
-		shellMonitor = null;
-		shell = null;
+		s.content = null;
+		s.oldParent = null;
+		s.placeholder = null;
 	}
 }

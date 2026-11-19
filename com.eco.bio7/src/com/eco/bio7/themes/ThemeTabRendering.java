@@ -569,15 +569,32 @@ public class ThemeTabRendering extends Bio7TabRendering {
 	}
 
 	private static void disposePart(Control control) {
+		Image image = clearPart(control);
+		if (image != null && !image.isDisposed()) {
+			image.dispose();
+		}
+	}
+
+	/*
+	 * Removes the picture of the background of a control (not disposed): returns it,
+	 * null if none. A failure of SWT while widgets are disposed (e.g., the exit
+	 * before a restart) must not stop the disposal.
+	 */
+	private static Image clearPart(Control control) {
 		Object part = control.getData(PART);
 		control.setData(PART, null);
 		control.setData(PART_KEY, null);
 		if (part instanceof Image image && !image.isDisposed()) {
-			if (!control.isDisposed() && control.getBackgroundImage() == image) {
-				control.setBackgroundImage(null);
+			try {
+				if (!control.isDisposed() && control.getBackgroundImage() == image) {
+					control.setBackgroundImage(null);
+				}
+			} catch (RuntimeException e) {
+				/* The control is being disposed */
 			}
-			image.dispose();
+			return image;
 		}
+		return null;
 	}
 
 	private static void transparentItems(ToolBar toolBar) {
@@ -621,19 +638,42 @@ public class ThemeTabRendering extends Bio7TabRendering {
 	protected void dispose() {
 		disposePicture();
 		if (WINDOWS && !folder.isDisposed()) {
-			disposeParts(folder);
+			try {
+				disposeParts(folder);
+			} catch (RuntimeException e) {
+				/* The folder is being disposed (e.g., the exit before a restart): it must not stop */
+			}
 		}
 		super.dispose();
 	}
 
-	/* The tool bars get the background of the CSS again */
+	/*
+	 * The tool bars get the background of the CSS again. First all backgrounds are
+	 * removed, then the pictures are disposed: a picture disposed while another
+	 * control still had it as background made SWT fail (NullPointerException in
+	 * Composite.updateBackgroundImage) in the exit of Bio7, which could stop a
+	 * restart (e.g., after a theme change).
+	 */
 	private void disposeParts(Composite parent) {
+		java.util.List<Image> images = new java.util.ArrayList<>();
+		clearParts(parent, images);
+		for (Image image : images) {
+			if (!image.isDisposed()) {
+				image.dispose();
+			}
+		}
+	}
+
+	private void clearParts(Composite parent, java.util.List<Image> images) {
 		for (Control child : parent.getChildren()) {
 			if (child.getData(PAINTED) == this) {
-				disposePart(child);
+				Image image = clearPart(child);
+				if (image != null && !images.contains(image)) {
+					images.add(image);
+				}
 			}
 			if (child instanceof Composite composite) {
-				disposeParts(composite);
+				clearParts(composite, images);
 			}
 		}
 	}

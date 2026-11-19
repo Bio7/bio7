@@ -490,9 +490,10 @@ public class CustomView extends ViewPart {// implements ISaveablePart2
 	}
 
 	/**
-	 * Displays the view in fullscreen mode or returns to the view. Only one view
-	 * can be displayed in fullscreen mode at a time. The fullscreen mode can also
-	 * be toggled with the F2 key and closed with the ESC key.
+	 * Displays the view in fullscreen mode or returns to the view. Several views
+	 * can be displayed in fullscreen mode, one per monitor (another view on the
+	 * monitor is replaced). The fullscreen mode can also be toggled with the F2
+	 * key and closed with the ESC key.
 	 * 
 	 * @param fullscreen true to display the view in fullscreen mode.
 	 */
@@ -502,8 +503,8 @@ public class CustomView extends ViewPart {// implements ISaveablePart2
 				CustomView view = part();
 				if (fullscreen) {
 					CustomViewFullscreen.enter(view);
-				} else if (CustomViewFullscreen.isFullscreen(view)) {
-					CustomViewFullscreen.exit();
+				} else {
+					CustomViewFullscreen.exit(view);
 				}
 			}
 		});

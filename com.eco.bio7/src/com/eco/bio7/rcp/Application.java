@@ -44,6 +44,21 @@ public class Application implements IApplication {
 			 * We now use System.exit to avoid a deadlock on MacOSX with SWT_AWT ImageJ!
 			 */
 			//display.dispose();
+			/*
+			 * The exit must not hang (e.g., shutdown hooks or native threads of the embedded
+			 * R/Python, AWT): the workbench is closed and saved already, after 10 s the
+			 * process is ended (else a restart waits for it).
+			 */
+			Thread watchdog = new Thread(() -> {
+				try {
+					Thread.sleep(10_000);
+				} catch (InterruptedException e) {
+					return;
+				}
+				Runtime.getRuntime().halt(0);
+			}, "Bio7 exit watchdog");
+			watchdog.setDaemon(true);
+			watchdog.start();
 			System.exit(0); // for an error analysis comment out this command.
 
 			

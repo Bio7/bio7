@@ -113,7 +113,17 @@ public final class Gdal {
 			Path proj = GdalLibraryFinder.projData(lib);
 			if (proj != null && System.getenv("PROJ_DATA") == null && System.getenv("PROJ_LIB") == null) {
 				if (g.OSRSetPROJSearchPaths != null) {
-					g.OSRSetPROJSearchPaths.invokeExact(GdalNative.stringList(a, List.of(proj.toString())));
+					/*
+					 * The search paths replace the ones of PROJ: also the folder of the user
+					 * (datum grids downloaded there, e.g., us_noaa_conus.tif for NAD27), first
+					 */
+					List<String> paths = new java.util.ArrayList<>();
+					Path user = GdalLibraryFinder.userProjData();
+					if (java.nio.file.Files.isDirectory(user)) {
+						paths.add(user.toString());
+					}
+					paths.add(proj.toString());
+					g.OSRSetPROJSearchPaths.invokeExact(GdalNative.stringList(a, paths));
 				} else {
 					g.CPLSetConfigOption.invokeExact(GdalNative.cstring(a, "PROJ_LIB"), GdalNative.cstring(a, proj.toString()));
 				}
