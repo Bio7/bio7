@@ -211,6 +211,8 @@ public class PythonEditor extends TextEditor implements IPropertyChangeListener,
 	@Override
 	public void createPartControl(org.eclipse.swt.widgets.Composite parent) {
 		super.createPartControl(parent);
+		/* No Run As, Debug As, Profile As (no launch configurations for the files of the editor) */
+		com.eco.bio7.util.LaunchMenus.removeFrom(getSourceViewer().getTextWidget());
 		if (getSourceViewer() instanceof org.eclipse.jface.text.ITextViewerExtension8 v) {
 			v.setHoverEnrichMode(org.eclipse.jface.text.ITextViewerExtension8.EnrichMode.AFTER_DELAY);
 		}

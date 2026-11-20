@@ -210,6 +210,8 @@ public class REditor extends TextEditor implements IPropertyChangeListener, Upda
 
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
+		/* No Run As, Debug As, Profile As (no launch configurations for the files of the editor) */
+		com.eco.bio7.util.LaunchMenus.removeFrom(getSourceViewer().getTextWidget());
 		parser = new Parse(this);
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.reditor");
 		getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(listener);

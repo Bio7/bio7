@@ -81,6 +81,8 @@ public class DebugProgress {
 	private static final long STEP_TIMEOUT = 24L * 3600 * 1000;
 	private static final long STATE_TIMEOUT = 30000;
 	private static final int MAX_RUN_TO_CURSOR_STEPS = 20000;
+	/* The global variable of R which enables the temporary breakpoint of Run to Cursor */
+	private static final String RUN_TO_FLAG = ".bio7runto";
 
 	/*
 	 * A line of R "debug at <file>#<line>: <code>" (in any language): the file (an
@@ -293,11 +295,32 @@ public class DebugProgress {
 	 * defined) and shows the first stop.
 	 */
 	public static void startEmbedded(String fileName) {
+		startEmbedded(fileName, null, null);
+	}
+
+	/*
+	 * Has the session stopped (a breakpoint, a step, an error)? A hint for the end
+	 * of a session without a stop (e.g., a file which only defines classes)
+	 */
+	private static volatile boolean stoppedInSession;
+	private static volatile String endHint;
+
+	/**
+	 * As above; note: a line for the Debug Text view (e.g., the script which is
+	 * debugged for the active file), hint: the message if the session ends without
+	 * a stop.
+	 */
+	public static void startEmbedded(String fileName, String note, String hint) {
 		startSession();
 		sessionFileName = fileName;
+		stoppedInSession = false;
+		endHint = hint;
 		EmbeddedR.setConsoleObserver(DebugProgress::consoleTyped);
 		runEmbedded("R Debug", () -> {
 			clearTextView();
+			if (note != null) {
+				printToTextView(note);
+			}
 			String lower = fileName.toLowerCase(java.util.Locale.ROOT);
 			if (lower.endsWith(".rmd") || lower.endsWith(".qmd") || lower.endsWith(".rmarkdown")) {
 				printToTextView("ℹ " + fileName + ": the R chunks are debugged as a script (not knitted: inline R code, child documents and the cache are not used)");
@@ -509,6 +532,19 @@ public class DebugProgress {
 		}
 		final String fileName = activeEditorName();
 		runEmbedded("R Debug Run to Cursor", () -> {
+			/*
+			 * A temporary breakpoint at the line: n steps over calls, so R would not stop
+			 * in a function (or method, or another file) which the code calls later. The
+			 * functions of the file are defined again with it (the running code keeps its
+			 * version: there the steps reach the line).
+			 */
+			/* 1: applied, 0: pending (the definitions don't exist yet, e.g., before the class definition), -1: none */
+			int state = targetFile == null ? TEMPORARY_NONE : redefineWithBreakpoints(targetFile, targetLine);
+			boolean temporary = state != TEMPORARY_NONE;
+			if (temporary) {
+				/* The temporary breakpoint stops only once (also in a function which runs with it, e.g., in a loop) */
+				EmbeddedR.consoleCapture("assign('" + RUN_TO_FLAG + "', TRUE, envir = globalenv())", STATE_TIMEOUT, false);
+			}
 			arm();
 			StringBuilder all = new StringBuilder();
 			for (int i = 0; i < MAX_RUN_TO_CURSOR_STEPS; i++) {
@@ -525,10 +561,60 @@ public class DebugProgress {
 				if (at != null && at.line() == targetLine && (targetFile == null || at.file().equals(targetFile))) {
 					break;
 				}
+				if (state == TEMPORARY_PENDING) {
+					/* After the step the definitions may exist (e.g., the class of the file) */
+					String p = EmbeddedR.consoleCapture(".bio7dbg$applyPending()", STATE_TIMEOUT, false);
+					if (p != null && p.contains("@@P@@0")) {
+						state = TEMPORARY_APPLIED;
+					}
+				}
+			}
+			if (temporary && EmbeddedR.isBrowsing()) {
+				EmbeddedR.consoleCapture("assign('" + RUN_TO_FLAG + "', FALSE, envir = globalenv()); .bio7dbg$clearPending()", STATE_TIMEOUT, false);
+				/* The functions without the temporary breakpoint (at their next call) */
+				redefineWithBreakpoints(targetFile, 0);
 			}
 			printToTextView("▶ Run to line " + targetLine);
 			afterEmbeddedStop(all.toString());
 		});
+	}
+
+	/*
+	 * Run to Cursor: a new copy of the file with the breakpoints of its markers and
+	 * a temporary breakpoint at a line (0: none); its functions and classes are
+	 * defined again (as for a change during the session). R waits in the browser.
+	 * TEMPORARY_APPLIED if R has defined functions or classes again;
+	 * TEMPORARY_PENDING if they don't exist yet (with a temporary breakpoint: R
+	 * uses the copy when they exist, see .bio7dbg$later); else TEMPORARY_NONE.
+	 */
+	private static final int TEMPORARY_NONE = -1, TEMPORARY_PENDING = 0, TEMPORARY_APPLIED = 1;
+
+	private static int redefineWithBreakpoints(Path source, int temporaryLine) {
+		if (!EmbeddedR.isBrowsing() || !Files.isRegularFile(source)) {
+			return TEMPORARY_NONE;
+		}
+		java.util.Map<Integer, RBreakpoint> bps = new java.util.TreeMap<>(DebugLiveUpdate.breakpoints(source));
+		if (temporaryLine > 0) {
+			bps.putIfAbsent(temporaryLine, new RBreakpoint("isTRUE(get0('" + RUN_TO_FLAG + "', envir = globalenv()))", 0, "", null));
+		}
+		try {
+			Path copy = DebugSession.rewriteCopy(source, bps);
+			String out = EmbeddedR.consoleCapture(DebugSession.updateR(source, copy), STATE_TIMEOUT, false);
+			Matcher u = Pattern.compile("@@U@@([^\\n]*)").matcher(out == null ? "" : out);
+			if (u.find() && !u.group(1).isBlank()) {
+				return TEMPORARY_APPLIED;
+			}
+			if (temporaryLine > 0) {
+				/* Not defined yet: applied by R when the definitions exist */
+				EmbeddedR.consoleCapture(".bio7dbg$later(" + DebugSession.rString(source.toAbsolutePath().toString().replace("\\", "/")) + ", "
+						+ DebugSession.rString(copy.toAbsolutePath().toString().replace("\\", "/")) + ", " + (DebugSession.isScript(source) ? "TRUE" : "FALSE") + ")",
+						STATE_TIMEOUT, false);
+				return TEMPORARY_PENDING;
+			}
+			return TEMPORARY_NONE;
+		} catch (java.io.IOException | RuntimeException e) {
+			return TEMPORARY_NONE;
+		}
 	}
 
 	/** Shows the variables of a frame of the call stack (0: the current frame). */
@@ -667,6 +753,13 @@ public class DebugProgress {
 		}
 		/* R waits at the stop of a breakpoint (before the line of the breakpoint) */
 		lastStopAtBreakpoint = "(breakpoint)".equals(code) || (code == null && error == null && s != null && s.breakpoint != null && line == s.breakpoint);
+		if (!browsing && error == null) {
+			/* An error which has ended the session (without the browser of the debugger) */
+			Matcher x = Pattern.compile("(?m)^(Error[^\\n]*(?:\\n(?![>+] )[^\\n@]+)?)").matcher(text);
+			if (x.find()) {
+				error = x.group(1).trim();
+			}
+		}
 		final DebugSession.Location stopLine = line;
 		final String stopCode = code;
 		final String stopError = error;
@@ -681,6 +774,7 @@ public class DebugProgress {
 			return;
 		}
 		if (browsing) {
+			stoppedInSession = true;
 			awaitingCall = false;
 			/* Changes of files during the session (breakpoints, code): now that R waits */
 			applyLiveUpdatesNow();
@@ -757,8 +851,17 @@ public class DebugProgress {
 		}
 		DebugVariablesView.clear();
 		printToTextView("■ Debug session ended" + (error != null ? " (error: " + error + ")" : "."));
-		Bio7Dialog.message("Debug session ended.\n\n" + (error != null ? "Error: " + error + "\n\n" : "")
-				+ "The script has finished or R has left Browse mode\n(see the R console for details).");
+		String hint = endHint;
+		if (!stoppedInSession && hint != null) {
+			/* Without a stop: e.g., a file which only defines classes */
+			printToTextView("ℹ " + hint.replace('\n', ' '));
+			Bio7Dialog.message("Debug session ended without a stop.\n\n" + (error != null ? "Error: " + error + "\n\n" : "") + hint);
+		} else if (!stoppedInSession && error != null) {
+			Bio7Dialog.message("Debug session ended without a stop.\n\nError: " + error + "\n\n(see the R console for details)");
+		} else {
+			Bio7Dialog.message("Debug session ended.\n\n" + (error != null ? "Error: " + error + "\n\n" : "")
+					+ "The script has finished or R has left Browse mode\n(see the R console for details).");
+		}
 		removeDebugMarker();
 	}
 

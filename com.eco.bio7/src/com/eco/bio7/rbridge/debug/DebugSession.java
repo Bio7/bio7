@@ -167,6 +167,33 @@ public final class DebugSession {
 		return f != null && f.source().equals(source.toAbsolutePath());
 	}
 
+	/**
+	 * Evaluates an R expression which returns a character vector, while R waits in
+	 * the debugger (browser) or is idle (embedded R); null if R is not available or
+	 * busy.
+	 */
+	static String[] rStringsNow(String expression) {
+		try {
+			if (!com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning()) {
+				return null;
+			}
+			if (com.eco.bio7.rbridge.backend.EmbeddedR.isBrowsing()) {
+				String out = com.eco.bio7.rbridge.backend.EmbeddedR.consoleCapture("cat('@@Q@@', paste(" + expression + ", collapse = '\\t'), '\\n', sep = '')", 10000, false);
+				java.util.regex.Matcher m = java.util.regex.Pattern.compile("@@Q@@([^\\n]*)").matcher(out == null ? "" : out);
+				if (!m.find()) {
+					return null;
+				}
+				return m.group(1).isEmpty() ? new String[0] : m.group(1).split("\t");
+			}
+			if (com.eco.bio7.rbridge.backend.EmbeddedR.isBusy()) {
+				return null;
+			}
+			return com.eco.bio7.rbridge.RUtil.fromRStrings(expression);
+		} catch (Exception | LinkageError e) {
+			return null;
+		}
+	}
+
 	/** R code which uses the new copy of a changed file (see .bio7dbg$update): prints "@@U@@names". */
 	public static String updateR(Path source, Path copy) {
 		return ".bio7dbg$update(" + rString(source.toAbsolutePath().toString().replace("\\", "/")) + ", " + rString(copy.toAbsolutePath().toString().replace("\\", "/")) + ", "
@@ -458,18 +485,22 @@ public final class DebugSession {
 			 * their source references (the debugger shows their lines)
 			 */
 			"  copies <- character(0)",
+			/* The files loaded with source() during the session (the next Debug of such a file starts the script again) */
+			"  sourced <- character(0)",
 			"  src <- function(file, ..., local = FALSE, chdir = FALSE, keep.source = TRUE, caller = parent.frame()) {",
 			"    if (isTRUE(local)) local <- caller",
 			"    f <- if (is.character(file) && length(file) == 1L) normalizePath(file, winslash = '/', mustWork = FALSE) else NA_character_",
+			"    if (!is.na(f)) sourced <<- unique(c(sourced, f))",
 			"    copy <- if (!is.na(f) && f %in% names(copies)) copies[[f]] else NA_character_",
-			"    if (is.na(copy)) return(base::source(file, ..., local = local, chdir = chdir, keep.source = keep.source))",
+			"    if (is.na(copy)) { r <- base::source(file, ..., local = local, chdir = chdir, keep.source = keep.source); if (length(pending)) applyPending(TRUE); return(invisible(r)) }",
 			"    if (isTRUE(chdir)) { owd <- setwd(dirname(f)); on.exit(setwd(owd), add = TRUE) }",
 			/* As source(): the expressions in envir, ofile is the path of the file (not of the copy) */
 			"    envir <- if (isTRUE(local)) caller else if (isFALSE(local)) globalenv() else local",
 			"    ofile <- f",
 			"    exprs <- parse(copy, keep.source = TRUE, encoding = 'UTF-8')",
 			"    value <- NULL",
-			"    for (i in seq_along(exprs)) value <- withVisible(eval(exprs[i], envir))",
+			/* After each expression: a temporary breakpoint of Run to Cursor for definitions which exist now */
+			"    for (i in seq_along(exprs)) { value <- withVisible(eval(exprs[i], envir)); if (length(pending)) applyPending(TRUE) }",
 			"    invisible(value) }",
 			/*
 			 * source() for the whole session (also in the files loaded with source(): their
@@ -492,8 +523,10 @@ public final class DebugSession {
 			 * run again), so that their breakpoints stop
 			 */
 			"  fromFile <- function(x) {",
-			"    fs <- if (inherits(x, 'S7_class')) list(attr(x, 'constructor'), attr(x, 'validator')) else if (is.function(x)) list(x)",
-			"      else if (methods::is(x, 'refObjectGenerator')) tryCatch(as.list(x$def@refMethods), error = function(e) list()) else list()",
+			/* The generator of a reference class is a function, too: its methods first */
+			"    fs <- if (inherits(x, 'S7_class')) list(attr(x, 'constructor'), attr(x, 'validator'))",
+			"      else if (methods::is(x, 'refObjectGenerator')) tryCatch(as.list(x$def@refMethods), error = function(e) list())",
+			"      else if (is.function(x)) list(x) else list()",
 			"    out <- character(0)",
 			"    for (fn in fs) if (is.function(fn)) { f <- tryCatch(utils::getSrcFilename(fn, full.names = TRUE), error = function(e) character(0))",
 			"      if (length(f) == 1L && nzchar(f)) { p <- normalizePath(f, winslash = '/', mustWork = FALSE); out <- c(out, if (p %in% names(origin)) origin[[p]] else p) } }",
@@ -572,6 +605,21 @@ public final class DebugSession {
 			"      else { copies[source] <<- copy; redefine(copy, source, globalenv()) }",
 			"    cat('@@U@@', paste(unique(done), collapse = ', '), '\\n', sep = '')",
 			"    invisible(done) }",
+			/*
+			 * A temporary breakpoint of Run to Cursor in a file whose functions or classes
+			 * don't exist yet (e.g., R waits before the class definition): the copy is
+			 * used when they exist (after an expression of source(), or a step)
+			 */
+			"  pending <- character(0)",
+			"  pendingScript <- logical(0)",
+			"  later <- function(source, copy, script = FALSE) {",
+			"    s <- normalizePath(source, winslash = '/', mustWork = FALSE); pending[s] <<- copy; pendingScript[s] <<- script; invisible() }",
+			"  applyPending <- function(quiet = FALSE) {",
+			"    for (s in names(pending)) { d <- character(0); utils::capture.output(d <- update(s, pending[[s]], pendingScript[[s]]))",
+			"      if (length(d)) { pending <<- pending[names(pending) != s]; pendingScript <<- pendingScript[names(pendingScript) != s] } }",
+			"    if (!quiet) cat('@@P@@', length(pending), '\\n', sep = '')",
+			"    invisible() }",
+			"  clearPending <- function() { pending <<- character(0); pendingScript <<- logical(0); invisible() }",
 			"  dims <- function(x) { d <- dim(x); if (!is.null(d)) paste(d, collapse = ' x ') else as.character(length(x)) }",
 			"  short <- function(x) one(tryCatch(",
 			"    if (is.atomic(x) && is.null(dim(x)) && length(x) <= 10) paste(format(x), collapse = ' ')",

@@ -122,6 +122,23 @@ public class DebugRScript extends Action {
 		if (editor.isDirty()) {
 			editor.doSave(new NullProgressMonitor());
 		}
+		/*
+		 * A file which only defines classes or functions does nothing on its own: the
+		 * script which loads it is debugged (the script of the last session or the one
+		 * R file which loads it with source(), see DebugTarget)
+		 */
+		final DebugTarget.Choice choice = editor.getEditorInput() instanceof IFileEditorInput active ? DebugTarget.choose(active.getFile())
+				: new DebugTarget.Choice(null, null, null);
+		if (choice.script() != null && editor.getEditorInput() instanceof IFileEditorInput active && !choice.script().equals(active.getFile())) {
+			try {
+				editor = org.eclipse.ui.ide.IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), choice.script());
+				if (editor.isDirty()) {
+					editor.doSave(new NullProgressMonitor());
+				}
+			} catch (org.eclipse.ui.PartInitException e) {
+				/* The active file is debugged */
+			}
+		}
 
 		final IResource resource = (IResource) editor.getEditorInput().getAdapter(IResource.class);
 
@@ -133,6 +150,7 @@ public class DebugRScript extends Action {
 			aFile = ((IFileEditorInput) editorInput).getFile();
 		}
 		final String loc = aFile.getLocation().toString();
+		DebugTarget.started(aFile);
 
 		/* The debugger works in the console of embedded R */
 		if (d == null || d.isEmbedded()) {
@@ -197,7 +215,7 @@ public class DebugRScript extends Action {
 									Bio7Dialog.message("The script could not be prepared for debugging:\n" + e.getMessage());
 									return Status.OK_STATUS;
 								}
-								DebugProgress.startEmbedded(fileName);
+								DebugProgress.startEmbedded(fileName, choice.note(), choice.hint());
 								return Status.OK_STATUS;
 							}
 

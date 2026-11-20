@@ -88,6 +88,8 @@ public class XMLEditor extends TextEditor {
 
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
+		/* No Run As, Debug As, Profile As (no launch configurations for the files of the editor) */
+		com.eco.bio7.util.LaunchMenus.removeFrom(getSourceViewer().getTextWidget());
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.reditor");
 		getSite().getWorkbenchWindow().getSelectionService().addSelectionListener(listener);
 		// viewer = (ProjectionViewer) getSourceViewer();

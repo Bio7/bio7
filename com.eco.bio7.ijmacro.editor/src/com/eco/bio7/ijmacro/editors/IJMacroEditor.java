@@ -201,6 +201,8 @@ public class IJMacroEditor extends TextEditor implements IPropertyChangeListener
 
 	public void createPartControl(Composite parent) {
 		super.createPartControl(parent);
+		/* No Run As, Debug As, Profile As (no launch configurations for the files of the editor) */
+		com.eco.bio7.util.LaunchMenus.removeFrom(getSourceViewer().getTextWidget());
 		// PlatformUI.getWorkbench().getHelpSystem().setHelp(parent,
 		// "com.eco.bio7.beanshell");
 		store = IJMacroEditorPlugin.getDefault().getPreferenceStore();
