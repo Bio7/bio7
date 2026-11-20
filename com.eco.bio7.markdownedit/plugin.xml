@@ -131,21 +131,21 @@
     </command>
     <command
           categoryId="org.eclipse.ui.category.textEditor"
-          description="Runs the R chunk at the cursor and shows its output below the chunk"
+          description="Runs the R or Python chunk at the cursor and shows its output below the chunk"
           id="com.eco.bio7.markdownedit.chunks.run"
-          name="Run R Chunk">
+          name="Run Chunk">
     </command>
     <command
           categoryId="org.eclipse.ui.category.textEditor"
-          description="Runs all R chunks and shows their output below the chunks"
+          description="Runs all R and Python chunks and shows their output below the chunks"
           id="com.eco.bio7.markdownedit.chunks.runAll"
-          name="Run All R Chunks">
+          name="Run All Chunks">
     </command>
     <command
           categoryId="org.eclipse.ui.category.textEditor"
-          description="Removes the output of the R chunks"
+          description="Removes the output of the R and Python chunks"
           id="com.eco.bio7.markdownedit.chunks.clear"
-          name="Clear R Chunk Output">
+          name="Clear Chunk Output">
     </command>
    </extension>
    <extension
@@ -193,18 +193,18 @@
             locationURI="popup:#RMarkdownEditorContext?after=additions">
          <command
                commandId="com.eco.bio7.markdownedit.chunks.run"
-               label="Run R Chunk"
+               label="Run Chunk"
                style="push"
-               tooltip="Runs the R chunk at the cursor, the output is shown below the chunk">
+               tooltip="Runs the R or Python chunk at the cursor, the output is shown below the chunk">
          </command>
          <command
                commandId="com.eco.bio7.markdownedit.chunks.runAll"
-               label="Run All R Chunks"
+               label="Run All Chunks"
                style="push">
          </command>
          <command
                commandId="com.eco.bio7.markdownedit.chunks.clear"
-               label="Clear R Chunk Output"
+               label="Clear Chunk Output"
                style="push">
          </command>
          <separator

@@ -218,8 +218,8 @@ public class PythonShellView extends ViewPart {
 	 */
 	public static List<String[]> tableRows(PySession py, String name, String mode) throws Exception {
 		loadModule(py);
-		py.assign("_bio7_args", new PyValue.PyList(List.of(PyValue.of(name), PyValue.of(mode))));
-		PyValue v = py.eval("__import__('_bio7shell').cells(*_bio7_args)");
+		String argsName = PythonArgs.assign(py, List.of(PyValue.of(name), PyValue.of(mode)));
+		PyValue v = py.eval("__import__('_bio7shell').cells(*" + argsName + ")");
 		List<String[]> rows = new ArrayList<>();
 		if (v instanceof PyValue.PyList l) {
 			for (PyValue r : l.values()) {
@@ -236,8 +236,8 @@ public class PythonShellView extends ViewPart {
 		for (String a : args) {
 			list.add(PyValue.of(a));
 		}
-		py.assign("_bio7_args", new PyValue.PyList(list));
-		return py.eval("__import__('_bio7shell')." + function + "(*_bio7_args)");
+		String argsName = PythonArgs.assign(py, list);
+		return py.eval("__import__('_bio7shell')." + function + "(*" + argsName + ")");
 	}
 
 	private static String text(PyValue v) {

@@ -69,10 +69,10 @@ public final class PythonChunkEvaluator {
 		try {
 			load(py);
 			dir = Files.createTempDirectory("bio7pychunk");
-			py.assign("_bio7_args", new PyValue.PyList(List.of(PyValue.of(code), PyValue.of(dir.toString()))));
-			PyValue status = py.eval(String.format(java.util.Locale.ROOT, "__import__('_bio7chunk').run(*_bio7_args, %d, %d, %d, %s)", widthPoints, heightPoints, dpi,
+			/* Own arguments (the Python-Shell view can call Python in between, e.g., with Run All) */
+			String args = PythonArgs.assign(py, List.of(PyValue.of(code), PyValue.of(dir.toString())));
+			PyValue status = py.eval(String.format(java.util.Locale.ROOT, "__import__('_bio7chunk').run(*%s, %d, %d, %d, %s)", args, widthPoints, heightPoints, dpi,
 					embed ? "True" : "False"));
-			py.exec("del _bio7_args");
 			/* The progress bars of the chunk (bio7.progress, tqdm) end with it */
 			PythonJobs.endTasks();
 			boolean error = status instanceof PyValue.Str s && "error".equals(s.asString());
