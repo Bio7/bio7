@@ -80,7 +80,8 @@ public final class GdalProbe {
 			dir = Files.createTempDirectory("gdalprobe");
 			Path source = dir.resolve("GdalProbeMain.java");
 			Files.writeString(source, PROGRAM, StandardCharsets.UTF_8);
-			ProcessBuilder pb = new ProcessBuilder(List.of(java.toString(), "--enable-native-access=ALL-UNNAMED", source.toString(), lib.toString()));
+			ProcessBuilder pb = new ProcessBuilder(List.of(java.toString(), "--enable-native-access=ALL-UNNAMED",
+					/* As Bio7 (Bio7.product): Java4Shell, CVE-2026-114938 */ "-XX:-UseBASE64Intrinsics", source.toString(), lib.toString()));
 			pb.redirectErrorStream(true);
 			if (GdalLibraryFinder.WINDOWS) {
 				/* The dependencies of the library (also found with the folder in the PATH) */

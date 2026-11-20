@@ -41,6 +41,7 @@ jdk/bin/javaw.exe
 --add-modules=ALL-SYSTEM 
 --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED
 --enable-native-access=ALL-UNNAMED
+-XX:-UseBASE64Intrinsics
       </vmArgs>
       <vmArgsLin>--module-path=jdk/nashorn
 -Dpython.console.encoding=UTF-8 
