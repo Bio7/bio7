@@ -145,8 +145,12 @@ public class DebugProgress {
 				/* Step Into of a method call: into the method (see .bio7dbg$stepInto) */
 				boolean targeted = "s".equals(command) && markStepTargets();
 				String out;
-				if (targeted && lastStopAtBreakpoint && EmbeddedR.isBrowsing()) {
-					/* At a breakpoint R is before the line: to the line first, then into the method */
+				if ((targeted || "s".equals(command) || "n".equals(command)) && lastStopAtBreakpoint && EmbeddedR.isBrowsing()) {
+					/*
+					 * At a breakpoint R waits before the line (in the browser() of the breakpoint):
+					 * to the line first, then the step (Next executes the line, Step Into enters its
+					 * call; else the first click would only reach the line)
+					 */
 					EmbeddedR.consoleCapture("n", STEP_TIMEOUT, false);
 				}
 				out = EmbeddedR.consoleCapture(targeted ? "n" : command, STEP_TIMEOUT, true, text -> shortenDebugLines(text, fileName));
