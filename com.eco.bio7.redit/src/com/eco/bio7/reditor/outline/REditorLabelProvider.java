@@ -32,6 +32,10 @@ public class REditorLabelProvider implements ILabelProvider {
 
 	private Image r6ClassIcon = Bio7REditorPlugin.getImageDescriptor("/icons/innerclass_default_obj.svg").createImage();
 
+	private Image s7ClassIcon = Bio7REditorPlugin.getImageDescriptor("/icons/class_obj.png").createImage();
+
+	private Image s7PropertyIcon = Bio7REditorPlugin.getImageDescriptor("/icons/field_protected_obj.svg").createImage();
+
 	public String getText(Object element) {
 		return ((REditorOutlineNode) element).getName();
 	}
@@ -58,6 +62,12 @@ public class REditorLabelProvider implements ILabelProvider {
 				im = refClassIcon;
 			} else if (cm.getType().equals("r6Class")) {
 				im = r6ClassIcon;
+			} else if (cm.getType().equals("s7Class")) {
+				im = s7ClassIcon;
+			} else if (cm.getType().equals("s7Property")) {
+				im = s7PropertyIcon;
+			} else if (cm.getType().equals("s7Generic") || cm.getType().equals("s7Method")) {
+				im = publicMethodIcon;
 			} else if (cm.getType().equals("library")) {
 				im = importIcon;
 			} else if (cm.getType().equals("base")) {
@@ -77,6 +87,8 @@ public class REditorLabelProvider implements ILabelProvider {
 		s4ClassIcon.dispose();
 		refClassIcon.dispose();
 		r6ClassIcon.dispose();
+		s7ClassIcon.dispose();
+		s7PropertyIcon.dispose();
 		publicFieldIcon.dispose();
 		publicFieldLoopIcon.dispose();
 		publicMethodCallFieldIcon.dispose();

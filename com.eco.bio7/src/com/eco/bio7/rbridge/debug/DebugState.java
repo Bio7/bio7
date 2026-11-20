@@ -21,14 +21,15 @@ import java.util.List;
  */
 final class DebugState {
 
-	/** A call of the call stack: the frame number, the line in the editor (0 if unknown) and the call. */
-	record Call(int frame, int line, String text) {
+	/** A call of the call stack: the frame number, its position (file and line, null if unknown) and the call. */
+	record Call(int frame, DebugSession.Location location, String text) {
 	}
 
 	int frame;
-	int breakpoint;
-	/* The line where R stopped (the current line of the innermost frame), 0 if unknown */
-	int stopLine;
+	/* The breakpoint where R stopped, null if none */
+	DebugSession.Location breakpoint;
+	/* The position where R stopped (the current line of the innermost frame), null if unknown */
+	DebugSession.Location stop;
 	final List<String[]> variables = new ArrayList<>();
 	final List<String> watch = new ArrayList<>();
 	final List<Call> stack = new ArrayList<>();
@@ -38,10 +39,10 @@ final class DebugState {
 	 * srcref of a call is its position in the calling function), the innermost
 	 * frame: the line where R stopped
 	 */
-	List<Integer> frameLines() {
-		List<Integer> lines = new ArrayList<>();
+	List<DebugSession.Location> frameLines() {
+		List<DebugSession.Location> lines = new ArrayList<>();
 		for (int i = 0; i < stack.size(); i++) {
-			lines.add(i + 1 < stack.size() ? stack.get(i + 1).line() : stopLine);
+			lines.add(i + 1 < stack.size() ? stack.get(i + 1).location() : stop);
 		}
 		return lines;
 	}
@@ -55,7 +56,7 @@ final class DebugState {
 			if (line.startsWith("@@FRAME@@")) {
 				s.frame = parseInt(line.substring(9).trim(), 0);
 			} else if (line.startsWith("@@BP@@")) {
-				s.breakpoint = parseInt(line.substring(6).trim(), 0);
+				s.breakpoint = DebugSession.breakpointLocation(line.substring(6).trim());
 			} else if (line.startsWith("@@V@@")) {
 				String[] p = line.substring(5).split("\t", 5);
 				if (p.length == 5) {
@@ -73,8 +74,8 @@ final class DebugState {
 			} else if (line.startsWith("@@S@@")) {
 				String[] p = line.substring(5).split("\t", 3);
 				if (p.length == 3) {
-					int copyLine = parseInt(p[1], 0);
-					s.stack.add(new Call(parseInt(p[0], 0), copyLine > 0 ? DebugSession.toSourceLine(copyLine) : 0, p[2]));
+					/* "file#line" of R: the position in the source (the copy mapped) */
+					s.stack.add(new Call(parseInt(p[0], 0), DebugSession.location(p[1]), p[2]));
 				}
 			}
 		}

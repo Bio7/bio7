@@ -197,6 +197,11 @@ public class RBaseListen extends RBaseListener {
 
 			String op = ctx.getParent().getChild(1).getText();
 			String name = ctx.getParent().getChild(0).getText();
+			/* An S7 method: method(generic, class) <- function... */
+			String s7Method = s7MethodName(ctx.getParent().getChild(0));
+			if (s7Method != null) {
+				name = s7Method;
+			}
 
 			/*
 			 * Check if we have an assignment symbol available! else we create a function
@@ -223,6 +228,10 @@ public class RBaseListen extends RBaseListener {
 
 				/* add the called method to the call set! */
 				st.methDecl.add(name);
+				if (s7Method != null) {
+					/* Called by its generic (not by its name) */
+					st.methCall.add(name);
+				}
 				storeDeclCall.push(new DeclCallStore());
 				/*
 				 * Create the function arguments as known symbol table vars in current scope!
@@ -243,7 +252,11 @@ public class RBaseListen extends RBaseListener {
 				}
 
 				/* Here we create the outline nodes in the Outline view! */
-				if (methods.size() == 0) {
+				if (s7Method != null) {
+					/* In its class if the class is defined in the file */
+					REditorOutlineNode cls = s7Classes.get(s7MethodClass(s7Method));
+					methods.push(new REditorOutlineNode(name, lineMethod, "s7Method", cls != null ? cls : methods.size() == 0 ? baseNode() : methods.peek()));
+				} else if (methods.size() == 0) {
 
 					methods.push(new REditorOutlineNode(name, lineMethod, "function", baseNode()));
 
@@ -569,15 +582,7 @@ public class RBaseListen extends RBaseListener {
 
 						st.varDecl.add(name);
 
-						if (isFunc.equals("setRefClass")) {
-							new REditorOutlineNode(name, line, "refClass", baseNode());
-						} else if (isFunc.equals("R6Class")) {
-							new REditorOutlineNode(name, line, "r6Class", baseNode());
-						}
-
-						else {
-							new REditorOutlineNode(name, line, "variable", baseNode());
-						}
+						outlineNode(name, line, isFunc, ctx.expr(1), baseNode());
 					}
 
 				} else {
@@ -595,15 +600,7 @@ public class RBaseListen extends RBaseListener {
 						 */
 						st.varDecl.add(name);
 
-						if (isFunc.equals("setRefClass")) {
-							new REditorOutlineNode(name, line, "refClass", methods.peek());
-						} else if (isFunc.equals("R6Class")) {
-							new REditorOutlineNode(name, line, "r6Class", methods.peek());
-						}
-
-						else {
-							new REditorOutlineNode(name, line, "variable", methods.peek());
-						}
+						outlineNode(name, line, isFunc, ctx.expr(1), methods.peek());
 					}
 
 				}
@@ -689,15 +686,7 @@ public class RBaseListen extends RBaseListener {
 
 						st.varDecl.add(name);
 
-						if (isFunc.equals("setRefClass")) {
-							new REditorOutlineNode(name, line, "refClass", baseNode());
-						}
-
-						else if (isFunc.equals("R6Class")) {
-							new REditorOutlineNode(name, line, "r6Class", baseNode());
-						} else {
-							new REditorOutlineNode(name, line, "variable", baseNode());
-						}
+						outlineNode(name, line, isFunc, ctx.expr(1), baseNode());
 					}
 
 				} else {
@@ -715,17 +704,7 @@ public class RBaseListen extends RBaseListener {
 						 */
 						st.varDecl.add(name);
 
-						if (isFunc.equals("setRefClass")) {
-							new REditorOutlineNode(name, line, "refClass", methods.peek());
-						}
-
-						else if (isFunc.equals("R6Class")) {
-							new REditorOutlineNode(name, line, "r6Class", methods.peek());
-						}
-
-						else {
-							new REditorOutlineNode(name, line, "variable", methods.peek());
-						}
+						outlineNode(name, line, isFunc, ctx.expr(1), methods.peek());
 					}
 
 				}
@@ -801,6 +780,79 @@ public class RBaseListen extends RBaseListener {
 	@Override
 	public void exitE17VariableDeclaration(RParser.E17VariableDeclarationContext ctx) {
 
+	}
+
+	/* The S7 classes of the file (their methods are shown in the class) */
+	private final java.util.Map<String, REditorOutlineNode> s7Classes = new java.util.HashMap<String, REditorOutlineNode>();
+
+	/*
+	 * The outline node of an assigned variable: a class (reference class, R6, S7
+	 * with its properties), an S7 generic or a variable
+	 */
+	private void outlineNode(String name, int line, String isFunc, RParser.ExprContext rhs, REditorOutlineNode parent) {
+		String rhsText = rhs == null ? "" : rhs.getText();
+		if (isCall(isFunc, rhsText, "setRefClass", "methods")) {
+			new REditorOutlineNode(name, line, "refClass", parent);
+		} else if (isCall(isFunc, rhsText, "R6Class", "R6")) {
+			new REditorOutlineNode(name, line, "r6Class", parent);
+		} else if (isCall(isFunc, rhsText, "new_class", "S7")) {
+			REditorOutlineNode c = new REditorOutlineNode(name, line, "s7Class", parent);
+			s7Classes.put(name, c);
+			s7Properties(rhs, c);
+		} else if (isCall(isFunc, rhsText, "new_generic", "S7")) {
+			new REditorOutlineNode(name, line, "s7Generic", parent);
+		} else {
+			new REditorOutlineNode(name, line, "variable", parent);
+		}
+	}
+
+	/* A call of fn (also pkg::fn) */
+	private static boolean isCall(String first, String text, String fn, String pkg) {
+		return (first.equals(fn) && text.startsWith(fn + "(")) || text.startsWith(pkg + "::" + fn + "(");
+	}
+
+	/* The properties of an S7 class (properties = list(name = class_character, ...)) as children */
+	private void s7Properties(RParser.ExprContext rhs, REditorOutlineNode c) {
+		if (!(rhs instanceof RParser.E20CallFunctionContext call) || call.sublist() == null) {
+			return;
+		}
+		for (RParser.SubContext sub : call.sublist().sub()) {
+			if (sub.ID() == null || !sub.ID().getText().equals("properties") || !(sub.expr() instanceof RParser.E20CallFunctionContext list)
+					|| list.sublist() == null) {
+				continue;
+			}
+			for (RParser.SubContext p : list.sublist().sub()) {
+				String pn = p.ID() != null ? p.ID().getText() : p.STRING() != null ? p.STRING().getText().replaceAll("^[\"'`]|[\"'`]$", "") : null;
+				if (pn != null) {
+					new REditorOutlineNode(pn, calculateLine(p.getStart().getStartIndex()), "s7Property", c);
+				}
+			}
+		}
+	}
+
+	/*
+	 * An S7 method (method(generic, class) <- function...): "generic(class)", null
+	 * if the left side is not method()
+	 */
+	private static String s7MethodName(org.antlr.v4.runtime.tree.ParseTree lhs) {
+		if (!(lhs instanceof RParser.E20CallFunctionContext m) || m.sublist() == null) {
+			return null;
+		}
+		String callee = m.expr().getText();
+		if (!callee.equals("method") && !callee.equals("S7::method")) {
+			return null;
+		}
+		List<RParser.SubContext> args = m.sublist().sub();
+		if (args.size() < 2 || args.get(0).expr() == null || args.get(1).expr() == null) {
+			return null;
+		}
+		return args.get(0).expr().getText() + "(" + args.get(1).expr().getText() + ")";
+	}
+
+	/* The class of an S7 method name "generic(class)" */
+	private static String s7MethodClass(String methodName) {
+		int i = methodName.indexOf('(');
+		return methodName.substring(i + 1, methodName.length() - 1);
 	}
 
 	@Override

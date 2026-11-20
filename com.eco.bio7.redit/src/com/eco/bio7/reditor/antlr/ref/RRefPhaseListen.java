@@ -1010,7 +1010,7 @@ public class RRefPhaseListen extends RBaseListener {
 		}
 
 		if (funcName.equals("class") || funcName.equals("setClass") || funcName.equals("setRefClass")
-				|| funcName.equals("R6Class")) {
+				|| funcName.equals("R6Class") || funcName.equals("new_class")) {
 
 			setCurrentScopeFromOffsetFunctionCall(ctx);
 		}

@@ -76,26 +76,8 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 
 		});
 
-		MenuItem menuItemBio7WindowBuilderJavaProject = new MenuItem(fMenu, SWT.PUSH);
-		menuItemBio7WindowBuilderJavaProject.setText("Bio7 Window Builder GUI Project");
-
-		// Image image
-		// =PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
-
-		menuItemBio7WindowBuilderJavaProject.setImage(imageCreateProjectFileJava);
-		menuItemBio7WindowBuilderJavaProject.addSelectionListener(new SelectionListener() {
-
-			public void widgetSelected(SelectionEvent e) {
-				selection = "java";
-				openWizard("com.eco.bio7.javafxclassjdtwindowbuilder");
-				selection = "r";
-			}
-
-			public void widgetDefaultSelected(SelectionEvent e) {
-
-			}
-
-		});
+		/* A Java project with a class with a main method */
+		wizardItem("Java Project with Main Class", imageCreateProjectFileJava, "com.eco.bio7.wizardJavaJdtMain");
 
 		MenuItem menuItemBio7OpenGLJavaProject = new MenuItem(fMenu, SWT.PUSH);
 		menuItemBio7OpenGLJavaProject.setText("Bio7 OpenGL Java Project");
@@ -171,6 +153,14 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 
 		});
 
+		/* The WindowBuilder: GUI projects for a Bio7 model, R and Python */
+		new MenuItem(fMenu, SWT.SEPARATOR);
+		wizardItem("WindowBuilder GUI Project (Bio7 Model)", imageCreateProjectFileJava, "com.eco.bio7.javafxclassjdtwindowbuilder");
+		wizardItem("WindowBuilder GUI Project for R", imageCreateProjectFileJava, "com.eco.bio7.wizardWindowBuilderR");
+		wizardItem("WindowBuilder GUI Project for Python", imageCreateProjectFileJava, "com.eco.bio7.wizardWindowBuilderPython");
+		wizardItem("WindowBuilder Shiny App Project", imageCreateProjectFileJava, "com.eco.bio7.wizardWindowBuilderShiny");
+		wizardItem("WindowBuilder JavaScript App Project", imageCreateProjectFileJava, "com.eco.bio7.wizardWindowBuilderJavaScript");
+
 		new MenuItem(fMenu, SWT.SEPARATOR);
 		MenuItem menuItemR = new MenuItem(fMenu, SWT.PUSH);
 		menuItemR.setText("Project with R file");
@@ -207,6 +197,23 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 
 			public void widgetSelected(SelectionEvent e) {
 				selection = "rmarkdown";
+				openWizard("com.eco.bio7.wizard.new.r.project.file");
+				selection = "r";
+			}
+
+			public void widgetDefaultSelected(SelectionEvent e) {
+
+			}
+
+		});
+		MenuItem menuItemQuarto = new MenuItem(fMenu, SWT.PUSH);
+		menuItemQuarto.setText("Project with Quarto document");
+		menuItemQuarto.setImage(imageCreateProject);
+		menuItemQuarto.addSelectionListener(new SelectionListener() {
+
+			public void widgetSelected(SelectionEvent e) {
+				/* A Quarto document (*.qmd, rendered with Quarto) */
+				selection = "quarto";
 				openWizard("com.eco.bio7.wizard.new.r.project.file");
 				selection = "r";
 			}
@@ -414,6 +421,26 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 	}
 
 	// Source from: https://resheim.net/2010/07/invoking-eclipse-wizard.html
+	/* A menu item which opens a wizard (of a Java project) */
+	private void wizardItem(String text, org.eclipse.swt.graphics.Image image, String wizardId) {
+		MenuItem item = new MenuItem(fMenu, SWT.PUSH);
+		item.setText(text);
+		item.setImage(image);
+		item.addSelectionListener(new SelectionListener() {
+
+			public void widgetSelected(SelectionEvent e) {
+				selection = "java";
+				openWizard(wizardId);
+				selection = "r";
+			}
+
+			public void widgetDefaultSelected(SelectionEvent e) {
+
+			}
+
+		});
+	}
+
 	public int openWizard(String id) {
 		int operation = 1;
 		// First see if this is a "new wizard".

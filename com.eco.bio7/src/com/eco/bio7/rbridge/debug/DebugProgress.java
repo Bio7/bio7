@@ -21,6 +21,13 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.IURIEditorInput;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -75,9 +82,17 @@ public class DebugProgress {
 	private static final long STATE_TIMEOUT = 30000;
 	private static final int MAX_RUN_TO_CURSOR_STEPS = 20000;
 
-	private static final Pattern DEBUG_LINE = Pattern.compile("\\.R#(\\d+):\\s*(.*)");
-	/* The line of the last stop (for the call stack when another frame is shown) */
-	private static volatile int lastStopLine;
+	/*
+	 * A line of R "debug at <file>#<line>: <code>" (in any language): the file (an
+	 * absolute path, also with blanks, or a name), its line and the code
+	 */
+	private static final Pattern DEBUG_LINE = Pattern.compile("((?:/|[A-Za-z]:[/\\\\])[^\\n]*?\\.[Rr]|[^\\s/\\\\]\\S*?\\.[Rr])#(\\d+):[ \\t]*([^\\n]*)");
+	/* The last stop was a breakpoint (R waits before its line) */
+	private static volatile boolean lastStopAtBreakpoint;
+	/* A step in a function without a file: "debug: <code>" */
+	private static final Pattern NO_FILE_LINE = Pattern.compile("(?m)^debug(?: at| bei)?: ([^\\n]*)");
+	/* The position of the last stop (for the call stack when another frame is shown) */
+	private static volatile DebugSession.Location lastStop;
 
 	private static final Pattern ERROR_LINE =Pattern.compile("@@E@@(\\S*)\\t(.*)");
 
@@ -85,6 +100,7 @@ public class DebugProgress {
 	public static void startSession() {
 		debugSessionActive = true;
 		stepping = false;
+		DebugLiveUpdate.start();
 		DebugVariablesView.updateActions();
 	}
 
@@ -92,6 +108,8 @@ public class DebugProgress {
 	public static void endSession() {
 		debugSessionActive = false;
 		stepping = false;
+		awaitingCall = false;
+		DebugLiveUpdate.stop();
 		DebugVariablesView.updateActions();
 	}
 
@@ -122,7 +140,17 @@ public class DebugProgress {
 		if (com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning()) {
 			runEmbedded("R Debug Step", () -> {
 				arm();
-				String out = EmbeddedR.consoleCapture(command, STEP_TIMEOUT, true, text -> shortenDebugLines(text, fileName));
+				/* Step Into of a method call: into the method (see .bio7dbg$stepInto) */
+				boolean targeted = "s".equals(command) && markStepTargets();
+				String out;
+				if (targeted && lastStopAtBreakpoint && EmbeddedR.isBrowsing()) {
+					/* At a breakpoint R is before the line: to the line first, then into the method */
+					EmbeddedR.consoleCapture("n", STEP_TIMEOUT, false);
+				}
+				out = EmbeddedR.consoleCapture(targeted ? "n" : command, STEP_TIMEOUT, true, text -> shortenDebugLines(text, fileName));
+				if (targeted && EmbeddedR.isBrowsing()) {
+					EmbeddedR.consoleCapture(".bio7dbg$untarget()", STATE_TIMEOUT, false);
+				}
 				afterEmbeddedStop(out);
 			});
 			return;
@@ -159,7 +187,7 @@ public class DebugProgress {
 							if (stepLine != null) {
 								Matcher m = DEBUG_LINE.matcher(stepLine);
 								if (m.find()) {
-									showLine(DebugSession.toSourceLine(Integer.parseInt(m.group(1))));
+									showLine(DebugSession.location(m.group(1), Integer.parseInt(m.group(2))));
 								}
 							} else {
 								sessionEnded(null);
@@ -270,10 +298,150 @@ public class DebugProgress {
 		EmbeddedR.setConsoleObserver(DebugProgress::consoleTyped);
 		runEmbedded("R Debug", () -> {
 			clearTextView();
+			String lower = fileName.toLowerCase(java.util.Locale.ROOT);
+			if (lower.endsWith(".rmd") || lower.endsWith(".qmd") || lower.endsWith(".rmarkdown")) {
+				printToTextView("ℹ " + fileName + ": the R chunks are debugged as a script (not knitted: inline R code, child documents and the cache are not used)");
+			}
 			String out = EmbeddedR.consoleCapture("withCallingHandlers(.bio7debugfunc(), error = .bio7dbg$onError)", STEP_TIMEOUT, true,
 					text -> shortenDebugLines(text, fileName));
 			afterEmbeddedStop(out);
 		});
+	}
+
+	/* Debug Function: the session waits until R calls the function (other console input doesn't end it) */
+	private static volatile boolean awaitingCall;
+	/* Debug Function: the function (undebug at the end) */
+	private static volatile String debuggedFunction;
+
+	/**
+	 * Debug Function: R stops at the next call of a function (debugonce), also of
+	 * a package or without a file. The selection is a name (R stops when the
+	 * function is called, e.g., in the console or a script) or a call (f(3): it is
+	 * run at once).
+	 */
+	public static void debugFunction(String selection) {
+		if (!com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning()) {
+			Bio7Dialog.message("Debug Function needs embedded R.");
+			return;
+		}
+		String sel = selection == null ? "" : selection.strip();
+		boolean call = sel.matches("(?s)[A-Za-z.][\\w.]*(:::?[A-Za-z.][\\w.]*)?\\s*\\(.*\\)");
+		String name = call ? sel.substring(0, sel.indexOf('(')).strip() : sel;
+		if (!name.matches("[A-Za-z.][\\w.]*(:::?[A-Za-z.][\\w.]*)?")) {
+			Bio7Dialog.message("Please select the name of a function (e.g., myFunction or stats::sd) or a call (e.g., myFunction(3)).");
+			return;
+		}
+		if (debugSessionActive && EmbeddedR.isBrowsing()) {
+			/* In a session: R stops at the next call (e.g., Continue) */
+			runEmbedded("R Debug Function", () -> {
+				String out = EmbeddedR.consoleCapture("tryCatch({ debugonce(" + name + "); cat('@@OK@@\\n') }, error = function(e) cat('@@ERR@@', conditionMessage(e), '\\n'))",
+						STATE_TIMEOUT, false);
+				printToTextView(out != null && out.contains("@@OK@@") ? "▶ " + name + ": R stops at its next call" : "✖ " + name + " is not a function");
+			});
+			return;
+		}
+		if (debugSessionActive || EmbeddedR.isBusy() || EmbeddedR.isBrowsing()) {
+			Bio7Dialog.message("R is busy or another debug session runs.");
+			return;
+		}
+		com.eco.bio7.rbridge.backend.RBackend b = com.eco.bio7.rbridge.RBridge.getBackend();
+		try {
+			b.voidEval(DebugSession.HELPERS);
+			b.voidEval("debugonce(" + name + ")");
+		} catch (Exception e) {
+			Bio7Dialog.message(name + " is not a function of R:\n" + e.getMessage());
+			return;
+		}
+		debuggedFunction = name;
+		Display.getDefault().syncExec(() -> {
+			ConsolePageParticipant inst = ConsolePageParticipant.getConsolePageParticipantInstance();
+			if (inst != null) {
+				inst.setRDebugToolbarActions();
+			}
+			DebugVariablesView.showDebugView();
+		});
+		startSession();
+		EmbeddedR.setConsoleObserver(DebugProgress::consoleTyped);
+		clearTextView();
+		if (!call) {
+			awaitingCall = true;
+			printToTextView("▶ Debug " + name + ": R stops at its next call (e.g., call it in the console or run a script).");
+			return;
+		}
+		runEmbedded("R Debug Function", () -> {
+			String out = EmbeddedR.consoleCapture("withCallingHandlers(" + sel + ", error = .bio7dbg$onError)", STEP_TIMEOUT, true, text -> shortenDebugLines(text, name));
+			afterEmbeddedStop(out);
+		});
+	}
+
+	/*
+	 * Changes of files during the session (breakpoints or code, see
+	 * DebugLiveUpdate): applied when R waits in the browser (now or at the next
+	 * stop); the running code keeps the old version
+	 */
+	static void liveUpdateLater() {
+		if (!debugSessionActive || !EmbeddedR.isBrowsing() || EmbeddedR.isBusy()) {
+			/* At the next stop */
+			return;
+		}
+		runEmbedded("R Debug Update", DebugProgress::applyLiveUpdatesNow);
+	}
+
+	/*
+	 * Step Into: the methods which the current line calls (a reference class, R6
+	 * or S7 method) get debugonce; true if there are some (the step is then n: R
+	 * stops in the method, not in R's code of $ or the dispatch)
+	 */
+	private static boolean markStepTargets() {
+		DebugSession.Location at = lastStop;
+		if (at == null || !Files.isRegularFile(at.file())) {
+			return false;
+		}
+		try {
+			List<String> lines = Files.readAllLines(at.file(), java.nio.charset.StandardCharsets.UTF_8);
+			List<String> code = new ArrayList<>();
+			for (int i = at.line() - 1; i >= 0 && i < lines.size() && code.size() < 8; i++) {
+				code.add(lines.get(i));
+			}
+			if (code.isEmpty()) {
+				return false;
+			}
+			String out = EmbeddedR.consoleCapture(".bio7dbg$stepInto(" + DebugSession.rStrings(code) + ", environment())", STATE_TIMEOUT, false);
+			Matcher m = Pattern.compile("@@T@@(-?\\d+)").matcher(out == null ? "" : out);
+			return m.find() && Integer.parseInt(m.group(1)) > 0;
+		} catch (java.io.IOException | RuntimeException e) {
+			return false;
+		}
+	}
+
+	/* In the thread of a debug action while R waits in the browser */
+	private static void applyLiveUpdatesNow() {
+		if (!com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning() || !EmbeddedR.isBrowsing()) {
+			return;
+		}
+		for (Path source : DebugLiveUpdate.take()) {
+			boolean inSession = DebugSession.files().contains(source.toAbsolutePath());
+			java.util.Map<Integer, RBreakpoint> bps = DebugLiveUpdate.breakpoints(source);
+			if (!inSession && bps.isEmpty()) {
+				continue;
+			}
+			try {
+				Path copy = DebugSession.rewriteCopy(source, bps);
+				String out = EmbeddedR.consoleCapture(DebugSession.updateR(source, copy), STATE_TIMEOUT, false);
+				Matcher u = Pattern.compile("@@U@@([^\\n]*)").matcher(out == null ? "" : out);
+				String names = u.find() ? u.group(1).trim() : "";
+				String file = source.getFileName().toString();
+				if (!names.isEmpty()) {
+					printToTextView("↻ " + file + ": updated " + names + " (applies at the next call)");
+				} else if (DebugSession.isScript(source)) {
+					printToTextView("↻ " + file + ": changes of the running script code apply at the next start of the debugger");
+				} else {
+					printToTextView("↻ " + file + ": applies when the file is loaded again (source)");
+				}
+			} catch (java.io.IOException e) {
+				printToTextView("✖ " + source.getFileName() + " could not be updated: " + e.getMessage());
+			}
+		}
 	}
 
 	/* The name of the debugged script (embedded R) */
@@ -334,6 +502,7 @@ public class DebugProgress {
 	 * stops otherwise (an error, the end).
 	 */
 	public static void runToLine(int targetLine) {
+		final Path targetFile = activeEditorFile();
 		if (!debugSessionActive || !com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning()) {
 			Bio7Dialog.message("Run to Cursor needs a debug session of embedded R.");
 			return;
@@ -352,8 +521,8 @@ public class DebugProgress {
 				if (out.contains("@@E@@") || !EmbeddedR.isBrowsing()) {
 					break;
 				}
-				Matcher m = DEBUG_LINE.matcher(out);
-				if (m.find() && DebugSession.toSourceLine(Integer.parseInt(m.group(1))) == targetLine) {
+				DebugSession.Location at = lastLocation(out);
+				if (at != null && at.line() == targetLine && (targetFile == null || at.file().equals(targetFile))) {
 					break;
 				}
 			}
@@ -372,7 +541,7 @@ public class DebugProgress {
 			String state = EmbeddedR.consoleCapture(".bio7dbg$state(" + env + ", " + DebugSession.rStrings(DebugSession.watchExpressions()) + ", " + frame + ")",
 					STATE_TIMEOUT, false);
 			DebugState s = DebugState.parse(state);
-			s.stopLine = lastStopLine;
+			s.stop = lastStop;
 			Display.getDefault().asyncExec(() -> DebugVariablesView.show(s, false));
 		});
 	}
@@ -437,28 +606,51 @@ public class DebugProgress {
 	/* quiet: no message if R waits without a new line (e.g., an expression typed at the Browse prompt) */
 	private static void afterEmbeddedStop(String out, boolean quiet) {
 		String text = out == null ? "" : out;
-		boolean browsing = EmbeddedR.isBrowsing();
-		int line = -1;
+		/* Also the prompt of browser() (e.g., a stop in R's own code without a file) */
+		boolean browsing = EmbeddedR.isBrowsing() || EmbeddedR.isAtBrowsePrompt();
+		DebugSession.Location line = null;
 		String code = null;
 		String error = null;
+		/* A stop without a line of a file (shown as text) */
+		String note = null;
 		Matcher e = ERROR_LINE.matcher(text);
 		if (e.find()) {
 			error = e.group(2).trim();
-			try {
-				line = DebugSession.toSourceLine(Integer.parseInt(e.group(1)));
-			} catch (NumberFormatException x) {
-				line = -1;
-			}
+			line = DebugSession.location(e.group(1));
 		} else {
-			/* The output of R (the debugged copy) as lines of the editor */
-			Matcher m = Pattern.compile("(?:debug(?: at| bei)?) .*? line (\\d+):\\s*(.*)").matcher(shortenDebugLines(text, sessionFileName));
-			if (m.find()) {
-				line = Integer.parseInt(m.group(1));
-				code = m.group(2).trim();
-				/* An injected line of the debugged copy (not the code of the editor) */
-				if (code.contains(".bio7bp") || code.contains(".bio7hit_") || (code.startsWith("cat(") && (code.contains("▶ line") || code.contains("\\u25B6 line")))) {
-					code = "(breakpoint)";
+			/* The last position of R (a debugged copy or another file) as file and line of the editor */
+			Matcher m = DEBUG_LINE.matcher(text);
+			while (m.find()) {
+				DebugSession.Location at = DebugSession.location(m.group(1), Integer.parseInt(m.group(2)));
+				if (at != null && at.line() < 1) {
+					/* The line of the wrapper: the end of the script or file (its variables are kept) */
+					line = null;
+					code = null;
+					note = "End of " + at.name() + " (its variables are kept)";
+				} else if (at != null) {
+					line = at;
+					code = m.group(3).trim();
+					note = null;
 				}
+			}
+			if (line == null && note == null) {
+				/* A function without a file (e.g., Debug Function of a package function): its code */
+				Matcher d = NO_FILE_LINE.matcher(text);
+				while (d.find()) {
+					note = d.group(1).trim();
+				}
+				Matcher in = Pattern.compile("(?m)^debugging in: ([^\\n]*)").matcher(text);
+				String fn = null;
+				while (in.find()) {
+					fn = in.group(1).trim();
+				}
+				if (fn != null) {
+					note = "In " + fn + " (R code without a file; Step Out returns)" + (note != null && !note.equals("{") ? ": " + note : "");
+				}
+			}
+			/* An injected line of the debugged copy (not the code of the editor) */
+			if (code != null && (code.contains(".bio7bp") || code.contains(".bio7hit_") || (code.startsWith("cat(") && (code.contains("▶ ") || code.contains("\\u25B6 "))))) {
+				code = "(breakpoint)";
 			}
 		}
 		DebugState s = null;
@@ -466,20 +658,32 @@ public class DebugProgress {
 			String state = EmbeddedR.consoleCapture(".bio7dbg$state(environment(), " + DebugSession.rStrings(DebugSession.watchExpressions()) + ", 0)",
 					STATE_TIMEOUT, false);
 			s = DebugState.parse(state);
-			if (line < 0 && s.breakpoint > 0) {
+			if (line == null && s.breakpoint != null) {
 				line = s.breakpoint;
 			}
 			/* An expression typed at the Browse prompt: R still waits at the last line */
-			s.stopLine = line > 0 ? line : quiet ? lastStopLine : 0;
-			lastStopLine = s.stopLine;
+			s.stop = line != null ? line : quiet ? lastStop : null;
+			lastStop = s.stop;
 		}
-		final int stopLine = line;
+		/* R waits at the stop of a breakpoint (before the line of the breakpoint) */
+		lastStopAtBreakpoint = "(breakpoint)".equals(code) || (code == null && error == null && s != null && s.breakpoint != null && line == s.breakpoint);
+		final DebugSession.Location stopLine = line;
 		final String stopCode = code;
 		final String stopError = error;
 		final DebugState stopState = s;
+		final String stopNote = note;
 		/* A step typed in the console: R is not at the Browse prompt because it evaluates the next one (not the end) */
 		if (quiet && !browsing && EmbeddedR.isBusy()) {
 			return;
+		}
+		if (!browsing && awaitingCall) {
+			/* Debug Function: R has not called the function yet (other input in the console) */
+			return;
+		}
+		if (browsing) {
+			awaitingCall = false;
+			/* Changes of files during the session (breakpoints, code): now that R waits */
+			applyLiveUpdatesNow();
 		}
 		Display.getDefault().asyncExec(() -> {
 			if (!browsing) {
@@ -492,14 +696,16 @@ public class DebugProgress {
 				return;
 			}
 			if (stopError != null) {
-				printToTextView("✖ Error" + (stopLine > 0 ? " in line " + stopLine : "") + ": " + stopError);
+				printToTextView("✖ Error" + (stopLine != null ? " in " + where(stopLine).replace("Line", "line") : "") + ": " + stopError);
 				printToTextView("  R stopped in the frame of the error: inspect the variables, Continue ends the session.");
-			} else if (stopLine > 0) {
-				printToTextView("▶ Line " + stopLine + (stopCode != null ? ": " + stopCode : ""));
+			} else if (stopLine != null) {
+				printToTextView("▶ " + where(stopLine) + (stopCode != null ? ": " + stopCode : ""));
+			} else if (stopNote != null) {
+				printToTextView("▶ " + stopNote);
 			} else if (!quiet) {
 				printToTextView("▶ R waits in Browse mode");
 			}
-			if (stopLine > 0) {
+			if (stopLine != null) {
 				showLine(stopLine);
 			}
 			if (stopState != null) {
@@ -524,6 +730,14 @@ public class DebugProgress {
 				}
 				com.eco.bio7.rbridge.backend.RBackend r = com.eco.bio7.rbridge.RBridge.getBackend();
 				if (r != null && !com.eco.bio7.rbridge.backend.EmbeddedR.isBrowsing()) {
+					/* The source() of the session is removed first (see .bio7dbg$install) */
+					r.voidEval("if (exists('.bio7dbg', envir = .GlobalEnv, inherits = FALSE)) .bio7dbg$cleanup()");
+					/* Debug Function: the function was maybe not called (debugonce would stop later) */
+					String fn = debuggedFunction;
+					debuggedFunction = null;
+					if (fn != null) {
+						r.voidEval("try(if (isdebugged(" + fn + ")) undebug(" + fn + "), silent = TRUE)");
+					}
 					r.voidEval("if (dev.cur() > 1 && any(par('mfrow') != 1)) par(mfrow = c(1, 1))");
 				}
 			} catch (Exception e) {
@@ -550,30 +764,38 @@ public class DebugProgress {
 
 	/* ------------------------------------------------------------ the editor */
 
-	/** Shows the line of R in the active editor (the marker of the debugger). */
-	static void showLine(int line) {
-		IEditorPart edit = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		if (!(edit instanceof ITextEditor editor)) {
+	/**
+	 * Shows a position of R (the marker of the debugger): the editor of the file is
+	 * opened (or brought to the top) if it is not the active one, without taking
+	 * the focus (e.g., from the console).
+	 */
+	static void showLine(DebugSession.Location loc) {
+		if (loc == null || loc.line() < 1) {
+			return;
+		}
+		ITextEditor editor = editorOf(loc.file());
+		if (editor == null) {
 			return;
 		}
 		IDocumentProvider dp = editor.getDocumentProvider();
 		IDocument doc = dp.getDocument(editor.getEditorInput());
-		if (line < 1 || line > doc.getNumberOfLines()) {
+		if (doc == null || loc.line() > doc.getNumberOfLines()) {
 			return;
 		}
 		IRegion reg;
 		try {
-			reg = doc.getLineInformation(line - 1);
+			reg = doc.getLineInformation(loc.line() - 1);
 		} catch (BadLocationException e) {
 			return;
 		}
 		editor.selectAndReveal(reg.getOffset() + reg.getLength(), 0);
+		/* One marker of the debugger (also if the last stop was in another file) */
+		removeDebugMarker();
 		IResource resource = editor.getEditorInput().getAdapter(IResource.class);
 		if (resource == null) {
 			return;
 		}
 		try {
-			resource.deleteMarkers("com.eco.bio7.reditor.debugrulermark", false, IResource.DEPTH_ZERO);
 			IMarker marker = resource.createMarker("com.eco.bio7.reditor.debugrulermark");
 			marker.setAttribute(IMarker.CHAR_START, reg.getOffset());
 			marker.setAttribute(IMarker.CHAR_END, reg.getOffset() + reg.getLength());
@@ -582,13 +804,92 @@ public class DebugProgress {
 		}
 	}
 
+	/*
+	 * The text editor of a file: the active one if it shows the file, else the file
+	 * is opened in the workspace (or as a file outside of it) and brought to the top
+	 */
+	private static ITextEditor editorOf(Path file) {
+		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow() == null ? null
+				: PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+		if (page == null) {
+			return null;
+		}
+		IEditorPart active = page.getActiveEditor();
+		if (active instanceof ITextEditor t && file.equals(fileOf(active))) {
+			return t;
+		}
+		try {
+			IEditorPart part = null;
+			IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(file.toUri());
+			for (IFile f : files) {
+				if (f.exists()) {
+					part = IDE.openEditor(page, f, false);
+					break;
+				}
+			}
+			if (part == null) {
+				part = IDE.openEditorOnFileStore(page, EFS.getLocalFileSystem().getStore(file.toUri()));
+			}
+			if (part != null) {
+				page.bringToTop(part);
+			}
+			return part instanceof ITextEditor t ? t : part == null ? null : part.getAdapter(ITextEditor.class);
+		} catch (PartInitException e) {
+			return null;
+		}
+	}
+
+	/* The file of an editor (null if unknown) */
+	private static Path fileOf(IEditorPart editor) {
+		IResource r = editor.getEditorInput().getAdapter(IResource.class);
+		if (r != null && r.getLocation() != null) {
+			return r.getLocation().toFile().toPath().toAbsolutePath();
+		}
+		if (editor.getEditorInput() instanceof IURIEditorInput u && u.getURI() != null && "file".equals(u.getURI().getScheme())) {
+			return Path.of(u.getURI()).toAbsolutePath();
+		}
+		return null;
+	}
+
+	/* The file of the active editor (UI thread), null if unknown */
+	static Path activeEditorFile() {
+		Path[] file = { null };
+		Runnable r = () -> {
+			IEditorPart edit = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+			if (edit != null) {
+				file[0] = fileOf(edit);
+			}
+		};
+		if (Display.getCurrent() != null) {
+			r.run();
+		} else {
+			Display.getDefault().syncExec(r);
+		}
+		return file[0];
+	}
+
+	/* "Line 12" in the debugged script, "animal.R line 12" in another file */
+	static String where(DebugSession.Location loc) {
+		return loc.file().equals(DebugSession.script()) ? "Line " + loc.line() : loc.name() + " line " + loc.line();
+	}
+
+	/* The last known position of R in an output, null if none */
+	private static DebugSession.Location lastLocation(String out) {
+		DebugSession.Location last = null;
+		Matcher m = DEBUG_LINE.matcher(out == null ? "" : out);
+		while (m.find()) {
+			DebugSession.Location at = DebugSession.location(m.group(1), Integer.parseInt(m.group(2)));
+			if (at != null) {
+				last = at;
+			}
+		}
+		return last;
+	}
+
+	/* The markers of the debugger in all files (the session may have several) */
 	private static void removeDebugMarker() {
 		try {
-			IEditorPart edit = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-			IResource res = edit == null ? null : edit.getEditorInput().getAdapter(IResource.class);
-			if (res != null) {
-				res.deleteMarkers("com.eco.bio7.reditor.debugrulermark", false, IResource.DEPTH_ZERO);
-			}
+			ResourcesPlugin.getWorkspace().getRoot().deleteMarkers("com.eco.bio7.reditor.debugrulermark", false, IResource.DEPTH_INFINITE);
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
@@ -626,10 +927,9 @@ public class DebugProgress {
 				Matcher dm = DEBUG_LINE.matcher(line);
 				if (dm.find() && debugStepLine == null) {
 					debugStepLine = line;
-					try {
-						printToTextView("▶ Line " + DebugSession.toSourceLine(Integer.parseInt(dm.group(1))) + ": " + dm.group(2).trim());
-					} catch (NumberFormatException e) {
-						/* Ignore */
+					DebugSession.Location at = DebugSession.location(dm.group(1), Integer.parseInt(dm.group(2)));
+					if (at != null) {
+						printToTextView("▶ " + where(at) + ": " + dm.group(3).trim());
 					}
 				}
 				if (line.startsWith("Bio7...Debug...Start...")) {
@@ -661,22 +961,20 @@ public class DebugProgress {
 	 * the editor, see DebugSession.toSourceLine)
 	 */
 	static String shortenDebugLines(String text, String fileName) {
-		Matcher m = Pattern.compile("(debug(?: at| bei)?) \\S+?\\.R#(\\d+):").matcher(text);
+		/* The position of R as file and line of the editor (a debugged copy: its source) */
+		Matcher m = DEBUG_LINE.matcher(text);
 		StringBuilder sb = new StringBuilder();
 		while (m.find()) {
-			int line = DebugSession.toSourceLine(Integer.parseInt(m.group(2)));
-			m.appendReplacement(sb, Matcher.quoteReplacement(m.group(1) + " " + fileName + " line " + line + ":"));
+			DebugSession.Location at = DebugSession.location(m.group(1), Integer.parseInt(m.group(2)));
+			String shown = at == null ? m.group(1) + "#" + m.group(2) : at.name() + " line " + at.line();
+			m.appendReplacement(sb, Matcher.quoteReplacement(shown + ": " + m.group(3)));
 		}
 		m.appendTail(sb);
 		Matcher e = Pattern.compile("@@E@@(\\S*)\\t([^\\n]*)").matcher(sb.toString());
 		StringBuilder sb2 = new StringBuilder();
 		while (e.find()) {
-			String where = "";
-			try {
-				where = " in " + fileName + " line " + DebugSession.toSourceLine(Integer.parseInt(e.group(1)));
-			} catch (NumberFormatException x) {
-				/* NA */
-			}
+			DebugSession.Location at = DebugSession.location(e.group(1));
+			String where = at == null ? "" : " in " + at.name() + " line " + at.line();
 			e.appendReplacement(sb2, Matcher.quoteReplacement("Error" + where + ": " + e.group(2) + "\n(Bio7 debugger: R stopped in the frame of the error)"));
 		}
 		e.appendTail(sb2);

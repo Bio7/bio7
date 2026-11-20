@@ -40,52 +40,233 @@ public final class DebugSession {
 	private DebugSession() {
 	}
 
-	/* The lines of the debugged copy with an injected line (1-based, sorted) */
-	private static int[] injected = new int[0];
-	/* The source line of the first stop (the first breakpoint) */
+	/**
+	 * A position of the debug session: a file (the script or a file loaded with
+	 * source()) and its line (1-based).
+	 */
+	public record Location(Path file, int line) {
+		/** The name of the file. */
+		public String name() {
+			return file.getFileName().toString();
+		}
+	}
+
+	/*
+	 * A file of the session: its source, the name of its copy and the lines of the
+	 * copy with an injected line (1-based, sorted); offset: the lines of the copy
+	 * before the first line of the source (the wrapper of the script)
+	 */
+	private record DebugFile(Path source, String copyName, int[] injected, int offset) {
+		int toSourceLine(int copyLine) {
+			int line = copyLine - offset;
+			for (int i : injected) {
+				if (i < copyLine) {
+					line--;
+				} else if (i == copyLine) {
+					/* The breakpoint itself: the next line of the copy is its source line */
+					return line;
+				}
+			}
+			return line;
+		}
+	}
+
+	/* The files of the session by the name of their copy (the script first) */
+	private static final Map<String, DebugFile> FILES = new java.util.concurrent.ConcurrentHashMap<>();
+	/* The debugged script */
+	private static volatile DebugFile script;
+	/* The source line of the first stop in the script (the first breakpoint) */
 	private static int firstBreakpoint;
 
 	/** The preference of the watch expressions (one per line). */
 	public static final String WATCH_PREFERENCE = "R_DEBUG_WATCH_EXPRESSIONS";
 
+	/*
+	 * The end of a wrapper (one line, also after an error or Stop): the variables
+	 * of the wrapper are copied to the target environment (as if the code had run
+	 * there), its functions get the target as environment (e.g., x <<- 1 in them
+	 * changes the variable of the target); not the functions of the debugger
+	 */
+	private static String keep(String target) {
+		/* One call (one step in the debugger at the end) */
+		return ".bio7keep <- function(e, t) for (n in setdiff(ls(e, all.names = TRUE), c('source', 'setRefClass', '.bio7keep', 'ofile'))) { "
+				+ "v <- get(n, envir = e); if (is.function(v) && identical(environment(v), e)) environment(v) <- t; assign(n, v, envir = t) }; "
+				+ "on.exit(.bio7keep(environment(), " + target + "), add = TRUE)";
+	}
+
+	/* The classes of setRefClass are defined in the environment of a wrapper: their methods find the generators */
+	private static final String LOCAL_CLASSES = "setRefClass <- function(..., where = parent.frame()) methods::setRefClass(..., where = where)";
+
+	/*
+	 * The wrapper of the script (one line, the lines of the script follow): R steps
+	 * line by line only in a function. The counters of the hit counts are removed
+	 * at the start. source() loads the debugged copies of other files (see
+	 * .bio7dbg$src).
+	 */
+	private static String scriptWrapper(Path source) {
+		/* ofile: the path of the script, as in source() (scripts find their folder with it) */
+		return SCRIPT_WRAPPER.replace(".bio7debugfunc <- function() {",
+				".bio7debugfunc <- function(ofile = " + rString(source.toAbsolutePath().toString().replace("\\", "/")) + ") {");
+	}
+
+	private static final String SCRIPT_WRAPPER = ".bio7debugfunc <- function() { rm(list = ls(pattern = '^\\\\.bio7hit_', all.names = TRUE, envir = .GlobalEnv), envir = .GlobalEnv); "
+			+ LOCAL_CLASSES + "; "
+			+ "source <- function(file, ...) if (exists('.bio7dbg', envir = .GlobalEnv, inherits = FALSE)) .bio7dbg$src(file, ..., caller = parent.frame()) else base::source(file, ...); "
+			+ keep(".GlobalEnv");
+
+	/*
+	 * The wrapper of a file loaded with source() which has a breakpoint in its top
+	 * level code (R steps there line by line only in a function): its variables go
+	 * to the environment of source() at the end
+	 */
+	private static final String SOURCED_WRAPPER = "(function() { " + LOCAL_CLASSES + "; " + keep("parent.env(environment())");
+
 	/**
 	 * Writes the debugged copy of the script: the breakpoints (source line ->
-	 * expression or null) injected. Returns the path of the copy.
+	 * expression or null) injected, the script wrapped into .bio7debugfunc. A new
+	 * session: the copies of other files are written after it
+	 * ({@link #writeSourcedCopy(Path, Map)}). Returns the path of the copy.
 	 */
 	public static Path writeDebugCopy(Path source, Map<Integer, RBreakpoint> breakpoints) throws IOException {
-		List<String> lines = Files.readAllLines(source, StandardCharsets.UTF_8);
-		List<String> out = new ArrayList<>();
-		List<Integer> inj = new ArrayList<>();
-		/* The wrapper; the counters of the hit counts are removed at the start (same line) */
-		out.add(".bio7debugfunc <- function() { rm(list = ls(pattern = '^\\\\.bio7hit_', all.names = TRUE, envir = .GlobalEnv), envir = .GlobalEnv)");
-		firstBreakpoint = 0;
-		for (int i = 0; i < lines.size(); i++) {
-			int sourceLine = i + 1;
-			if (breakpoints.containsKey(sourceLine)) {
-				out.add(injection(sourceLine, breakpoints.get(sourceLine)));
-				inj.add(out.size());
-				if (firstBreakpoint == 0) {
-					firstBreakpoint = sourceLine;
-				}
-			}
-			out.add(lines.get(i));
-		}
-		out.add("}");
-		injected = inj.stream().mapToInt(Integer::intValue).toArray();
+		FILES.clear();
 		Path copy = Files.createTempFile("bio7debug", ".R");
 		copy.toFile().deleteOnExit();
-		Files.write(copy, out, StandardCharsets.UTF_8);
+		int[] first = new int[1];
+		script = write(source, copy, breakpoints, true, first);
+		firstBreakpoint = first[0];
 		return copy;
+	}
+
+	/**
+	 * Writes the debugged copy of a file which the script loads with source() (its
+	 * breakpoints injected; wrapped only with a breakpoint in its top level code).
+	 * Returns the path of the copy.
+	 */
+	public static Path writeSourcedCopy(Path source, Map<Integer, RBreakpoint> breakpoints) throws IOException {
+		Path copy = Files.createTempFile("bio7debug", ".R");
+		copy.toFile().deleteOnExit();
+		write(source, copy, breakpoints, false, new int[1]);
+		return copy;
+	}
+
+	/**
+	 * A file changed during the session (its breakpoints or its code): a new copy
+	 * (the running code keeps the old one and its lines). Returns the path of the
+	 * copy.
+	 */
+	public static Path rewriteCopy(Path source, Map<Integer, RBreakpoint> breakpoints) throws IOException {
+		Path copy = Files.createTempFile("bio7debug", ".R");
+		copy.toFile().deleteOnExit();
+		write(source, copy, breakpoints, isScript(source), new int[1]);
+		return copy;
+	}
+
+	/** The file is the debugged script. */
+	public static boolean isScript(Path source) {
+		DebugFile f = script;
+		return f != null && f.source().equals(source.toAbsolutePath());
+	}
+
+	/** R code which uses the new copy of a changed file (see .bio7dbg$update): prints "@@U@@names". */
+	public static String updateR(Path source, Path copy) {
+		return ".bio7dbg$update(" + rString(source.toAbsolutePath().toString().replace("\\", "/")) + ", " + rString(copy.toAbsolutePath().toString().replace("\\", "/")) + ", "
+				+ (isScript(source) ? "TRUE" : "FALSE") + ")";
+	}
+
+	/*
+	 * Writes a copy: where each breakpoint stops (valid R): a line before a
+	 * statement, in the function of the line (e.g., a method in a list of a class)
+	 * or the next line where R can stop (e.g., for an argument of a call)
+	 */
+	private static DebugFile write(Path source, Path copy, Map<Integer, RBreakpoint> breakpoints, boolean isScript, int[] first) throws IOException {
+		List<String> lines = Files.readAllLines(source, StandardCharsets.UTF_8);
+		/* R Markdown, Quarto: the R chunks (the other lines empty, the line numbers stay) */
+		boolean document = RChunks.isDocument(source);
+		boolean params = document && RChunks.hasParams(lines);
+		if (document) {
+			lines = RChunks.code(lines);
+		}
+		String key = copy.getFileName().toString();
+		RBreakLines where = new RBreakLines(lines);
+		Map<Integer, String> before = new java.util.HashMap<>();
+		Map<Integer, String> inline = new java.util.HashMap<>();
+		boolean topLevelStop = false;
+		for (int sourceLine : new java.util.TreeSet<>(breakpoints.keySet())) {
+			RBreakpoint bp = breakpoints.get(sourceLine);
+			for (int l = sourceLine - 1; l >= 0 && l < lines.size(); l++) {
+				if (before.containsKey(l) || inline.containsKey(l)) {
+					/* A breakpoint which stops there already */
+					break;
+				}
+				/* The log points of other files name the file */
+				String stop = injection(key, isScript ? "" : source.getFileName().toString().replace("\\", "/").replace("\"", "") + " ", l + 1, bp);
+				if (where.startsStatement(l)) {
+					before.put(l, stop);
+					topLevelStop |= where.topLevel(l);
+				} else {
+					String text = where.inline(l, stop);
+					if (text == null) {
+						/*
+						 * The line of the breakpoint is in a statement (e.g., an argument of a call):
+						 * before this statement (not in a later function or statement)
+						 */
+						int e = l == sourceLine - 1 ? where.enclosingStatement(l) : -1;
+						if (e >= 0) {
+							if (!before.containsKey(e)) {
+								before.put(e, injection(key, isScript ? "" : source.getFileName().toString().replace("\\", "/").replace("\"", "") + " ", e + 1, bp));
+								topLevelStop |= where.topLevel(e);
+							}
+							l = e;
+						} else {
+							continue;
+						}
+					} else {
+						inline.put(l, text);
+					}
+				}
+				if (first[0] == 0 || l + 1 < first[0]) {
+					first[0] = l + 1;
+				}
+				break;
+			}
+		}
+		String wrapper = isScript ? scriptWrapper(source) : topLevelStop ? SOURCED_WRAPPER : null;
+		if (isScript && params) {
+			/* The params of the YAML header (as in rmarkdown::render) */
+			wrapper += "; params <- if (requireNamespace('rmarkdown', quietly = TRUE)) lapply(rmarkdown::yaml_front_matter("
+					+ rString(source.toAbsolutePath().toString().replace("\\", "/")) + ")$params, function(p) if (is.list(p) && !is.null(p$value)) p$value else p) else list()";
+		}
+		List<String> out = new ArrayList<>();
+		List<Integer> inj = new ArrayList<>();
+		if (wrapper != null) {
+			out.add(wrapper);
+		}
+		int offset = out.size();
+		for (int i = 0; i < lines.size(); i++) {
+			if (before.containsKey(i)) {
+				out.add(before.get(i));
+				inj.add(out.size());
+			}
+			out.add(inline.getOrDefault(i, lines.get(i)));
+		}
+		if (wrapper != null) {
+			out.add(isScript ? "}" : "})()");
+		}
+		Files.write(copy, out, StandardCharsets.UTF_8);
+		DebugFile f = new DebugFile(source.toAbsolutePath(), key, inj.stream().mapToInt(Integer::intValue).toArray(), offset);
+		FILES.put(key, f);
+		return f;
 	}
 
 	/*
 	 * The line inserted before a breakpoint: browser(), a condition, a hit count
 	 * (stop once, at the n-th time; with a condition: the n-th time it is true) and
-	 * a log point (print the value instead of stopping), also combined
+	 * a log point (print the value instead of stopping), also combined. key: the
+	 * name of the copy (the breakpoint stores "copy#line": browser() itself doesn't
+	 * tell R's position)
 	 */
-	static String injection(int sourceLine, RBreakpoint bp) {
-		/* The breakpoint stores its line: browser() itself doesn't tell R's position */
-		String stop = "{ assign('.bio7bp', " + sourceLine + "L, envir = .GlobalEnv); browser() }";
+	static String injection(String key, String fileLabel, int sourceLine, RBreakpoint bp) {
+		String stop = "{ assign('.bio7bp', '" + key + "#" + sourceLine + "', envir = .GlobalEnv); browser() }";
 		if (bp == null || bp.isPlain()) {
 			return stop;
 		}
@@ -98,13 +279,13 @@ public final class DebugSession {
 			/* Log point: print the value, don't stop */
 			String x = bp.log();
 			String label = x.replace("\\", "\\\\").replace("\"", "\\\"");
-			action = "cat(\"\\u25B6 line " + sourceLine + ": " + label + " = \", tryCatch(paste(format(" + x
+			action = "cat(\"\\u25B6 " + fileLabel + "line " + sourceLine + ": " + label + " = \", tryCatch(paste(format(" + x
 					+ "), collapse = ' '), error = function(e) conditionMessage(e)), \"\\n\", sep = \"\")";
 		}
 		String cond = bp.condition().isEmpty() ? null : "isTRUE(" + bp.condition() + ")";
 		if (bp.hitCount() > 1) {
 			/* Counted only when the condition is true (&&) */
-			String v = ".bio7hit_" + sourceLine;
+			String v = ".bio7hit_" + key.replaceAll("[^A-Za-z0-9]", "_") + "_" + sourceLine;
 			String count = "(assign('" + v + "', get0('" + v + "', envir = .GlobalEnv, ifnotfound = 0) + 1, envir = .GlobalEnv) == " + bp.hitCount() + ")";
 			return "if (" + (cond == null ? "" : cond + " && ") + count + ") " + action;
 		}
@@ -112,20 +293,109 @@ public final class DebugSession {
 	}
 
 	/**
-	 * The line of the editor of a line of the debugged copy (the wrapper and the
-	 * injected lines removed); an injected line maps to the line of its breakpoint.
+	 * The line of the editor of a line of the debugged copy of the script (the
+	 * wrapper and the injected lines removed); an injected line maps to the line of
+	 * its breakpoint.
 	 */
 	public static int toSourceLine(int copyLine) {
-		int line = copyLine - 1;
-		for (int i : injected) {
-			if (i < copyLine) {
-				line--;
-			} else if (i == copyLine) {
-				/* The breakpoint itself: the next line of the copy is its source line */
-				return line;
-			}
+		DebugFile f = script;
+		return f == null ? copyLine : f.toSourceLine(copyLine);
+	}
+
+	/**
+	 * The position of a line which R reports (a file and its line): a debugged copy
+	 * is the line of its source, another file (e.g., loaded with source() without
+	 * breakpoints) its line; null if the file is not known.
+	 */
+	public static Location location(String rFile, int line) {
+		if (rFile == null || rFile.isBlank() || line <= 0) {
+			return null;
 		}
-		return line;
+		String file = rFile.trim();
+		String name = file.substring(Math.max(file.lastIndexOf('/'), file.lastIndexOf('\\')) + 1);
+		DebugFile f = FILES.get(name);
+		if (f != null) {
+			return new Location(f.source(), f.toSourceLine(line));
+		}
+		try {
+			Path p = Path.of(file);
+			if (p.isAbsolute() && Files.isRegularFile(p)) {
+				return new Location(p, line);
+			}
+		} catch (RuntimeException e) {
+			/* Not a path */
+		}
+		return null;
+	}
+
+	/** A position "file#line" (of R or of a breakpoint), null if unknown. */
+	public static Location location(String fileHashLine) {
+		if (fileHashLine == null) {
+			return null;
+		}
+		int i = fileHashLine.lastIndexOf('#');
+		if (i <= 0) {
+			return null;
+		}
+		try {
+			return location(fileHashLine.substring(0, i), Integer.parseInt(fileHashLine.substring(i + 1).trim()));
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * The position of a breakpoint where R stopped ("copy#line", stored by the
+	 * breakpoint: the line is the one of the source), null if unknown.
+	 */
+	public static Location breakpointLocation(String copyHashLine) {
+		if (copyHashLine == null) {
+			return null;
+		}
+		int i = copyHashLine.lastIndexOf('#');
+		DebugFile f = i > 0 ? FILES.get(copyHashLine.substring(0, i).trim()) : null;
+		if (f == null) {
+			return null;
+		}
+		try {
+			return new Location(f.source(), Integer.parseInt(copyHashLine.substring(i + 1).trim()));
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+
+	/** The debugged script (null if no session). */
+	public static Path script() {
+		DebugFile f = script;
+		return f == null ? null : f.source();
+	}
+
+	/** The files of the session (the script and the files with breakpoints). */
+	public static List<Path> files() {
+		List<Path> out = new ArrayList<>();
+		for (DebugFile f : FILES.values()) {
+			out.add(f.source());
+		}
+		return out;
+	}
+
+	/**
+	 * R code which tells .bio7dbg$src the copies of the files loaded with source()
+	 * (source path -> copy path), after the helpers.
+	 */
+	public static String copiesR(Map<Path, Path> copies) {
+		if (copies.isEmpty()) {
+			return ".bio7dbg$copies <- character(0)";
+		}
+		List<String> sources = new ArrayList<>();
+		List<String> paths = new ArrayList<>();
+		for (Map.Entry<Path, Path> e : copies.entrySet()) {
+			sources.add(e.getKey().toAbsolutePath().toString().replace("\\", "/"));
+			paths.add(e.getValue().toAbsolutePath().toString().replace("\\", "/"));
+		}
+		return ".bio7dbg$copies <- stats::setNames(" + rStrings(paths) + ", normalizePath(" + rStrings(sources) + ", winslash = '/', mustWork = FALSE)); "
+				+ ".bio7dbg$origin <- stats::setNames(normalizePath(" + rStrings(sources) + ", winslash = '/', mustWork = FALSE), normalizePath(" + rStrings(paths)
+				+ ", winslash = '/', mustWork = FALSE))";
 	}
 
 	/** The source line of the first breakpoint (0 if none). */
@@ -180,6 +450,128 @@ public final class DebugSession {
 			"  size <- function(x) { b <- tryCatch(as.numeric(utils::object.size(x)), error = function(e) NA)",
 			"    if (is.na(b)) '' else if (b >= 1048576) sprintf('%.1f MB', b / 1048576) else if (b >= 1024) sprintf('%.1f KB', b / 1024) else sprintf('%d B', as.integer(b)) }",
 			"  ours <- function(sr) !is.null(sr) && isTRUE(grepl('bio7debug', utils::getSrcFilename(sr)))",
+			/* The file of a srcref (full path), '' if none */
+			"  srcfile <- function(sr) { if (is.null(sr)) return(''); f <- tryCatch(utils::getSrcFilename(sr, full.names = TRUE), error = function(e) character(0)); if (length(f) == 0L) '' else f[1] }",
+			/*
+			 * source() of the debugged script: a file with breakpoints is loaded as its
+			 * debugged copy (in the folder of the file with chdir = TRUE), other files with
+			 * their source references (the debugger shows their lines)
+			 */
+			"  copies <- character(0)",
+			"  src <- function(file, ..., local = FALSE, chdir = FALSE, keep.source = TRUE, caller = parent.frame()) {",
+			"    if (isTRUE(local)) local <- caller",
+			"    f <- if (is.character(file) && length(file) == 1L) normalizePath(file, winslash = '/', mustWork = FALSE) else NA_character_",
+			"    copy <- if (!is.na(f) && f %in% names(copies)) copies[[f]] else NA_character_",
+			"    if (is.na(copy)) return(base::source(file, ..., local = local, chdir = chdir, keep.source = keep.source))",
+			"    if (isTRUE(chdir)) { owd <- setwd(dirname(f)); on.exit(setwd(owd), add = TRUE) }",
+			/* As source(): the expressions in envir, ofile is the path of the file (not of the copy) */
+			"    envir <- if (isTRUE(local)) caller else if (isFALSE(local)) globalenv() else local",
+			"    ofile <- f",
+			"    exprs <- parse(copy, keep.source = TRUE, encoding = 'UTF-8')",
+			"    value <- NULL",
+			"    for (i in seq_along(exprs)) value <- withVisible(eval(exprs[i], envir))",
+			"    invisible(value) }",
+			/*
+			 * source() for the whole session (also in the files loaded with source(): their
+			 * source() calls load the debugged copies too): a global function, removed at
+			 * the end (cleanup); not if the global environment has its own source()
+			 */
+			"  install <- function() {",
+			"    if (!exists('source', envir = globalenv(), inherits = FALSE)) {",
+			"      f <- function(file, ...) .bio7dbg$src(file, ..., caller = parent.frame()); attr(f, 'bio7dbg') <- TRUE",
+			"      assign('source', f, envir = globalenv()) }",
+			"    invisible() }",
+			"  cleanup <- function() {",
+			"    s <- get0('source', envir = globalenv(), inherits = FALSE)",
+			"    if (isTRUE(attr(s, 'bio7dbg'))) rm('source', envir = globalenv())",
+			"    invisible() }",
+			/*
+			 * The functions and classes which are already defined (e.g., loaded with
+			 * source() before the session) from a file with breakpoints: defined again from
+			 * its debugged copy (only these assignments, the other code of the file is not
+			 * run again), so that their breakpoints stop
+			 */
+			"  fromFile <- function(x) {",
+			"    fs <- if (inherits(x, 'S7_class')) list(attr(x, 'constructor'), attr(x, 'validator')) else if (is.function(x)) list(x)",
+			"      else if (methods::is(x, 'refObjectGenerator')) tryCatch(as.list(x$def@refMethods), error = function(e) list()) else list()",
+			"    out <- character(0)",
+			"    for (fn in fs) if (is.function(fn)) { f <- tryCatch(utils::getSrcFilename(fn, full.names = TRUE), error = function(e) character(0))",
+			"      if (length(f) == 1L && nzchar(f)) { p <- normalizePath(f, winslash = '/', mustWork = FALSE); out <- c(out, if (p %in% names(origin)) origin[[p]] else p) } }",
+			"    unique(out) }",
+			/* The debugged copies of the session (copy -> source, normalized) */
+			"  origin <- character(0)",
+			/*
+			 * A definition: a function, a class of setRefClass, R6 or S7 (not an S7
+			 * generic: defined again it would lose the methods of other files)
+			 */
+			"  defs <- function(rhs) is.call(rhs) && (identical(rhs[[1]], as.name('function')) || any(grepl('^((methods|R6|S7)::)?(setRefClass|R6Class|new_class)$', deparse(rhs[[1]]))))",
+			/* An S7 method: method(generic, class) <- function */
+			"  s7method <- function(e) is.call(e) && length(e) == 3L && as.character(e[[1]])[1] %in% c('<-', '=') && is.call(e[[2]]) && any(deparse(e[[2]][[1]]) %in% c('method', 'S7::method')) && length(e[[2]]) >= 3L",
+			/* The statements of parsed code (a wrapped copy: the statements in the wrapper) */
+			"  statements <- function(exprs) {",
+			"    if (length(exprs) == 1L) { e <- exprs[[1]]",
+			"      if (is.call(e) && length(e) == 3L && identical(e[[2]], as.name('.bio7debugfunc'))) return(as.list(e[[3]][[3]])[-1])",
+			"      if (is.call(e) && is.call(e[[1]]) && identical(e[[1]][[1]], as.name('(')) && is.call(e[[1]][[2]])) return(as.list(e[[1]][[2]][[3]])[-1]) }",
+			"    as.list(exprs) }",
+			/* The first definition of each name (name <- function / class) */
+			"  assigns <- function(exprs) { out <- list()",
+			"    for (e in statements(exprs)) if (is.call(e) && length(e) == 3L && as.character(e[[1]])[1] %in% c('<-', '=', '<<-') && is.name(e[[2]]) && defs(e[[3]])) {",
+			"      n <- as.character(e[[2]]); if (is.null(out[[n]])) out[[n]] <- e }",
+			"    out }",
+			/* A function without source references: the same code as the definition of the file */
+			"  same <- function(x, e) is.function(x) && is.call(e[[3]]) && identical(e[[3]][[1]], as.name('function')) &&",
+			"    identical(deparse(utils::removeSource(x)), deparse(utils::removeSource(eval(e[[3]], globalenv()))))",
+			/*
+			 * Defines the functions and classes of a file again from its debugged copy in
+			 * env: only the definitions whose name exists there (from this file, or the
+			 * same code; all: every existing name), the other code is not run again
+			 */
+			"  redefine <- function(copy, source, env, all = FALSE) {",
+			"    orig <- if (all) list() else tryCatch(assigns(parse(source, keep.source = FALSE)), error = function(e) list())",
+			"    new <- tryCatch(assigns(parse(copy, keep.source = TRUE)), error = function(e) list())",
+			"    done <- character(0)",
+			"    for (n in names(new)) {",
+			"      if (!exists(n, envir = env, inherits = FALSE) || (all && n %in% c('setRefClass', 'source', '.bio7keep'))) next",
+			"      x <- get(n, envir = env)",
+			"      if (!is.function(x) && !methods::is(x, 'refObjectGenerator') && !inherits(x, 'R6ClassGenerator') && !inherits(x, 'S7_class')) next",
+			"      if (!all && !(source %in% fromFile(x)) && !(!is.null(orig[[n]]) && isTRUE(tryCatch(same(x, orig[[n]]), error = function(e) FALSE)))) next",
+			"      tryCatch({ eval(new[[n]], envir = env); done <- c(done, n) }, error = function(err) NULL) }",
+			/*
+			 * The S7 methods of the copy: registered again if their generic or class was
+			 * defined again, the method of the generic comes from this file (or all)
+			 */
+			"    if (requireNamespace('S7', quietly = TRUE)) for (e in statements(tryCatch(parse(copy, keep.source = TRUE), error = function(err) expression()))) if (s7method(e)) {",
+			"      gen <- deparse(e[[2]][[2]]); cls <- deparse(e[[2]][[3]])",
+			"      cur <- tryCatch(S7::method(eval(e[[2]][[2]], env), eval(e[[2]][[3]], env)), error = function(err) NULL)",
+			"      if (!(all || gen %in% done || cls %in% done || (!is.null(cur) && source %in% fromFile(cur)))) next",
+			"      tryCatch({ eval(e, envir = env); done <- c(done, paste0(gen, '(', cls, ')')) }, error = function(err) NULL) }",
+			"    done }",
+			/*
+			 * The functions and classes which are already defined (e.g., loaded with
+			 * source() before the session) from a file with breakpoints: defined again
+			 * from its debugged copy, so that their breakpoints stop
+			 */
+			"  preload <- function() {",
+			"    done <- character(0)",
+			"    for (f in names(copies)) done <- c(done, redefine(copies[[f]], f, globalenv()))",
+			"    if (length(done)) cat('Bio7 debugger: breakpoints active in the loaded', paste(unique(done), collapse = ', '), '\\n')",
+			"    invisible(done) }",
+			/* The frame of the debugged script (its functions are variables there), NULL if none */
+			"  scriptFrame <- function() { fn <- get0('.bio7debugfunc', envir = globalenv(), inherits = FALSE)",
+			"    for (i in rev(seq_len(sys.nframe()))) if (identical(sys.function(i), fn)) return(sys.frame(i))",
+			"    NULL }",
+			/*
+			 * A file changed during the session (breakpoints or code): its new copy is
+			 * used by source() and its functions and classes are defined again (the
+			 * script: in its frame); the running code keeps the old version
+			 */
+			"  update <- function(source, copy, script = FALSE) {",
+			"    source <- normalizePath(source, winslash = '/', mustWork = FALSE)",
+			"    origin[normalizePath(copy, winslash = '/', mustWork = FALSE)] <<- source",
+			"    done <- if (script) { fr <- scriptFrame(); if (is.null(fr)) character(0) else redefine(copy, source, fr, all = TRUE) }",
+			"      else { copies[source] <<- copy; redefine(copy, source, globalenv()) }",
+			"    cat('@@U@@', paste(unique(done), collapse = ', '), '\\n', sep = '')",
+			"    invisible(done) }",
 			"  dims <- function(x) { d <- dim(x); if (!is.null(d)) paste(d, collapse = ' x ') else as.character(length(x)) }",
 			"  short <- function(x) one(tryCatch(",
 			"    if (is.atomic(x) && is.null(dim(x)) && length(x) <= 10) paste(format(x), collapse = ' ')",
@@ -187,6 +579,9 @@ public final class DebugSession {
 			"    error = function(e) '<unreadable>'))",
 			"  vars <- function(env) for (v in sort(ls(envir = env))) {",
 			"    x <- tryCatch(get(v, envir = env), error = function(e) NULL)",
+			/* Not the functions of the debugger (source and setRefClass of the session) */
+			"    if (v %in% c('source', 'setRefClass') && is.function(x) && any(grepl('bio7dbg|methods::setRefClass', deparse(body(x))))) next",
+			"    if (v == 'ofile' && identical(env, scriptFrame())) next",
 			"    cat('@@V@@', v, '\\t', class(x)[1], '\\t', dims(x), '\\t', size(x), '\\t', short(x), '\\n', sep = '') }",
 			"  watch <- function(exprs, env) for (i in seq_along(exprs)) {",
 			"    v <- tryCatch(list(value = eval(parse(text = exprs[i]), envir = new.env(parent = env))), error = function(e) e)",
@@ -195,7 +590,7 @@ public final class DebugSession {
 			"  stack <- function(calls) for (i in seq_along(calls)) {",
 			"    cl <- calls[[i]]; sr <- attr(cl, 'srcref'); txt <- one(paste(deparse(cl, width.cutoff = 200L)[1], collapse = ''))",
 			"    if (grepl('^(\\\\.bio7dbg|withCallingHandlers|eval\\\\(quote\\\\(browser|h\\\\(simpleError|\\\\.handleSimpleError|\\\\(function \\\\(expr\\\\)|withVisible\\\\(eval\\\\(expr|eval\\\\(expr, globalenv)', txt)) next",
-			"    cat('@@S@@', i, '\\t', if (ours(sr)) sr[1] else NA, '\\t', txt, '\\n', sep = '') }",
+			"    cat('@@S@@', i, '\\t', srcfile(sr), '#', if (is.null(sr)) NA else sr[1], '\\t', txt, '\\n', sep = '') }",
 			"  state <- function(env, exprs, frame = 0) {",
 			"    armed <<- FALSE",
 			"    calls <- sys.calls(); calls <- calls[-length(calls)]",
@@ -204,6 +599,41 @@ public final class DebugSession {
 			"    cat('@@BP@@', bp, '\\n', sep = '')",
 			"    vars(env); watch(exprs, env); stack(calls); invisible() }",
 			"  arm <- function() { armed <<- TRUE; invisible() }",
+			/*
+			 * Step Into of a line: the methods which the line calls (obj$method() of a
+			 * reference class or R6 object, generic(x) of S7) get debug(), the step is
+			 * then n (R stops in the method, not in R's code of $ or of the dispatch);
+			 * untarget() removes the marks after the step.
+			 * code: the lines from the current one (parsed until complete). Prints
+			 * "@@T@@n" (n methods, -1: not parsed).
+			 */
+			"  targets <- list()",
+			"  stepInto <- function(code, env) {",
+			"    targets <<- list(); exprs <- NULL",
+			"    for (k in seq_along(code)) { exprs <- tryCatch(parse(text = code[seq_len(k)], keep.source = FALSE), error = function(err) NULL); if (!is.null(exprs)) break }",
+			"    if (is.null(exprs) || length(exprs) == 0L) { cat('@@T@@-1\\n'); return(invisible()) }",
+			"    simple <- function(x) is.name(x) || (is.call(x) && identical(x[[1]], as.name('$')) && simple(x[[2]]) && is.name(x[[3]]))",
+			"    add <- function(fn) if (is.function(fn) && !is.primitive(fn)) targets[[length(targets) + 1L]] <<- fn",
+			"    walk <- function(x) {",
+			"      if (!is.call(x)) return(invisible())",
+			"      f <- x[[1]]",
+			"      if (is.call(f) && identical(f[[1]], as.name('$')) && simple(f[[2]])) {",
+			"        obj <- tryCatch(eval(f[[2]], env), error = function(err) NULL)",
+			"        if (methods::is(obj, 'envRefClass') || inherits(obj, 'R6')) add(tryCatch(eval(f, env), error = function(err) NULL))",
+			"      } else if (is.name(f) && length(x) >= 2L && simple(x[[2]])) {",
+			"        fn <- get0(as.character(f), envir = env)",
+			"        if (inherits(fn, 'S7_generic')) add(tryCatch(S7::method(fn, object = eval(x[[2]], env)), error = function(err) NULL))",
+			"      }",
+			"      args <- as.list(x)[-1]",
+			"      for (i in seq_along(args)) if (!(is.name(args[[i]]) && !nzchar(as.character(args[[i]])))) walk(args[[i]])",
+			"      if (is.call(f)) walk(f)",
+			"      invisible() }",
+			"    for (e in exprs) walk(e)",
+			"    for (fn in targets) debug(fn)",
+			"    cat('@@T@@', length(targets), '\\n', sep = '')",
+			"    invisible() }",
+			/* After the step: the marks of the methods which were not called are removed */
+			"  untarget <- function() { for (fn in targets) suppressWarnings(try(undebug(fn), silent = TRUE)); targets <<- list(); invisible() }",
 			"  preview <- function(x) {",
 			"    op <- options(width = 100); on.exit(options(op))",
 			"    out <- tryCatch(utils::capture.output(",
@@ -217,8 +647,8 @@ public final class DebugSession {
 			"    if (!armed) return(invisible())",
 			"    armed <<- FALSE",
 			"    calls <- sys.calls(); n <- length(calls); k <- 0",
-			"    for (i in rev(seq_len(n))) if (ours(attr(calls[[i]], 'srcref'))) { k <- i; break }",
-			"    line <- if (k > 0) attr(calls[[k]], 'srcref')[1] else NA",
+			"    for (i in rev(seq_len(n))) if (ours(attr(calls[[i]], 'srcref')) && !grepl('^\\\\.bio7(dbg|keep)', deparse(calls[[i]])[1])) { k <- i; break }",
+			"    line <- if (k > 0) paste0(basename(srcfile(attr(calls[[k]], 'srcref'))), '#', attr(calls[[k]], 'srcref')[1]) else NA",
 			"    cat('@@E@@', line, '\\t', one(conditionMessage(e)), '\\n', sep = '')",
 			"    frame <- if (k > 1) sys.frame(k - 1) else globalenv()",
 			"    eval(quote(browser()), envir = frame) }",

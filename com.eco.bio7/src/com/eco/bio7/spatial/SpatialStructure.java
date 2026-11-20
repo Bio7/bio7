@@ -1463,6 +1463,10 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		customCamera = false;
 		customCameraInMainView = false;
 		mainCamera = false;
+		/* The coordinates of the cameras: in the space of the mouse rotation again */
+		customCameraWalkFrame = false;
+		splitCameraWalkFrame = false;
+		mainCameraWalkFrame = false;
 		walkCamera.reset();
 		/* The camera distance fitted to the displayed data */
 		doz = getDefaultViewDistance();

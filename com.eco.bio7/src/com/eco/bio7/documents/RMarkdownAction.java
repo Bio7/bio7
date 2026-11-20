@@ -149,7 +149,18 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 		 * in Bio7!
 		 */
 		String ext = aFile.getFileExtension();
-		if (ext.equals("md")) {
+		if (Quarto.isQuarto(aFile.getName())) {
+			/* Quarto: the kind of the output from format: of the YAML header */
+			if (Quarto.binary() == null) {
+				Bio7Dialog.message("Quarto is not installed (it renders *.qmd documents).\n\nPlease install it from https://quarto.org/docs/get-started/\n"
+						+ "(or set the environment variable QUARTO_PATH to the quarto program).");
+				return;
+			}
+			docType = Quarto.docType(doc.get());
+			if (canOperate) {
+				markdownFile(aFile, aFile.getProject());
+			}
+		} else if (ext.equals("md")) {
 			docType = "Html";
 			/* Can execute when the last job has been finished! */
 			if (canOperate) {
@@ -225,7 +236,22 @@ public class RMarkdownAction extends Action implements IObjectActionDelegate {
 							c.eval("setwd('" + dirPath + "')");
 
 							System.out.println(selFile);
-							RTools.print("render(\"" + selFile + "\")");
+							if (Quarto.isQuarto(selFile)) {
+								/*
+								 * Quarto: with the R package quarto if installed (its messages in the console),
+								 * else with the Quarto program
+								 */
+								String quarto = Quarto.binary();
+								c.voidEval("Sys.setenv(QUARTO_PATH = '" + quarto + "')");
+								RValue pkg = c.eval("requireNamespace('quarto', quietly = TRUE)");
+								if (pkg.booleans()[0]) {
+									RTools.print("quarto::quarto_render(\"" + selFile + "\")");
+								} else {
+									RTools.print("system2(\"" + quarto + "\", c(\"render\", shQuote(\"" + selFile + "\")))");
+								}
+							} else {
+								RTools.print("render(\"" + selFile + "\")");
+							}
 
 						} catch (RException e1) {
 

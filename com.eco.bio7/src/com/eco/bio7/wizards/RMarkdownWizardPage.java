@@ -47,22 +47,30 @@ public class RMarkdownWizardPage extends WizardPage {
 
 	/* A plain markdown file (*.md, converted without R) */
 	private final boolean plain;
+	/* A Quarto document (*.qmd, rendered with Quarto) */
+	private final boolean quarto;
 
 	public RMarkdownWizardPage(ISelection selection) {
 		this(selection, false);
 	}
 
 	public RMarkdownWizardPage(ISelection selection, boolean plain) {
+		this(selection, plain, false);
+	}
+
+	public RMarkdownWizardPage(ISelection selection, boolean plain, boolean quarto) {
 		super("wizardPage");
 		this.plain = plain;
-		setTitle(plain ? "Markdown File" : "R Markdown File");
-		setDescription(plain ? "This wizard creates a new markdown file (*.md)."
-				: "This wizard creates a new file with *.rmd extension that can be opened by the default editor.");
+		this.quarto = quarto;
+		setTitle(quarto ? "Quarto Document" : plain ? "Markdown File" : "R Markdown File");
+		setDescription(quarto ? "This wizard creates a new Quarto document (*.qmd) with R code (rendered with Quarto, https://quarto.org)."
+				: plain ? "This wizard creates a new markdown file (*.md)."
+						: "This wizard creates a new file with *.rmd extension that can be opened by the default editor.");
 		this.selection = selection;
 	}
 
 	private String extension() {
-		return plain ? "md" : "Rmd";
+		return quarto ? "qmd" : plain ? "md" : "Rmd";
 	}
 
 	public void createControl(Composite parent) {
@@ -130,7 +138,10 @@ public class RMarkdownWizardPage extends WizardPage {
 		lblNewLabel_2.setText("Format");
 
 		combo = new Combo(container, SWT.NONE);
-		if (plain) {
+		if (quarto) {
+			/* The formats of Quarto */
+			combo.setItems(new String[] { "HTML", "PDF", "Word", "Typst (PDF)", "Presentation (Reveal.js)", "Presentation (Beamer PDF)", "Dashboard (HTML)" });
+		} else if (plain) {
 			/* HTML is converted in Bio7, the other formats with pandoc (no R) */
 			combo.setItems(new String[] { "HTML", "PDF", "Word", "ODT", "RTF", "EPUB" });
 		} else {

@@ -68,6 +68,8 @@ public class CreateNewRProjectAndFile {
 						fileMd = container.getFile(new Path("Untitled.R"));
 					} else if (selection.equals("rmarkdown")) {
 						fileMd = container.getFile(new Path("Untitled.rmd"));
+					} else if (selection.equals("quarto")) {
+						fileMd = container.getFile(new Path("Untitled.qmd"));
 					} else if (selection.equals("shiny")) {
 						fileMd = container.getFile(new Path("app.R"));
 					} else if (selection.equals("ijmacro")) {
@@ -127,6 +129,9 @@ public class CreateNewRProjectAndFile {
 		if (selection.equals("rmarkdown")) {
 			contents = "---\n" + "title: \n" + "author: \n" + "date:\n" + "output: html_document\n" + "---\n" + "\n" + "## R Markdown\n" + "\n" + "Example R code:\n" + "\n" + "```{R}\n"
 					+ "plot(runif(100))\n" + "```\n" + "";
+		} else if (selection.equals("quarto")) {
+			/* The template of the Quarto wizard (HTML) */
+			contents = QuartoPluginWizard.contents("", "", "html");
 		} else if (selection.equals("shiny")) {
 
 			contents = "library(shiny)\n" + "ui <- fluidPage(\n" + "  sliderInput(\n" + "    \"points\",\n" + "    \"Number of random points:\",\n" + "    min = 10,\n" + "    max = 10000,\n"
@@ -139,7 +144,7 @@ public class CreateNewRProjectAndFile {
 			contents = "";
 		}
 
-		return new ByteArrayInputStream(contents.getBytes());
+		return new ByteArrayInputStream(contents.getBytes(java.nio.charset.StandardCharsets.UTF_8));
 	}
 
 	private void throwCoreException(String message) throws CoreException {

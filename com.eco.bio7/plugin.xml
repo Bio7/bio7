@@ -938,6 +938,51 @@
             name="Bio7 Java Project (WindowBuilder Template)"
             project="true">
       </wizard>
+      <wizard
+            category="com.eco.bio7.bio7javaproject"
+            class="com.eco.bio7.wizards.java.JavaMainProjectWizard"
+            icon="icons/maintoolbar/create_project_file_java.svg"
+            id="com.eco.bio7.wizardJavaJdtMain"
+            name="Java Project with Main Class"
+            project="true">
+         <description>A Java project with a class with a main method</description>
+      </wizard>
+      <wizard
+            category="com.eco.bio7.bio7javaproject"
+            class="com.eco.bio7.wizards.java.WindowBuilderRGuiWizard"
+            icon="icons/maintoolbar/create_project_file_java.svg"
+            id="com.eco.bio7.wizardWindowBuilderR"
+            name="WindowBuilder GUI Project for R"
+            project="true">
+         <description>A Java project with a GUI for R (editable with the WindowBuilder)</description>
+      </wizard>
+      <wizard
+            category="com.eco.bio7.bio7javaproject"
+            class="com.eco.bio7.wizards.java.WindowBuilderPythonGuiWizard"
+            icon="icons/maintoolbar/create_project_file_java.svg"
+            id="com.eco.bio7.wizardWindowBuilderPython"
+            name="WindowBuilder GUI Project for Python"
+            project="true">
+         <description>A Java project with a GUI for Python (editable with the WindowBuilder)</description>
+      </wizard>
+      <wizard
+            category="com.eco.bio7.bio7javaproject"
+            class="com.eco.bio7.wizards.java.WindowBuilderShinyWizard"
+            icon="icons/maintoolbar/create_project_file_java.svg"
+            id="com.eco.bio7.wizardWindowBuilderShiny"
+            name="WindowBuilder Shiny App Project"
+            project="true">
+         <description>A Java project with a GUI (WindowBuilder) and its Shiny app</description>
+      </wizard>
+      <wizard
+            category="com.eco.bio7.bio7javaproject"
+            class="com.eco.bio7.wizards.java.WindowBuilderJavaScriptWizard"
+            icon="icons/maintoolbar/create_project_file_java.svg"
+            id="com.eco.bio7.wizardWindowBuilderJavaScript"
+            name="WindowBuilder JavaScript App Project"
+            project="true">
+         <description>A Java project with a GUI (WindowBuilder) and its HTML page with JavaScript</description>
+      </wizard>
       <category
             id="com.eco.bio7.bio7javaproject"
             name="Java Bio7 Projects">
@@ -966,6 +1011,15 @@
             id="com.eco.bio7.markdownCategory"
             name="Markdown">
       </category>
+      <wizard
+            category="com.eco.bio7.RCategory"
+            class="com.eco.bio7.wizards.QuartoPluginWizard"
+            icon="icons/editor/rmarkdownfile.svg"
+            id="com.eco.bio7.quarto.Wizard"
+            name="Quarto Document"
+            project="false">
+         <description>A Quarto document (*.qmd) with R code, rendered with Quarto (https://quarto.org)</description>
+      </wizard>
       <wizard
             category="com.eco.bio7.markdownCategory"
             class="com.eco.bio7.wizards.MarkdownPluginWizard"
@@ -1042,8 +1096,60 @@
                style="push">
          </action>
       </editorContribution>
+      <!-- R Markdown, Quarto: breakpoints in the R chunks -->
+      <editorContribution
+            id="com.eco.bio7.markdownedit.debug.rulerDoubleClick"
+            targetID="com.eco.bio7.markdownedit">
+         <action
+               actionID="RulerDoubleClick"
+               class="com.eco.bio7.rbridge.debug.ToggleDebugBreakpointAction"
+               id="com.eco.bio7.markdownedit.debug.toggleBreakpoint"
+               label="Toggle Breakpoint"
+               style="push">
+         </action>
+      </editorContribution>
    </extension>
    <extension point="org.eclipse.ui.popupMenus">
+      <!-- WindowBuilder Shiny and JavaScript: the app of a GUI class (the actions in reverse order of the menu) -->
+      <objectContribution
+            adaptable="true"
+            id="com.eco.bio7.windowBuilderApps"
+            nameFilter="*.java"
+            objectClass="org.eclipse.core.resources.IFile">
+         <menu
+               id="com.eco.bio7.windowBuilderApps.menu"
+               label="WindowBuilder Apps"
+               path="additions">
+            <separator name="create"/>
+            <separator name="location"/>
+         </menu>
+         <action
+               class="com.eco.bio7.windowbuilder.WebAppLocationAction"
+               id="com.eco.bio7.windowBuilderWeb.location"
+               label="Change JavaScript App Location..."
+               menubarPath="com.eco.bio7.windowBuilderApps.menu/location">
+         </action>
+         <action
+               class="com.eco.bio7.windowbuilder.ShinyAppLocationAction"
+               id="com.eco.bio7.windowBuilderShiny.location"
+               label="Change Shiny App Location..."
+               menubarPath="com.eco.bio7.windowBuilderApps.menu/location">
+         </action>
+         <action
+               class="com.eco.bio7.windowbuilder.CreateWebAppAction"
+               icon="icons/maintoolbar/create_project_file.svg"
+               id="com.eco.bio7.windowBuilderWeb.create"
+               label="Create JavaScript App (WindowBuilder JavaScript)"
+               menubarPath="com.eco.bio7.windowBuilderApps.menu/create">
+         </action>
+         <action
+               class="com.eco.bio7.windowbuilder.CreateShinyAppAction"
+               icon="icons/maintoolbar/create_project_file.svg"
+               id="com.eco.bio7.windowBuilderShiny.create"
+               label="Create Shiny App (WindowBuilder Shiny)"
+               menubarPath="com.eco.bio7.windowBuilderApps.menu/create">
+         </action>
+      </objectContribution>
       <objectContribution
             adaptable="false"
             id="CompileNavigatorFile"
@@ -1532,6 +1638,54 @@
                id="RPopupMenu.newAction">
          </action>
       </objectContribution>
+    <!-- R Markdown, Quarto: the breakpoints in the ruler and Debug Function -->
+    <viewerContribution
+          id="RMarkdownDebug.rulerActions"
+          targetID="com.eco.bio7.markdownedit.RulerContext">
+       <action
+             class="com.eco.bio7.rbridge.debug.DeleteBreakpointAction"
+             id="RMarkdownDeleteBreakpointAction"
+             label="Remove All Breakpoints"
+             menubarPath="additions">
+       </action>
+       <action
+             class="com.eco.bio7.rbridge.debug.ToggleDebugConditionalBreakpointAction"
+             id="RMarkdownConditionalBreakpointAction"
+             label="Breakpoint Properties..."
+             menubarPath="additions">
+       </action>
+       <action
+             class="com.eco.bio7.rbridge.debug.ToggleDebugBreakpointAction"
+             id="RMarkdownToggleBreakpointAction"
+             label="Toggle Breakpoint"
+             menubarPath="additions">
+       </action>
+    </viewerContribution>
+    <viewerContribution
+          id="RMarkdownDebug.debugFunction"
+          targetID="#RMarkdownEditorContext">
+       <action
+             class="com.eco.bio7.rbridge.debug.DebugFunctionAction"
+             icon="icons/rdebug/rundebug.svg"
+             id="com.eco.bio7.markdownedit.debug.debugFunction"
+             label="Debug Function"
+             menubarPath="additions"
+             tooltip="R stops at the next call of the selected function (or the name at the cursor); a selected call, e.g. f(3), runs at once">
+       </action>
+    </viewerContribution>
+    <!-- Debug Function: R stops at the next call of the selected function (debugonce) -->
+    <viewerContribution
+          id="REditorDebug.debugFunction"
+          targetID="#REditorContext">
+       <action
+             class="com.eco.bio7.rbridge.debug.DebugFunctionAction"
+             icon="icons/rdebug/rundebug.svg"
+             id="com.eco.bio7.reditor.debug.debugFunction"
+             label="Debug Function"
+             menubarPath="additions"
+             tooltip="R stops at the next call of the selected function (or the name at the cursor); a selected call, e.g. f(3), runs at once">
+       </action>
+    </viewerContribution>
     <viewerContribution
           id="REditorDebug.rulerActions"
           targetID="com.eco.bio7.reditors.TemplateEditor.RulerContext">

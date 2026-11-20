@@ -144,9 +144,11 @@ public class DebugRScript extends Action {
 
 				if (resource != null) {
 					final Map<Integer, RBreakpoint> map = new TreeMap<Integer, RBreakpoint>(findBreakpoints(resource));
-					if (map.isEmpty()) {
-						Bio7Dialog.message("Please set a breakpoint first (double-click in the ruler of the editor).");
-						return;
+					/* The breakpoints of other R files (loaded by the script with source()) */
+					final Map<IResource, Map<Integer, RBreakpoint>> others = otherBreakpoints(resource);
+					if (map.isEmpty() && others.isEmpty()) {
+						/* No breakpoint: the debugger stops at the first statement of the script (and at errors) */
+						map.put(1, null);
 					}
 					final String fileName = editor.getEditorInput().getName();
 
@@ -158,14 +160,22 @@ public class DebugRScript extends Action {
 							 * counts, log points), the script wrapped into .bio7debugfunc
 							 */
 							java.nio.file.Path copy;
+							/* The copies of the other files: source() of the script loads them (embedded R) */
+							Map<java.nio.file.Path, java.nio.file.Path> copies = new java.util.LinkedHashMap<>();
 							try {
 								copy = DebugSession.writeDebugCopy(java.nio.file.Path.of(loc), map);
+								for (Map.Entry<IResource, Map<Integer, RBreakpoint>> e : others.entrySet()) {
+									java.nio.file.Path source = e.getKey().getLocation().toFile().toPath();
+									copies.put(source, DebugSession.writeSourcedCopy(source, e.getValue()));
+								}
 							} catch (java.io.IOException e) {
 								Bio7Dialog.message("The script could not be prepared for debugging:\n" + e.getMessage());
 								return Status.OK_STATUS;
 							}
 							String rCopy = copy.toString().replace("\\", "/");
-							highlightLine(DebugSession.firstBreakpoint());
+							if (DebugSession.firstBreakpoint() > 0) {
+								highlightLine(DebugSession.firstBreakpoint());
+							}
 							Display.getDefault().syncExec(() -> DebugVariablesView.clear());
 
 							if (embedded) {
@@ -176,6 +186,12 @@ public class DebugRScript extends Action {
 								try {
 									RBackend b = RBridge.getBackend();
 									b.voidEval(DebugSession.HELPERS);
+									b.voidEval(DebugSession.copiesR(copies));
+									/*
+									 * source() of the session loads the copies (also nested), functions and
+									 * classes loaded before from files with breakpoints are defined again
+									 */
+									b.voidEval(".bio7dbg$install(); .bio7dbg$preload()");
 									b.voidEval("source(" + DebugSession.rString(rCopy) + ", keep.source = TRUE); environment(.bio7debugfunc) <- .GlobalEnv");
 								} catch (Exception e) {
 									Bio7Dialog.message("The script could not be prepared for debugging:\n" + e.getMessage());
@@ -265,6 +281,27 @@ public class DebugRScript extends Action {
 			e.printStackTrace();
 		}
 		return map;
+	}
+
+	/*
+	 * The breakpoints of the other R files of the workspace (not the script): file
+	 * -> line -> breakpoint
+	 */
+	private Map<IResource, Map<Integer, RBreakpoint>> otherBreakpoints(IResource script) {
+		Map<IResource, Map<Integer, RBreakpoint>> out = new LinkedHashMap<>();
+		try {
+			for (IMarker m : org.eclipse.core.resources.ResourcesPlugin.getWorkspace().getRoot().findMarkers(RBreakpoint.MARKER, false, IResource.DEPTH_INFINITE)) {
+				IResource r = m.getResource();
+				int line = m.getAttribute(IMarker.LINE_NUMBER, -1);
+				if (r.equals(script) || line <= 0 || r.getLocation() == null || r.getType() != IResource.FILE || !"r".equalsIgnoreCase(r.getFileExtension())) {
+					continue;
+				}
+				out.computeIfAbsent(r, k -> new TreeMap<>()).put(line, RBreakpoint.of(m));
+			}
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+		return out;
 	}
 
 	public Map<Integer, String> findMyMarkers(IResource target) {

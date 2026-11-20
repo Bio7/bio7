@@ -96,7 +96,8 @@ public class InsertRoxygenComment implements IEditorActionDelegate {
 				String type = "";
 				String line = System.getProperty("line.separator");
 				StringBuffer str = new StringBuffer();
-				String classType = ctx.expr().getChild(2).getText();
+				/* The called function (also pkg::fn) */
+				String classType = ctx.expr().getStop().getText();
 
 				if (classType.equals("setClass")) {
 					str.append("#' A S4 class implementation of " + className);
@@ -108,6 +109,9 @@ public class InsertRoxygenComment implements IEditorActionDelegate {
 
 				else if (classType.equals("R6Class")) {
 					str.append("#' An R6 class implementation of " + className);
+					str.append(line);
+				} else if (classType.equals("new_class")) {
+					str.append("#' An S7 class implementation of " + className);
 					str.append(line);
 				} else {
 					str.append("#' A class implementation of " + className);
@@ -123,8 +127,8 @@ public class InsertRoxygenComment implements IEditorActionDelegate {
 
 						if (su.expr() != null) {
 							type = su.expr().getStart().getText();
-							/* We try to extract the public variables form the S4, R5 and R6 classes! */
-							if (type.equals("slots") || type.equals("fields") || type.equals("public")) {
+							/* We try to extract the public variables form the S4, R5, R6 and S7 classes! */
+							if (type.equals("slots") || type.equals("fields") || type.equals("public") || type.equals("properties")) {
 
 								ExprContext ex = su.expr();
 								ParseTree tree = ex.getChild(2);

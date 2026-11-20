@@ -30,11 +30,29 @@ public class JavaWindowBuilderBio7ClassWizardPage extends WizardPage {
 	private ISelection selection;
 
 	
+	/* An option of the template (e.g., the app in its own project), null: none */
+	private String option;
+	private org.eclipse.swt.widgets.Button optionButton;
+	private boolean optionSelected;
+
+	/* The suggested names of the project and the file */
+	private String defaultProject = "My_Project";
+	private String defaultFile = "My_Model.java";
+
 	public JavaWindowBuilderBio7ClassWizardPage(ISelection selection) {
 		super("wizardPage");
 		setTitle("WindowBuilder Files");
 		setDescription("This wizard creates a Java Project and two new files with *.java extensions. The Gui file can be opened by the WindowBuilder.");
 		this.selection = selection;
+	}
+
+	/** A page with its own title, description and the suggested names of the project and the file. */
+	public JavaWindowBuilderBio7ClassWizardPage(ISelection selection, String title, String description, String defaultProject, String defaultFile) {
+		this(selection);
+		setTitle(title);
+		setDescription(description);
+		this.defaultProject = defaultProject;
+		this.defaultFile = defaultFile;
 	}
 
 	
@@ -76,6 +94,13 @@ public class JavaWindowBuilderBio7ClassWizardPage extends WizardPage {
 			}
 		});
 		initialize();
+		if (option != null) {
+			new Label(container, SWT.NONE);
+			optionButton = new org.eclipse.swt.widgets.Button(container, SWT.CHECK);
+			optionButton.setText(option);
+			optionButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
+			optionButton.addListener(SWT.Selection, e -> optionSelected = optionButton.getSelection());
+		}
 		dialogChanged();
 		setControl(container);
 	}
@@ -98,8 +123,8 @@ public class JavaWindowBuilderBio7ClassWizardPage extends WizardPage {
 				containerText.setText(container.getFullPath().toString());
 			}
 		}
-		containerText.setText("My_Project");
-		fileText.setText("My_Model.java");
+		containerText.setText(defaultProject);
+		fileText.setText(defaultFile);
 	}
 
 	
@@ -169,6 +194,16 @@ public class JavaWindowBuilderBio7ClassWizardPage extends WizardPage {
 	private void updateStatus(String message) {
 		setErrorMessage(message);
 		setPageComplete(message == null);
+	}
+
+	/** An option of the template (a check box on the page), null: none. */
+	public void setOption(String text) {
+		option = text;
+	}
+
+	/** The option is selected. */
+	public boolean isOptionSelected() {
+		return optionSelected;
 	}
 
 	public String getContainerName() {

@@ -216,7 +216,7 @@ public class DebugVariablesView extends ViewPart {
 		/* Call stack */
 		CTabItem stackTab = new CTabItem(folder, SWT.NONE);
 		stackTab.setText("Call Stack");
-		stackGrid = createGrid(folder, new String[] { "Frame", "Call", "Line" }, new int[] { 60, 450, 60 });
+		stackGrid = createGrid(folder, new String[] { "Frame", "Call", "Line" }, new int[] { 60, 420, 110 });
 		stackGrid.addListener(SWT.Selection, _ -> {
 			int[] rows = selectedRows(stackGrid);
 			if (rows.length == 1) {
@@ -227,11 +227,8 @@ public class DebugVariablesView extends ViewPart {
 					boolean current = rows[0] == stackGrid.getItemCount() - 1;
 					DebugProgress.selectFrame(current ? 0 : fr);
 				}
-				try {
-					int line = Integer.parseInt(item.getText(2));
-					DebugProgress.showLine(line);
-				} catch (NumberFormatException e) {
-					/* No line */
+				if (item.getData("location") instanceof DebugSession.Location loc) {
+					DebugProgress.showLine(loc);
 				}
 			}
 		});
@@ -327,15 +324,15 @@ public class DebugVariablesView extends ViewPart {
 		fillWatch(s.watch);
 		if (newStop || !s.stack.isEmpty()) {
 			List<String[]> rows = new ArrayList<>();
-			List<Integer> lines = s.frameLines();
+			List<DebugSession.Location> lines = s.frameLines();
 			for (int i = 0; i < s.stack.size(); i++) {
 				DebugState.Call c = s.stack.get(i);
-				int line = lines.get(i);
-				rows.add(new String[] { String.valueOf(c.frame()), c.text(), line > 0 ? String.valueOf(line) : "" });
+				rows.add(new String[] { String.valueOf(c.frame()), c.text(), lineText(lines.get(i)) });
 			}
 			replaceItems(stackGrid, rows, null);
 			for (int i = 0; i < stackGrid.getItemCount() && i < s.stack.size(); i++) {
 				stackGrid.getItem(i).setData(s.stack.get(i).frame());
+				stackGrid.getItem(i).setData("location", lines.get(i));
 				boolean shown = s.frame == 0 ? i == s.stack.size() - 1 : s.stack.get(i).frame() == s.frame;
 				if (shown) {
 					for (int c = 0; c < 3; c++) {
@@ -344,6 +341,14 @@ public class DebugVariablesView extends ViewPart {
 				}
 			}
 		}
+	}
+
+	/* The line of a frame: the line in the script, "file:line" in another file */
+	private static String lineText(DebugSession.Location loc) {
+		if (loc == null) {
+			return "";
+		}
+		return loc.file().equals(DebugSession.script()) ? String.valueOf(loc.line()) : loc.name() + ":" + loc.line();
 	}
 
 	private void fillWatch(List<String> values) {
