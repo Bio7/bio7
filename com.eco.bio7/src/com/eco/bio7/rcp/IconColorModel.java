@@ -138,19 +138,19 @@ public final class IconColorModel {
 			return;
 		}
 		installed = true;
+		/*
+		 * The registries are created lazily: the view registry sets the icon URIs of
+		 * the part descriptors of the model (used, e.g., by the menu Show View) when
+		 * it is created. So the registries are created first and the listeners are
+		 * added before the model is recolored!
+		 */
+		workbench.getViewRegistry();
+		workbench.getPerspectiveRegistry();
+		IEventBroker broker = workbench.getService(IEventBroker.class);
+		subscribe(broker);
 		update((EObject) app);
 		recolorEditorRegistry(workbench);
 		recolorDescriptors(workbench);
-		IEventBroker broker = workbench.getService(IEventBroker.class);
-		if (broker != null) {
-			broker.subscribe(UIEvents.UILabel.TOPIC_ICONURI, e -> apply(e.getProperty(UIEvents.EventTags.ELEMENT)));
-			broker.subscribe(UIEvents.ElementContainer.TOPIC_CHILDREN, IconColorModel::added);
-			/* The parts of the views are shared elements of the window (not children)! */
-			broker.subscribe(UIEvents.Window.TOPIC_SHAREDELEMENTS, IconColorModel::added);
-			broker.subscribe(UIEvents.Part.TOPIC_TOOLBAR, IconColorModel::added);
-			broker.subscribe(UIEvents.Part.TOPIC_MENUS, IconColorModel::added);
-			broker.subscribe(UIEvents.PartDescriptorContainer.TOPIC_DESCRIPTORS, IconColorModel::added);
-		}
 		workbench.addWindowListener(new IWindowListener() {
 			@Override
 			public void windowOpened(IWorkbenchWindow window) {
@@ -169,6 +169,20 @@ public final class IconColorModel {
 			public void windowClosed(IWorkbenchWindow window) {
 			}
 		});
+	}
+
+	/* Recolors the icons which are set or added later (e.g., the part descriptors of the view registry)! */
+	private static void subscribe(IEventBroker broker) {
+		if (broker == null) {
+			return;
+		}
+		broker.subscribe(UIEvents.UILabel.TOPIC_ICONURI, e -> apply(e.getProperty(UIEvents.EventTags.ELEMENT)));
+		broker.subscribe(UIEvents.ElementContainer.TOPIC_CHILDREN, IconColorModel::added);
+		/* The parts of the views are shared elements of the window (not children)! */
+		broker.subscribe(UIEvents.Window.TOPIC_SHAREDELEMENTS, IconColorModel::added);
+		broker.subscribe(UIEvents.Part.TOPIC_TOOLBAR, IconColorModel::added);
+		broker.subscribe(UIEvents.Part.TOPIC_MENUS, IconColorModel::added);
+		broker.subscribe(UIEvents.PartDescriptorContainer.TOPIC_DESCRIPTORS, IconColorModel::added);
 	}
 
 	/* The tabs and the perspective switcher of a window! */

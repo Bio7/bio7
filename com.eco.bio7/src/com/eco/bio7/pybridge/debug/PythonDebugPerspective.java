@@ -38,6 +38,5 @@ public class PythonDebugPerspective implements IPerspectiveFactory {
 		viewRight.addView(RTable.ID);
 		viewRight.addPlaceholder("com.eco.bio7.custom_controls:Python Plot");
 		layout.addView("org.eclipse.ui.views.ContentOutline", IPageLayout.RIGHT, 0.735f, editorArea);
-		layout.addShowViewShortcut(PythonDebugView.ID);
 	}
 }

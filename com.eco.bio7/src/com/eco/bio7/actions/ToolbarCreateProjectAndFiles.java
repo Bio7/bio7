@@ -158,8 +158,7 @@ public class ToolbarCreateProjectAndFiles extends Action implements IMenuCreator
 		wizardItem("WindowBuilder GUI Project (Bio7 Model)", imageCreateProjectFileJava, "com.eco.bio7.javafxclassjdtwindowbuilder");
 		wizardItem("WindowBuilder GUI Project for R", imageCreateProjectFileJava, "com.eco.bio7.wizardWindowBuilderR");
 		wizardItem("WindowBuilder GUI Project for Python", imageCreateProjectFileJava, "com.eco.bio7.wizardWindowBuilderPython");
-		wizardItem("WindowBuilder Shiny App Project", imageCreateProjectFileJava, "com.eco.bio7.wizardWindowBuilderShiny");
-		wizardItem("WindowBuilder JavaScript App Project", imageCreateProjectFileJava, "com.eco.bio7.wizardWindowBuilderJavaScript");
+		/* The Shiny and JavaScript app projects: File > New > Other... (Java Bio7 Projects) */
 
 		new MenuItem(fMenu, SWT.SEPARATOR);
 		MenuItem menuItemR = new MenuItem(fMenu, SWT.PUSH);

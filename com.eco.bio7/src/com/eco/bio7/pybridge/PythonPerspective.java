@@ -46,9 +46,5 @@ public class PythonPerspective implements IPerspectiveFactory {
 		viewRight.addPlaceholder("com.eco.bio7.custom_controls:Python Plot");
 		viewRight.addView("org.eclipse.wst.common.snippets.internal.ui.SnippetsView");
 		layout.addView("org.eclipse.ui.views.ContentOutline", IPageLayout.RIGHT, 0.735f, editorArea);
-
-		layout.addShowViewShortcut(PythonShellView.ID);
-		layout.addShowViewShortcut(PythonPackagesView.ID);
-		layout.addPerspectiveShortcut("com.eco.bio7.rbridge.RPerspective");
 	}
 }
