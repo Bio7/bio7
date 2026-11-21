@@ -128,8 +128,12 @@ public class DebugProgress {
 			return;
 		}
 
-		/* Guard: ignore if a step is already in progress */
-		if (stepping) {
+		/*
+		 * Guard: ignore if a step is already in progress (the R console; embedded R:
+		 * the step follows the running action, e.g., the update of a breakpoint which
+		 * was just set, see runEmbedded)
+		 */
+		if (stepping && !com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning()) {
 			return;
 		}
 
@@ -141,6 +145,8 @@ public class DebugProgress {
 
 		if (com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning()) {
 			runEmbedded("R Debug Step", () -> {
+				/* Breakpoints set just before (their update may still wait): active for this step */
+				applyLiveUpdatesNow();
 				/* n, s: stepping (the stops after loops are active); f, c: R runs (to the return, to a breakpoint) */
 				boolean step = "n".equals(command) || "s".equals(command);
 				arm(step);
@@ -333,6 +339,8 @@ public class DebugProgress {
 	private static String afterReturn(String out, String fileName) {
 		String last = out;
 		for (int i = 0; i < 100 && last != null && last.contains("@@R@@") && EmbeddedR.isBrowsing(); i++) {
+			/* Stepping in the caller (also after Step Return): a loop which ends there stops after it */
+			EmbeddedR.consoleCapture(".bio7dbg$arm(TRUE)", STATE_TIMEOUT, false);
 			last = EmbeddedR.consoleCapture("n", STEP_TIMEOUT, true, text -> shortenDebugLines(text, fileName));
 		}
 		return last;
@@ -596,6 +604,7 @@ public class DebugProgress {
 		}
 		final String fileName = activeEditorName();
 		runEmbedded("R Debug Run to Cursor", () -> {
+			applyLiveUpdatesNow();
 			/*
 			 * A temporary breakpoint at the line: n steps over calls, so R would not stop
 			 * in a function (or method, or another file) which the code calls later. The

@@ -557,6 +557,7 @@ public final class DebugSession {
 			/* The generator of a reference class is a function, too: its methods first */
 			"    fs <- if (inherits(x, 'S7_class')) list(attr(x, 'constructor'), attr(x, 'validator'))",
 			"      else if (methods::is(x, 'refObjectGenerator')) tryCatch(as.list(x$def@refMethods), error = function(e) list())",
+			"      else if (inherits(x, 'R6ClassGenerator')) c(as.list(x$public_methods), as.list(x$private_methods))",
 			"      else if (is.function(x)) list(x) else list()",
 			"    out <- character(0)",
 			"    for (fn in fs) if (is.function(fn)) { f <- tryCatch(utils::getSrcFilename(fn, full.names = TRUE), error = function(e) character(0))",
@@ -630,11 +631,12 @@ public final class DebugSession {
 			 * script: in its frame); the running code keeps the old version
 			 */
 			/*
-			 * The methods of reference classes from a changed file: the objects keep copies
-			 * of their methods (and subclasses copies of the inherited ones), a new class
-			 * definition doesn't reach them. The methods (of the file) in all class
-			 * definitions and in the objects reachable from the global environment and the
-			 * frames get the code of the copy (its breakpoints). Returns the number.
+			 * The methods of reference classes and R6 classes from a changed file: the
+			 * objects keep copies of their methods (reference classes: also subclasses
+			 * copies of the inherited ones), a new class definition doesn't reach them. The
+			 * methods (of the file) in all class definitions and in the objects reachable
+			 * from the global environment and the frames get the code of the copy (its
+			 * breakpoints). Returns the number.
 			 */
 			"  patchMethods <- function(source, copy) {",
 			"    src <- function(fn) { f <- tryCatch(utils::getSrcFilename(fn, full.names = TRUE), error = function(e) character(0)); if (length(f)) { p <- normalizePath(f, winslash = '/', mustWork = FALSE); cp <- normalizePath(copies, winslash = '/', mustWork = FALSE)",
@@ -642,16 +644,20 @@ public final class DebugSession {
 			"    new <- list()",
 			"    for (e in statements(tryCatch(parse(copy, keep.source = TRUE), error = function(err) expression()))) {",
 			"      if (!is.call(e) || length(e) != 3L || !as.character(e[[1]])[1] %in% c('<-', '=')) next",
-			"      r <- e[[3]]; if (!is.call(r) || !any(grepl('setRefClass$', deparse(r[[1]])))) next",
-			"      m <- r$methods; if (!is.call(m) || !identical(m[[1]], as.name('list'))) next",
-			"      for (n in setdiff(names(m), '')) if (is.call(m[[n]]) && identical(m[[n]][[1]], as.name('function'))) new[[n]] <- eval(m[[n]], globalenv()) }",
+			"      r <- e[[3]]; if (!is.call(r)) next",
+			"      parts <- if (any(grepl('setRefClass$', deparse(r[[1]])))) list(r$methods) else if (any(grepl('R6Class$', deparse(r[[1]])))) list(r$public, r$private) else list()",
+			"      for (m in parts) { if (!is.call(m) || !identical(m[[1]], as.name('list'))) next",
+			"        for (n in setdiff(names(m), '')) if (is.call(m[[n]]) && identical(m[[n]][[1]], as.name('function'))) new[[n]] <- eval(m[[n]], globalenv()) } }",
 			"    if (!length(new)) return(0L)",
 			"    patch <- function(f, n) { g <- new[[n]]",
 			"      p <- function(h) { e <- environment(h); body(h) <- body(g); environment(h) <- e; attr(h, 'srcref') <- attr(g, 'srcref'); h }",
 			"      if (isS4(f)) { f@.Data <- p(f@.Data); f } else p(f) }",
 			"    count <- 0L",
 			"    fix <- function(env) for (n in intersect(names(new), ls(env, all.names = TRUE))) {",
-			"      f <- get(n, envir = env); if (is.function(f) && identical(src(f), source)) { assign(n, patch(f, n), envir = env); count <<- count + 1L } }",
+			"      f <- get(n, envir = env); if (!is.function(f) || !identical(src(f), source)) next",
+			/* R6 objects: the bindings of the methods are locked */
+			"      locked <- bindingIsLocked(n, env); if (locked) unlockBinding(n, env)",
+			"      assign(n, patch(f, n), envir = env); if (locked) lockBinding(n, env); count <<- count + 1L }",
 			"    value <- function(v, env) tryCatch(get(v, envir = env), error = function(e) NULL)",
 			"    roots <- list(globalenv()); fr <- scriptFrame(); if (!is.null(fr)) roots[[2L]] <- fr",
 			"    for (w in roots) for (cl in tryCatch(methods::getClasses(w), error = function(e) character(0))) {",
@@ -660,8 +666,13 @@ public final class DebugSession {
 			"    visit <- function(x, depth = 0L) {",
 			"      if (depth > 6L) return(invisible())",
 			"      if (methods::is(x, 'envRefClass')) x <- as.environment(x) else if (!is.environment(x)) { if (is.list(x) && length(x) < 1e5) for (v in x) visit(v, depth + 1L); return(invisible()) }",
-			"      key <- format(x); if (!is.null(seen[[key]])) return(invisible()); assign(key, TRUE, envir = seen)",
-			"      if (exists('.refClassDef', envir = x, inherits = FALSE)) { fix(x); for (v in ls(x, all.names = TRUE)) visit(value(v, x), depth + 1L) } }",
+			/* The address of the environment (format() of an R6 object shows its class, the same for all objects of the class) */
+			"      cl <- oldClass(x); if (!is.null(cl)) oldClass(x) <- NULL; key <- format(x); if (!is.null(cl)) oldClass(x) <- cl",
+			"      if (!is.null(seen[[key]])) return(invisible()); assign(key, TRUE, envir = seen)",
+			"      if (exists('.refClassDef', envir = x, inherits = FALSE)) { fix(x); for (v in ls(x, all.names = TRUE)) visit(value(v, x), depth + 1L) }",
+			/* An R6 object: its public methods, the private ones in its enclosing environment */
+			"      else if (inherits(x, 'R6')) { fix(x); pe <- tryCatch(x$.__enclos_env__$private, error = function(e) NULL); if (is.environment(pe)) fix(pe)",
+			"        for (v in ls(x, all.names = TRUE)) if (!bindingIsActive(v, x)) visit(value(v, x), depth + 1L) } }",
 			"    for (v in ls(globalenv(), all.names = TRUE)) visit(value(v, globalenv()))",
 			"    for (i in seq_len(max(sys.nframe() - 1L, 0L))) { f <- sys.frame(i); for (v in ls(f, all.names = TRUE)) visit(value(v, f)) }",
 			"    count }",
@@ -701,7 +712,11 @@ public final class DebugSession {
 			 */
 			"  hooked <- list()",
 			"  hooksActive <- FALSE",
-			"  hookFrames <- function(from = sys.nframe() - 2L) { top <- sys.nframe() - 1L",
+			/* Without "from": up to the next function of the user (also over code without source references, e.g., the dispatch of S7) */
+			"  hookFrames <- function(from = NA) { top <- sys.nframe() - 1L",
+			"    if (is.na(from)) { p <- if (top >= 1L) sys.parents()[top] else 0L",
+			"      while (p >= 1L && is.null(attr(sys.function(p), 'srcref'))) p <- sys.parents()[p]",
+			"      from <- max(p, 0L) }",
 			"    if (top >= 1L && top > from) for (i in seq(top, max(from + 1L, 1L))) {",
 			"      p <- sys.parents()[i]; if (p < 1L || is.null(attr(sys.function(p), 'srcref'))) next",
 			"      env <- sys.frame(i); dup <- FALSE; for (h in hooked) if (identical(h, env)) { dup <- TRUE; break }",
