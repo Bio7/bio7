@@ -65,6 +65,9 @@ public final class PythonDebugger {
 	private static volatile Stop stop;
 	private static volatile IFile scriptFile;
 	private static volatile boolean registered;
+	/* The session stopped at least once; the hint if it ends without a stop (e.g., a module without calls) */
+	private static volatile boolean stoppedInSession;
+	private static volatile String endHint;
 
 	private PythonDebugger() {
 	}
@@ -97,7 +100,15 @@ public final class PythonDebugger {
 		if (editor.isDirty()) {
 			editor.doSave(null);
 		}
-		start(file, stopAtFirstLine);
+		/* A module which only defines classes and functions: the script which imports it */
+		PythonDebugTarget.Choice choice = PythonDebugTarget.choose(file);
+		start(choice.script(), stopAtFirstLine);
+		if (running) {
+			endHint = choice.hint();
+			if (choice.note() != null) {
+				EmbeddedPython.print(choice.note() + "\n", false);
+			}
+		}
 	}
 
 	/** Debugs a script: stops at the first breakpoint (or the first line). UI thread. */
@@ -113,6 +124,8 @@ public final class PythonDebugger {
 		boolean busy = py.isBusy();
 		scriptFile = file;
 		running = true;
+		stoppedInSession = false;
+		endHint = null;
 		List<Integer> lines = PythonBreakpoints.lines(file);
 		/* The perspective of the debugger, the console in Python mode */
 		try {
@@ -121,14 +134,20 @@ public final class PythonDebugger {
 			/* The current perspective */
 		}
 		ConsoleInterpreterAction.getInstance().startPython();
-		EmbeddedPython.print("Debugging " + file.getName() + (lines.isEmpty() ? " (no breakpoints: stops at the first line)" : " (breakpoints: lines " + lines + ")")
+		int others = PythonBreakpoints.countOfProject(file) - lines.size();
+		String where = lines.isEmpty() ? "" : "lines " + lines;
+		if (others > 0) {
+			where += (where.isEmpty() ? "" : ", ") + others + " in other files";
+		}
+		EmbeddedPython.print("Debugging " + file.getName() + (where.isEmpty() ? " (no breakpoints: stops at the first line)" : " (breakpoints: " + where + ")")
 				+ "\nWhile stopped, the console evaluates in the frame; n (next), s (step), r (return), c (continue), q (quit).\n", false);
 		if (busy) {
 			EmbeddedPython.print("Python is busy (e.g., starting): the debugger starts when it is free.\n", false);
 		}
 		PythonDebugView.refreshAll();
 		String path = file.getLocation().toOSString().replace("\\", "\\\\").replace("'", "\\'");
-		String breakpoints = PythonBreakpoints.specs(file);
+		/* The breakpoints of the script and of the other files of the project (e.g., the modules of its classes) */
+		String breakpoints = PythonBreakpoints.specsOfProject(file);
 		/*
 		 * In a thread: the calls wait for Python (e.g., its startup) without blocking
 		 * the user interface. Not shown as running job (the session waits at breakpoints)
@@ -182,12 +201,13 @@ public final class PythonDebugger {
 			stack.add(new String[] { r.get(0).asText(), r.get(1).asText(), r.get(2).asText(), r.get(3).asText(), r.get(4).asText() });
 		}
 		commands.clear();
+		stoppedInSession = true;
 		stop = new Stop(n.path("file").asText(), n.path("line").asInt(), n.path("function").asText(), n.path("reason").asText(),
 				n.path("message").isNull() ? null : n.path("message").asText(), stack);
 		/* Breakpoints changed in the editor since the start */
 		IFile f = scriptFile;
 		if (f != null) {
-			EmbeddedPython.session().exec("__import__('_bio7dbg').set_breaks(" + PythonBreakpoints.specs(f) + ")");
+			EmbeddedPython.session().exec("__import__('_bio7dbg').set_breaks(" + PythonBreakpoints.specsOfProject(f) + ")");
 		}
 		Stop s = stop;
 		if (s.message() != null) {
@@ -206,12 +226,25 @@ public final class PythonDebugger {
 				continue;
 			}
 			stop = null;
+			/* Breakpoints changed in the editors while stopped: active for this command (e.g., Continue) */
+			if (f != null) {
+				try {
+					EmbeddedPython.session().exec("__import__('_bio7dbg').set_breaks(" + PythonBreakpoints.specsOfProject(f) + ")");
+				} catch (Exception e) {
+					/* The breakpoints of the stop */
+				}
+			}
 			Display.getDefault().asyncExec(PythonDebugView::refreshAll);
 			return PyValue.of((String) c);
 		}
 	}
 
 	private static void ended() {
+		String hint = stoppedInSession ? null : endHint;
+		endHint = null;
+		if (hint != null) {
+			EmbeddedPython.print("The debug session ended without a stop. " + hint + "\n", true);
+		}
 		running = false;
 		stop = null;
 		commands.clear();

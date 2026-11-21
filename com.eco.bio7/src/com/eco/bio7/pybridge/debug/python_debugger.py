@@ -100,9 +100,9 @@ class Debugger(bdb.Bdb):
     def _log_point(self, frame):
         """A log point (breakpoint with a log expression): prints the value, doesn't stop.
         While stepping the debugger stops as at every line."""
-        if os.path.abspath(frame.f_code.co_filename) != self.path or self.stop_here(frame):
+        if self.stop_here(frame):
             return False
-        logs = [getattr(bp, "_bio7_log", None) for bp in self.get_breaks(self.path, frame.f_lineno)]
+        logs = [getattr(bp, "_bio7_log", None) for bp in self.get_breaks(_canonic(frame), frame.f_lineno)]
         logs = [x for x in logs if x]
         if not logs:
             return False
@@ -111,22 +111,19 @@ class Debugger(bdb.Bdb):
                 value = _short(eval(expr, frame.f_globals, frame.f_locals), 2000)
             except Exception as e:
                 value = "<%s: %s>" % (type(e).__name__, e)
-            sys.stdout.write("\u25b6 line %d: %s = %s\n" % (frame.f_lineno, expr, value))
+            where = "" if _canonic(frame) == self.path else os.path.basename(frame.f_code.co_filename) + " "
+            sys.stdout.write("\u25b6 %sline %d: %s = %s\n" % (where, frame.f_lineno, expr, value))
         return True
 
     def _hit_count_reached(self, frame):
         """A breakpoint with a hit count stops once (at the n-th hit): then it is off for this run."""
-        if os.path.abspath(frame.f_code.co_filename) != self.path:
-            return
-        for bp in self.get_breaks(self.path, frame.f_lineno):
+        for bp in self.get_breaks(_canonic(frame), frame.f_lineno):
             if getattr(bp, "_bio7_hits", 0) > 1 and bp.enabled and bp.ignore == 0:
                 bp.enabled = False
 
     def _condition_error(self, frame):
         """The error of the condition of a breakpoint at the line (bdb stops then), else None."""
-        if os.path.abspath(frame.f_code.co_filename) != self.path:
-            return None
-        for bp in self.get_breaks(self.path, frame.f_lineno):
+        for bp in self.get_breaks(_canonic(frame), frame.f_lineno):
             if bp.cond:
                 try:
                     eval(bp.cond, frame.f_globals, frame.f_locals)
@@ -135,7 +132,11 @@ class Debugger(bdb.Bdb):
         return None
 
     def user_return(self, frame, value):
-        pass
+        # Stepping out of a function (next at its end, step return): the caller may not be
+        # traced (e.g., reached with continue), it must report its next line
+        caller = frame.f_back
+        if caller is not None and getattr(self, "stoplineno", 0) != -1 and caller.f_trace is None:
+            caller.f_trace = self.trace_dispatch
 
     def user_exception(self, frame, exc_info):
         if frame.f_code.co_filename.startswith("<") or _is_library(frame.f_code.co_filename):
@@ -143,8 +144,8 @@ class Debugger(bdb.Bdb):
         if self.stop_here(frame):
             self._pause(frame, "exception", "".join(traceback.format_exception_only(exc_info[0], exc_info[1])).strip())
 
-    def _pause(self, frame, reason, message=None):
-        stack, _ = self.get_stack(frame, None)
+    def _pause(self, frame, reason, message=None, tb=None):
+        stack, _ = self.get_stack(frame, tb)
         self.frames = [(f, line) for f, line in stack if not f.f_code.co_filename.startswith("<") and "bdb.py" not in f.f_code.co_filename]
         if not self.frames:
             self.frames = [(frame, frame.f_lineno)]
@@ -185,6 +186,27 @@ class Debugger(bdb.Bdb):
         else:
             self.set_continue()
 
+    def post_mortem(self, tb, message):
+        """An uncaught exception: a stop in the frame of the exception (the variables, the
+        call stack); the script has ended, every command ends the session."""
+        sys.settrace(None)
+        self.stopped = True
+        stack, _ = self.get_stack(None, tb)
+        self.frames = [(f, line) for f, line in stack if not f.f_code.co_filename.startswith("<") and "bdb.py" not in f.f_code.co_filename
+                       and not _is_library(f.f_code.co_filename)]
+        if not self.frames:
+            return
+        self.current = len(self.frames) - 1
+        f, line = self.frames[-1]
+        state = {"file": f.f_code.co_filename, "line": line, "function": f.f_code.co_name, "reason": "exception", "message": message,
+                 "stack": self.stack_rows()}
+        try:
+            sys.modules["_bio7"]._call("debug_pause", json.dumps(state))
+        except BaseException:
+            pass
+        finally:
+            self.stopped = False
+
     def do_clear(self, arg):
         """Removes a breakpoint by its number: bdb calls it for a temporary breakpoint
         (Run to Cursor) when it is reached (pdb implements it, bdb does not)."""
@@ -224,8 +246,13 @@ def run(path, breakpoints, stop_first):
         d.run(code, ns)
     except bdb.BdbQuit:
         sys.stderr.write("Debugging stopped\n")
-    except BaseException:
+    except BaseException as e:
         sys.stderr.write(traceback.format_exc())
+        # a stop in the frame of the exception (as in R)
+        try:
+            d.post_mortem(e.__traceback__, "".join(traceback.format_exception_only(type(e), e)).strip())
+        except BaseException:
+            pass
     finally:
         ns.pop("__file__", None)
         d.clear_all_breaks()
@@ -250,35 +277,44 @@ def set_breaks(lines):
     _apply_breaks(_debugger, lines)
 
 
-def _spec(b):
-    """A breakpoint: a line or [line, condition or None, hit count, log expression or None]."""
+def _canonic(frame):
+    """The file of a frame as the breakpoints of bdb name it."""
+    return _debugger.canonic(frame.f_code.co_filename) if _debugger is not None else os.path.abspath(frame.f_code.co_filename)
+
+
+def _spec(b, path):
+    """A breakpoint: a line or [line, condition or None, hit count, log expression or None, file]
+    (without a file: the script)."""
     if isinstance(b, (list, tuple)):
         line = int(b[0])
         cond = b[1] if len(b) > 1 and b[1] else None
         hits = int(b[2]) if len(b) > 2 and b[2] else 0
         log = b[3] if len(b) > 3 and b[3] else None
-        return line, cond, hits, log
-    return int(b), None, 0, None
+        file = os.path.abspath(b[4]) if len(b) > 4 and b[4] else path
+        return file, line, cond, hits, log
+    return path, int(b), None, 0, None
 
 
 def _apply_breaks(d, specs):
-    """Sets the breakpoints of the script: unchanged breakpoints keep their hits
-    (a hit count counts on), changed ones are new."""
+    """Sets the breakpoints of the script and of its modules (files of the project):
+    unchanged breakpoints keep their hits (a hit count counts on), changed ones are new.
+    Temporary breakpoints (Run to Cursor) stay."""
     wanted = {}
     for b in specs:
-        line, cond, hits, log = _spec(b)
-        wanted[line] = (cond, hits, log)
+        file, line, cond, hits, log = _spec(b, d.path)
+        wanted[(d.canonic(file), line)] = (cond, hits, log)
     for bp in list(bdb.Breakpoint.bpbynumber):
-        if bp is None or os.path.abspath(bp.file) != d.path:
+        if bp is None or bp.temporary:
             continue
-        if wanted.get(bp.line) != (bp.cond, getattr(bp, "_bio7_hits", 0), getattr(bp, "_bio7_log", None)):
-            d.clear_break(bp.file, bp.line)
-    for line, (cond, hits, log) in wanted.items():
-        if any(bp.cond == cond and getattr(bp, "_bio7_hits", 0) == hits and getattr(bp, "_bio7_log", None) == log
-               for bp in d.get_breaks(d.path, line)):
+        if wanted.get((bp.file, bp.line)) != (bp.cond, getattr(bp, "_bio7_hits", 0), getattr(bp, "_bio7_log", None)):
+            d.clear_bpbynumber(bp.number)
+    for (file, line), (cond, hits, log) in wanted.items():
+        if any(not bp.temporary and bp.cond == cond and getattr(bp, "_bio7_hits", 0) == hits and getattr(bp, "_bio7_log", None) == log
+               for bp in d.get_breaks(file, line)):
             continue
-        d.set_break(d.path, line, cond=cond)
-        bp = d.get_breaks(d.path, line)[-1]
+        if d.set_break(file, line, cond=cond):
+            continue  # not a line of the file (e.g., changed): bdb returns a message
+        bp = d.get_breaks(file, line)[-1]
         bp._bio7_hits = hits
         bp._bio7_log = log
         # stops at the n-th hit: the first n - 1 are ignored

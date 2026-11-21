@@ -73,22 +73,67 @@ public final class PythonBreakpoints {
 	public static String specs(IFile file) {
 		StringBuilder b = new StringBuilder("[");
 		try {
-			IMarker[] markers = file.findMarkers(BREAKPOINT, true, IResource.DEPTH_ZERO);
-			java.util.Arrays.sort(markers, java.util.Comparator.comparingInt(m -> m.getAttribute(IMarker.LINE_NUMBER, -1)));
-			for (IMarker m : markers) {
-				int line = m.getAttribute(IMarker.LINE_NUMBER, -1);
-				if (line <= 0) {
-					continue;
-				}
-				String cond = m.getAttribute(CONDITION, "").strip();
-				String log = m.getAttribute(LOG, "").strip();
-				b.append(b.length() > 1 ? ", " : "").append('[').append(line).append(", ").append(cond.isEmpty() ? "None" : pyString(cond)).append(", ")
-						.append(Math.max(0, m.getAttribute(HIT_COUNT, 0))).append(", ").append(log.isEmpty() ? "None" : pyString(log)).append(']');
-			}
+			append(b, file.findMarkers(BREAKPOINT, true, IResource.DEPTH_ZERO), false);
 		} catch (CoreException e) {
 			/* No breakpoints */
 		}
 		return b.append(']').toString();
+	}
+
+	/**
+	 * The breakpoints of all Python files of the project of a script (e.g., in the
+	 * modules with the classes of the script) as a Python list: [line, condition or
+	 * None, hit count, log or None, path] for each breakpoint.
+	 */
+	public static String specsOfProject(IFile script) {
+		StringBuilder b = new StringBuilder("[");
+		IResource scope = script.getProject() != null ? script.getProject() : script.getParent();
+		try {
+			append(b, scope.findMarkers(BREAKPOINT, true, IResource.DEPTH_INFINITE), true);
+		} catch (CoreException e) {
+			/* The breakpoints of the script */
+			try {
+				append(b, script.findMarkers(BREAKPOINT, true, IResource.DEPTH_ZERO), true);
+			} catch (CoreException e2) {
+				/* No breakpoints */
+			}
+		}
+		return b.append(']').toString();
+	}
+
+	/** The number of breakpoints in the Python files of the project of a script. */
+	public static int countOfProject(IFile script) {
+		IResource scope = script.getProject() != null ? script.getProject() : script.getParent();
+		int n = 0;
+		try {
+			for (IMarker m : scope.findMarkers(BREAKPOINT, true, IResource.DEPTH_INFINITE)) {
+				if (m.getAttribute(IMarker.LINE_NUMBER, -1) > 0 && "py".equalsIgnoreCase(m.getResource().getFileExtension())) {
+					n++;
+				}
+			}
+		} catch (CoreException e) {
+			/* None */
+		}
+		return n;
+	}
+
+	private static void append(StringBuilder b, IMarker[] markers, boolean withPath) {
+		java.util.Arrays.sort(markers, java.util.Comparator.comparingInt(m -> m.getAttribute(IMarker.LINE_NUMBER, -1)));
+		for (IMarker m : markers) {
+			int line = m.getAttribute(IMarker.LINE_NUMBER, -1);
+			IResource r = m.getResource();
+			if (line <= 0 || (withPath && (r.getLocation() == null || !"py".equalsIgnoreCase(r.getFileExtension())))) {
+				continue;
+			}
+			String cond = m.getAttribute(CONDITION, "").strip();
+			String log = m.getAttribute(LOG, "").strip();
+			b.append(b.length() > 1 ? ", " : "").append('[').append(line).append(", ").append(cond.isEmpty() ? "None" : pyString(cond)).append(", ")
+					.append(Math.max(0, m.getAttribute(HIT_COUNT, 0))).append(", ").append(log.isEmpty() ? "None" : pyString(log));
+			if (withPath) {
+				b.append(", ").append(pyString(r.getLocation().toOSString()));
+			}
+			b.append(']');
+		}
 	}
 
 	/* A Python string literal */

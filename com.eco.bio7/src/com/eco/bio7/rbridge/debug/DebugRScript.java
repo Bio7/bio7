@@ -186,7 +186,19 @@ public class DebugRScript extends Action {
 									java.nio.file.Path source = e.getKey().getLocation().toFile().toPath();
 									copies.put(source, DebugSession.writeSourcedCopy(source, e.getValue()));
 								}
-							} catch (java.io.IOException e) {
+								/*
+								 * The other R files of the folder of the script (e.g., its classes) without
+								 * breakpoints: copies too, with the stops after loops (stepping goes on after
+								 * a loop) and breakpoints set during the session apply at once
+								 */
+								for (IResource r : resource.getParent().members()) {
+									if (r.getType() == IResource.FILE && !r.equals(resource) && !others.containsKey(r) && r.getLocation() != null
+											&& "r".equalsIgnoreCase(r.getFileExtension())) {
+										java.nio.file.Path source = r.getLocation().toFile().toPath();
+										copies.put(source, DebugSession.writeSourcedCopy(source, new TreeMap<>()));
+									}
+								}
+							} catch (java.io.IOException | CoreException e) {
 								Bio7Dialog.message("The script could not be prepared for debugging:\n" + e.getMessage());
 								return Status.OK_STATUS;
 							}

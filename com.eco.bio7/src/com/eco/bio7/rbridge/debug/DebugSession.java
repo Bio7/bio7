@@ -257,6 +257,17 @@ public final class DebugSession {
 				break;
 			}
 		}
+		/*
+		 * After a loop: a stop while the user steps (R leaves the stepping mode at the
+		 * end of a loop which started without it, e.g., at a breakpoint in the loop).
+		 * In functions and in the wrapped top level code.
+		 */
+		boolean wrapped = isScript || topLevelStop;
+		for (int l : where.afterLoops()) {
+			if (!before.containsKey(l) && !inline.containsKey(l) && (wrapped || !where.topLevel(l))) {
+				before.put(l, injection(key, "", l + 1, AFTER_LOOP));
+			}
+		}
 		String wrapper = isScript ? scriptWrapper(source) : topLevelStop ? SOURCED_WRAPPER : null;
 		if (isScript && params) {
 			/* The params of the YAML header (as in rmarkdown::render) */
@@ -292,6 +303,9 @@ public final class DebugSession {
 	 * name of the copy (the breakpoint stores "copy#line": browser() itself doesn't
 	 * tell R's position)
 	 */
+	/* The stop after a loop: only while the user steps in this function or a caller (see .bio7dbg$arm) */
+	private static final RBreakpoint AFTER_LOOP = new RBreakpoint(".bio7dbg$stepHere(environment())", 0, "", null);
+
 	static String injection(String key, String fileLabel, int sourceLine, RBreakpoint bp) {
 		String stop = "{ assign('.bio7bp', '" + key + "#" + sourceLine + "', envir = .GlobalEnv); browser() }";
 		if (bp == null || bp.isPlain()) {
@@ -353,6 +367,16 @@ public final class DebugSession {
 			/* Not a path */
 		}
 		return null;
+	}
+
+	/** The line of R (a file and its line) is a line inserted into a debugged copy (a breakpoint, a stop after a loop). */
+	public static boolean isInjected(String rFile, int line) {
+		if (rFile == null) {
+			return false;
+		}
+		String file = rFile.trim();
+		DebugFile f = FILES.get(file.substring(Math.max(file.lastIndexOf('/'), file.lastIndexOf('\\')) + 1));
+		return f != null && java.util.Arrays.binarySearch(f.injected(), line) >= 0;
 	}
 
 	/** A position "file#line" (of R or of a breakpoint), null if unknown. */
@@ -507,12 +531,19 @@ public final class DebugSession {
 			 * source() calls load the debugged copies too): a global function, removed at
 			 * the end (cleanup); not if the global environment has its own source()
 			 */
+			/*
+			 * Without the compiler of R during the session (the stepping mode of R
+			 * doesn't work in compiled functions); the former level at the end
+			 */
 			"  install <- function() {",
+			"    if (!exists('.bio7jit', envir = globalenv(), inherits = FALSE)) assign('.bio7jit', tryCatch(compiler::enableJIT(0), error = function(e) NA), envir = globalenv())",
 			"    if (!exists('source', envir = globalenv(), inherits = FALSE)) {",
 			"      f <- function(file, ...) .bio7dbg$src(file, ..., caller = parent.frame()); attr(f, 'bio7dbg') <- TRUE",
 			"      assign('source', f, envir = globalenv()) }",
 			"    invisible() }",
 			"  cleanup <- function() {",
+			"    j <- get0('.bio7jit', envir = globalenv(), inherits = FALSE)",
+			"    if (!is.null(j)) { if (!is.na(j)) try(compiler::enableJIT(j), silent = TRUE); rm('.bio7jit', envir = globalenv()) }",
 			"    s <- get0('source', envir = globalenv(), inherits = FALSE)",
 			"    if (isTRUE(attr(s, 'bio7dbg'))) rm('source', envir = globalenv())",
 			"    invisible() }",
@@ -598,11 +629,48 @@ public final class DebugSession {
 			 * used by source() and its functions and classes are defined again (the
 			 * script: in its frame); the running code keeps the old version
 			 */
+			/*
+			 * The methods of reference classes from a changed file: the objects keep copies
+			 * of their methods (and subclasses copies of the inherited ones), a new class
+			 * definition doesn't reach them. The methods (of the file) in all class
+			 * definitions and in the objects reachable from the global environment and the
+			 * frames get the code of the copy (its breakpoints). Returns the number.
+			 */
+			"  patchMethods <- function(source, copy) {",
+			"    src <- function(fn) { f <- tryCatch(utils::getSrcFilename(fn, full.names = TRUE), error = function(e) character(0)); if (length(f)) { p <- normalizePath(f, winslash = '/', mustWork = FALSE); cp <- normalizePath(copies, winslash = '/', mustWork = FALSE)",
+			"      if (p %in% names(origin)) origin[[p]] else if (p %in% cp) names(copies)[match(p, cp)] else p } else '' }",
+			"    new <- list()",
+			"    for (e in statements(tryCatch(parse(copy, keep.source = TRUE), error = function(err) expression()))) {",
+			"      if (!is.call(e) || length(e) != 3L || !as.character(e[[1]])[1] %in% c('<-', '=')) next",
+			"      r <- e[[3]]; if (!is.call(r) || !any(grepl('setRefClass$', deparse(r[[1]])))) next",
+			"      m <- r$methods; if (!is.call(m) || !identical(m[[1]], as.name('list'))) next",
+			"      for (n in setdiff(names(m), '')) if (is.call(m[[n]]) && identical(m[[n]][[1]], as.name('function'))) new[[n]] <- eval(m[[n]], globalenv()) }",
+			"    if (!length(new)) return(0L)",
+			"    patch <- function(f, n) { g <- new[[n]]",
+			"      p <- function(h) { e <- environment(h); body(h) <- body(g); environment(h) <- e; attr(h, 'srcref') <- attr(g, 'srcref'); h }",
+			"      if (isS4(f)) { f@.Data <- p(f@.Data); f } else p(f) }",
+			"    count <- 0L",
+			"    fix <- function(env) for (n in intersect(names(new), ls(env, all.names = TRUE))) {",
+			"      f <- get(n, envir = env); if (is.function(f) && identical(src(f), source)) { assign(n, patch(f, n), envir = env); count <<- count + 1L } }",
+			"    value <- function(v, env) tryCatch(get(v, envir = env), error = function(e) NULL)",
+			"    roots <- list(globalenv()); fr <- scriptFrame(); if (!is.null(fr)) roots[[2L]] <- fr",
+			"    for (w in roots) for (cl in tryCatch(methods::getClasses(w), error = function(e) character(0))) {",
+			"      d <- tryCatch(methods::getClassDef(cl, where = w), error = function(e) NULL); if (methods::is(d, 'refClassRepresentation')) fix(d@refMethods) }",
+			"    seen <- new.env()",
+			"    visit <- function(x, depth = 0L) {",
+			"      if (depth > 6L) return(invisible())",
+			"      if (methods::is(x, 'envRefClass')) x <- as.environment(x) else if (!is.environment(x)) { if (is.list(x) && length(x) < 1e5) for (v in x) visit(v, depth + 1L); return(invisible()) }",
+			"      key <- format(x); if (!is.null(seen[[key]])) return(invisible()); assign(key, TRUE, envir = seen)",
+			"      if (exists('.refClassDef', envir = x, inherits = FALSE)) { fix(x); for (v in ls(x, all.names = TRUE)) visit(value(v, x), depth + 1L) } }",
+			"    for (v in ls(globalenv(), all.names = TRUE)) visit(value(v, globalenv()))",
+			"    for (i in seq_len(max(sys.nframe() - 1L, 0L))) { f <- sys.frame(i); for (v in ls(f, all.names = TRUE)) visit(value(v, f)) }",
+			"    count }",
 			"  update <- function(source, copy, script = FALSE) {",
 			"    source <- normalizePath(source, winslash = '/', mustWork = FALSE)",
 			"    origin[normalizePath(copy, winslash = '/', mustWork = FALSE)] <<- source",
 			"    done <- if (script) { fr <- scriptFrame(); if (is.null(fr)) character(0) else redefine(copy, source, fr, all = TRUE) }",
 			"      else { copies[source] <<- copy; redefine(copy, source, globalenv()) }",
+			"    n <- tryCatch(patchMethods(source, copy), error = function(e) 0L); if (n > 0L) done <- c(done, paste(n, 'methods of objects'))",
 			"    cat('@@U@@', paste(unique(done), collapse = ', '), '\\n', sep = '')",
 			"    invisible(done) }",
 			/*
@@ -620,6 +688,31 @@ public final class DebugSession {
 			"    if (!quiet) cat('@@P@@', length(pending), '\\n', sep = '')",
 			"    invisible() }",
 			"  clearPending <- function() { pending <<- character(0); pendingScript <<- logical(0); invisible() }",
+			/* The functions of the call stack (frame, file, first and last line), e.g., for Run to Cursor to a calling function */
+			"  frames <- function() { n <- sys.nframe() - 1L; for (i in seq_len(n)) { sr <- attr(sys.function(i), 'srcref'); if (is.null(sr)) next",
+			"    cat('@@F@@', i, '\\t', srcfile(sr), '\\t', sr[1], '\\t', sr[3], '\\n', sep = '') }; invisible() }",
+			/*
+			 * A stop in the calling function after a return (Next at the end of a function,
+			 * Step Return, Run to Cursor to a line of a calling function): R doesn't go on
+			 * stepping in a caller which runs without the stepping mode. The frames above
+			 * frame "from" (to the browsed one) get an exit hook: it opens the browser in the
+			 * caller (@@R@@), one n there continues stepping in the caller (see
+			 * DebugProgress). Only callers with source references (code of the user).
+			 */
+			"  hooked <- list()",
+			"  hooksActive <- FALSE",
+			"  hookFrames <- function(from = sys.nframe() - 2L) { top <- sys.nframe() - 1L",
+			"    if (top >= 1L && top > from) for (i in seq(top, max(from + 1L, 1L))) {",
+			"      p <- sys.parents()[i]; if (p < 1L || is.null(attr(sys.function(p), 'srcref'))) next",
+			"      env <- sys.frame(i); dup <- FALSE; for (h in hooked) if (identical(h, env)) { dup <- TRUE; break }",
+			"      if (dup) next",
+			"      hooked[[length(hooked) + 1L]] <<- env",
+			"      do.call(on.exit, list(bquote(.(returned)(.(env), .(sys.frame(p)))), add = TRUE), envir = env) }",
+			"    hooksActive <<- TRUE; invisible() }",
+			"  returned <- function(env, caller) { found <- FALSE",
+			"    for (k in seq_along(hooked)) if (identical(hooked[[k]], env)) { hooked[[k]] <<- NULL; found <- TRUE; break }",
+			"    if (!found || !hooksActive) return(invisible())",
+			"    cat('@@R@@\\n'); eval(quote(browser()), caller) }",
 			"  dims <- function(x) { d <- dim(x); if (!is.null(d)) paste(d, collapse = ' x ') else as.character(length(x)) }",
 			"  short <- function(x) one(tryCatch(",
 			"    if (is.atomic(x) && is.null(dim(x)) && length(x) <= 10) paste(format(x), collapse = ' ')",
@@ -646,7 +739,12 @@ public final class DebugSession {
 			"    bp <- get0('.bio7bp', envir = .GlobalEnv, ifnotfound = NA); assign('.bio7bp', NA, envir = .GlobalEnv)",
 			"    cat('@@BP@@', bp, '\\n', sep = '')",
 			"    vars(env); watch(exprs, env); stack(calls); invisible() }",
-			"  arm <- function() { armed <<- TRUE; invisible() }",
+			/* step: the user steps (n, s, f, Run to Cursor), the stops after loops are active (else Continue) */
+			"  stepping <- FALSE",
+			/* The frames of the call stack at the step: only there a loop end stops (not in a function which a step runs over) */
+			"  stepEnvs <- list()",
+			"  arm <- function(step = FALSE) { armed <<- TRUE; stepping <<- isTRUE(step); stepEnvs <<- if (stepping) head(sys.frames(), -1L) else list(); hooksActive <<- FALSE; invisible() }",
+			"  stepHere <- function(env) { if (!stepping) return(FALSE); for (e in stepEnvs) if (identical(e, env)) return(TRUE); FALSE }",
 			/*
 			 * Step Into of a line: the methods which the line calls (obj$method() of a
 			 * reference class or R6 object, generic(x) of S7) get debug(), the step is

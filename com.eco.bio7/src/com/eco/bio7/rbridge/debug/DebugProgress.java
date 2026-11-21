@@ -141,7 +141,13 @@ public class DebugProgress {
 
 		if (com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning()) {
 			runEmbedded("R Debug Step", () -> {
-				arm();
+				/* n, s: stepping (the stops after loops are active); f, c: R runs (to the return, to a breakpoint) */
+				boolean step = "n".equals(command) || "s".equals(command);
+				arm(step);
+				if (!"c".equals(command) && EmbeddedR.isBrowsing()) {
+					/* R stops in the calling function when the current one returns (else it runs on) */
+					EmbeddedR.consoleCapture(".bio7dbg$hookFrames()", STATE_TIMEOUT, false);
+				}
 				/* Step Into of a method call: into the method (see .bio7dbg$stepInto) */
 				boolean targeted = "s".equals(command) && markStepTargets();
 				String out;
@@ -153,7 +159,12 @@ public class DebugProgress {
 					 */
 					EmbeddedR.consoleCapture("n", STEP_TIMEOUT, false);
 				}
-				out = EmbeddedR.consoleCapture(targeted ? "n" : command, STEP_TIMEOUT, true, text -> shortenDebugLines(text, fileName));
+				/* Step Return: R runs to the return of the function (f would only finish a loop), the exit hook stops in the caller */
+				String r = targeted ? "n" : "f".equals(command) ? "c" : command;
+				out = afterReturn(EmbeddedR.consoleCapture(r, STEP_TIMEOUT, true, text -> shortenDebugLines(text, fileName)), fileName);
+				if ("c".equals(command)) {
+					out = continueOverSteps(out, fileName);
+				}
 				if (targeted && EmbeddedR.isBrowsing()) {
 					EmbeddedR.consoleCapture(".bio7dbg$untarget()", STATE_TIMEOUT, false);
 				}
@@ -269,12 +280,29 @@ public class DebugProgress {
 	}
 
 	private static void runEmbedded(String name, Runnable action) {
-		if (!claim()) {
-			return;
-		}
+		/*
+		 * Another action of the debugger runs (e.g., the update of a file whose
+		 * breakpoints have just changed): this one follows when it has finished (not
+		 * dropped), at most a few seconds later
+		 */
+		boolean claimed = claim();
 		Job job = new Job(name) {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
+				if (!claimed) {
+					long end = System.currentTimeMillis() + 10000;
+					while (!claim()) {
+						if (System.currentTimeMillis() > end || !debugSessionActive) {
+							return Status.OK_STATUS;
+						}
+						try {
+							Thread.sleep(50);
+						} catch (InterruptedException e) {
+							Thread.currentThread().interrupt();
+							return Status.OK_STATUS;
+						}
+					}
+				}
 				try {
 					action.run();
 				} catch (RuntimeException e) {
@@ -289,9 +317,41 @@ public class DebugProgress {
 		job.schedule();
 	}
 
-	/* The handler of errors stops at the next error (not at errors typed at the Browse prompt) */
-	private static void arm() {
-		EmbeddedR.consoleCapture(".bio7dbg$arm()", 10000, false);
+	/*
+	 * The handler of errors stops at the next error (not at errors typed at the
+	 * Browse prompt); step: the user steps (the stops after loops are active)
+	 */
+	private static void arm(boolean step) {
+		EmbeddedR.consoleCapture(".bio7dbg$arm(" + (step ? "TRUE" : "FALSE") + ")", 10000, false);
+	}
+
+	/*
+	 * The exit hook of a function has opened the browser in its caller (see
+	 * .bio7dbg$hookFrames): one n continues stepping there (R stops at the next
+	 * line of the caller).
+	 */
+	private static String afterReturn(String out, String fileName) {
+		String last = out;
+		for (int i = 0; i < 100 && last != null && last.contains("@@R@@") && EmbeddedR.isBrowsing(); i++) {
+			last = EmbeddedR.consoleCapture("n", STEP_TIMEOUT, true, text -> shortenDebugLines(text, fileName));
+		}
+		return last;
+	}
+
+	/* Continue: R stops only at a breakpoint, an error, browser() or debug() */
+	private static final Pattern REAL_STOP = Pattern.compile("@@E@@|(?m)^Called from: |(?m)^debugging in: ");
+
+	/*
+	 * Continue: a function in which the user has stepped keeps the stepping mode of
+	 * R (it stops at its next line when a called function returns); Continue goes on
+	 * (c ends the stepping mode of the function) until a real stop or the end.
+	 */
+	private static String continueOverSteps(String out, String fileName) {
+		String last = out;
+		for (int i = 0; i < 100000 && last != null && EmbeddedR.isBrowsing() && !REAL_STOP.matcher(last).find(); i++) {
+			last = EmbeddedR.consoleCapture("c", STEP_TIMEOUT, true, text -> shortenDebugLines(text, fileName));
+		}
+		return last;
 	}
 
 	/**
@@ -545,11 +605,13 @@ public class DebugProgress {
 			/* 1: applied, 0: pending (the definitions don't exist yet, e.g., before the class definition), -1: none */
 			int state = targetFile == null ? TEMPORARY_NONE : redefineWithBreakpoints(targetFile, targetLine);
 			boolean temporary = state != TEMPORARY_NONE;
+			arm(true);
+			/* A line of a calling function (e.g., of the script after the current function): R steps on there */
+			continueInCallers(targetFile, targetLine);
 			if (temporary) {
 				/* The temporary breakpoint stops only once (also in a function which runs with it, e.g., in a loop) */
 				EmbeddedR.consoleCapture("assign('" + RUN_TO_FLAG + "', TRUE, envir = globalenv())", STATE_TIMEOUT, false);
 			}
-			arm();
 			StringBuilder all = new StringBuilder();
 			for (int i = 0; i < MAX_RUN_TO_CURSOR_STEPS; i++) {
 				String out = EmbeddedR.consoleCapture("n", STEP_TIMEOUT, false);
@@ -582,6 +644,39 @@ public class DebugProgress {
 			afterEmbeddedStop(all.toString());
 		});
 	}
+
+	/*
+	 * Run to Cursor to a line of a function which called the current one (e.g., a
+	 * line of the script after the current function): the frames above it get an
+	 * exit hook (see .bio7dbg$hookFrames), so that R goes on stepping in the
+	 * callers when the current function returns (else R would run to the end of
+	 * the script).
+	 */
+	private static void continueInCallers(Path targetFile, int targetLine) {
+		if (targetFile == null || !EmbeddedR.isBrowsing()) {
+			return;
+		}
+		String out = EmbeddedR.consoleCapture(".bio7dbg$frames()", STATE_TIMEOUT, false);
+		Matcher m = Pattern.compile("@@F@@(\\d+)\\t([^\\t\\n]*)\\t(\\d+)\\t(\\d+)").matcher(out == null ? "" : out);
+		int innermost = -1;
+		int target = -1;
+		Path file = targetFile.toAbsolutePath().normalize();
+		while (m.find()) {
+			int frame = Integer.parseInt(m.group(1));
+			innermost = Math.max(innermost, frame);
+			DebugSession.Location first = DebugSession.location(m.group(2), Integer.parseInt(m.group(3)));
+			DebugSession.Location last = DebugSession.location(m.group(2), Integer.parseInt(m.group(4)));
+			if (first != null && last != null && first.file().toAbsolutePath().normalize().equals(file) && first.line() <= targetLine && targetLine <= last.line()) {
+				/* The innermost function with the line */
+				target = Math.max(target, frame);
+			}
+		}
+		if (target > 0 && target < innermost) {
+			/* The frames above the target get an exit hook: R steps on in their callers */
+			EmbeddedR.consoleCapture(".bio7dbg$hookFrames(" + target + ")", STATE_TIMEOUT, false);
+		}
+	}
+
 
 	/*
 	 * Run to Cursor: a new copy of the file with the breakpoints of its markers and
@@ -719,7 +814,7 @@ public class DebugProgress {
 					note = "End of " + at.name() + " (its variables are kept)";
 				} else if (at != null) {
 					line = at;
-					code = m.group(3).trim();
+					code = DebugSession.isInjected(m.group(1), Integer.parseInt(m.group(2))) ? "(breakpoint)" : m.group(3).trim();
 					note = null;
 				}
 			}
@@ -1068,6 +1163,8 @@ public class DebugProgress {
 	 * the editor, see DebugSession.toSourceLine)
 	 */
 	static String shortenDebugLines(String text, String fileName) {
+		/* The stop of an exit hook (see afterReturn) is not shown */
+		text = text.replaceAll("(?m)^@@R@@\\R?|^Called from: eval\\(quote\\(browser\\(\\)\\), caller\\)\\R?", "");
 		/* The position of R as file and line of the editor (a debugged copy: its source) */
 		Matcher m = DEBUG_LINE.matcher(text);
 		StringBuilder sb = new StringBuilder();

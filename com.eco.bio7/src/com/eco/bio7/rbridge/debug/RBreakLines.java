@@ -395,6 +395,88 @@ final class RBreakLines {
 		return end;
 	}
 
+	/**
+	 * The lines (0-based) which start the statement after a loop (for, while or
+	 * repeat with a body in braces) in the same block. At the end of a loop R
+	 * restores the stepping mode of the function from the start of the loop: a loop
+	 * which started without it (e.g., R stopped at a breakpoint in the loop) would
+	 * run the rest of the function without a stop.
+	 */
+	List<Integer> afterLoops() {
+		List<Integer> out = new java.util.ArrayList<>();
+		for (int l = 0; l < lines.size(); l++) {
+			if (!startsStatement(l)) {
+				continue;
+			}
+			int f = nextCode(lineStart[l], l);
+			String word = wordAt(f);
+			int body;
+			if (word.equals("repeat")) {
+				body = nextCodeFrom(f + word.length());
+			} else if (word.equals("for") || word.equals("while")) {
+				int paren = nextCodeFrom(f + word.length());
+				int close = paren < 0 || text.charAt(paren) != '(' ? -1 : matching(paren);
+				body = close < 0 ? -1 : nextCodeFrom(close + 1);
+			} else {
+				continue;
+			}
+			if (body < 0 || text.charAt(body) != '{') {
+				continue;
+			}
+			int end = matching(body);
+			if (end < 0) {
+				continue;
+			}
+			int endLine = lineOf(end);
+			/* Only "}" at the end of its line (no else, no more code) */
+			if (endLine + 1 >= lines.size() || nextCode(end + 1, endLine) >= 0) {
+				continue;
+			}
+			for (int next = endLine + 1; next < lines.size(); next++) {
+				if (nextCode(lineStart[next], next) < 0) {
+					/* An empty line or a comment */
+					continue;
+				}
+				if (depthAtStart[next] == depthAtStart[l] && startsStatement(next)) {
+					out.add(next);
+				}
+				break;
+			}
+		}
+		return out;
+	}
+
+	/* The word (code) which starts at i, "" if none */
+	private String wordAt(int i) {
+		if (i < 0) {
+			return "";
+		}
+		int k = i;
+		while (k < text.length() && isWordChar(text.charAt(k)) && code[k]) {
+			k++;
+		}
+		return text.substring(i, k);
+	}
+
+	/* The next code character (not blank, not a comment) from i, also on the next lines; -1 if none */
+	private int nextCodeFrom(int i) {
+		for (int k = i; k < text.length(); k++) {
+			if (code[k] && !Character.isWhitespace(text.charAt(k))) {
+				return k;
+			}
+		}
+		return -1;
+	}
+
+	/* The line (0-based) of a character */
+	private int lineOf(int i) {
+		int l = 0;
+		while (l + 1 < lines.size() && lineStart[l + 1] <= i) {
+			l++;
+		}
+		return l;
+	}
+
 	/** The number of lines. */
 	int size() {
 		return lines.size();

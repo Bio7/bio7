@@ -50,7 +50,11 @@ public class DebugStopAction extends Action {
 			DebugProgress.endSession();
 			if (com.eco.bio7.rbridge.backend.EmbeddedR.isBrowsing()) {
 				/* Shown after the Browse prompt (else the next prompt follows on the same line) */
-				Thread q = new Thread(() -> com.eco.bio7.rbridge.backend.EmbeddedR.consoleCapture("Q", 10000, true), "R Debug Stop");
+				Thread q = new Thread(() -> {
+					/* The exit hooks of the session don't open the browser again while R leaves the functions */
+					com.eco.bio7.rbridge.backend.EmbeddedR.consoleCapture("if (exists('.bio7dbg', envir = .GlobalEnv, inherits = FALSE)) .bio7dbg$arm(FALSE)", 10000, false);
+					com.eco.bio7.rbridge.backend.EmbeddedR.consoleCapture("Q", 10000, true);
+				}, "R Debug Stop");
 				q.setDaemon(true);
 				q.start();
 			} else if (com.eco.bio7.rbridge.backend.EmbeddedR.isBusy()) {
