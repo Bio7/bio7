@@ -113,6 +113,18 @@ public class DebugRScript extends Action {
 
 	public void run() {
 		errorFunction = false;
+		/* Only R files (also R Markdown and Quarto): a Python script goes to the Python debugger */
+		IEditorPart activeEditor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		IFile activeFile = activeEditor == null ? null : activeEditor.getEditorInput().getAdapter(IFile.class);
+		String ext = activeFile == null || activeFile.getFileExtension() == null ? "" : activeFile.getFileExtension().toLowerCase(java.util.Locale.ROOT);
+		if ("py".equals(ext)) {
+			com.eco.bio7.pybridge.debug.PythonDebugger.startActiveEditor(false);
+			return;
+		}
+		if (activeEditor == null || !(ext.equals("r") || ext.equals("rmd") || ext.equals("qmd") || ext.equals("rmarkdown"))) {
+			Bio7Dialog.message("Please open an R script (.R, .Rmd or .qmd) in the editor to debug it.");
+			return;
+		}
 		/* End any previous debug session */
 		DebugProgress.endSession();
 		final IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
