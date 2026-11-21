@@ -172,13 +172,23 @@ class Debugger(bdb.Bdb):
         elif command == "return":
             self.set_return(frame)
         elif command.startswith("line "):
-            line = int(command.split()[1])
-            self.set_break(self.path, line, temporary=True)
+            # Run to Cursor: "line N" or "line N<tab>file" (the file of the editor, e.g., a module of the script)
+            spec, _, path = command[5:].partition("\t")
+            line = int(spec.strip())
+            target = os.path.abspath(path) if path.strip() else self.path
+            if self.set_break(target, line, temporary=True):
+                # not a line of the file (bdb returns a message): on to the next stop
+                pass
             self.set_continue()
         elif command == "quit":
             self.set_quit()
         else:
             self.set_continue()
+
+    def do_clear(self, arg):
+        """Removes a breakpoint by its number: bdb calls it for a temporary breakpoint
+        (Run to Cursor) when it is reached (pdb implements it, bdb does not)."""
+        self.clear_bpbynumber(arg)
 
     def stack_rows(self):
         rows = []

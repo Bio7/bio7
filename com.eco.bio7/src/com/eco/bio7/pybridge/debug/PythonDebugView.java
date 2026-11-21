@@ -278,7 +278,10 @@ public class PythonDebugView extends ViewPart {
 	private void runToCursor() {
 		IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		if (editor instanceof ITextEditor te && te.getSelectionProvider().getSelection() instanceof ITextSelection sel) {
-			PythonDebugger.runToLine(sel.getStartLine() + 1);
+			/* The file of the editor (also a module of the script, e.g., a class in another file) */
+			org.eclipse.core.resources.IFile file = editor.getEditorInput().getAdapter(org.eclipse.core.resources.IFile.class);
+			String path = file != null && file.getLocation() != null ? file.getLocation().toOSString() : null;
+			PythonDebugger.runToLine(path, sel.getStartLine() + 1);
 		}
 	}
 

@@ -254,6 +254,14 @@ public final class PythonDebugger {
 		command("line " + line);
 	}
 
+	/**
+	 * Continues to a line of a file (without a breakpoint): the script or another
+	 * file of the program, e.g., a module with a class.
+	 */
+	public static void runToLine(String file, int line) {
+		command(file == null ? "line " + line : "line " + line + "\t" + file);
+	}
+
 	/** Stops the debugging (also while the script runs: KeyboardInterrupt). */
 	public static void terminate() {
 		if (stop != null) {
