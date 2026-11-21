@@ -41,8 +41,8 @@ public class CreateNewRProjectAndFile {
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 		IProject project = root.getProject(containerName);
 		try {
-			project.create(monitor);
-			project.open(monitor);
+			/* Created and opened in one operation: the Project Explorer shows the project once */
+			com.eco.bio7.wizards.ProjectCreation.createAndOpen(containerName, null, monitor);
 		} catch (CoreException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();

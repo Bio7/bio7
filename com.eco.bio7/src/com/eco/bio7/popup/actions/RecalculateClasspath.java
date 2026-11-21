@@ -109,12 +109,9 @@ public class RecalculateClasspath implements IObjectActionDelegate {
 			// System.out.println("location: "+locations);
 			entriesJre.add(JavaCore.newLibraryEntry(element.getSystemLibraryPath(), null, null));
 		}
-		IClasspathEntry[] newEntries = new ScanClassPath().scanForJDT();
-
-		IClasspathEntry[] oldEntries = entriesJre.toArray(new IClasspathEntry[entriesJre.size()]);
-
-		System.arraycopy(oldEntries, 0, newEntries, 0, oldEntries.length);
-		newEntries[oldEntries.length] = JavaCore.newSourceEntry(fragRoot.getPath());
+		/* JRE, source folder and the Bio7 libraries, each path once (a duplicate is an error of the Java model) */
+		IClasspathEntry[] newEntries = ScanClassPath.projectClasspath(entriesJre.toArray(new IClasspathEntry[0]),
+				JavaCore.newSourceEntry(fragRoot.getPath()));
 
 		try {
 			javaProject.setRawClasspath(newEntries, null);

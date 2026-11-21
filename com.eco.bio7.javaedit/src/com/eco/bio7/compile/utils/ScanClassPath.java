@@ -266,6 +266,48 @@ public class ScanClassPath {
 		return elements;
 	}
 
+	/** The container of the default JRE of the workbench (if the bundled JDK has no libraries, e.g., started from Eclipse). */
+	private static final String JRE_CONTAINER = "org.eclipse.jdt.launching.JRE_CONTAINER";
+
+	/**
+	 * The classpath of a Bio7 Java project: the entries of the JRE (else the JRE
+	 * container), the source folder and the libraries of Bio7 (see scanForJDT),
+	 * each path once (a duplicate entry is an error of the Java model); of two
+	 * entries with the same path the one with a source attachment is kept.
+	 *
+	 * @param jre    the library entries of the JRE (may be empty)
+	 * @param source the source folder entry of the project
+	 */
+	public static IClasspathEntry[] projectClasspath(IClasspathEntry[] jre, IClasspathEntry source) {
+		java.util.LinkedHashMap<String, IClasspathEntry> entries = new java.util.LinkedHashMap<>();
+		if (jre == null || jre.length == 0) {
+			add(entries, JavaCore.newContainerEntry(new Path(JRE_CONTAINER)));
+		} else {
+			for (IClasspathEntry e : jre) {
+				add(entries, e);
+			}
+		}
+		add(entries, source);
+		for (IClasspathEntry e : new ScanClassPath().scanForJDT()) {
+			add(entries, e);
+		}
+		return entries.values().toArray(new IClasspathEntry[0]);
+	}
+
+	/* An entry once per path; a later entry of the same path replaces it only with a source attachment it doesn't have */
+	private static void add(java.util.LinkedHashMap<String, IClasspathEntry> entries, IClasspathEntry e) {
+		if (e == null || e.getPath() == null) {
+			return;
+		}
+		String key = e.getPath().removeTrailingSeparator().toString();
+		IClasspathEntry old = entries.get(key);
+		if (old == null) {
+			entries.put(key, e);
+		} else if (old.getSourceAttachmentPath() == null && e.getSourceAttachmentPath() != null && old.getEntryKind() == e.getEntryKind()) {
+			entries.put(key, e);
+		}
+	}
+
 	public IClasspathEntry[] scanForJDT() {
 		assignBundleLibs();
 		/*
@@ -312,6 +354,10 @@ public class ScanClassPath {
 					 */
 					if (i == 0 | i == 1 || i == 5 || i == 7) {
 						for (int u = 0; u < elements.length; u++) {
+							/* The bundle itself ("."): its classes are in bin (added below), the jars are the libraries */
+							if (".".equals(elements[u].getValue())) {
+								continue;
+							}
 
 							/*
 							 * We add "external" libraries referenced in the bundles.
