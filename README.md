@@ -4,9 +4,18 @@
 
 Bio7 is a free and open-source integrated development environment for ecological modeling, scientific image analysis and statistics. R and Python run embedded in Bio7, ImageJ is part of the workbench, and models, images and data can be exchanged directly between them, the table, the 3D views and the editors. Bio7 is built on the Eclipse Rich Client Platform and runs on Windows, macOS and Linux.
 
-![Bio7 – Models | Images | Data](https://raw.githubusercontent.com/Bio7/bio7/master/resources/bio7-start-screen.png)
+![Bio7 – Models | Images | Data](resources/bio7-start-screen.png)
 
-**[Website: bio7.org](https://bio7.org)** · **[Download (releases)](https://github.com/Bio7/bio7/releases)** · **[YouTube channel](https://www.youtube.com/channel/UCFY-w-tMbVzhrLro4Q2KbFg)**
+**[Website: bio7.org](https://bio7.org)** · **[Download (releases)](https://github.com/Bio7/bio7/releases)** · **[Manual (HTML)](https://bio7.github.io/bio7documentation/Bio7_Manual.html)** · **[Manual (PDF)](https://github.com/Bio7/bio7documentation/blob/main/Bio7_Manual.pdf)** · **[YouTube channel](https://www.youtube.com/channel/UCFY-w-tMbVzhrLro4Q2KbFg)**
+
+### Documentation
+
+The Bio7 manual describes the perspectives, the editors, the R and Python integration, image analysis, the 3D views and the preferences:
+
+* **[Bio7 Manual (HTML)](https://bio7.github.io/bio7documentation/Bio7_Manual.html)**: to read in the browser
+* **[Bio7 Manual (PDF)](https://github.com/Bio7/bio7documentation/blob/main/Bio7_Manual.pdf)**: to read or download ([direct download](https://raw.githubusercontent.com/Bio7/bio7documentation/main/Bio7_Manual.pdf))
+
+The sources of the manual (LyX) are in the repository [bio7documentation](https://github.com/Bio7/bio7documentation).
 
 ### Features
 
