@@ -54,6 +54,8 @@ public final class RCalls {
 		try (InputStream in = RCalls.class.getResourceAsStream("bio7_r_api.R")) {
 			session.registerFunction(".bio7_call", RCalls::call);
 			session.voidEval(new String(in.readAllBytes(), StandardCharsets.UTF_8));
+			/* The simulation API (grid_model(), simulation(), ...) */
+			com.eco.bio7.simulation.ScriptSimulation.installR(session);
 			installed = session;
 		} catch (RException | IOException | RuntimeException e) {
 			System.err.println("The Bio7 API for R could not be installed: " + e.getMessage());

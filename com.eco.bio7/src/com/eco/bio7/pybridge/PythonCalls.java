@@ -58,6 +58,11 @@ public final class PythonCalls implements PyCallHandler {
 	@Override
 	public PyValue call(String function, String[] args, PyValue value) throws Exception {
 		switch (function) {
+		case "sim_start":
+		case "sim_geo":
+		case "sim_asset":
+			/* The simulation models of Python and R (the modules bio7sim) */
+			return com.eco.bio7.simulation.ScriptSimulation.call(function, args, value);
 		case "image": {
 			ImagePlus imp = image(arg(args, 0));
 			return PythonConvert.image(imp);

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7: the Play/Pause button while the simulation runs (a click pauses it) -->
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <rect x="1.6" y="0.6" width="4.9" height="14.8" rx="1.1" fill="#e07b2a"/>
+  <rect x="9.5" y="0.6" width="4.9" height="14.8" rx="1.1" fill="#e07b2a"/>
+</svg>

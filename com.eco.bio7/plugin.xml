@@ -924,6 +924,17 @@
       </wizard>
       <wizard
             category="com.eco.bio7.bio7javaproject"
+            class="com.eco.bio7.wizards.java.SimulationModelWizard"
+            icon="icons/maintoolbar/create_project_file_java.svg"
+            id="com.eco.bio7.wizardSimulationModel"
+            name="Bio7 Simulation Project (ImageJ, 3D view, HTML export)"
+            project="true">
+         <description>
+            A project with a simulation model in Java, Python or R (a 2D grid with states or values in ImageJ or agents in the 3D view) which runs live in Bio7 and exports as an HTML page.
+         </description>
+      </wizard>
+      <wizard
+            category="com.eco.bio7.bio7javaproject"
             class="com.eco.bio7.wizards.java.JavaClassJoglPluginWizard"
             icon="icons/maintoolbar/create_project_file_java.svg"
             id="com.eco.bio7.wizardJavaJdtBio7ModelJogl"
@@ -2225,6 +2236,30 @@
                id="com.eco.bio7.javaProfile.profile"
                label="Profile Java (compile and run)"
                menubarPath="JavaProfileMenu.menu/group1">
+         </action>
+      </viewerContribution>
+   </extension>
+   <!-- The HTML export of a simulation model (com.eco.bio7.simulation) in the context menu of the Java editor -->
+   <extension point="org.eclipse.ui.popupMenus">
+      <viewerContribution
+            id="com.eco.bio7.simulationExportContribution"
+            targetID="#CompilationUnitEditorContext">
+         <action
+               class="com.eco.bio7.actions.ExportSimulationEditorAction"
+               id="com.eco.bio7.simulationExport"
+               label="Export Simulation as HTML..."
+               menubarPath="additions">
+         </action>
+      </viewerContribution>
+      <!-- A simulation model of R (the functions of bio7sim): the page runs the script with webR -->
+      <viewerContribution
+            id="com.eco.bio7.simulationExportRContribution"
+            targetID="#REditorContext">
+         <action
+               class="com.eco.bio7.actions.ExportSimulationEditorAction"
+               id="com.eco.bio7.simulationExportR"
+               label="Export Simulation as HTML..."
+               menubarPath="additions">
          </action>
       </viewerContribution>
    </extension>

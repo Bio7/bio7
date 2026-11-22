@@ -144,6 +144,24 @@ public class Fullscreen {
 			} else if (e.keyCode == SWT.ESC && s != null) {
 				/* The ESC key is also forwarded to ImageJ (abort macro or plugin)! */
 				Display.getCurrent().asyncExec(() -> close(s));
+			} else if (e.keyCode == SWT.ESC && control != null && isActive()) {
+				/*
+				 * macOS: the fullscreen shell (its own space) is not always the key window, the
+				 * key goes to the hidden window below (e.g., the Bio7 window). The ESC key of a
+				 * top-level window (not a dialog) on the monitor of a fullscreen image closes
+				 * the fullscreen mode of this image.
+				 */
+				Shell shell = control.getShell();
+				Session onMonitor = null;
+				for (Session other : sessions) {
+					if (other.shell != null && !other.shell.isDisposed() && FullscreenMonitors.same(other.shell.getMonitor(), shell.getMonitor())) {
+						onMonitor = other;
+					}
+				}
+				if (onMonitor != null && shell.getParent() == null) {
+					Session close = onMonitor;
+					Display.getCurrent().asyncExec(() -> close(close));
+				}
 			}
 		}
 	};
@@ -286,7 +304,17 @@ public class Fullscreen {
 		s.oldParent = holder.getParent();
 		s.oldItem = Bio7ImageJ.getTab(imp);
 		Display display = holder.getDisplay();
-		Shell shell = new Shell(display, SWT.NO_TRIM | SWT.ON_TOP);
+		/*
+		 * macOS: a window with a title (a borderless window can't become the key window
+		 * there: the keys, e.g., ESC and the shortcuts of ImageJ, would go to the window
+		 * below); the fullscreen mode of macOS hides the title and keeps the shell in its
+		 * own space
+		 */
+		boolean mac = "cocoa".equals(SWT.getPlatform());
+		Shell shell = new Shell(display, mac ? SWT.SHELL_TRIM : SWT.NO_TRIM | SWT.ON_TOP);
+		if (mac) {
+			shell.setText(imp.getTitle());
+		}
 		s.shell = shell;
 		sessions.add(s);
 		shell.setLayout(new FillLayout());
@@ -322,12 +350,25 @@ public class Fullscreen {
 		shell.addListener(SWT.Resize, _ -> fitToMonitor(s));
 		fitToMonitor(s);
 		display.timerExec(300, () -> fitToMonitor(s));
+		/* macOS: after the animation of the fullscreen mode the shell gets the keys (ESC, F2) */
+		display.timerExec(800, () -> focus(s));
 		shell.layout(true, true);
 		if (imp.getCanvas() != null) {
 			imp.getCanvas().setFocus();
 		}
 		activatedLast = s;
 		activateImage(s);
+	}
+
+	/* Activates the fullscreen shell and the canvas of the image (the keys go to the fullscreen image) */
+	private static void focus(Session s) {
+		if (s.shell == null || s.shell.isDisposed() || !sessions.contains(s)) {
+			return;
+		}
+		s.shell.forceActive();
+		if (s.image != null && s.image.getCanvas() != null && !s.image.getCanvas().isDisposed()) {
+			s.image.getCanvas().setFocus();
+		}
 	}
 
 	/* Makes the fullscreen image the current ImageJ image (selected in the window menu)! */

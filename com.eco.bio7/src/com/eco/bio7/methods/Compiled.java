@@ -43,7 +43,24 @@ public class Compiled {
 	 * 
 	 */
 	public static void setModel(Model ecoclass) {
+		boolean newModel = ecoclass != null && ecoclass != model;
 		Compiled.model = ecoclass;
+		if (newModel) {
+			/* A new model: the simulation is paused and the counter of the time steps starts at 0 */
+			com.eco.bio7.time.Time.setPause(true);
+			com.eco.bio7.time.Time.Timereset();
+			com.eco.bio7.time.Time.setCounter(0);
+			try {
+				org.eclipse.swt.widgets.Display display = org.eclipse.ui.PlatformUI.getWorkbench().getDisplay();
+				display.asyncExec(() -> {
+					if (com.eco.bio7.rcp.ApplicationActionBarAdvisor.getUserItem() != null) {
+						com.eco.bio7.rcp.ApplicationActionBarAdvisor.getUserItem().setText("Time steps: " + com.eco.bio7.time.Time.getCounter());
+					}
+				});
+			} catch (RuntimeException | LinkageError e) {
+				/* No workbench (e.g., a test) */
+			}
+		}
 	}
 
 }

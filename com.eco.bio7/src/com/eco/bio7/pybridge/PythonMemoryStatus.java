@@ -40,6 +40,9 @@ public final class PythonMemoryStatus {
 
 	private static final long POLL_MILLIS = 1000;
 	private static final long IDLE_MILLIS = 30000;
+	/* Python is called continuously (e.g., a simulation model in each time step): measured at most every 10 seconds */
+	private static final long BUSY_MILLIS = 10000;
+	private static volatile long lastPollActivity = Long.MIN_VALUE;
 
 	private static StatusLineContributionItem item;
 	private static IStatusLineManager manager;
@@ -94,9 +97,13 @@ public final class PythonMemoryStatus {
 				show(null);
 				return;
 			}
-			if (py.getActivity() != lastActivity) {
+			long activity = py.getActivity();
+			if (activity != lastActivity) {
 				dirty = true;
 			}
+			/* Called since the last poll: Python may be used continuously (a measurement would delay it) */
+			boolean changing = activity != lastPollActivity;
+			lastPollActivity = activity;
 			/* A script or a long console line: the running time (double-click stops it) */
 			String running = PythonJobs.runningLabel();
 			if (running != null && PythonJobs.runningMillis() >= PythonJobs.RUN_DELAY) {
@@ -112,6 +119,9 @@ public final class PythonMemoryStatus {
 			if (!dirty && now - lastMeasure < IDLE_MILLIS) {
 				return;
 			}
+			if (changing && now - lastMeasure < BUSY_MILLIS) {
+				return;
+			}
 			dirty = false;
 			lastMeasure = now;
 			try {
@@ -119,6 +129,7 @@ public final class PythonMemoryStatus {
 				show(v instanceof PyValue.Array a ? a.asDouble() : null);
 				/* After the measurement (it is a call itself) */
 				lastActivity = py.getActivity();
+				lastPollActivity = lastActivity;
 			} catch (Exception e) {
 				dirty = true;
 			}

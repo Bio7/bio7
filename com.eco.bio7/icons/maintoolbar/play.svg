@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7: the Play/Pause button while the simulation is paused (a click starts it) -->
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <path d="M2.6 0.9 L15 7.2 Q16.1 8 15 8.8 L2.6 15.1 Q1.3 15.7 1.3 14.3 L1.3 1.7 Q1.3 0.3 2.6 0.9 Z" fill="#638d43"/>
+</svg>

@@ -133,6 +133,8 @@ public final class EmbeddedPython {
 		session.setWaitLimit(() -> Display.getCurrent() != null, UI_WAIT_LIMIT_MS);
 		session.setPlotListener(PythonPlotView.listener());
 		session.setCallHandler(new PythonCalls());
+		/* The simulation API (from bio7sim import *) */
+		com.eco.bio7.simulation.ScriptSimulation.installPython(session);
 		/* The variables of the Python-Shell after the console and scripts (as for R) */
 		session.setActivityListener(PythonShellView::refreshOpenViews);
 		/* A job while a script or a long console line runs (status bar, Progress view, stop button) */

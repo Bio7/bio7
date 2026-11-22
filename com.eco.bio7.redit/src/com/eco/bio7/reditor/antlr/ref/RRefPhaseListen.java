@@ -494,12 +494,23 @@ public class RRefPhaseListen extends RBaseListener {
 	 */
 	private static boolean isNoVariable(RParser.E30Context ctx, String name) {
 		ParseTree parent = ctx.getParent();
-		if (parent instanceof RParser.E4Context e4 && e4.expr(1) == ctx) {
+		/*
+		 * The indexing binds stronger than $ and @ in the grammar: x$name[i] is x $
+		 * (name[i]), x@slot[[k]] is x @ (slot[[k]]). The name is the indexed expression
+		 * of the indexing: its parent is the indexing.
+		 */
+		ParseTree node = ctx;
+		while ((parent instanceof RParser.E1Context || parent instanceof RParser.E2Context) && parent.getChild(0) == node) {
+			node = parent;
+			parent = parent.getParent();
+		}
+		if (parent instanceof RParser.E4Context e4 && e4.expr(1) == node) {
 			return true;
 		}
 		if (parent instanceof RParser.E3Context) {
 			return true;
 		}
+		parent = ctx.getParent();
 		if (parent instanceof RParser.E17VariableDeclarationContext e17 && e17.expr(1) == ctx && e17.getChildCount() > 1) {
 			String op = e17.getChild(1).getText();
 			if (op.equals("->") || op.equals("->>")) {

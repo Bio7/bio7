@@ -119,7 +119,6 @@ public class Options3d extends ViewPart {
 	private static int fpsScreenCapture = 30;
 	private int fixedFps;
 
-	private Image imagePlayPause;
 
 	private Image imageSetup;
 
@@ -560,11 +559,23 @@ public class Options3d extends ViewPart {
 				}
 			}
 		});
-		imagePlayPause = Bio7Plugin.getImageDescriptor("/icons/maintoolbar/play_pause.svg").createImage();
-		playPauseButton.setImage(imagePlayPause);
+		/* The icon shows the state as the button of the toolbar: pause while the run method is invoked, else play */
+		final Image playImage = Bio7Plugin.getImageDescriptor("/icons/maintoolbar/play.svg").createImage();
+		final Image pauseImage = Bio7Plugin.getImageDescriptor("/icons/maintoolbar/pause.svg").createImage();
+		playPauseButton.setData("play", playImage);
+		playPauseButton.setData("pause", pauseImage);
+		showPlayPause(playPauseButton, running != null && running.isFromOpenGl());
+		playPauseButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(final SelectionEvent e) {
+				SpatialStructure grid = SpatialStructure.getSpatialStructureInstance();
+				showPlayPause(playPauseButton, grid != null && grid.isFromOpenGl());
+			}
+		});
 		/* Disposed with the button (the button can be moved into another view)! */
-		final Image playPauseImage = imagePlayPause;
-		playPauseButton.addDisposeListener(_ -> playPauseImage.dispose());
+		playPauseButton.addDisposeListener(_ -> {
+			playImage.dispose();
+			pauseImage.dispose();
+		});
 
 		final Button setupButton = new Button(composite_2, SWT.NONE);
 		GridData gd_setupButton = new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1);
@@ -1862,8 +1873,22 @@ public class Options3d extends ViewPart {
 			Button button = playPauseButton;
 			if (button != null && !button.isDisposed()) {
 				button.setSelection(grid != null && grid.isFromOpenGl());
+				showPlayPause(button, grid != null && grid.isFromOpenGl());
 			}
 		});
+	}
+
+	/* The icon and the tooltip of the state: pause while the run method is invoked (a click pauses), else play */
+	private static void showPlayPause(Button button, boolean running) {
+		Object image = button.getData(running ? "pause" : "play");
+		if (image instanceof Image img && !img.isDisposed()) {
+			button.setImage(img);
+		}
+		button.setToolTipText(running ? "Pause: the run method of the compiled model is invoked (the timer of the 3D view); a click pauses it"
+				: "Play: invokes the run method of the compiled model with the timer of the 3D view (its speed below)");
+		if (button.getParent() != null) {
+			button.getParent().layout(true, true);
+		}
 	}
 
 	public static int getSetFixedFPS() {

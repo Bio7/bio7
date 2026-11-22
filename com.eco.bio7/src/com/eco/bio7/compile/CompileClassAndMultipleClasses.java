@@ -671,6 +671,10 @@ public class CompileClassAndMultipleClasses {
                     Model model = (Model) o;
                     Compiled.setModel(model);
                     DynamicLayer.setEcoclass(model);
+                    /* A model of the simulation API: the setup after the creation (the object is complete now) */
+                    if (model instanceof com.eco.bio7.simulation.Simulation simulation) {
+                        simulation.startAfterCreation();
+                    }
                 }
                 else if (o instanceof PlugInFrame) {
                     return;

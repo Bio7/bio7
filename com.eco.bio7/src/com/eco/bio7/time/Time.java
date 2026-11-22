@@ -201,10 +201,38 @@ public class Time {
 	 * @param pause a boolean value.
 	 */
 	public static void setPause(boolean pause) {
+		boolean changed;
 		synchronized (LOCK) {
+			changed = Time.pause != pause;
 			Time.pause = pause;
 			LOCK.notifyAll();
 		}
+		if (changed) {
+			for (Runnable l : PAUSE_LISTENERS) {
+				try {
+					l.run();
+				} catch (RuntimeException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	private static final java.util.List<Runnable> PAUSE_LISTENERS = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+	/**
+	 * Adds a listener which is called when the pause changes (started or paused;
+	 * in the thread which changed it).
+	 *
+	 * @param listener the listener
+	 */
+	public static void addPauseListener(Runnable listener) {
+		PAUSE_LISTENERS.add(listener);
+	}
+
+	/** Removes a listener of the pause. */
+	public static void removePauseListener(Runnable listener) {
+		PAUSE_LISTENERS.remove(listener);
 	}
 
 	/**
@@ -315,6 +343,25 @@ public class Time {
 			LOCK.notifyAll();
 		}
 		InfoView.intervalChanged();
+		for (Runnable l : INTERVAL_LISTENERS) {
+			try {
+				l.run();
+			} catch (RuntimeException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private static final java.util.List<Runnable> INTERVAL_LISTENERS = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+	/** Adds a listener which is called when the interval (the speed) changes (in the thread which changed it). */
+	public static void addIntervalListener(Runnable listener) {
+		INTERVAL_LISTENERS.add(listener);
+	}
+
+	/** Removes a listener of the interval. */
+	public static void removeIntervalListener(Runnable listener) {
+		INTERVAL_LISTENERS.remove(listener);
 	}
 
 	/**

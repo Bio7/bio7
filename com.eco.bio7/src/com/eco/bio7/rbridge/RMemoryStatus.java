@@ -43,6 +43,9 @@ public final class RMemoryStatus {
 	private static final String NAMES = "unique(c(ls(globalenv(), all.names = TRUE), unlist(lapply(seq_along(search())[-1], function(i) ls(pos = i, all.names = TRUE)), use.names = FALSE)))";
 	private static final long POLL_MILLIS = 1000;
 	private static final long IDLE_MILLIS = 30000;
+	/* R is called continuously (e.g., a simulation model in each time step): measured at most every 10 seconds */
+	private static final long BUSY_MILLIS = 10000;
+	private static volatile long lastPollActivity = Long.MIN_VALUE;
 	private static final long TIMEOUT_MILLIS = 3000;
 
 	private static StatusLineContributionItem item;
@@ -96,15 +99,22 @@ public final class RMemoryStatus {
 				dirty = true;
 			}
 			/* R has evaluated something since the last measurement (also a short command like rm(x)) */
-			if (backend.activity() != lastActivity) {
+			long activity = backend.activity();
+			if (activity != lastActivity) {
 				dirty = true;
 			}
+			/* Called since the last poll: R may be used continuously (a measurement would delay it) */
+			boolean changing = activity != lastPollActivity;
+			lastPollActivity = activity;
 			if (RState.isBusy()) {
 				dirty = true;
 				return;
 			}
 			long now = System.currentTimeMillis();
 			if (!dirty && now - lastMeasure < IDLE_MILLIS) {
+				return;
+			}
+			if (changing && now - lastMeasure < BUSY_MILLIS) {
 				return;
 			}
 			dirty = false;
@@ -115,6 +125,7 @@ public final class RMemoryStatus {
 				refreshCompletion(backend);
 				/* After the measurement (it is an evaluation itself) */
 				lastActivity = backend.activity();
+				lastPollActivity = lastActivity;
 			} catch (Exception e) {
 				/* Busy or ended in the meantime: the next poll */
 				dirty = true;

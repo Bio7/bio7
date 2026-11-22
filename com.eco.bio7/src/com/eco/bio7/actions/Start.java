@@ -27,8 +27,14 @@ public class Start extends Action implements IMenuCreator {
 		setId("com.eco.bio7.start");
 		setActionDefinitionId("com.eco.bio7.start");
 		setMenuCreator(this);
-		this.setToolTipText("Start/Stop the repeated time based invocation\n of the Java run method if available!");
-		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor("/icons/maintoolbar/play_pause.svg"));
+		showState();
+		/* The icon shows the state: a pause icon while the simulation runs, a play icon while it is paused */
+		Time.addPauseListener(() -> {
+			org.eclipse.swt.widgets.Display display = org.eclipse.ui.PlatformUI.getWorkbench().getDisplay();
+			if (!display.isDisposed()) {
+				display.asyncExec(this::showState);
+			}
+		});
 
 	}
 
@@ -57,6 +63,12 @@ public class Start extends Action implements IMenuCreator {
 
 		new MenuItem(fMenu, SWT.SEPARATOR);
 
+		MenuItem exportItem = new MenuItem(fMenu, SWT.PUSH);
+		exportItem.setText("Export Simulation as HTML...");
+		exportItem.addListener(SWT.Selection, e -> ExportSimulation.run(window.getShell()));
+
+		new MenuItem(fMenu, SWT.SEPARATOR);
+
 		MenuItem resetItem = new MenuItem(fMenu, SWT.PUSH);
 		resetItem.setText("Counter Reset");
 		resetItem.addListener(SWT.Selection, e -> ApplicationActionBarAdvisor.getCounterreset().run());
@@ -68,14 +80,15 @@ public class Start extends Action implements IMenuCreator {
 	}
 
 	public void run() {
-		if (Time.isPause()) {
-			this.setChecked(true);
-			Time.setPause(false);
-		} else {
-			this.setChecked(false);
-			Time.setPause(true);
-		}
+		/* The listener of the pause changes the icon */
+		Time.setPause(!Time.isPause());
+	}
 
+	/* The icon and the tooltip of the state of the simulation (the action of a click) */
+	private void showState() {
+		boolean paused = Time.isPause();
+		setImageDescriptor(com.eco.bio7.Bio7Plugin.getImageDescriptor(paused ? "/icons/maintoolbar/play.svg" : "/icons/maintoolbar/pause.svg"));
+		setToolTipText(paused ? "Play: start the simulation (the repeated call of the run method of the model)" : "Pause: the simulation runs (a click pauses it)");
 	}
 
 	@Override
