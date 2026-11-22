@@ -360,7 +360,16 @@ public class RTools {
 
 		// StartBio7Utils.getConsoleInstance().cons.println(RTools.rout);
 
-		if (RTools.rout != null && RTools.rout.equals("NULL") == false) {
+		/*
+		 * The printed value NULL (e.g., of quarto_render() or a function which returns
+		 * invisible(NULL)) is not shown: also not at the end of an output (a function
+		 * which writes lines and returns NULL, e.g., the progress of rendering a
+		 * document)
+		 */
+		if (RTools.rout != null && RTools.rout.endsWith("\nNULL")) {
+			RTools.rout = RTools.rout.substring(0, RTools.rout.length() - "\nNULL".length());
+		}
+		if (RTools.rout != null && RTools.rout.equals("NULL") == false && !RTools.rout.isEmpty()) {
 			StartBio7Utils.getConsoleInstance().cons.println(RTools.rout);
 			/* Send also the output to the R console view! */
 			if (RShellView.isConsoleExpanded()) {
