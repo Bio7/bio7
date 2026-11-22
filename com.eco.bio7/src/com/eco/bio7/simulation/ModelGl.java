@@ -68,8 +68,9 @@ final class ModelGl {
 		gl.glEnableClientState(GLPointerFunc.GL_VERTEX_ARRAY);
 		gl.glEnableClientState(GLPointerFunc.GL_NORMAL_ARRAY);
 		for (Gltf.Mesh m : meshes) {
-			FloatBuffer pos = Buffers.newDirectFloatBuffer(m.positions), nor = Buffers.newDirectFloatBuffer(m.normals);
-			IntBuffer idx = Buffers.newDirectIntBuffer(m.indices);
+			/* Reused buffers (no new native memory in each frame) */
+			FloatBuffer pos = floats(0, m.positions), nor = floats(1, m.normals);
+			IntBuffer idx = ints(m.indices);
 			Texture tex = m.texture == null || m.uvs == null ? null : texture(gl, m.texture, () -> {
 				try {
 					return javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(m.texture));
@@ -86,7 +87,7 @@ final class ModelGl {
 					}
 				}
 				gl.glEnableClientState(GLPointerFunc.GL_TEXTURE_COORD_ARRAY);
-				gl.glTexCoordPointer(2, GL.GL_FLOAT, 0, Buffers.newDirectFloatBuffer(uv));
+				gl.glTexCoordPointer(2, GL.GL_FLOAT, 0, floats(2, uv));
 				tex.enable(gl);
 				tex.bind(gl);
 				gl.glTexEnvi(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE, GL2.GL_MODULATE);
@@ -149,6 +150,40 @@ final class ModelGl {
 		gl.glEnd();
 		tex.disable(gl);
 		gl.glPopAttrib();
+	}
+
+	/* The buffers of the meshes per thread of OpenGL (the 3D view and WorldWind draw in their own threads; the data is read by the draw call) */
+	private static final class Scratch {
+		final FloatBuffer[] floats = new FloatBuffer[3];
+		IntBuffer ints;
+	}
+
+	private static final ThreadLocal<Scratch> SCRATCH = ThreadLocal.withInitial(Scratch::new);
+
+	private static FloatBuffer floats(int slot, float[] data) {
+		Scratch sc = SCRATCH.get();
+		FloatBuffer b = sc.floats[slot];
+		if (b == null || b.capacity() < data.length) {
+			b = Buffers.newDirectFloatBuffer(Math.max(data.length, b == null ? 0 : b.capacity() * 2));
+			sc.floats[slot] = b;
+		}
+		b.clear();
+		b.put(data);
+		b.flip();
+		return b;
+	}
+
+	private static IntBuffer ints(int[] data) {
+		Scratch sc = SCRATCH.get();
+		IntBuffer b = sc.ints;
+		if (b == null || b.capacity() < data.length) {
+			b = Buffers.newDirectIntBuffer(Math.max(data.length, b == null ? 0 : b.capacity() * 2));
+			sc.ints = b;
+		}
+		b.clear();
+		b.put(data);
+		b.flip();
+		return b;
 	}
 
 	private static double[] norm(double x, double y, double z) {

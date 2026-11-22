@@ -1045,6 +1045,28 @@ public abstract class Simulation extends Model {
 		}
 	}
 
+	/* The thread of the repeated displays (a display which was skipped while the last one was shown) */
+	private static final java.util.concurrent.ExecutorService REDISPLAY = java.util.concurrent.Executors.newSingleThreadExecutor(r -> {
+		Thread t = new Thread(r, "Bio7 simulation display");
+		t.setDaemon(true);
+		return t;
+	});
+
+	/*
+	 * Displays the model again (e.g., the image of the last step): not in the
+	 * thread of the user interface, which would be busy without a break at a high
+	 * speed (the image of the next step is built while it is shown)
+	 */
+	static void redisplay(Runnable display) {
+		REDISPLAY.execute(() -> {
+			try {
+				display.run();
+			} catch (RuntimeException e) {
+				e.printStackTrace();
+			}
+		});
+	}
+
 	/** Runs the code in the thread of the user interface (asynchronously, now if already in it). */
 	static void ui(Runnable code) {
 		ui(code, false);

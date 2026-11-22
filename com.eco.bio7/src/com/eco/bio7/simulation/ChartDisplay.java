@@ -40,7 +40,7 @@ final class ChartDisplay {
 	private static Canvas canvas;
 	private static volatile List<ChartData> charts = List.of();
 	private static volatile long last;
-	private static volatile boolean pending;
+	private static volatile boolean pending, later;
 
 	private ChartDisplay() {
 	}
@@ -50,6 +50,19 @@ final class ChartDisplay {
 		if (!Simulation.hasDisplay()) {
 			return;
 		}
+		/* At most about 7 times per second (the charts are copied only then: not in each step of a fast simulation) */
+		long now = System.currentTimeMillis();
+		if (pending || now - last < 150 && model.t > 0 && !charts.isEmpty()) {
+			/* Later once more: the last values are shown (e.g., after a pause) */
+			if (!later) {
+				later = true;
+				Simulation.ui(() -> org.eclipse.swt.widgets.Display.getCurrent().timerExec(160, () -> {
+					later = false;
+					update(model);
+				}));
+			}
+			return;
+		}
 		List<ChartData> c = model.getCharts();
 		/* A model with charts: the view is shown at the start (no change of the layout with the first values) */
 		boolean wanted = !c.isEmpty() || model.usesCharts();
@@ -57,10 +70,6 @@ final class ChartDisplay {
 			return;
 		}
 		charts = c;
-		long now = System.currentTimeMillis();
-		if (pending || now - last < 150 && !c.isEmpty() && model.t > 0) {
-			return;
-		}
 		last = now;
 		pending = true;
 		Simulation.ui(() -> {

@@ -623,8 +623,10 @@ final class GlobeDisplay {
 	private void end() {
 		pending.set(false);
 		Runnable r = again;
+		again = null;
 		if (r != null) {
-			r.run();
+			/* Not in the thread of the user interface (it stays free, e.g., for the speed slider) */
+			Simulation.redisplay(r);
 		}
 	}
 
