@@ -1,40 +1,52 @@
 ## Bio7
-The application Bio7 is an integrated development environment for ecological modeling, statistical and scientific image analysis. The application itself is based on an RCP-Eclipse-Environment (Rich-Client-Platform) which offers a huge flexibility in configuration and extensibility because of its plug-in structure and the possibility of customization.
 
-[![Bio7 Overview Video](https://raw.githubusercontent.com/Bio7/bio7/master/resources/screen.jpg)](https://www.youtube.com/watch?v=pyYn690KaNE)
+**The scientific workbench for modeling, image analysis and data.**
 
+Bio7 is a free and open-source integrated development environment for ecological modeling, scientific image analysis and statistics. R and Python run embedded in Bio7, ImageJ is part of the workbench, and models, images and data can be exchanged directly between them, the table, the 3D views and the editors. Bio7 is built on the Eclipse Rich Client Platform and runs on Windows, macOS and Linux.
 
-### [Website: https://bio7.org](https://bio7.org).
+![Bio7 – Models | Images | Data](https://raw.githubusercontent.com/Bio7/bio7/master/resources/bio7-start-screen.png)
 
-### [YouTube Channel Bio7](https://www.youtube.com/channel/UCFY-w-tMbVzhrLro4Q2KbFg)
+**[Website: bio7.org](https://bio7.org)** · **[Download (releases)](https://github.com/Bio7/bio7/releases)** · **[YouTube channel](https://www.youtube.com/channel/UCFY-w-tMbVzhrLro4Q2KbFg)**
 
-Features:
+### Features
 
-* Creation and analysis of simulation models.
-* Statistical analysis.
-* Advanced R Graphical User Interface with editor, spreadsheet, ImageJ plot device and debugging interface.
-* Spatial statistics (possibility to send values from a specialized panel to R).
-* Image Analysis (embedded ImageJ).
-* Fast transfer of image data from ImageJ to R and vice versa.
-* Fast communication between R and Java (R embedded in the process of Bio7) and the possibility to use R methods inside Java.
-* Interpretation of Java and script creation (BeanShell, Groovy, Python, JavaScript).
-* Dynamic compilation of Java.
-* Creation of methods for Java, BeanShell, Groovy, Python and R (integrated editors for Java, R, BeanShell, Groovy, Python).
-* Sensitivity analysis with an embedded flowchart editor in which scripts, macros and compiled code can be dragged and executed.
-* Creation of 3d OpenGL (Jogl) models.
-* Visualizations and simulations on an embedded 3d globe (World Wind Java SDK).
-* Creation of Graphical User Interfaces with the embedded JavaFX SceneBuilder.
+**R and Python**
+* R and Python (CPython) embedded in the process of Bio7 (Java Foreign Function & Memory API): no server and no extra packages, direct data transfer between R, Python, Java, the table and ImageJ.
+* R editor with code completion, code analysis, refactoring and formatting; R Markdown and Quarto documents with inline R and Python chunks; Shiny apps.
+* Python editor with code completion, code analysis (ruff), refactoring and a profiler; a Python-Shell view and a package manager.
+* Debuggers for R (also class methods of Reference classes, R6 and S7, sourced files, R Markdown chunks) and for Python.
+* R-Shell and Python-Shell views to inspect, convert, plot and transfer objects between R, Python and the table.
 
-### Built Bio7
+**Image analysis**
+* ImageJ as a native SWT component (SWTImageJ) with detachable image windows.
+* Image-Methods and selections with R or Python: image data, selections and ROIs as matrices, data frames, numpy arrays and spatial data.
+* Pixel classification with filters, Haralick features and texture operations.
 
-Bio7 is now available as a Maven Tycho built (Windows, Linux, Mac) 
-and can be created locally. 
+**Data and visualization**
+* A fast spreadsheet (table) with transfers to R and Python, import and export of CSV, Excel and LibreOffice files.
+* Vector graphics device for R plots, matplotlib and interactive charts (plotly, altair, bokeh, folium) in Bio7.
+* 3D views: volume rendering, iso surfaces, 3D measurements of objects (volume, surface area, shape, distances), 3D models and height maps.
+* Visualizations and simulations on a 3D globe (WorldWind) and spatial data (GDAL).
 
-All plugins and features are now available in one Github repository.
+**Modeling and development**
+* Creation and analysis of simulation models (Java, R, Python).
+* Java editor with dynamic compilation, a profiler (Java Flight Recorder) and an installer for Java libraries from Maven Central.
+* Scripting with Java, Groovy, BeanShell, JavaScript and ImageJ macros.
+* GUIs with the WindowBuilder, also exported as Shiny apps or JavaScript web apps.
+* A flowchart editor to combine scripts, macros and compiled code (e.g., for sensitivity analysis).
 
-The Bio7 Maven built documentation can be found here:
+**Workbench**
+* Themes with a theme builder (colors, fonts, icon colors, artwork), light and dark.
+* An LLM assistant for OpenAI-compatible servers (also local ones).
 
-[Documentation Wiki](https://github.com/Bio7/bio7/wiki/How-to-built-Bio7)
+### Installation
 
+Download Bio7 for Windows, macOS (Apple Silicon) or Linux from the [releases](https://github.com/Bio7/bio7/releases). Bio7 includes its Java runtime. Install [R](https://cran.r-project.org/) and, optionally, [Python](https://www.python.org/).
 
+### Build Bio7
 
+Bio7 is built with Maven and Eclipse Tycho; all plugins and features are in this repository. See the wiki: [How to build Bio7](https://github.com/Bio7/bio7/wiki/How-to-built-Bio7).
+
+### License
+
+Bio7 is licensed under the [Eclipse Public License 2.0](https://www.eclipse.org/legal/epl-2.0/).
