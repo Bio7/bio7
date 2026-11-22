@@ -39,6 +39,7 @@ The sources of the manual (LyX) are in the repository [bio7documentation](https:
 
 **Modeling and development**
 * Creation and analysis of simulation models (Java, R, Python).
+* A simulation API for Java, Python and R models (grids, agents, geospatial models with GDAL and WorldWind) which run live in Bio7 and are exported as interactive HTML pages (the same model in the web browser, with maps and WebGL; Python and R models run with Pyodide and webR), with images, animated glTF models, drawn shapes and several live charts.
 * Java editor with dynamic compilation, a profiler (Java Flight Recorder) and an installer for Java libraries from Maven Central.
 * Scripting with Java, Groovy, BeanShell, JavaScript and ImageJ macros.
 * GUIs with the WindowBuilder, also exported as Shiny apps or JavaScript web apps.
