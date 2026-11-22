@@ -98,13 +98,6 @@ import com.eco.bio7.util.Util;
 public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 	private static StatusLineContributionItem userItem = null;
 
-	private String id[] = new String[] { "org.eclipse.ui.views.ResourceNavigator", "org.eclipse.ui.console.ConsoleView",
-			"com.eco.bio7.RShell", "com.eco.bio7.PythonShell", "com.eco.bio7.pybridge.PythonPackagesView", "com.eco.bio7.rbridge.RTable", "com.eco.bio7.imagej", "com.eco.bio7.ijtoolbar",
-			"com.eco.bio7.image_methods", "com.eco.bio7.points", "com.eco.bio7.image.TransferGeometryView",
-			"com.eco.bio7.browser.Browser", "com.eco.bio7.worldwind.WorldWindView",
-			"com.eco.bio7.worldwind.WorldWindOptionsView", "com.eco.bio7.spatial", "com.eco.bio7.discrete3d.Options3d",
-			"com.eco.bio7.control" };
-
 	private IWorkbenchWindow window;
 
 	private IWorkbenchAction exitAction;
@@ -637,34 +630,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		 * rScriptMenu.addMenuListener(listener6);
 		 */
 
-		/* Implement a custom show view action! */
-
-		MenuManager viewMenu = new MenuManager("&Show Selected View");
-		viewMenu.add(new ExecuteScriptAction("Empty", window2, new File("")));
-		viewMenu.setRemoveAllWhenShown(true);
-		IMenuListener listenerView = new IMenuListener() {
-			public void menuAboutToShow(IMenuManager m) {
-
-				IViewRegistry viewRegistry = PlatformUI.getWorkbench().getViewRegistry();
-				IViewDescriptor[] views = viewRegistry.getViews();
-				for (int i = 0; i < id.length; i++) {
-					if (i == 2 || i == 4 || i == 9 || i == 10 || i == 12 || i == 14) {
-						viewMenu.add(new Separator());
-					}
-					for (int j = 0; j < views.length; j++) {
-
-						if (id[i].equals(views[j].getId()))
-							viewMenu.add(new OpenViewMenuAction(views[j].getLabel(), views[j].getId()));
-
-					}
-
-				}
-
-			}
-
-		};
-
-		viewMenu.addMenuListener(listenerView);
 
 		// showViewMenu.add(re);
 
@@ -787,7 +752,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		 * BeanShellMenu.add(bshclearaction); BeanShellMenu.add(new Separator());
 		 * BeanShellMenu.add(bshimportaction);
 		 */
-		WindowMenu.add(viewMenu);
 		// WindowMenu.add(viewMenuAll);
 		showViewMenuMgr.add(showViewItem);
 		WindowMenu.add(showViewMenuMgr);
