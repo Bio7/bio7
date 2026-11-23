@@ -25,6 +25,8 @@ public class Application implements IApplication {
 				return IApplication.EXIT_OK;
 			}
 			WorkspaceSwitcher.remember(WorkspaceSwitcher.current());
+			/* Once: the stale syntax fonts of the editors (before the editors read them) */
+			EditorFontMigration.run();
 			int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
 			if (returnCode == PlatformUI.RETURN_RESTART) {
 				/*

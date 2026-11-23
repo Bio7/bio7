@@ -400,6 +400,13 @@ class Simulation:
         """An image (load_image) centered at x, y: the size and the angle (degrees, clockwise)."""
         self._shape("image", (x, y), None, None, name, size, angle)
 
+    def draw_pillar(self, x, y, radius, height=None, color="#9aa6b8"):
+        """A pillar in 3D (an agent model): a vertical cylinder from the floor at x, y with the
+        radius and the height (None: the height of the box), e.g. an obstacle."""
+        if height is None:
+            height = getattr(self, "box_depth", 1.0)
+        self._shape("pillar", (x, y, radius, height), None, color)
+
     # images and 3D models
 
     def load_image(self, name, file):
@@ -572,6 +579,42 @@ class AgentModel(Simulation):
         self.box_width = self.box_height = self.box_depth = 100.0
         self.agent_radius = 0.0
         self.agent_color = "#1f77b4"
+        # "sphere" or "glider" (triangles: points in the direction of the movement, climbs, dives and banks)
+        self.agent_shape = "sphere"
+        # the floor: "none" (the edges of the box), "grid" or "plane" (a dark floor with a grid)
+        self.floor = "none"
+        # soft shadows of the agents on the floor
+        self.shadows = False
+        self._follow = -1
+        self._scenery = []
+
+    def place_model(self, model, x, y, z=0.0, heading=0.0, size=0.0, animation=None):
+        """Places a 3D model (glTF, load_model) in the environment, e.g. a house, a tree or a rock:
+        no agent, it stays until it is removed (not drawn again in each step; Setup removes all).
+        z: the height of its base, heading: degrees (0 the direction of y, clockwise), size: its
+        height (0: the diameter of an agent), animation: its name or number ("none": still).
+        Returns its index (remove_model)."""
+        self._scenery.append((str(model), float(x), float(y), float(z), float(heading), float(size), animation))
+        return len(self._scenery) - 1
+
+    def remove_model(self, index):
+        """Removes the object of the environment with the index (place_model); the later ones move up by one."""
+        if 0 <= index < len(self._scenery):
+            del self._scenery[index]
+
+    def clear_models(self):
+        """Removes all objects of the environment."""
+        self._scenery = []
+
+    def camera_follow(self, agent=None):
+        """The custom camera of the 3D view follows the agent (an Agent or its index) from behind,
+        the global view beside it (split view); None: off. Only in Bio7 (the page shows the orbit view)."""
+        if agent is None:
+            self._follow = -1
+        elif isinstance(agent, Agent):
+            self._follow = next((i for i, a in enumerate(self.agents) if a is agent), -1)
+        else:
+            self._follow = int(agent)
 
     def box(self, w, h, d):
         """The size of the box: x, y and z (the height)."""
@@ -612,11 +655,18 @@ class AgentModel(Simulation):
 
     def _prepare(self):
         self.agents = []
+        self._scenery = []
 
     def _state(self):
         xyz = np.array([(a.x, a.y, a.z) for a in self.agents], dtype=np.float64).ravel()
         s = {"box": [self.box_width, self.box_height, self.box_depth], "radius": float(self.agent_radius),
-             "color": self.agent_color, "xyz": xyz, "colors": [a.color or "" for a in self.agents]}
+             "color": self.agent_color, "xyz": xyz, "colors": [a.color or "" for a in self.agents],
+             "shape": str(self.agent_shape), "floor": str(self.floor), "shadows": 1.0 if self.shadows else 0.0,
+             "follow": float(self._follow if 0 <= self._follow < len(self.agents) else -1),
+             # the objects of the environment (all in each state): x, y, z, heading and size for each model
+             "scenery_models": [p[0] for p in self._scenery],
+             "scenery": np.array([v for p in self._scenery for v in p[1:6]], dtype=np.float64),
+             "scenery_animations": ["" if p[6] is None else str(p[6]) for p in self._scenery]}
         if any(getattr(a, "image", None) or getattr(a, "model", None) for a in self.agents):
             s.update({"images": [a.image or "" for a in self.agents], "models": [a.model or "" for a in self.agents],
                       "animations": [a.animation or "" for a in self.agents],

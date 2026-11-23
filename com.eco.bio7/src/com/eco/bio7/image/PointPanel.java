@@ -413,7 +413,7 @@ import org.locationtech.jts.geom.Geometry;
  * Display display = PlatformUI.getWorkbench().getDisplay();
  * display.syncExec(new Runnable() {
  * 
- * public void run() { MessageBox messageBox = new MessageBox(new Shell(),
+ * public void run() { com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
  * 
  * SWT.ICON_INFORMATION);
  * messageBox.setMessage("Point outside Pointpanel area !"); messageBox.open();

@@ -253,7 +253,7 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
 
-						MessageBox message = new MessageBox(Util.getShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+						com.eco.bio7.util.ThemedMessageBox message = new com.eco.bio7.util.ThemedMessageBox(Util.getShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 						message.setMessage("Should a Raster Stack be created?");
 						message.setText("Raster?");
 						int response = message.open();

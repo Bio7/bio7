@@ -75,7 +75,7 @@ public class RHoverInformationControl extends AbstractInformationControl impleme
             
         } 
         catch (SWTError e) {
-            MessageBox messageBox = new MessageBox(getShell(), SWT.ICON_ERROR | SWT.OK);
+            com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(getShell(), SWT.ICON_ERROR | SWT.OK);
             messageBox.setMessage("Browser cannot be initialized."); //$NON-NLS-1$
             messageBox.setText("Error");                             //$NON-NLS-1$
             messageBox.open();

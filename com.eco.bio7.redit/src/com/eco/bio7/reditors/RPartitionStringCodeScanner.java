@@ -26,7 +26,7 @@ public class RPartitionStringCodeScanner extends BufferedRuleBasedScanner {
 
 		RGB rgbkey2 = PreferenceConverter.getColor(store, "colourkey2");
 		FontData f2 = PreferenceConverter.getFontData(store, "colourkeyfont2");
-		
+
 		 string = new Token(new TextAttribute(rColorProvider.getColor(rgbkey2), null, 1, new Font(Display.getCurrent(), f2)));
 		//System.out.println(string.getData().toString());
 		

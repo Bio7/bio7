@@ -234,7 +234,7 @@ public class Bio7Dialog {
 		display.syncExec(new Runnable() {
 			public void run() {
 
-				MessageBox message = new MessageBox(Util.getShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+				com.eco.bio7.util.ThemedMessageBox message = new com.eco.bio7.util.ThemedMessageBox(Util.getShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 				message.setMessage(text);
 				message.setText("Bio7");
 				int response = message.open();
@@ -268,7 +268,7 @@ public class Bio7Dialog {
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(new Runnable() {
 			public void run() {
-				MessageBox messageBox = new MessageBox(Util.getShell(),
+				com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(Util.getShell(),
 
 						SWT.ICON_WARNING);
 				messageBox.setText("Info!");

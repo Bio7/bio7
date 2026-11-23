@@ -389,76 +389,10 @@ public class REditor extends TextEditor implements IPropertyChangeListener, Upda
 	}
 
 	public void updateIncreasedFont(float fontSize) {
-		Bio7REditorPlugin fginstance = Bio7REditorPlugin.getDefault();
-		// RCodeScanner scanner = (RCodeScanner) fginstance.getRCodeScanner();
-		IPreferenceStore store = Bio7REditorPlugin.getDefault().getPreferenceStore();
-
-		FontData f = PreferenceConverter.getFontData(store, "colourkeyfont");
-		FontData f1 = PreferenceConverter.getFontData(store, "colourkeyfont1");
-		FontData f2 = PreferenceConverter.getFontData(store, "colourkeyfont2");
-		FontData f3 = PreferenceConverter.getFontData(store, "colourkeyfont3");
-		FontData f4 = PreferenceConverter.getFontData(store, "colourkeyfont4");
-		FontData f5 = PreferenceConverter.getFontData(store, "colourkeyfont5");
-		FontData f6 = PreferenceConverter.getFontData(store, "colourkeyfont6");
-		FontData f7 = PreferenceConverter.getFontData(store, "colourkeyfont7");
-		FontData f8 = PreferenceConverter.getFontData(store, "colourkeyfont8");
-
-		/* Restrict the size! */
-		if (f.getHeight() + Math.round(fontSize) < 2) {
-			return;
-		} else if (f1.getHeight() + Math.round(fontSize) < 2) {
-			return;
-		} else if (f2.getHeight() + Math.round(fontSize) < 2) {
-			return;
-		} else if (f3.getHeight() + Math.round(fontSize) < 2) {
-			return;
-		} else if (f4.getHeight() + Math.round(fontSize) < 2) {
-			return;
-		} else if (f5.getHeight() + Math.round(fontSize) < 2) {
-			return;
-		} else if (f6.getHeight() + Math.round(fontSize) < 2) {
-			return;
-		} else if (f7.getHeight() + Math.round(fontSize) < 2) {
-			return;
-		} else if (f8.getHeight() + Math.round(fontSize) < 2) {
-			return;
+		/* From the font shown now: the editor font and the syntax fonts get the same size (see EditorFonts) */
+		if (com.eco.bio7.util.EditorFonts.zoom("com.eco.bio7.reditor.reditor.textfont", Bio7REditorPlugin.getDefault().getPreferenceStore(), Math.round(fontSize))) {
+			invalidateText();
 		}
-
-		f.setHeight(f.getHeight() + Math.round(fontSize));
-		f1.setHeight(f1.getHeight() + Math.round(fontSize));
-		f2.setHeight(f2.getHeight() + Math.round(fontSize));
-		f3.setHeight(f3.getHeight() + Math.round(fontSize));
-		f4.setHeight(f4.getHeight() + Math.round(fontSize));
-		f5.setHeight(f5.getHeight() + Math.round(fontSize));
-		f6.setHeight(f6.getHeight() + Math.round(fontSize));
-		f7.setHeight(f7.getHeight() + Math.round(fontSize));
-		f8.setHeight(f8.getHeight() + Math.round(fontSize));
-
-		// Method from:
-		// https://github.com/gkorland/Eclipse-Fonts/blob/master/Fonts/src/main/java/fonts/FontsControler.java
-		String font = storeWorkbench.getString("com.eco.bio7.reditor.reditor.textfont");
-		String[] split = font.split("\\|");
-
-		split[2] = Float.toString(f.getHeight());
-		StringBuilder builder = new StringBuilder(split[0]);
-		for (int i = 1; i < split.length; ++i) {
-			builder.append('|').append(split[i]);
-		}
-		storeWorkbench.setValue("com.eco.bio7.reditor.reditor.textfont", builder.toString());
-
-		/* Invokes a property change! */
-		PreferenceConverter.setValue(store, "colourkeyfont", f);
-		PreferenceConverter.setValue(store, "colourkeyfont1", f1);
-		PreferenceConverter.setValue(store, "colourkeyfont2", f2);
-		PreferenceConverter.setValue(store, "colourkeyfont3", f3);
-		PreferenceConverter.setValue(store, "colourkeyfont4", f4);
-		PreferenceConverter.setValue(store, "colourkeyfont5", f5);
-		PreferenceConverter.setValue(store, "colourkeyfont6", f6);
-		PreferenceConverter.setValue(store, "colourkeyfont7", f7);
-		PreferenceConverter.setValue(store, "colourkeyfont8", f8);
-
-		invalidateText();
-
 	}
 
 	private IPartListener2 partListener = new IPartListener2() {

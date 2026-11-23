@@ -66,7 +66,7 @@
      point="org.eclipse.ui.themes">
   <fontDefinition
         label="BeanShell/Groovy Editor Font"
-        defaultsTo="org.eclipse.jface.textfont"
+        defaultsTo="com.eco.bio7.textfont"
         categoryId="com.eco.bio7.beanshelleditor.theme"
         id="com.eco.bio7.beanshelleditor.textfont">
      

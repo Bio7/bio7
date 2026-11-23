@@ -51,7 +51,7 @@ public class ClearRWorkspace extends Action {
 		if (rPipe == true) {
 			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 			if (selectionConsole.equals("R")) {
-				MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+				com.eco.bio7.util.ThemedMessageBox message = new com.eco.bio7.util.ThemedMessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 				message.setMessage("Do you really want to remove all visible objects?");
 				message.setText("Remove objects");
 				int response = message.open();
@@ -66,7 +66,7 @@ public class ClearRWorkspace extends Action {
 
 		} else {
 			if (RTools.isAliveDialog()) {
-				MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+				com.eco.bio7.util.ThemedMessageBox message = new com.eco.bio7.util.ThemedMessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 				message.setMessage("Do you really want to remove all visible objects?");
 				message.setText("Remove objects");
 				int response = message.open();

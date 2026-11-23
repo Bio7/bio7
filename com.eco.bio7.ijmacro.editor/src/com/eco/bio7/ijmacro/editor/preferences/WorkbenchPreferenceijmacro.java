@@ -62,37 +62,37 @@ public class WorkbenchPreferenceijmacro extends FieldEditorPreferencePage implem
 				com.eco.bio7.util.ColorSchemes.comboEntries(true), getFieldEditorParent(), true));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 
-		addStyleField(new ColorFieldEditor("colourkey", "Colour Keywords:", getFieldEditorParent()));
+		addStyleField(new com.eco.bio7.util.ThemedColorFieldEditor("colourkey", "Colour Keywords:", getFieldEditorParent()));
 		addStyleField(new BooleanFieldEditor("BOLD_COLOURKEY", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		addStyleField(new ColorFieldEditor("colourkey1", "Colour Type:", getFieldEditorParent()));
+		addStyleField(new com.eco.bio7.util.ThemedColorFieldEditor("colourkey1", "Colour Type:", getFieldEditorParent()));
 		addStyleField(new BooleanFieldEditor("BOLD_COLOURKEY1", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		addStyleField(new ColorFieldEditor("colourkey2", "Colour String:", getFieldEditorParent()));
+		addStyleField(new com.eco.bio7.util.ThemedColorFieldEditor("colourkey2", "Colour String:", getFieldEditorParent()));
 		addStyleField(new BooleanFieldEditor("BOLD_COLOURKEY2", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		addStyleField(new ColorFieldEditor("colourkey3", "Colour Single Comment:", getFieldEditorParent()));
+		addStyleField(new com.eco.bio7.util.ThemedColorFieldEditor("colourkey3", "Colour Single Comment:", getFieldEditorParent()));
 		addStyleField(new BooleanFieldEditor("BOLD_COLOURKEY3", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		addStyleField(new ColorFieldEditor("colourkey4", "Colour Default:", getFieldEditorParent()));
+		addStyleField(new com.eco.bio7.util.ThemedColorFieldEditor("colourkey4", "Colour Default:", getFieldEditorParent()));
 		addStyleField(new BooleanFieldEditor("BOLD_COLOURKEY4", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		addStyleField(new ColorFieldEditor("colourkey5", "Operators:", getFieldEditorParent()));
+		addStyleField(new com.eco.bio7.util.ThemedColorFieldEditor("colourkey5", "Operators:", getFieldEditorParent()));
 		addStyleField(new BooleanFieldEditor("BOLD_COLOURKEY5", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		addStyleField(new ColorFieldEditor("colourkey6", "Braces:", getFieldEditorParent()));
+		addStyleField(new com.eco.bio7.util.ThemedColorFieldEditor("colourkey6", "Braces:", getFieldEditorParent()));
 		addStyleField(new BooleanFieldEditor("BOLD_COLOURKEY6", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		addStyleField(new ColorFieldEditor("colourkey7", "Numbers:", getFieldEditorParent()));
+		addStyleField(new com.eco.bio7.util.ThemedColorFieldEditor("colourkey7", "Numbers:", getFieldEditorParent()));
 		addStyleField(new BooleanFieldEditor("BOLD_COLOURKEY7", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		addStyleField(new ColorFieldEditor("colourkey8", "Multiline Comment:", getFieldEditorParent()));
+		addStyleField(new com.eco.bio7.util.ThemedColorFieldEditor("colourkey8", "Multiline Comment:", getFieldEditorParent()));
 		addStyleField(new BooleanFieldEditor("BOLD_COLOURKEY8", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		addStyleField(new ColorFieldEditor("colourkey9", "Function calls:", getFieldEditorParent()));
+		addStyleField(new com.eco.bio7.util.ThemedColorFieldEditor("colourkey9", "Function calls:", getFieldEditorParent()));
 		addStyleField(new BooleanFieldEditor("BOLD_COLOURKEY9", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		addStyleField(new ColorFieldEditor("colourkey10", "Function definitions:", getFieldEditorParent()));
+		addStyleField(new com.eco.bio7.util.ThemedColorFieldEditor("colourkey10", "Function definitions:", getFieldEditorParent()));
 		addStyleField(new BooleanFieldEditor("BOLD_COLOURKEY10", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
 	}

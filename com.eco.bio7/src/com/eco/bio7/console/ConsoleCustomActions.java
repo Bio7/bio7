@@ -352,7 +352,7 @@ public class ConsoleCustomActions extends Action implements IMenuCreator {
 				IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 				FontData defaultFont = PreferenceConverter.getDefaultFontData(store, "Bio7ShellFonts");
 				StyledText styledText = (StyledText) participant.page.getControl();
-				FontDialog fd = new FontDialog(new Shell(), SWT.NONE);
+				com.eco.bio7.util.ThemedFontDialog fd = new com.eco.bio7.util.ThemedFontDialog(new Shell(), SWT.NONE);
 				fd.setText("Select Font");
 				fd.setRGB(new RGB(0, 0, 0));
 				if (defaultFont != null) {

@@ -302,7 +302,6 @@ jdk/bin/javaw.exe
    </configurations>
 
    <repositories>
-      <repository location="https://www.pydev.org/updates" name="PyDev" enabled="true" />
       <repository location="https://bio7.github.io/imagej" name="ImageJ" enabled="true" />
       <repository location="https://bio7.github.io/reditor" name="R Editor" enabled="true" />
       <repository location="https://download.eclipse.org/windowbuilder/updates/release/latest" name="WindowBuilder" enabled="true" />

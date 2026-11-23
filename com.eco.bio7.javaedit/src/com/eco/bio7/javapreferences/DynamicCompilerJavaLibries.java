@@ -866,7 +866,7 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
         if (!newLocation.equals(oldLocation)) {
             initializeDataDirectory();
 
-            MessageBox messageBox = new MessageBox(getShell(), SWT.ICON_INFORMATION | SWT.OK);
+            com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(getShell(), SWT.ICON_INFORMATION | SWT.OK);
             messageBox.setText("Restart Required");
             messageBox.setMessage("The data storage location has been changed.\n\n"
                     + "Please restart Bio7 for the change to take full effect.\n\n" + "New location: "
@@ -2542,7 +2542,7 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
                 ? (skipped == 1 ? "Library already exists." : "All " + skipped + " libraries already exist.")
                 : added + " added, " + skipped + " duplicate(s) skipped.";
 
-        MessageBox box = new MessageBox(getShell(), SWT.ICON_INFORMATION | SWT.OK);
+        com.eco.bio7.util.ThemedMessageBox box = new com.eco.bio7.util.ThemedMessageBox(getShell(), SWT.ICON_INFORMATION | SWT.OK);
         box.setText("Duplicate Libraries");
         box.setMessage(message);
         box.open();
@@ -2555,21 +2555,21 @@ public class DynamicCompilerJavaLibries extends PreferencePage implements IWorkb
         if (skipped > 0)
             msg.append("Skipped (duplicates): ").append(skipped);
 
-        MessageBox box = new MessageBox(getShell(), SWT.ICON_INFORMATION | SWT.OK);
+        com.eco.bio7.util.ThemedMessageBox box = new com.eco.bio7.util.ThemedMessageBox(getShell(), SWT.ICON_INFORMATION | SWT.OK);
         box.setText("Directory Scan Complete");
         box.setMessage(msg.toString());
         box.open();
     }
 
     private void showErrorMessage(String title, String message) {
-        MessageBox box = new MessageBox(getShell(), SWT.ICON_ERROR | SWT.OK);
+        com.eco.bio7.util.ThemedMessageBox box = new com.eco.bio7.util.ThemedMessageBox(getShell(), SWT.ICON_ERROR | SWT.OK);
         box.setText(title);
         box.setMessage(message);
         box.open();
     }
 
     private void showInfoMessage(String title, String message) {
-        MessageBox box = new MessageBox(getShell(), SWT.ICON_INFORMATION | SWT.OK);
+        com.eco.bio7.util.ThemedMessageBox box = new com.eco.bio7.util.ThemedMessageBox(getShell(), SWT.ICON_INFORMATION | SWT.OK);
         box.setText(title);
         box.setMessage(message);
         box.open();

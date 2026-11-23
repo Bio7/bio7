@@ -46,7 +46,7 @@ public class OpenColorDialog extends Action {
 
 		String selText = selection.getText();
 		String[] colStr = selText.split(",");
-		ColorDialog dlg = new ColorDialog(Util.getShell());
+		com.eco.bio7.util.ThemedColorDialog dlg = new com.eco.bio7.util.ThemedColorDialog(Util.getShell());
 		RGB rgbCol = null;
 		try {
 			rgbCol = new RGB(Integer.parseInt(colStr[0]), Integer.parseInt(colStr[1]), Integer.parseInt(colStr[2]));

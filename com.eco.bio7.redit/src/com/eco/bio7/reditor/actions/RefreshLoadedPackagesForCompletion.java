@@ -139,7 +139,7 @@ public class RefreshLoadedPackagesForCompletion extends Action implements IObjec
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(new Runnable() {
 			public void run() {
-				MessageBox messageBox = new MessageBox(Util.getShell(),
+				com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(Util.getShell(),
 
 						SWT.ICON_WARNING);
 				messageBox.setText("Info!");

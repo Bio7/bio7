@@ -343,9 +343,64 @@ public class RSetupDialog extends Dialog {
 		if (r == null) {
 			return;
 		}
+		String oldHome = store.getString(PreferenceConstants.PATH_R);
 		store.setValue(PreferenceConstants.PATH_R, r.home());
 		logger.accept("The path of R is now " + r.home() + " (used at the next start of R).");
+		/*
+		 * The package install location in the former R (e.g., the site-library of the
+		 * bundled R) follows: it is the first library of R, the packages of another
+		 * version of R don't fit the new R
+		 */
+		String location = store.getString("InstallLocation");
+		if (inside(location, oldHome) && !inside(location, r.home())) {
+			String newLocation = packageLocation(r);
+			if (newLocation != null) {
+				store.setValue("InstallLocation", newLocation);
+				logger.accept("The package install location is now " + newLocation + ".");
+			} else {
+				logger.accept("The package install location " + location + " belongs to the former R: please select a folder for the packages of the new R in the preferences.");
+			}
+		}
 		updateSelection();
+	}
+
+	/* True if the folder is the folder of R or in it (also with other separators or case on Windows) */
+	private static boolean inside(String folder, String home) {
+		if (folder == null || folder.isBlank() || home == null || home.isBlank()) {
+			return false;
+		}
+		try {
+			java.nio.file.Path f = java.nio.file.Path.of(folder.trim()).toAbsolutePath().normalize();
+			java.nio.file.Path h = java.nio.file.Path.of(home.trim()).toAbsolutePath().normalize();
+			if ("Windows".equals(com.eco.bio7.util.Util.getOS())) {
+				/* Component by component (C:\R\R-4.5 is not in C:\R\R-4.5.2), without case */
+				f = java.nio.file.Path.of(f.toString().toLowerCase(java.util.Locale.ROOT));
+				h = java.nio.file.Path.of(h.toString().toLowerCase(java.util.Locale.ROOT));
+			}
+			return f.startsWith(h);
+		} catch (RuntimeException e) {
+			return false;
+		}
+	}
+
+	/*
+	 * The folder for the packages of the R: its site-library if it can be written
+	 * (e.g., a bundled or user-local R), else the user library of the R version
+	 * (R_LIBS_USER, created), or null
+	 */
+	private static String packageLocation(RInstallation r) {
+		java.io.File site = new java.io.File(r.home(), "site-library");
+		if (site.isDirectory() && java.nio.file.Files.isWritable(site.toPath())) {
+			return site.getAbsolutePath();
+		}
+		String user = r.userLibrary();
+		if (user != null && !user.isBlank()) {
+			java.io.File dir = new java.io.File(user.trim());
+			if (dir.isDirectory() || dir.mkdirs()) {
+				return dir.getAbsolutePath();
+			}
+		}
+		return null;
 	}
 
 	private void installRWithWinget() {

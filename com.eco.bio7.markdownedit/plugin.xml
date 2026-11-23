@@ -19,7 +19,7 @@
          point="org.eclipse.ui.themes">
       <fontDefinition
             categoryId="com.eco.bio7.markdown.rtheme"
-            defaultsTo="org.eclipse.jface.textfont"
+            defaultsTo="com.eco.bio7.textfont"
             id="com.eco.bio7.reditor.markdown.textfont"
             label="Markdown Editor Font">
       </fontDefinition>

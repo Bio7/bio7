@@ -32,7 +32,7 @@ public class SaveRStartWorkspace extends Action {
 
 		} else {
 
-			MessageBox messageBox = new MessageBox(new Shell(),
+			com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 			SWT.ICON_WARNING);
 			messageBox
@@ -54,9 +54,9 @@ public class SaveRStartWorkspace extends Action {
 		fd.setFilterExtensions(filterExt);
 		selected = fd.open();
 		selected = selected.replace("\\", "\\\\");
-		selected = selected.replace("ä", "ae");
-		selected = selected.replace("ü", "ue");
-		selected = selected.replace("ö", "oe");
+		selected = selected.replace("ï¿½", "ae");
+		selected = selected.replace("ï¿½", "ue");
+		selected = selected.replace("ï¿½", "oe");
 
 		if (selected != null) {
 

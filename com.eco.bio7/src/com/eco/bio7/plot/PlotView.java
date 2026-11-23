@@ -126,7 +126,7 @@ public class PlotView extends ViewPart {
 		colorButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		updateSwatch();
 		colorButton.addListener(SWT.Selection, _ -> {
-			ColorDialog cd = new ColorDialog(getSite().getShell());
+			com.eco.bio7.util.ThemedColorDialog cd = new com.eco.bio7.util.ThemedColorDialog(getSite().getShell());
 			cd.setRGB(rgb);
 			RGB chosen = cd.open();
 			if (chosen != null) {

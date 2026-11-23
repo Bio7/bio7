@@ -824,7 +824,7 @@ public class WorldWindOptionsView extends ViewPart {
 					addBufferedImages(image, imp.getTitle(), new Double(minLat.getText()), new Double(maxLat.getText()),
 							new Double(minLon.getText()), new Double(maxLon.getText()));
 				} else {
-					MessageBox messageBox = new MessageBox(new Shell(),
+					com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 							SWT.ICON_WARNING);
 					messageBox.setText("Info!");
@@ -895,7 +895,7 @@ public class WorldWindOptionsView extends ViewPart {
 							double minLa = c.eval("minLat").firstDouble();
 							minLat.setText("" + minLa);
 						} else {
-							MessageBox messageBox = new MessageBox(new Shell(),
+							com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 									SWT.ICON_WARNING);
 							messageBox.setText("Info!");
@@ -912,7 +912,7 @@ public class WorldWindOptionsView extends ViewPart {
 					}
 
 				} else {
-					MessageBox messageBox = new MessageBox(new Shell(),
+					com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 							SWT.ICON_WARNING);
 					messageBox.setText("Info!");
@@ -1213,7 +1213,7 @@ public class WorldWindOptionsView extends ViewPart {
 		lineButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				Shell shell = new Shell();
-				ColorDialog dialog = new ColorDialog(shell, SWT.APPLICATION_MODAL);
+				com.eco.bio7.util.ThemedColorDialog dialog = new com.eco.bio7.util.ThemedColorDialog(shell, SWT.APPLICATION_MODAL);
 
 				RGB color = dialog.open();
 				Color c = null;
@@ -1240,7 +1240,7 @@ public class WorldWindOptionsView extends ViewPart {
 		pointsButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				Shell shell = new Shell();
-				ColorDialog dialog = new ColorDialog(shell, SWT.APPLICATION_MODAL);
+				com.eco.bio7.util.ThemedColorDialog dialog = new com.eco.bio7.util.ThemedColorDialog(shell, SWT.APPLICATION_MODAL);
 
 				RGB color = dialog.open();
 				Color c = null;
@@ -1264,7 +1264,7 @@ public class WorldWindOptionsView extends ViewPart {
 		tooltipButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				Shell shell = new Shell();
-				ColorDialog dialog = new ColorDialog(shell, SWT.APPLICATION_MODAL);
+				com.eco.bio7.util.ThemedColorDialog dialog = new com.eco.bio7.util.ThemedColorDialog(shell, SWT.APPLICATION_MODAL);
 
 				RGB color = dialog.open();
 				Color c = null;
@@ -1622,7 +1622,7 @@ public class WorldWindOptionsView extends ViewPart {
 
 						e1.printStackTrace();
 					}
-					MessageBox messageBox = new MessageBox(new Shell(),
+					com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 							SWT.ICON_INFORMATION);
 					messageBox.setText("Info!");
@@ -1630,7 +1630,7 @@ public class WorldWindOptionsView extends ViewPart {
 					messageBox.open();
 
 				} else {
-					MessageBox messageBox = new MessageBox(new Shell(),
+					com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 							SWT.ICON_WARNING);
 					messageBox.setText("Info!");
@@ -2243,7 +2243,7 @@ public class WorldWindOptionsView extends ViewPart {
 			display.syncExec(new Runnable() {
 				public void run() {
 
-					MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+					com.eco.bio7.util.ThemedMessageBox message = new com.eco.bio7.util.ThemedMessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 					message.setMessage("Do you want to open the image in ImageJ, too?");
 					message.setText("Bio7");
 					int response = message.open();
@@ -2328,7 +2328,7 @@ public class WorldWindOptionsView extends ViewPart {
 			}
 
 		} else {
-			MessageBox messageBox = new MessageBox(new Shell(),
+			com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 					SWT.ICON_WARNING);
 			messageBox.setText("Info!");

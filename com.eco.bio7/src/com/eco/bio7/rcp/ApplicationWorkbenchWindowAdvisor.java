@@ -730,20 +730,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		 * Default Colours for the Bio7 editors!
 		 */
 
-		Font terminalFont = JFaceResources.getFont(JFaceResources.TEXT_FONT);
-		if (getOS().equals("Windows")) {
-			PreferenceConverter.setDefault(store, "RShellFonts", terminalFont.getFontData());
-			PreferenceConverter.setDefault(store, "Bio7ShellFonts", terminalFont.getFontData());
-
-		} else if (getOS().equals("Linux")) {
-			PreferenceConverter.setDefault(store, "RShellFonts", terminalFont.getFontData());
-			PreferenceConverter.setDefault(store, "Bio7ShellFonts", terminalFont.getFontData());
-
-		} else if (getOS().equals("Mac")) {
-			PreferenceConverter.setDefault(store, "RShellFonts", terminalFont.getFontData());
-			PreferenceConverter.setDefault(store, "Bio7ShellFonts", terminalFont.getFontData());
-
-		}
+		/* The consoles: the Bio7 text font (the same default as the editors, see EditorFonts) */
+		org.eclipse.swt.graphics.FontData terminalFont = com.eco.bio7.util.EditorFonts.font(com.eco.bio7.util.EditorFonts.TEXT_FONT);
+		PreferenceConverter.setDefault(store, "RShellFonts", terminalFont);
+		PreferenceConverter.setDefault(store, "Bio7ShellFonts", terminalFont);
 		// Monitor []mon = Display.getDefault().getMonitors(); // returns an
 		// array of monitors attached to device and 0 fetches first one.
 
@@ -1581,7 +1571,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 						}
 					}
 					else {
-						MessageBox messageBox = new MessageBox(new Shell(),
+						com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 								SWT.ICON_WARNING);
 						messageBox.setMessage("File is not drag and \ndrop supported file for Bio7!");

@@ -70,6 +70,9 @@ public final class ScriptExport {
 			    const size = Math.max(box[0], box[1], box[2]);
 			    sim.box = [box[0], box[1], box[2]];
 			    sim.points = { xyz: Array.from(xyz), dirs: dirs, colors: own ? rgb : null, color: base, radius: s.radius > 0 ? s.radius : size * 0.01 };
+		    /* The shape, the floor and the shadows of the model; the objects of the environment */
+		    applyModelScene(bio7One(s.shape), bio7One(s.floor), bio7One(s.shadows));
+		    sim.scenery = sceneryOf(s.scenery_models, s.scenery, s.scenery_animations);
 			    if (s.images || s.models) {
 			      const arr = function (v) { return v === undefined || v === null ? [] : Array.isArray(v) ? v : Array.from(v); }, nn = function (v) { return v || null; };
 			      sim.points.images = arr(s.images).map(nn); sim.points.models = arr(s.models).map(nn); sim.points.animations = arr(s.animations).map(nn);

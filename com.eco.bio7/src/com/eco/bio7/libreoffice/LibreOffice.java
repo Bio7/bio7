@@ -127,7 +127,7 @@ public class LibreOffice {
 				display.syncExec(new Runnable() {
 
 					public void run() {
-						MessageBox messageBox = new MessageBox(new Shell(),
+						com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 						SWT.ICON_INFORMATION);
 						messageBox.setMessage("Open a connection to LibreOffice!");
@@ -164,7 +164,7 @@ public class LibreOffice {
 				display.syncExec(new Runnable() {
 
 					public void run() {
-						MessageBox messageBox = new MessageBox(new Shell(),
+						com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 						SWT.ICON_INFORMATION);
 						messageBox.setMessage("No Spreadsheet opened !");
@@ -199,7 +199,7 @@ public class LibreOffice {
 			display.syncExec(new Runnable() {
 
 				public void run() {
-					MessageBox messageBox = new MessageBox(new Shell(),
+					com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 					SWT.ICON_INFORMATION);
 					messageBox.setMessage("No Spreadsheet opened !");
@@ -335,7 +335,7 @@ public class LibreOffice {
 			display.syncExec(new Runnable() {
 
 				public void run() {
-					MessageBox messageBox = new MessageBox(new Shell(),
+					com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 					SWT.ICON_INFORMATION);
 					messageBox.setMessage("LibreOffice connection failed  !");
@@ -441,7 +441,7 @@ public class LibreOffice {
 			display.syncExec(new Runnable() {
 
 				public void run() {
-					MessageBox messageBox = new MessageBox(new Shell(),
+					com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 					SWT.ICON_INFORMATION);
 					messageBox.setMessage("No Connection to LibreOffice !");
@@ -499,7 +499,7 @@ public class LibreOffice {
 			display.syncExec(new Runnable() {
 
 				public void run() {
-					MessageBox messageBox = new MessageBox(new Shell(),
+					com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 					SWT.ICON_INFORMATION);
 					messageBox.setMessage("No Connection to LibreOffice !");
@@ -561,7 +561,7 @@ public class LibreOffice {
 					display.syncExec(new Runnable() {
 
 						public void run() {
-							MessageBox messageBox = new MessageBox(new Shell(),
+							com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 							SWT.ICON_INFORMATION);
 							messageBox.setMessage("Spreadsheet with name exists! Any values will be added!");
@@ -574,7 +574,7 @@ public class LibreOffice {
 					display.syncExec(new Runnable() {
 
 						public void run() {
-							MessageBox messageBox = new MessageBox(new Shell(),
+							com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 							SWT.ICON_INFORMATION);
 							messageBox.setMessage("No spreadsheet is opened !");
@@ -590,7 +590,7 @@ public class LibreOffice {
 			display.syncExec(new Runnable() {
 
 				public void run() {
-					MessageBox messageBox = new MessageBox(new Shell(),
+					com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 					SWT.ICON_INFORMATION);
 					messageBox.setMessage("LibreOffice connection failed  !");

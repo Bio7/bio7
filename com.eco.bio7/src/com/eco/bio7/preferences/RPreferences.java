@@ -54,6 +54,20 @@ public class RPreferences extends FieldEditorPreferencePage implements IWorkbenc
 		return getFieldEditorParent();
 	}
 
+	/* The fields which the R setup changes (reloaded from the store) */
+	private DirectoryFieldEditor pathR;
+	private DirectoryFieldEditor installLocation;
+	private org.eclipse.jface.util.IPropertyChangeListener storeListener;
+
+	@Override
+	public void dispose() {
+		if (storeListener != null) {
+			getPreferenceStore().removePropertyChangeListener(storeListener);
+			storeListener = null;
+		}
+		super.dispose();
+	}
+
 	public RPreferences() {
 		super(GRID);
 		setPreferenceStore(Bio7Plugin.getDefault().getPreferenceStore());
@@ -68,13 +82,31 @@ public class RPreferences extends FieldEditorPreferencePage implements IWorkbenc
 		addField(new LabelFieldEditor("R runs in the process of Bio7 (embedded R): a crash of R (e.g., of a package) ends Bio7 (save your work);\n"
 				+ "R can't be terminated or restarted without restarting Bio7; mclapply() runs sequentially (mc.cores = 1).",
 				getFieldEditorParent()));
-		addField(new DirectoryFieldEditor(PreferenceConstants.PATH_R, "&Path to R:", getFieldEditorParent()));
+		pathR = new DirectoryFieldEditor(PreferenceConstants.PATH_R, "&Path to R:", getFieldEditorParent());
+		addField(pathR);
 		addField(new ActionButtonFieldEditor("Find or install R:", "R Setup...", () -> {
 			/* The setup can change the path of R: apply the edited values first */
 			performApply();
 			com.eco.bio7.rbridge.RSetupDialog.openSetup();
 		}, getFieldEditorParent()));
-		addField(new DirectoryFieldEditor("InstallLocation", "Package install location", getFieldEditorParent()));
+		installLocation = new DirectoryFieldEditor("InstallLocation", "Package install location", getFieldEditorParent());
+		addField(installLocation);
+		/*
+		 * The R setup writes the path of R (and the install location) to the store: the
+		 * fields show it (else OK or Apply of this page would write the old values back)
+		 */
+		storeListener = event -> {
+			String property = event.getProperty();
+			DirectoryFieldEditor field = PreferenceConstants.PATH_R.equals(property) ? pathR : "InstallLocation".equals(property) ? installLocation : null;
+			if (field != null) {
+				org.eclipse.swt.widgets.Display.getDefault().asyncExec(() -> {
+					if (storeListener != null && !getFieldEditorParent().isDisposed()) {
+						field.load();
+					}
+				});
+			}
+		};
+		getPreferenceStore().addPropertyChangeListener(storeListener);
 		addField(new DirectoryFieldEditor(PreferenceConstants.P_TEMP_R, "Path to temporary R folder", getFieldEditorParent()));
 
 		addField(new MultiLineTextFieldEditor("R_STARTUP_ARGS", "R startup commands", -1, StringFieldEditor.VALIDATE_ON_KEY_STROKE, getFieldEditorParent()));

@@ -24,7 +24,7 @@ public class DirectEditCommand extends Command {
 				Display display = PlatformUI.getWorkbench().getDisplay();
 				display.syncExec(new Runnable() {
 					public void run() {
-						MessageBox messageBox = new MessageBox(new Shell(),
+						com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 						SWT.ICON_WARNING);
 						messageBox.setText("Info!");

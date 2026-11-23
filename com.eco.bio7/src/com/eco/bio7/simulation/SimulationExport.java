@@ -216,6 +216,7 @@ public class SimulationExport {
 			  drawRect(x, y, w, h, fill, stroke) { this._shape('rect', [x, y, w, h], stroke, fill, null, 1); }
 			  drawText(x, y, text, color, size) { this._shape('text', [x, y], color, null, String(text), size); }
 			  drawImage(name, x, y, size, angle) { this._shape('image', [x, y], null, null, name, size, angle); }
+			  drawPillar(x, y, radius, height, color) { this._shape('pillar', [x, y, radius, height], null, color, null, 1); }
 			  loadImage(name, file) {}
 			  loadModel(name, file) {}
 			  randomBinomial(n, p) { let k = 0; for (let i = 0; i < n; i++) if (this.random() < p) k++; return k; }
@@ -452,8 +453,13 @@ public class SimulationExport {
 			  constructor(x = 0, y = 0, z = 0) { this.x = x; this.y = y; this.z = z; this.color = null; this.image = null; this.model = null; this.animation = null; this.heading = NaN; this.size = 0; }
 			}
 			class AgentModel extends Simulation {
-			  constructor() { super(); this.agents = []; this.boxWidth = 100; this.boxHeight = 100; this.boxDepth = 100; this.agentRadius = 0; this.agentColor = '#1f77b4'; }
+			  constructor() { super(); this.agents = []; this.boxWidth = 100; this.boxHeight = 100; this.boxDepth = 100; this.agentRadius = 0; this.agentColor = '#1f77b4';
+			    this.agentShape = 'sphere'; this.floor = 'none'; this.shadows = false; this.followAgent = -1; this._scenery = []; }
 			  box(w, h, d) { this.boxWidth = w; this.boxHeight = h; this.boxDepth = d; }
+			  /* The objects of the environment (3D models which stay until they are removed) */
+			  placeModel(model, x, y, z, heading, size, animation) { this._scenery.push([model, x, y, z, heading || 0, size || 0, animation || null]); return this._scenery.length - 1; }
+			  removeModel(index) { if (index >= 0 && index < this._scenery.length) this._scenery.splice(index, 1); }
+			  clearModels() { this._scenery = []; }
 			  distance(a, b) { return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z)); }
 			  neighbors(agent, radius) {
 			    const found = [], r2 = radius * radius;
@@ -467,8 +473,11 @@ public class SimulationExport {
 			  }
 			  keepInBox(a) { a.x = Math.max(0, Math.min(this.boxWidth, a.x)); a.y = Math.max(0, Math.min(this.boxHeight, a.y)); a.z = Math.max(0, Math.min(this.boxDepth, a.z)); }
 			  wrapInBox(a) { a.x = ((a.x % this.boxWidth) + this.boxWidth) % this.boxWidth; a.y = ((a.y % this.boxHeight) + this.boxHeight) % this.boxHeight; a.z = Math.max(0, Math.min(this.boxDepth, a.z)); }
-			  _prepare() { this.agents = []; }
+			  _prepare() { this.agents = []; this._scenery = []; }
 			  _show(sim) {
+			    /* The shape, the floor and the shadows of the model; the objects of the environment */
+			    applyModelScene(this.agentShape, this.floor, this.shadows ? 1 : 0);
+			    sim.scenery = sceneryOf(this._scenery.map(function (p) { return p[0]; }), [].concat.apply([], this._scenery.map(function (p) { return p.slice(1, 6); })), this._scenery.map(function (p) { return p[6]; }));
 			    const n = this.agents.length, xyz = new Array(n * 3), colors = new Array(n * 3), dirs = new Array(n * 3);
 			    let own = false;
 			    const base = this.agentColor;

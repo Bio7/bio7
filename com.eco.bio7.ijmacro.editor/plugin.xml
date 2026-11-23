@@ -68,7 +68,7 @@
      point="org.eclipse.ui.themes">
   <fontDefinition
         label="ImageJ Macro Editor Font"
-        defaultsTo="org.eclipse.jface.textfont"
+        defaultsTo="com.eco.bio7.textfont"
         categoryId="com.eco.bio7.ijmacro.editor.theme"
         id="com.eco.bio7.ijmacro.editor.textfont">
      

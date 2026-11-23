@@ -1087,7 +1087,8 @@ public class CustomTheme {
 		/* The text font of the editors and the console (and the text areas of the views) */
 		String textFontCss = fontCss(getPlatformTextFont());
 		if (textFontCss != null) {
-			rule(css, "FontDefinition#org-eclipse-jface-textfont,\nFontDefinition#org-eclipse-debug-ui-consoleFont", textFontCss);
+			/* The Bio7 editors use the Bio7 text font (see EditorFonts), the other editors the text font of Eclipse */
+			rule(css, "FontDefinition#org-eclipse-jface-textfont,\nFontDefinition#org-eclipse-debug-ui-consoleFont,\nFontDefinition#com-eco-bio7-textfont", textFontCss);
 			rule(css, ".View StyledText,\n#org-eclipse-ui-console-ConsoleView .MPart StyledText", textFontCss);
 		}
 		return css.toString();

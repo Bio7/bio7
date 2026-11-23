@@ -223,7 +223,7 @@ public class EditAction extends Action implements IMenuCreator {
 			public void widgetSelected(SelectionEvent e) {
 				FontRegistry fontRegistry;
 				fontRegistry = new FontRegistry(Display.getCurrent());
-				FontDialog fd = new FontDialog(new Shell(), SWT.NONE);
+				com.eco.bio7.util.ThemedFontDialog fd = new com.eco.bio7.util.ThemedFontDialog(new Shell(), SWT.NONE);
 				fd.setText("Select Font");
 				fd.setRGB(new RGB(0, 0, 0));
 				// FontData defaultFont = new FontData("Courier", 10, SWT.BOLD);
@@ -261,7 +261,7 @@ public class EditAction extends Action implements IMenuCreator {
 			}
 
 			public void widgetSelected(SelectionEvent e) {
-				ColorDialog dialog = new ColorDialog(new Shell(), SWT.APPLICATION_MODAL);
+				com.eco.bio7.util.ThemedColorDialog dialog = new com.eco.bio7.util.ThemedColorDialog(new Shell(), SWT.APPLICATION_MODAL);
 
 				RGB color = dialog.open();
 
@@ -302,7 +302,7 @@ public class EditAction extends Action implements IMenuCreator {
 			}
 
 			public void widgetSelected(SelectionEvent e) {
-				ColorDialog dialog = new ColorDialog(new Shell(), SWT.APPLICATION_MODAL);
+				com.eco.bio7.util.ThemedColorDialog dialog = new com.eco.bio7.util.ThemedColorDialog(new Shell(), SWT.APPLICATION_MODAL);
 
 				RGB color = dialog.open();
 				if (color == null) {

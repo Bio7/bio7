@@ -197,7 +197,7 @@ public class ImageJPluginsAction extends Action implements IMenuCreator {
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(new Runnable() {
 			public void run() {
-				MessageBox messageBox = new MessageBox(com.eco.bio7.image.ui.Util.getShell(),
+				com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(com.eco.bio7.image.ui.Util.getShell(),
 
 						SWT.ICON_WARNING);
 				messageBox.setText("Info!");

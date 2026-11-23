@@ -697,7 +697,7 @@ class=" org.eclipse.ui.part.FileEditorInputFactory " />
      point="org.eclipse.ui.themes">
   <fontDefinition
         label="R Editor Font"
-        defaultsTo="org.eclipse.jface.textfont"
+        defaultsTo="com.eco.bio7.textfont"
         categoryId="com.eco.bio7.redit.rtheme"
         id="com.eco.bio7.reditor.reditor.textfont">
      

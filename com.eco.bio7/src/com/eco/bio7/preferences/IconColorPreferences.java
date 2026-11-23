@@ -86,13 +86,13 @@ public class IconColorPreferences extends FieldEditorPreferencePage implements I
 		Composite parent = getFieldEditorParent();
 		enabled = new BooleanFieldEditor(IconColors.ENABLED, "Use the icon colors", parent);
 		addField(enabled);
-		light = new ColorFieldEditor(IconColors.COLOR_LIGHT, "Icon color (light theme)", parent);
+		light = new com.eco.bio7.util.ThemedColorFieldEditor(IconColors.COLOR_LIGHT, "Icon color (light theme)", parent);
 		addField(light);
-		dark = new ColorFieldEditor(IconColors.COLOR_DARK, "Icon color (dark theme)", parent);
+		dark = new com.eco.bio7.util.ThemedColorFieldEditor(IconColors.COLOR_DARK, "Icon color (dark theme)", parent);
 		addField(dark);
-		detailLight = new ColorFieldEditor(IconColors.DETAIL_LIGHT, "Detail color (light theme)", parent);
+		detailLight = new com.eco.bio7.util.ThemedColorFieldEditor(IconColors.DETAIL_LIGHT, "Detail color (light theme)", parent);
 		addField(detailLight);
-		detailDark = new ColorFieldEditor(IconColors.DETAIL_DARK, "Detail color (dark theme)", parent);
+		detailDark = new com.eco.bio7.util.ThemedColorFieldEditor(IconColors.DETAIL_DARK, "Detail color (dark theme)", parent);
 		addField(detailDark);
 		Label label = new Label(parent, SWT.NONE);
 		label.setText("Preview:");

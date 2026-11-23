@@ -183,6 +183,20 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		viewsGap.addListener(SWT.Modify, e -> gapsChanged());
 		themeGaps.addListener(SWT.Selection, e -> gapsChanged());
 
+		/* The Bio7 dialogs (styled by the theme) or the native dialogs of the system, applied directly */
+		Group dialogGroup = new Group(area, SWT.NONE);
+		dialogGroup.setText("Dialogs (all themes)");
+		dialogGroup.setLayout(new GridLayout(3, false));
+		dialogGroup.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 2, 1));
+		dialogOption(dialogGroup, com.eco.bio7.util.ThemedDialogs.COLOR, "Bio7 color dialog",
+				"The color dialog of Bio7 follows the theme (e.g., dark in a dark theme) and keeps the recent colors.\n"
+						+ "Off: the native color dialog of the system (on Windows always light).");
+		dialogOption(dialogGroup, com.eco.bio7.util.ThemedDialogs.FONT, "Bio7 font dialog",
+				"The font dialog of Bio7 follows the theme and can show only the fixed-width fonts (for code).\n"
+						+ "Off: the native font dialog of the system (on Windows always light).");
+		dialogOption(dialogGroup, com.eco.bio7.util.ThemedDialogs.MESSAGE, "Bio7 message boxes",
+				"The messages and questions of Bio7 follow the theme.\nOff: the native message boxes of the system (on Windows always light).");
+
 		editor = new Composite(area, SWT.NONE);
 		editor.setLayout(new GridLayout(4, false));
 		editor.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
@@ -224,7 +238,7 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		colors.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 4, 1));
 		for (String[] slot : CustomTheme.SLOTS) {
 			new Label(colors, SWT.NONE).setText(slot[1] + ":");
-			ColorSelector selector = new ColorSelector(colors);
+			ColorSelector selector = new com.eco.bio7.util.ThemedColorSelector(colors);
 			selector.addListener(e -> changed());
 			selectors.put(slot[0], selector);
 		}
@@ -582,7 +596,7 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		if (current == null) {
 			return;
 		}
-		org.eclipse.swt.widgets.FontDialog dialog = new org.eclipse.swt.widgets.FontDialog(getShell());
+		com.eco.bio7.util.ThemedFontDialog dialog = new com.eco.bio7.util.ThemedFontDialog(getShell());
 		dialog.setText(text ? "Text Font (Editors, Console)" : "Font (Views, Widgets)");
 		/* The fonts with the sizes of this computer (also the other font of the theme) */
 		String value = text ? current.getPlatformTextFont() : current.getPlatformFont();
@@ -853,6 +867,26 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 			}
 		}
 		return null;
+	}
+
+	/* A check box for a Bio7 dialog (default on), saved at once */
+	private static void dialogOption(Composite parent, String preference, String text, String tip) {
+		org.eclipse.jface.preference.IPreferenceStore store = com.eco.bio7.Bio7Plugin.getDefault().getPreferenceStore();
+		store.setDefault(preference, true);
+		Button check = new Button(parent, SWT.CHECK);
+		check.setText(text);
+		check.setToolTipText(tip);
+		check.setSelection(store.getBoolean(preference));
+		check.addListener(SWT.Selection, e -> {
+			store.setValue(preference, check.getSelection());
+			if (store instanceof org.eclipse.jface.preference.IPersistentPreferenceStore persistent) {
+				try {
+					persistent.save();
+				} catch (java.io.IOException ex) {
+					/* Written at shutdown */
+				}
+			}
+		});
 	}
 
 	@Override

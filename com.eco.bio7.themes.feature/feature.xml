@@ -27,4 +27,11 @@
          install-size="0"
          version="3.4.0.qualifier"/>
 
+   <!--
+     Windows dark mode of SWT (e.g., a dark active perspective in the perspective
+     switcher): since Eclipse 4.41 (2026-09) the ThemeEngine of
+     org.eclipse.e4.ui.css.swt.theme switches it on itself; the former fragment
+     org.eclipse.e4.ui.swt.win32 no longer exists.
+   -->
+
 </feature>

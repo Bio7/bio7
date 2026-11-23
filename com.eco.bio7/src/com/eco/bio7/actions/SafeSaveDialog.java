@@ -33,7 +33,7 @@ public class SafeSaveDialog {
         File file = new File(fileName);
         if (file.exists()) {
          
-          MessageBox mb = new MessageBox(dlg.getParent(), SWT.ICON_WARNING
+          com.eco.bio7.util.ThemedMessageBox mb = new com.eco.bio7.util.ThemedMessageBox(dlg.getParent(), SWT.ICON_WARNING
               | SWT.YES | SWT.NO);
 
           

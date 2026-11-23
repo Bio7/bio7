@@ -1817,7 +1817,7 @@ public class Options3d extends ViewPart {
 
 	public RGB getColour() {
 		Shell shell = new Shell();
-		ColorDialog dialog = new ColorDialog(shell, SWT.APPLICATION_MODAL);
+		com.eco.bio7.util.ThemedColorDialog dialog = new com.eco.bio7.util.ThemedColorDialog(shell, SWT.APPLICATION_MODAL);
 
 		RGB color = dialog.open();
 		return color;
@@ -3166,7 +3166,7 @@ public class Options3d extends ViewPart {
 				if (iso == null) {
 					return;
 				}
-				ColorDialog dialog = new ColorDialog(colorButton.getShell());
+				com.eco.bio7.util.ThemedColorDialog dialog = new com.eco.bio7.util.ThemedColorDialog(colorButton.getShell());
 				float[] c = iso.getColor();
 				dialog.setRGB(new RGB(Math.round(c[0] * 255), Math.round(c[1] * 255), Math.round(c[2] * 255)));
 				RGB rgb = dialog.open();

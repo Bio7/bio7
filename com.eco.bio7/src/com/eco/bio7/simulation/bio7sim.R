@@ -212,6 +212,11 @@ local({
       "An image (m$load_image) centered at x, y: the size and the angle (degrees, clockwise)."
       shape("image", c(x, y), NULL, NULL, name, size, angle)
     }
+    m$draw_pillar <- function(x, y, radius, height = NULL, color = "#9aa6b8") {
+      "A pillar in 3D (an agent model): a vertical cylinder from the floor at x, y with the radius and the height (NULL: the height of the box), e.g. an obstacle."
+      if (is.null(height)) height <- if (is.null(m$box_depth)) 1 else m$box_depth
+      shape("pillar", c(x, y, radius, height), NULL, color)
+    }
     # images and 3D models
     m$load_image <- function(name, file) {
       "Loads an image (PNG with transparency) for m$draw_image and the agents (a column image)."
@@ -301,6 +306,33 @@ local({
     m$agents <- data.frame(x = numeric(), y = numeric(), z = numeric())
     m$box_width <- 100; m$box_height <- 100; m$box_depth <- 100
     m$agent_radius <- 0; m$agent_color <- "#1f77b4"
+    # "sphere" or "glider" (triangles: points in the direction of the movement, climbs, dives and banks)
+    m$agent_shape <- "sphere"
+    # the floor: "none" (the edges of the box), "grid" or "plane" (a dark floor with a grid); soft shadows
+    m$floor <- "none"; m$shadows <- FALSE
+    m$.follow <- NA_integer_
+    m$.scenery <- list()
+    m$place_model <- function(model, x, y, z = 0, heading = 0, size = 0, animation = NULL) {
+      "Places a 3D model (glTF, m$load_model) in the environment, e.g. a house, a tree or a rock: no agent, it stays until it is removed (not drawn again in each step; Setup removes all). z: the height of its base, heading: degrees (0 the direction of y, clockwise), size: its height (0: the diameter of an agent), animation: its name or number (\"none\": still). Returns its index (m$remove_model)."
+      m$.scenery[[length(m$.scenery) + 1]] <- list(model = as.character(model), v = as.numeric(c(x, y, z, heading, size)),
+                                                   animation = if (is.null(animation)) "" else as.character(animation))
+      invisible(length(m$.scenery))
+    }
+    m$remove_model <- function(i) {
+      "Removes the object of the environment with the index (m$place_model); the later ones move up by one."
+      if (i >= 1 && i <= length(m$.scenery)) m$.scenery[[i]] <- NULL
+      invisible(m)
+    }
+    m$clear_models <- function() {
+      "Removes all objects of the environment."
+      m$.scenery <- list()
+      invisible(m)
+    }
+    m$camera_follow <- function(i = NULL) {
+      "The custom camera of the 3D view follows the agent of row i from behind, the global view beside it (split view); NULL: off. Only in Bio7 (the page shows the orbit view)."
+      m$.follow <- if (is.null(i) || is.na(i)) NA_integer_ else as.integer(i)
+      invisible(m)
+    }
     m$box <- function(w, h, d) { m$box_width <- w; m$box_height <- h; m$box_depth <- d; invisible(m) }
     m$distance <- function(i, j) {
       a <- m$agents
@@ -334,13 +366,23 @@ local({
       m$agents$z <- pmax(0, pmin(m$box_depth, m$agents$z))
       invisible(m)
     }
-    m$.prepare <- function() m$agents <- data.frame(x = numeric(), y = numeric(), z = numeric())
+    m$.prepare <- function() {
+      m$agents <- data.frame(x = numeric(), y = numeric(), z = numeric())
+      m$.scenery <- list()
+    }
     m$.state <- function() {
       a <- m$agents
       n <- nrow(a)
       colors <- if (!is.null(a$color)) ifelse(is.na(a$color), "", as.character(a$color)) else rep("", n)
+      follow <- if (is.na(m$.follow) || m$.follow < 1 || m$.follow > n) -1 else m$.follow - 1
       s <- list(box = c(m$box_width, m$box_height, m$box_depth), radius = m$agent_radius, color = m$agent_color,
-                xyz = as.numeric(rbind(a$x, a$y, a$z)), colors = as.character(colors))
+                xyz = as.numeric(rbind(a$x, a$y, a$z)), colors = as.character(colors),
+                shape = as.character(m$agent_shape), floor = as.character(m$floor), shadows = if (isTRUE(m$shadows)) 1 else 0,
+                follow = as.numeric(follow),
+                # the objects of the environment (all in each state): x, y, z, heading and size for each model
+                scenery_models = vapply(m$.scenery, function(p) p$model, ""),
+                scenery = as.numeric(unlist(lapply(m$.scenery, function(p) p$v))),
+                scenery_animations = vapply(m$.scenery, function(p) p$animation, ""))
       if (!is.null(a$image) || !is.null(a$model)) {
         chr <- function(v) if (is.null(v)) rep("", n) else as.character(ifelse(is.na(v), "", v))
         s$images <- chr(a$image); s$models <- chr(a$model); s$animations <- chr(a$animation)

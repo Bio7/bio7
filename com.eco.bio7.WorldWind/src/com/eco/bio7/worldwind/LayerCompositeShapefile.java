@@ -124,7 +124,7 @@ public class LayerCompositeShapefile extends Composite {
 				}
 
 				else {
-					MessageBox messageBox = new MessageBox(new Shell(),
+					com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 							SWT.ICON_WARNING);
 					messageBox.setText("Info!");

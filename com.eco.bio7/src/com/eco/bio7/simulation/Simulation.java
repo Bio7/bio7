@@ -920,6 +920,15 @@ public abstract class Simulation extends Model {
 		addShape(new Shape("line3", new double[] { x1, y1, z1, x2, y2, z2 }, color, null, null, width, 0));
 	}
 
+	/**
+	 * A pillar in 3D (an agent model: a vertical cylinder from the floor at x, y of
+	 * the box with the radius and the height, e.g., an obstacle; color: e.g.,
+	 * "#9aa6b8").
+	 */
+	public void drawPillar(double x, double y, double radius, double height, String color) {
+		addShape(new Shape("pillar", new double[] { x, y, radius, height }, null, color, null, 1, 0));
+	}
+
 	/** A line through the points (e.g., the track of an agent). */
 	public void drawPath(double[] xs, double[] ys, String color, double width) {
 		addShape(new Shape("path", interleave(xs, ys), color, null, null, width, 0));

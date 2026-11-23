@@ -57,16 +57,16 @@ public class WorkbenchPreferenceMarkdown extends FieldEditorPreferencePage imple
 		});
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 
-		addField(new ColorFieldEditor("colourkey", "Colour Default:", getFieldEditorParent()));
+		addField(new com.eco.bio7.util.ThemedColorFieldEditor("colourkey", "Colour Default:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("BOLD_COLOURKEY", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		addField(new ColorFieldEditor("colourkey1", "Colour Header:", getFieldEditorParent()));
+		addField(new com.eco.bio7.util.ThemedColorFieldEditor("colourkey1", "Colour Header:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("BOLD_COLOURKEY1", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		addField(new ColorFieldEditor("colourkey2", "Colour R Chunk:", getFieldEditorParent()));
+		addField(new com.eco.bio7.util.ThemedColorFieldEditor("colourkey2", "Colour R Chunk:", getFieldEditorParent()));
 		addField(new BooleanFieldEditor("BOLD_COLOURKEY2", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
-		//addField(new ColorFieldEditor("colourkey3", "Colour YAML Header:", getFieldEditorParent()));
+		//addField(new com.eco.bio7.util.ThemedColorFieldEditor("colourkey3", "Colour YAML Header:", getFieldEditorParent()));
 		//addField(new BooleanFieldEditor("BOLD_COLOURKEY3", "Bold", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 
 		addField(new SpacerFieldEditor(getFieldEditorParent()));

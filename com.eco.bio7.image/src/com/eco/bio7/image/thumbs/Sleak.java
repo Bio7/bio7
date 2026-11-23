@@ -160,7 +160,7 @@ public class Sleak {
 		DeviceData info = display.getDeviceData();
 		if (!info.tracking) {
 			Shell shell = canvas.getShell();
-			MessageBox dialog = new MessageBox(shell, SWT.ICON_WARNING | SWT.OK);
+			com.eco.bio7.util.ThemedMessageBox dialog = new com.eco.bio7.util.ThemedMessageBox(shell, SWT.ICON_WARNING | SWT.OK);
 			dialog.setText(shell.getText());
 			dialog.setMessage("Warning: Device is not tracking resource allocation");
 			dialog.open();
@@ -226,12 +226,12 @@ public class Sleak {
 			filterPath = dialog.getFilterPath();
 			fileName = dialog.getFileName();
 
-			MessageBox msg = new MessageBox(saveAs.getShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+			com.eco.bio7.util.ThemedMessageBox msg = new com.eco.bio7.util.ThemedMessageBox(saveAs.getShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 			msg.setText("Append incrementing file counter?");
 			msg.setMessage("Append an incrementing file count to the file name on each save, starting at 000?");
 			incrementFileNames = msg.open() == SWT.YES;
 
-			msg = new MessageBox(saveAs.getShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+			msg = new com.eco.bio7.util.ThemedMessageBox(saveAs.getShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 			msg.setText("Save images for each resource?");
 			msg.setMessage("Save an image (png) for each resource?");
 			saveImages = msg.open() == SWT.YES;
@@ -275,7 +275,7 @@ public class Sleak {
 				}
 			}
 		} catch (IOException e1) {
-			MessageBox msg = new MessageBox(saveAs.getShell(), SWT.ICON_ERROR | SWT.OK);
+			com.eco.bio7.util.ThemedMessageBox msg = new com.eco.bio7.util.ThemedMessageBox(saveAs.getShell(), SWT.ICON_ERROR | SWT.OK);
 			msg.setText("Failed to save");
 			msg.setMessage("Failed to save S-Leak file.\n" + e1.getMessage());
 			msg.open();

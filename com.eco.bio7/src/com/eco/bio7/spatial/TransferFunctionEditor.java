@@ -462,7 +462,7 @@ public class TransferFunctionEditor extends Composite {
 			return;
 		}
 		dragging = false;
-		ColorDialog dialog = new ColorDialog(getShell());
+		com.eco.bio7.util.ThemedColorDialog dialog = new com.eco.bio7.util.ThemedColorDialog(getShell());
 		dialog.setRGB(new RGB((int) (hit.r * 255), (int) (hit.g * 255), (int) (hit.b * 255)));
 		RGB rgb = dialog.open();
 		if (rgb != null) {

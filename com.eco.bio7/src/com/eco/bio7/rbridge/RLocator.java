@@ -174,12 +174,39 @@ public final class RLocator {
 		List<String> libs = new ArrayList<>();
 		for (String lib : values.getOrDefault("lib", "").split("\\|")) {
 			if (!lib.isBlank()) {
-				libs.add(lib.trim());
+				libs.add(longPath(lib.trim()));
 			}
 		}
 		String userLib = values.get("userLib");
-		return new RInstallation(values.getOrDefault("home", home), version, values.get("arch"), values.get("platform"), libs,
-				userLib == null || userLib.isEmpty() || userLib.equals("NA") ? null : userLib, null);
+		return new RInstallation(longPath(values.getOrDefault("home", home)), version, values.get("arch"), values.get("platform"), libs,
+				userLib == null || userLib.isEmpty() || userLib.equals("NA") ? null : longPath(userLib), null);
+	}
+
+	/*
+	 * Windows: R reports its paths in the short form (8.3 names) if they contain
+	 * spaces (e.g., C:/PROGRA~1/R/R-46~1.2 for C:\Program Files\R\R-4.6.2): the
+	 * long form of the path. A folder which doesn't exist yet (e.g., the user
+	 * library) gets the long form of its existing part. Other systems: unchanged.
+	 */
+	static String longPath(String path) {
+		if (path == null || path.isBlank() || !System.getProperty("os.name", "").startsWith("Windows") || !path.contains("~")) {
+			return path;
+		}
+		try {
+			java.nio.file.Path p = java.nio.file.Path.of(path.trim());
+			java.nio.file.Path rest = null;
+			while (p != null && !java.nio.file.Files.exists(p)) {
+				rest = rest == null ? p.getFileName() : p.getFileName().resolve(rest);
+				p = p.getParent();
+			}
+			if (p == null) {
+				return path;
+			}
+			java.nio.file.Path real = p.toRealPath();
+			return (rest == null ? real : real.resolve(rest)).toString();
+		} catch (java.io.IOException | RuntimeException e) {
+			return path;
+		}
 	}
 
 	/**

@@ -112,7 +112,7 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 				/* Get transfer type from combo selection! */
 				transferType = RImageMethodsView.getTransferTypeCombo().getSelectionIndex();
 				/*
-				 * MessageBox message = new MessageBox(new Shell(),
+				 * com.eco.bio7.util.ThemedMessageBox message = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 				 * SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 				 * message.setMessage("From all open images ?");
 				 * message.setText("All images"); response = message.open();

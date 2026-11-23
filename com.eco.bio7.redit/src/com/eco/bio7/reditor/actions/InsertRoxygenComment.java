@@ -369,7 +369,7 @@ public class InsertRoxygenComment implements IEditorActionDelegate {
 		Display display = PlatformUI.getWorkbench().getDisplay();
 		display.syncExec(new Runnable() {
 			public void run() {
-				MessageBox messageBox = new MessageBox(Util.getShell(),
+				com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(Util.getShell(),
 
 						SWT.ICON_ERROR);
 				messageBox.setText("Error!");

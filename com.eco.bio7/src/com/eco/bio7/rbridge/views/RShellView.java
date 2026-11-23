@@ -1049,7 +1049,7 @@ public class RShellView extends ViewPart {
 				IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 
 				FontData defaultFont = PreferenceConverter.getFontData(store, "RShellFonts");
-				FontDialog fd = new FontDialog(new Shell(), SWT.NONE);
+				com.eco.bio7.util.ThemedFontDialog fd = new com.eco.bio7.util.ThemedFontDialog(new Shell(), SWT.NONE);
 				fd.setText("Select Font");
 				fd.setRGB(new RGB(0, 0, 0));
 
@@ -3311,7 +3311,7 @@ public class RShellView extends ViewPart {
 
 		if (RTools.isAliveDialog()) {
 			if (RState.isBusy() == false) {
-				MessageBox message = new MessageBox(Util.getShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+				com.eco.bio7.util.ThemedMessageBox message = new com.eco.bio7.util.ThemedMessageBox(Util.getShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 				message.setMessage("Do you really want to remove the selected object(s)?");
 				message.setText("Remove objects");
 				int response = message.open();

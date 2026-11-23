@@ -713,8 +713,8 @@ public class HtmlSimulation {
 			    }
 			    gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1, 1); lit(t, buffers.tri); gl.disable(gl.POLYGON_OFFSET_FILL);
 			  }
-			  /* The lines */
-			  drawShapes3d(mvp, lines, size);
+			  /* The lines (and the pillars, lit) */
+			  drawShapes3d(mvp, lines, size, lit);
 			  const l = sim.lines;
 			  if (l && l.xyz && l.xyz.length >= 6) {
 			    const data = [], c = color3(l.color, dark ? '#c8d0dc' : '#555555');
@@ -723,6 +723,13 @@ public class HtmlSimulation {
 			      data.push(l.xyz[i], l.xyz[i + 1], l.xyz[i + 2], cc[0], cc[1], cc[2]);
 			    }
 			    lines(data, buffers.line);
+			  }
+			  /* The objects of the environment (glTF models of the page) */
+			  const sc = sim.scenery;
+			  if (sc && sc.models && sc.models.length) {
+			    const idx = [];
+			    for (let k = 0; k < sc.models.length; k++) if (assetModel(sc.models[k])) idx.push(k);
+			    if (idx.length) drawAgentModels(sc, idx, null, mvp, e, center, size, light, dark);
 			  }
 			  /* The points: shapes (lit triangles) or point sprites, with soft shadows */
 			  let p = sim.points;
@@ -1013,16 +1020,30 @@ public class HtmlSimulation {
 			  /* Animated models: the view is drawn again (each frame) */
 			  if (animated && !animating3d) { animating3d = true; requestAnimationFrame(function again() { if (!animating3d) return; animating3d = false; draw3d(); }); }
 			}
-			/* The shapes of an agent model: lines in 3D, 2D shapes on the floor, images (billboards standing on the floor) */
-			function drawShapes3d(mvp, lines, size) {
+			/* The shapes of an agent model: lines in 3D, 2D shapes on the floor, pillars, images (billboards standing on the floor) */
+			function drawShapes3d(mvp, lines, size, lit) {
 			  const d = sim.drawing; if (!d || !d.length) return;
 			  const segs = [], sprites = [], z0 = size * 0.002;
+			  /* The pillars: a vertical cylinder from the floor (x, y, the radius, the height), the top a little smaller and lighter */
+			  const pil = [];
+			  for (const s of d) {
+			    if (s.k !== 'pillar' || !s.p || s.p.length < 4) continue;
+			    const x = s.p[0], y = s.p[1], r0 = s.p[2], r1 = s.p[2] * 0.85, h = s.p[3], c = color3(s.f || '#9aa6b8'), ct = [Math.min(1, c[0] * 1.2), Math.min(1, c[1] * 1.2), Math.min(1, c[2] * 1.2)], seg = 32;
+			    for (let j = 0; j < seg; j++) {
+			      const a1 = 2 * Math.PI * j / seg, a2 = 2 * Math.PI * (j + 1) / seg, c1 = Math.cos(a1), s1 = Math.sin(a1), c2 = Math.cos(a2), s2 = Math.sin(a2);
+			      const v = function (cc, ss, r, z, col) { pil.push(x + r * cc, y + r * ss, z, cc, ss, 0.15, col[0], col[1], col[2]); };
+			      v(c1, s1, r0, 0, c); v(c2, s2, r0, 0, c); v(c2, s2, r1, h, c);
+			      v(c1, s1, r0, 0, c); v(c2, s2, r1, h, c); v(c1, s1, r1, h, c);
+			      pil.push(x, y, h, 0, 0, 1, ct[0], ct[1], ct[2], x + r1 * c1, y + r1 * s1, h, 0, 0, 1, ct[0], ct[1], ct[2], x + r1 * c2, y + r1 * s2, h, 0, 0, 1, ct[0], ct[1], ct[2]);
+			    }
+			  }
+			  if (pil.length && lit) lit(pil, buffers.tri);
 			  function seg(a, b, c) { segs.push(a[0], a[1], a[2], c[0], c[1], c[2], b[0], b[1], b[2], c[0], c[1], c[2]); }
 			  function outline(s) { const p = s.p; if (s.k === 'rect') return [p[0], p[1], p[0] + p[2], p[1], p[0] + p[2], p[1] + p[3], p[0], p[1] + p[3]];
 			    if (s.k === 'circle') { const q = []; for (let i = 0; i < 48; i++) { const a = 2 * Math.PI * i / 48; q.push(p[0] + p[2] * Math.cos(a), p[1] + p[2] * Math.sin(a)); } return q; } return p; }
 			  for (const s of d) {
 			    if (s.k === 'image') { sprites.push([s.p[0], s.p[1], (s.w || 1) / 2, s.w || 1, s.a || 0, s.t]); continue; }
-			    if (s.k === 'text') continue;
+			    if (s.k === 'text' || s.k === 'pillar') continue;
 			    if (s.k === 'line3') { if (s.s) seg([s.p[0], s.p[1], s.p[2]], [s.p[3], s.p[4], s.p[5]], color3(s.s)); continue; }
 			    const q = outline(s), closed = s.k !== 'line' && s.k !== 'path';
 			    if (s.f && closed && q.length >= 6) {
@@ -1669,6 +1690,31 @@ public class HtmlSimulation {
 			const scene = Object.assign({ background: 'auto', lighting: 'studio', shape: 'sphere', floor: 'grid', shadows: true, rotate: false }, CONFIG.scene || {});
 			try { const stored = JSON.parse(localStorage.getItem(sceneKey) || 'null'); if (stored) Object.assign(scene, stored); } catch (e) { }
 			function saveScene() { try { localStorage.setItem(sceneKey, JSON.stringify(scene)); } catch (e) { } }
+			/* The shape, the floor and the shadows of the model (once, if the viewer has no own settings of the view) */
+			let modelSceneApplied = false;
+			function applyModelScene(shape, floor, shadows) {
+			  if (modelSceneApplied || shape === undefined || shape === null) return;
+			  modelSceneApplied = true;
+			  let own = false; try { own = localStorage.getItem(sceneKey) !== null; } catch (e) { }
+			  if (own) return;
+			  if (shape && SHAPES[shape]) scene.shape = shape;
+			  if (floor === 'plane' || floor === 'grid' || floor === 'none') scene.floor = floor;
+			  if (shadows !== undefined && shadows !== null) scene.shadows = !!Number(shadows);
+			  ['shape', 'floor', 'shadows'].forEach(function (k) {
+			    const el = document.getElementById('s_' + k);
+			    if (el) { if (el.type === 'checkbox') el.checked = !!scene[k]; else el.value = scene[k]; }
+			  });
+			}
+			/* The objects of the environment (3D models placed by the model): xyz, models, headings, sizes, animations */
+			function sceneryOf(names, values, animations) {
+			  const list = function (v) { return v === undefined || v === null ? [] : typeof v === 'string' ? [v] : Array.from(v); };
+			  const m = list(names), v = list(values).map(Number), a = list(animations), sc = { xyz: [], models: [], headings: [], sizes: [], animations: [], images: [] };
+			  for (let k = 0; k < m.length && k * 5 + 4 < v.length; k++) {
+			    sc.xyz.push(v[k * 5], v[k * 5 + 1], v[k * 5 + 2]); sc.headings.push(v[k * 5 + 3]); sc.sizes.push(v[k * 5 + 4]);
+			    sc.models.push(m[k]); sc.animations.push(a[k] || null); sc.images.push(null);
+			  }
+			  return sc;
+			}
 			function themeDark() { return document.documentElement.getAttribute('data-theme') === 'dark'; }
 			function sceneBackground() { let b = scene.background; if (b === 'auto') b = themeDark() ? 'night' : 'studio'; return BACKGROUNDS[b] ? b : 'studio'; }
 			function sceneDark() { const b = BACKGROUNDS[sceneBackground()]; return b.dark === null ? themeDark() : b.dark; }
@@ -1814,7 +1860,7 @@ public class HtmlSimulation {
 			  function select(label, key, options) {
 			    const div = document.createElement('div'); div.className = 'control'; box.appendChild(div);
 			    const l = document.createElement('label'); l.textContent = label; div.appendChild(l);
-			    const s = document.createElement('select'); div.appendChild(s);
+			    const s = document.createElement('select'); s.id = 's_' + key; div.appendChild(s);
 			    Object.keys(options).forEach(function (k) { const o = document.createElement('option'); o.value = k; o.textContent = options[k]; s.appendChild(o); });
 			    s.value = scene[key];
 			    s.addEventListener('change', function () { scene[key] = s.value; saveScene(); draw3d(); });

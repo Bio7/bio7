@@ -531,6 +531,26 @@ public final class ScriptSimulation {
 			if (color.length > 0) {
 				agentColor = color[0];
 			}
+			/* The shape of the agents, the floor, the shadows and the agent of the follow camera (-1: none) */
+			String[] shape = s.strings("shape");
+			if (shape.length > 0 && shape[0] != null && !shape[0].isEmpty()) {
+				agentShape = shape[0];
+			}
+			String[] fl = s.strings("floor");
+			if (fl.length > 0 && fl[0] != null && !fl[0].isEmpty()) {
+				floor = fl[0];
+			}
+			shadows = s.number("shadows", shadows ? 1 : 0) != 0;
+			followAgent = (int) s.number("follow", followAgent);
+			/* The objects of the environment (all of them in each state): x, y, z, heading and size for each model */
+			String[] placedModels = s.strings("scenery_models");
+			double[] placed = s.doubles("scenery");
+			String[] placedAnimations = strings(s, "scenery_animations", placedModels.length);
+			List<Placed> scenery = new ArrayList<>();
+			for (int k = 0; k < placedModels.length && k * 5 + 4 < placed.length; k++) {
+				scenery.add(new Placed(placedModels[k], placed[k * 5], placed[k * 5 + 1], placed[k * 5 + 2], placed[k * 5 + 3], placed[k * 5 + 4], placedAnimations[k]));
+			}
+			setModels(scenery);
 			double[] xyz = s.doubles("xyz");
 			String[] c = colors(s.strings("colors"));
 			int n = xyz.length / 3;

@@ -74,7 +74,7 @@ class TransferPicJob extends WorkspaceJob {
 					Display display = PlatformUI.getWorkbench().getDisplay();
 					display.syncExec(new Runnable() {
 						public void run() {
-							MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+							com.eco.bio7.util.ThemedMessageBox message = new com.eco.bio7.util.ThemedMessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 							message.setMessage("Should a matrix be created from the image?");
 							message.setText("Matrix?");
 							int response = message.open();
@@ -237,7 +237,7 @@ class TransferPicJob extends WorkspaceJob {
 					display.syncExec(new Runnable() {
 						public void run() {
 
-							MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+							com.eco.bio7.util.ThemedMessageBox message = new com.eco.bio7.util.ThemedMessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 							message.setMessage("Do you want to create a integer matrix?");
 							message.setText("Bio7");
 							int response = message.open();
@@ -279,7 +279,7 @@ class TransferPicJob extends WorkspaceJob {
 				Display display = PlatformUI.getWorkbench().getDisplay();
 				display.asyncExec(new Runnable() {
 					public void run() {
-						MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES);
+						com.eco.bio7.util.ThemedMessageBox message = new com.eco.bio7.util.ThemedMessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES);
 						message.setMessage("No image available!");
 						message.setText("Bio7");
 						int response = message.open();

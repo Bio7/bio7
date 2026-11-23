@@ -162,7 +162,7 @@ public class IJTranserResultsTable {
 			 * Display display = PlatformUI.getWorkbench().getDisplay();
 			 * display.syncExec(new Runnable() {
 			 * 
-			 * public void run() { MessageBox messageBox = new MessageBox(new Shell(),
+			 * public void run() { com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 			 * 
 			 * SWT.ICON_INFORMATION); messageBox.setMessage("Transferred values to R");
 			 * messageBox.open(); } });
@@ -171,7 +171,7 @@ public class IJTranserResultsTable {
 
 		} else {
 
-			MessageBox messageBox = new MessageBox(new Shell(),
+			com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 					SWT.ICON_INFORMATION);
 			messageBox.setMessage("R is not running!\nPlease start R (toolbar action \"Start R\").");
@@ -183,8 +183,8 @@ public class IJTranserResultsTable {
 
 	/*
 	 * public static void addParticleValues() { PointPanel jp =
-	 * PointPanelView.getJp(); if (jp != null) { MessageBox message = new
-	 * MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+	 * PointPanelView.getJp(); if (jp != null) { com.eco.bio7.util.ThemedMessageBox message = new
+	 * com.eco.bio7.util.ThemedMessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 	 * message.setMessage("Do you want to delete plants in the Points panel?");
 	 * message.setText("Delete Plants"); int response = message.open(); if (response
 	 * == SWT.YES) {

@@ -410,6 +410,35 @@ public class CustomViewFullscreen {
 		}
 	}
 
+	/*
+	 * After the fullscreen mode the view gets the focus again (the workbench window
+	 * is activated by the system, its focus is where it was before, e.g., an image,
+	 * and the view is still the active part, so the workbench doesn't focus it):
+	 * else the keys (F2 to F5) of the view don't work until another view was
+	 * activated. After the fullscreen shell is gone (asynchronous).
+	 */
+	private static void focusView(CustomView view, Composite content) {
+		Display display = content.getDisplay();
+		display.asyncExec(() -> {
+			if (content.isDisposed() || isFullscreen(view)) {
+				return;
+			}
+			Shell window = content.getShell();
+			if (display.getActiveShell() != window) {
+				window.forceActive();
+			}
+			try {
+				if (view.getSite() != null && view.getSite().getPage() != null) {
+					/* The view is the active part (e.g., the actions of its toolbar) */
+					view.getSite().getPage().activate(view);
+				}
+			} catch (RuntimeException e) {
+				/* Not part of a page (e.g., closed) */
+			}
+			view.setFocus();
+		});
+	}
+
 	/* Moves the content back to the view! */
 	private static void restore(Session s) {
 		if (sessions.get(s.view) == s) {
@@ -422,6 +451,7 @@ public class CustomViewFullscreen {
 			if (s.oldParent != null && !s.oldParent.isDisposed()) {
 				s.content.setParent(s.oldParent);
 				s.oldParent.layout(true, true);
+				focusView(s.view, s.content);
 			} else {
 				/* The view has been closed! */
 				s.content.dispose();

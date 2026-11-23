@@ -44,7 +44,7 @@ public class OpenColorDialogRGBToHex extends Action {
 
 		String selText = selection.getText();
 
-		ColorDialog dlg = new ColorDialog(Util.getShell());
+		com.eco.bio7.util.ThemedColorDialog dlg = new com.eco.bio7.util.ThemedColorDialog(Util.getShell());
 
 		if (selection.isEmpty() == false) {
 			/* Convert selection to RGB if possible! */

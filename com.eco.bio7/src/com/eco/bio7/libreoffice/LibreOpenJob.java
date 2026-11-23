@@ -98,7 +98,7 @@ public class LibreOpenJob extends WorkspaceJob implements IJobChangeListener {
 				display.syncExec(new Runnable() {
 
 					public void run() {
-						MessageBox messageBox = new MessageBox(new Shell(),
+						com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 						SWT.ICON_INFORMATION);
 						messageBox.setMessage("Open a connection to OpenOffice!");
@@ -112,7 +112,7 @@ public class LibreOpenJob extends WorkspaceJob implements IJobChangeListener {
 			display.syncExec(new Runnable() {
 
 				public void run() {
-					MessageBox messageBox = new MessageBox(new Shell(),
+					com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 					SWT.ICON_INFORMATION);
 					messageBox.setMessage("Open a connection to OpenOffice!");

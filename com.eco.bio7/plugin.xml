@@ -615,14 +615,15 @@
             id="com.eco.bio7.latex.preferences"
             name="Preferences LaTeX">
       </page>
+      <!-- Python as R: the Python preferences on top, the plot and editor pages below them -->
       <page
-            category="prefpython"
+            category="com.eco.bio7.preferences.Bio7PreferencePage"
             class="com.eco.bio7.preferences.Python"
             id="com.eco.bio7.python"
             name="Preferences Python">
       </page>
       <page
-            category="prefpython"
+            category="com.eco.bio7.python"
             class="com.eco.bio7.preferences.PythonPlotPreferences"
             id="com.eco.bio7.python.plot"
             name="Preferences Python Plot">
@@ -2497,5 +2498,27 @@
             </visibleWhen>
          </menu>
       </menuContribution>
+   </extension>
+   <!--
+     The text font of all Bio7 editors (R, Python, Markdown, ImageJ Macro,
+     BeanShell/Groovy) and of the consoles: by default the text font of Eclipse
+     (the same font as the editors of Eclipse on a new installation). It can be
+     changed for all Bio7 editors here, or for one editor in its own category.
+   -->
+   <extension
+         point="org.eclipse.ui.themes">
+      <themeElementCategory
+            id="com.eco.bio7.fonts"
+            label="Bio7">
+      </themeElementCategory>
+      <fontDefinition
+            categoryId="com.eco.bio7.fonts"
+            defaultsTo="org.eclipse.jface.textfont"
+            id="com.eco.bio7.textfont"
+            label="Bio7 Text Font (editors and consoles)">
+         <description>
+            The font of all Bio7 editors and consoles, by default the text font of Eclipse (an editor font set in its own category overrides it).
+         </description>
+      </fontDefinition>
    </extension>
 </plugin>

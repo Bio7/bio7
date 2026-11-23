@@ -72,7 +72,7 @@ public class ImageJEditAction extends Action implements IMenuCreator {
 					public void widgetSelected(SelectionEvent e) {
 
 						Shell shell = new Shell();
-						ColorDialog dialog = new ColorDialog(shell, SWT.APPLICATION_MODAL);
+						com.eco.bio7.util.ThemedColorDialog dialog = new com.eco.bio7.util.ThemedColorDialog(shell, SWT.APPLICATION_MODAL);
 						// dialog.setRGB(rgb);
 						dialog.setText("Foreground Colour");
 						RGB color = dialog.open();
@@ -97,7 +97,7 @@ public class ImageJEditAction extends Action implements IMenuCreator {
 					public void widgetSelected(SelectionEvent e) {
 
 						Shell shell = new Shell();
-						ColorDialog dialog = new ColorDialog(shell, SWT.APPLICATION_MODAL);
+						com.eco.bio7.util.ThemedColorDialog dialog = new com.eco.bio7.util.ThemedColorDialog(shell, SWT.APPLICATION_MODAL);
 						// dialog.setRGB(rgb);
 						dialog.setText("Background Colour");
 						RGB color = dialog.open();

@@ -767,7 +767,7 @@ public class PythonShellView extends ViewPart {
 	}
 
 	private void chooseFont() {
-		FontDialog d = new FontDialog(getSite().getShell());
+		com.eco.bio7.util.ThemedFontDialog d = new com.eco.bio7.util.ThemedFontDialog(getSite().getShell());
 		if (font != null) {
 			d.setFontList(font.getFontData());
 		}

@@ -27,6 +27,8 @@ public class ThemeSwitchHandler extends Action {
 	public void switchTheme(IThemeEngine engine) {
 
 		String id = engine.getActiveTheme().getId();
+		/* The frames of the toolbars keep valid images (else an endless restyling, see FrameImages) */
+		com.eco.bio7.themes.FrameImages.protect();
 		/*If we have a black theme!*/
 		if (id.startsWith(MessagesThemeIDsSettings.Theme_Black_1) || id.startsWith(MessagesThemeIDsSettings.Theme_Black_2) || id.startsWith(MessagesThemeIDsSettings.Theme_Black_3) || id.startsWith(MessagesThemeIDsSettings.Theme_Black_4)
 				|| id.startsWith(MessagesThemeIDsSettings.Theme_Black_5)) {

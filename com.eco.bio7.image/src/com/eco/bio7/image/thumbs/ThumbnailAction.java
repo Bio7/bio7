@@ -233,7 +233,7 @@ public class ThumbnailAction extends Action {
 	}
 
 	private void restrictNumberOfThumbs(Collection filesColl) {
-		MessageBox message = new MessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
+		com.eco.bio7.util.ThemedMessageBox message = new com.eco.bio7.util.ThemedMessageBox(new Shell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
 		message.setMessage("The number of files exceeds the recommended amount of files\n" + "for the thumbnail browser\n" + "Only the first 5000 images will be previewed!");
 		message.setText("Bio7");
 		int response = message.open();

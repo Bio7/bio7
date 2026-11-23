@@ -134,6 +134,7 @@ public final class ThemeStore {
 		}
 		for (org.eclipse.e4.ui.css.swt.theme.ITheme t : engine.getThemes()) {
 			if (CustomTheme.LIGHT_MAC_ID.equals(t.getId())) {
+				FrameImages.protect();
 				engine.setTheme(t, true);
 				return;
 			}
@@ -324,6 +325,8 @@ public final class ThemeStore {
 	 * (ThemeEngine, not in the interface)!
 	 */
 	private static void setEngineTheme(IThemeEngine engine, String id) {
+		/* The frames of the toolbars keep valid images (else an endless restyling, see FrameImages) */
+		FrameImages.protect();
 		ITheme active = engine.getActiveTheme();
 		if (active != null && id.equals(active.getId())) {
 			try {
@@ -443,6 +446,7 @@ public final class ThemeStore {
 		ToolbarArtwork.setTheme(null, null);
 		IThemeEngine engine = engine();
 		if (engine != null) {
+			FrameImages.protect();
 			engine.setTheme(dark ? CustomTheme.DARK_ID : CustomTheme.lightThemeId(), true);
 		}
 		/* After the stylesheets of the default theme (e.g., the colors of the memory display follow its background) */
@@ -460,6 +464,11 @@ public final class ThemeStore {
 			return;
 		}
 		listening = true;
+		/* Also for a theme switch of the Eclipse preferences (see FrameImages) */
+		org.eclipse.swt.widgets.Display display = org.eclipse.swt.widgets.Display.getDefault();
+		display.asyncExec(() -> FrameImages.install(display));
+		/* The readable drop-down lists of the combos (Windows, a dark theme) */
+		display.asyncExec(() -> WindowsDarkMode.install(display));
 		broker.subscribe(IThemeEngine.Events.THEME_CHANGED, event -> {
 			Object t = event.getProperty(IThemeEngine.Events.THEME);
 			String id = t instanceof ITheme ? ((ITheme) t).getId() : null;

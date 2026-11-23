@@ -135,8 +135,33 @@ public class CustomView extends ViewPart {// implements ISaveablePart2
 
 	private static final String FULLSCREEN_ID = "com.eco.bio7.customview.fullscreen";
 
+	/*
+	 * The focus in the content when the view is activated (e.g., a click on its
+	 * tab): the keys of the view (F2 to F5 for the fullscreen mode) go to this view,
+	 * not to the view focused before (e.g., an image). Content without a focusable
+	 * widget (e.g., charts drawn on a canvas) gets the focus itself. Not in the
+	 * fullscreen mode (the content is in the fullscreen shell).
+	 */
 	public void setFocus() {
+		Composite content = customViewParent;
+		if (content == null || content.isDisposed() || CustomViewFullscreen.isFullscreen(this)) {
+			return;
+		}
+		if (content.isFocusControl() || isAncestorOf(content, content.getDisplay().getFocusControl())) {
+			return;
+		}
+		if (!content.setFocus()) {
+			content.forceFocus();
+		}
+	}
 
+	private static boolean isAncestorOf(Composite parent, org.eclipse.swt.widgets.Control control) {
+		for (org.eclipse.swt.widgets.Control c = control; c != null; c = c.getParent()) {
+			if (c == parent) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

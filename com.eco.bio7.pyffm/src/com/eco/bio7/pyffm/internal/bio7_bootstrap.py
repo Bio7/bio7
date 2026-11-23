@@ -1200,6 +1200,15 @@ _BIO7_SOURCE = r'''
     x, y = bio7.roi()                  # the coordinates of the current selection
     bio7.to_r("x", [1, 2, 3])          # assign in R
     m = bio7.r("summary(cars)")        # evaluate in R
+    bio7.plot3d(bio7.scatter3d(x, y, z), title="3D")   # 3D plots in the 3D view (also surface3d,
+                                       # line3d, wireframe3d, bars3d, contour3d, pie3d, plot3d_clear)
+                                       # charts: histogram3d, linegraph3d, area3d, boxplot3d,
+                                       # violin3d, radar3d, rose3d, treemap3d
+    p = bio7.plot3d(bio7.histogram3d(v), zlim=(0, 80))    # dynamic: in each step
+    bio7.plot3d(bio7.histogram3d(v2), plot=p)             # updated (camera kept)
+    rec = bio7.plot3d_recorder(speed=20)                  # recorded as animation
+    bio7.plot3d(bio7.histogram3d(v), record=rec, show=False)
+    bio7.plot3d_export(rec, "animation.html")
 """
 import _bio7
 
@@ -1394,4 +1403,420 @@ def to_r(name, value):
 def call(function, *args, value=None):
     """Calls a function of Bio7 registered for Python."""
     return _bio7._call(function, *args, value=value) if value is not None else _bio7._call(function, *args)
+
+
+# ---------------------------------------------------------------- 3D plots
+# The 3D plots of the 3D view (OpenGL, com.eco.bio7.spatial.Plot3D): the layers
+# with scatter3d(), surface3d(), ... shown with plot3d().
+
+def _plot3d_class():
+    return java.type("com.eco.bio7.spatial.Plot3D")
+
+
+_NAMED_COLORS = {"black": 0x000000, "white": 0xFFFFFF, "red": 0xD62728, "green": 0x2CA02C, "blue": 0x1F77B4,
+                 "orange": 0xFF7F0E, "purple": 0x9467BD, "brown": 0x8C564B, "pink": 0xE377C2, "gray": 0x7F7F7F,
+                 "grey": 0x7F7F7F, "olive": 0xBCBD22, "cyan": 0x17BECF, "yellow": 0xFFD700}
+
+
+def _rgb_int(color):
+    """A color (0xRRGGBB, "#RRGGBB", a name, an (r, g, b) tuple of 0..1 or 0..255) as int."""
+    import numbers
+    if isinstance(color, numbers.Integral) and not isinstance(color, bool):
+        return int(color)
+    if isinstance(color, str):
+        c = color.strip()
+        if c.startswith("#") and len(c) == 7:
+            return int(c[1:], 16)
+        if c.lower() in _NAMED_COLORS:
+            return _NAMED_COLORS[c.lower()]
+        try:
+            from matplotlib.colors import to_rgb
+            color = to_rgb(c)
+        except Exception:
+            raise ValueError("unknown color: %r" % color) from None
+    r, g, b = list(color)[:3]
+    if max(r, g, b) <= 1:
+        r, g, b = r * 255, g * 255, b * 255
+    return (int(round(r)) << 16) | (int(round(g)) << 8) | int(round(b))
+
+
+def _color_map(cmap):
+    """"viridis", "rainbow", "diverging", "terrain" (of Bio7), a matplotlib colormap name or a list of colors."""
+    if not isinstance(cmap, str):
+        return [_rgb_int(c) for c in cmap]
+    legend = java.type("com.eco.bio7.spatial.PlotLegend")
+    key = cmap.upper()
+    if key in ("VIRIDIS", "RAINBOW", "DIVERGING", "TERRAIN"):
+        return [int(v) for v in getattr(legend, key)]
+    try:
+        import matplotlib
+        m = matplotlib.colormaps[cmap]
+        return [_rgb_int(m(i / 6)[:3]) for i in range(7)]
+    except Exception:
+        raise ValueError("unknown colormap: %r" % cmap) from None
+
+
+def _style(layer, label, color, cmap, alpha):
+    if label is not None:
+        layer = layer.label(str(label))
+    if color is not None:
+        layer = layer.color(_rgb_int(color))
+    if cmap is not None:
+        layer = layer.colorMap(_color_map(cmap))
+    if alpha is not None:
+        layer = layer.alpha(float(alpha))
+    return layer
+
+
+def _vector(v):
+    import numpy as np
+    return np.asarray(v, dtype=float).ravel()
+
+
+def _grid(x, y, z):
+    """The grid z[i, j] at x[i], y[j]: an array (also (len(y), len(x)) from np.meshgrid, transposed)
+    or a function f(X, Y) of the grid."""
+    import numpy as np
+    x, y = _vector(x), _vector(y)
+    if callable(z):
+        X, Y = np.meshgrid(x, y, indexing="ij")
+        z = z(X, Y)
+    z = np.asarray(z, dtype=float)
+    if z.shape != (len(x), len(y)):
+        if z.shape == (len(y), len(x)):
+            z = z.T
+        else:
+            raise ValueError("z must have the shape (len(x), len(y)): z[i, j] at x[i], y[j]")
+    return np.ascontiguousarray(z)
+
+
+def _points(x, y, z):
+    """x, y, z of points: three sequences or one array/DataFrame with 3 columns in x."""
+    import numpy as np
+    if y is None and z is None:
+        a = np.asarray(x, dtype=float)
+        return a[:, 0].copy(), a[:, 1].copy(), a[:, 2].copy()
+    return _vector(x), _vector(y), _vector(z)
+
+
+def scatter3d(x, y=None, z=None, label=None, color=None, size=None, values=None, cmap=None, alpha=None,
+              drop_lines=False):
+    """A scatter layer (spheres) of the points (x[i], y[i], z[i]) for plot3d(); x can be an
+    array or DataFrame with 3 columns. size: the radius; values: colors the points with the
+    colormap (and a color bar); drop_lines: lines down to the floor."""
+    px, py, pz = _points(x, y, z)
+    layer = _plot3d_class().scatter(px, py, pz)
+    if size is not None:
+        layer = layer.size(float(size))
+    if values is not None:
+        layer = layer.values(_vector(values))
+    if drop_lines:
+        layer = layer.dropLines(True)
+    return _style(layer, label, color, cmap if cmap is not None or values is None else "viridis", alpha)
+
+
+def line3d(x, y=None, z=None, label=None, color=None, alpha=None, filled=False):
+    """A line layer through the points (x[i], y[i], z[i]) for plot3d(); filled: filled down
+    to the floor (e.g. several series at different y)."""
+    px, py, pz = _points(x, y, z)
+    p = _plot3d_class()
+    layer = p.filledLine(px, py, pz) if filled else p.line(px, py, pz)
+    return _style(layer, label, color, None, alpha)
+
+
+def surface3d(x, y, z, label=None, cmap="viridis", color=None, alpha=None, mesh=None):
+    """A surface layer of the grid z[i, j] at x[i], y[j] for plot3d(): z an array or a
+    function f(X, Y) of the grid. mesh: the grid lines on the surface."""
+    layer = _plot3d_class().surface(_vector(x), _vector(y), _grid(x, y, z))
+    if mesh is not None:
+        layer = layer.mesh(bool(mesh))
+    return _style(layer, label, color, cmap if color is None else None, alpha)
+
+
+def wireframe3d(x, y, z, label=None, color=None, cmap=None, alpha=None, step=None):
+    """A wireframe layer of the grid z[i, j] at x[i], y[j] for plot3d() (z an array or a
+    function f(X, Y)); step: every step-th grid line."""
+    layer = _plot3d_class().wireframe(_vector(x), _vector(y), _grid(x, y, z))
+    if step is not None:
+        layer = layer.step(int(step))
+    return _style(layer, label, color, cmap, alpha)
+
+
+def bars3d(x, y, z, label=None, color=None, cmap=None, alpha=None, width=None):
+    """A bar layer for plot3d(): z a sequence (bars at the points (x[i], y[i])) or a grid
+    z[i, j] at x[i], y[j] (e.g. a 2D histogram); width: the width of the bars (0..1)."""
+    import numpy as np
+    p = _plot3d_class()
+    if not callable(z) and np.ndim(z) == 1 and len(z) == len(x):
+        layer = p.bars(_vector(x), _vector(y), _vector(z))
+    else:
+        layer = p.bars(_vector(x), _vector(y), _grid(x, y, z))
+    if width is not None:
+        layer = layer.width(float(width))
+    return _style(layer, label, color, cmap, alpha)
+
+
+def contour3d(x, y, z, levels=None, on_floor=False, label=None, color=None, cmap="viridis", alpha=None):
+    """The contour lines of the grid z[i, j] at x[i], y[j] for plot3d(); levels: the number
+    of levels or the levels; on_floor: drawn on the floor of the box."""
+    import numpy as np
+    layer = _plot3d_class().contour(_vector(x), _vector(y), _grid(x, y, z))
+    if levels is not None:
+        layer = layer.levels(int(levels)) if np.ndim(levels) == 0 else layer.levels(_vector(levels))
+    if on_floor:
+        layer = layer.onFloor(True)
+    return _style(layer, label, color, cmap if color is None else None, alpha)
+
+
+def pie3d(values, labels=None, colors=None, explode=None, height=None):
+    """A 3D pie chart layer for plot3d() (shown alone)."""
+    v = _vector(values)
+    if labels is None:
+        labels = ["Value %d" % (i + 1) for i in range(len(v))]
+    layer = _plot3d_class().pie(v, [str(s) for s in labels])
+    if colors is not None:
+        layer = layer.colors([_rgb_int(c) for c in colors])
+    if explode is not None:
+        layer = layer.explode(float(explode))
+    if height is not None:
+        layer = layer.height(float(height))
+    return layer
+
+
+def plot3d(*layers, title=None, xlabel=None, ylabel=None, zlabel=None, log="", xlim=None, ylim=None,
+           zlim=None, aspect=None, legend=True, colorbar=None, font=None, html=None, show=True, plot=None,
+           record=None):
+    """Shows the layers (scatter3d(), surface3d(), histogram3d(), ...) as 3D plot in the 3D view.
+
+        x = np.linspace(-3, 3, 50)
+        bio7.plot3d(bio7.surface3d(x, x, lambda X, Y: np.sin(X) * np.cos(Y)), colorbar="z")
+
+    log: the logarithmic axes (e.g. "z" or "xy"); xlim, ylim, zlim: the ranges (fixed
+    ranges for a plot which is updated); aspect: the size of the box (x, y, z); colorbar:
+    the title of the color bar; html: also exported as HTML page (WebGL). Returns the plot
+    (Java).
+
+    Dynamic plots: plot=the returned plot updates it with the new layers (in each step;
+    the camera and the zoom are kept, the settings stay); record=a recorder of
+    plot3d_recorder() adds the plot as frame (show=False: only recorded)."""
+    import os
+    if len(layers) == 1 and isinstance(layers[0], (list, tuple)):
+        layers = layers[0]
+    p = _plot3d_class()() if plot is None else plot.clearLayers()
+    if title is not None:
+        p = p.title(str(title))
+    if xlabel is not None or ylabel is not None or zlabel is not None:
+        p = p.axisTitles(xlabel or "X", ylabel or "Y", zlabel or "Z")
+    if log:
+        p = p.logAxes("x" in log, "y" in log, "z" in log)
+    if xlim is not None:
+        p = p.xRange(float(xlim[0]), float(xlim[1]))
+    if ylim is not None:
+        p = p.yRange(float(ylim[0]), float(ylim[1]))
+    if zlim is not None:
+        p = p.zRange(float(zlim[0]), float(zlim[1]))
+    if aspect is not None:
+        p = p.aspect(float(aspect[0]), float(aspect[1]), float(aspect[2]))
+    if not legend:
+        p = p.legend(False)
+    if colorbar is not None:
+        p = p.colorBarTitle(str(colorbar))
+    if font is not None:
+        p = p.font(str(font))
+    for layer in layers:
+        p = p.add(layer)
+    if html is not None:
+        p.exportHtml(os.path.abspath(html))
+    if record is not None:
+        record.frame(p)
+    if show:
+        if plot is None:
+            p.show()
+        else:
+            p.update()
+    return p
+
+
+# ---- The charts (layers for plot3d(), also updated in each step)
+
+def _groups(x, names=None):
+    """Groups of values: one sequence, a list of sequences, a 2-d array (rows), a dict or
+    a DataFrame (columns): (list of float arrays, names or None)."""
+    import numpy as np
+    if hasattr(x, "columns") and hasattr(x, "__getitem__"):
+        cols = list(x.columns)
+        return [np.asarray(x[c], dtype=float).ravel() for c in cols], names or [str(c) for c in cols]
+    if isinstance(x, dict):
+        return [np.asarray(v, dtype=float).ravel() for v in x.values()], names or [str(k) for k in x]
+    if isinstance(x, np.ndarray) and x.ndim == 2:
+        return [np.ascontiguousarray(r, dtype=float) for r in x], names
+    x = list(x) if not isinstance(x, np.ndarray) else x
+    if len(x) == 0 or np.ndim(x[0]) == 0:
+        # One group (the groups can have different sizes: no np.ndim of the whole list)
+        return [np.asarray(x, dtype=float).ravel()], names
+    return [np.asarray(v, dtype=float).ravel() for v in x], names
+
+
+def _chart_colors(layer, colors):
+    return layer if colors is None else layer.colors([_rgb_int(c) for c in colors])
+
+
+def _default_names(names, n, prefix):
+    return [str(s) for s in names] if names is not None else ["%s %d" % (prefix, i + 1) for i in range(n)]
+
+
+def histogram3d(x, names=None, bins=None, bin_width=None, density=False, colors=None, label=None, alpha=None):
+    """A histogram layer for plot3d(): x the values or groups (a list, dict or DataFrame;
+    the groups in the depth with the names on the y axis). bins: the number of bins or
+    bin_width; density: densities instead of counts."""
+    g, n = _groups(x, names)
+    p = _plot3d_class()
+    layer = p.histogram(g[0]) if len(g) == 1 else p.histogram(g, _default_names(n, len(g), "Group"))
+    if bins is not None:
+        layer = layer.bins(int(bins))
+    if bin_width is not None:
+        layer = layer.binWidth(float(bin_width))
+    if density:
+        layer = layer.density(True)
+    return _style(_chart_colors(layer, colors), label, None, None, alpha)
+
+
+def linegraph3d(x, series, names=None, colors=None, markers=True, marker_size=0.12, fill=False, label=None,
+                alpha=None):
+    """A line graph layer for plot3d(): the series over x (one sequence, a list, a 2-d
+    array with a series in each row, a dict or a DataFrame), each series at its own
+    depth. markers: points at the values; fill: filled down to the floor."""
+    s, n = _groups(series, names)
+    layer = _plot3d_class().lineGraph(_vector(x), s)
+    if n is not None and len(n) == len(s):
+        layer = layer.names([str(v) for v in n])
+    layer = layer.markers(bool(markers), float(marker_size))
+    if fill:
+        layer = layer.fill(True)
+    return _style(_chart_colors(layer, colors), label, None, None, alpha)
+
+
+def area3d(x, series, names=None, colors=None, stacked=True, label=None, alpha=None):
+    """An area chart layer for plot3d(): the series over x (as linegraph3d()), stacked (or
+    each in its own depth: stacked=False)."""
+    s, n = _groups(series, names)
+    layer = _plot3d_class().area(_vector(x), s)
+    if n is not None and len(n) == len(s):
+        layer = layer.names([str(v) for v in n])
+    if not stacked:
+        layer = layer.stacked(False)
+    return _style(_chart_colors(layer, colors), label, None, None, alpha)
+
+
+def boxplot3d(groups, names=None, colors=None, width=None, outliers=True, label=None, alpha=None):
+    """A box plot layer for plot3d(): the groups (a list, dict or DataFrame; the names on
+    the x axis)."""
+    g, n = _groups(groups, names)
+    layer = _plot3d_class().boxplot(g, _default_names(n, len(g), "Group"))
+    if width is not None:
+        layer = layer.width(float(width))
+    if not outliers:
+        layer = layer.outliers(False)
+    return _style(_chart_colors(layer, colors), label, None, None, alpha)
+
+
+def violin3d(groups, names=None, colors=None, width=None, bandwidth=None, quartiles=True, label=None, alpha=None):
+    """A violin plot layer for plot3d(): the kernel densities of the groups (as
+    boxplot3d()); quartiles: the median and the quartiles."""
+    g, n = _groups(groups, names)
+    layer = _plot3d_class().violin(g, _default_names(n, len(g), "Group"))
+    if width is not None:
+        layer = layer.width(float(width))
+    if bandwidth is not None:
+        layer = layer.bandwidth(float(bandwidth))
+    if not quartiles:
+        layer = layer.quartiles(False)
+    return _style(_chart_colors(layer, colors), label, None, None, alpha)
+
+
+def radar3d(series, axes=None, names=None, colors=None, max=None, rings=None, label=None, alpha=None):
+    """A radar chart layer for plot3d(): series[k][axis] (a 2-d array or list with a series
+    in each row; a DataFrame: the rows are the series, the columns the axes)."""
+    import numpy as np
+    if hasattr(series, "columns"):
+        axes = axes if axes is not None else [str(c) for c in series.columns]
+        names = names if names is not None else [str(i) for i in series.index]
+        series = series.to_numpy()
+    m = np.ascontiguousarray(np.asarray(series, dtype=float))
+    layer = _plot3d_class().radar(m, _default_names(axes, m.shape[1], "Axis"))
+    if names is not None and len(names) == m.shape[0]:
+        layer = layer.names([str(v) for v in names])
+    if max is not None:
+        layer = layer.max(float(max))
+    if rings is not None:
+        layer = layer.rings(int(rings))
+    return _style(_chart_colors(layer, colors), label, None, None, alpha)
+
+
+def rose3d(values, sectors=None, classes=None, colors=None, area_proportional=False, height=None, gap=None,
+           label=None, alpha=None):
+    """A rose chart layer for plot3d() (e.g. a wind rose): a value for each sector, or a
+    2-d array values[sector][class] stacked from the center."""
+    import numpy as np
+    v = np.asarray(values, dtype=float)
+    p = _plot3d_class()
+    if v.ndim == 2:
+        layer = p.rose(np.ascontiguousarray(v), _default_names(sectors, v.shape[0], "Sector"))
+        if classes is not None:
+            layer = layer.classes([str(c) for c in classes])
+    else:
+        layer = p.rose(v.ravel(), _default_names(sectors, v.size, "Sector"))
+    if area_proportional:
+        layer = layer.areaProportional(True)
+    if height is not None or gap is not None:
+        layer = layer.shape(1.0 if height is None else float(height), 0.0 if gap is None else float(gap))
+    return _style(_chart_colors(layer, colors), label, None, None, alpha)
+
+
+def treemap3d(values, labels=None, colors=None, heights=False, show_values=True, label=None, alpha=None):
+    """A treemap layer for plot3d(): rectangles with the areas of the values (a sequence
+    or a dict: the keys are the labels); heights: the values also as heights."""
+    if isinstance(values, dict):
+        labels = labels if labels is not None else [str(k) for k in values]
+        values = list(values.values())
+    v = _vector(values)
+    layer = _plot3d_class().treemap(v, _default_names(labels, len(v), "Value"))
+    if heights:
+        layer = layer.heights(True)
+    if not show_values:
+        layer = layer.showValues(False)
+    return _style(_chart_colors(layer, colors), label, None, None, alpha)
+
+
+# ---- Recording (an animation of a plot, e.g. of each step of a simulation)
+
+def plot3d_recorder(speed=10, loop=True, autoplay=True, max_frames=None):
+    """A recorder of plots: plot3d(..., record=rec) adds a frame (also without the 3D view:
+    show=False), plot3d_export(rec, file) writes the animation as HTML page (WebGL with
+    Play/Pause, a timeline, the speed). speed: frames per second."""
+    r = java.type("com.eco.bio7.spatial.PlotRecorder")().speed(float(speed)).loop(bool(loop)).autoplay(bool(autoplay))
+    if max_frames is not None:
+        r = r.maxFrames(int(max_frames))
+    return r
+
+
+def plot3d_export(recorder, file, blender=False, open=True):
+    """Exports the frames of the recorder as HTML page (WebGL animation) and opens it in
+    the browser view (open=True). blender: also as animation for Blender (a .glb file and
+    a Python script beside the page). Returns the path."""
+    import os
+    import re
+    import webbrowser
+    path = os.path.abspath(file)
+    recorder.export(path)
+    if blender:
+        recorder.exportBlender(re.sub(r"\.html?$", "", path, flags=re.IGNORECASE) + ".glb")
+    if open:
+        webbrowser.open(path)
+    return path
+
+
+def plot3d_clear():
+    """Removes the 3D plot from the 3D view."""
+    _plot3d_class().clear()
 '''

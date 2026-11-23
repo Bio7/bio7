@@ -27,6 +27,8 @@ final class GridDisplay {
 	private ImagePlus image;
 	private final AtomicBoolean pending = new AtomicBoolean();
 	private volatile Runnable again;
+	/* The grid size and the scale of the shown image (the scale is kept for the same grid) */
+	private int shownW, shownH, shownScale;
 
 	/* The image shown last for a title (of an earlier model, e.g., before a script was run again): replaced (thread of the user interface) */
 	private static final java.util.Map<String, ImagePlus> SHOWN = new java.util.HashMap<>();
@@ -77,7 +79,19 @@ final class GridDisplay {
 		}
 		again = null;
 		/* With shapes and images: a finer image (at least about 800 pixels) */
-		final int scale = drawing.isEmpty() ? Math.max(1, Math.min(16, 480 / Math.max(w, h))) : Math.max(1, Math.min(24, (int) Math.ceil(800.0 / Math.max(w, h))));
+		int wanted = drawing.isEmpty() ? Math.max(1, Math.min(16, 480 / Math.max(w, h))) : Math.max(1, Math.min(24, (int) Math.ceil(800.0 / Math.max(w, h))));
+		/*
+		 * The scale is not reduced for the same grid (e.g., a step without shapes):
+		 * else the image gets another size and its window is replaced (a new tab
+		 * flashes), the shapes are drawn in some steps only
+		 */
+		if (w == shownW && h == shownH && shownScale > wanted) {
+			wanted = shownScale;
+		}
+		shownW = w;
+		shownH = h;
+		shownScale = wanted;
+		final int scale = wanted;
 		final int iw = w * scale, ih = h * scale;
 		final int[] pixels = new int[iw * ih];
 		for (int y = 0; y < h; y++) {
@@ -122,8 +136,17 @@ final class GridDisplay {
 				Runnable r = again;
 				again = null;
 				if (r != null) {
-					/* Not in the thread of the user interface (it stays free, e.g., for the speed slider) */
-					Simulation.redisplay(r);
+					/*
+					 * Not in the thread of the user interface (it stays free, e.g., for the speed
+					 * slider). With the lock of the model (as its step and its actions): the
+					 * display doesn't read a step which is computed at the same time (half
+					 * changed values and cleared shapes: a flickering image)
+					 */
+					Simulation.redisplay(model == null ? r : () -> {
+						synchronized (model) {
+							r.run();
+						}
+					});
 				}
 			}
 		});

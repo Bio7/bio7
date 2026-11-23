@@ -46,26 +46,26 @@ public class WorkbenchPreferenceJava extends FieldEditorPreferencePage
 		 * { LabelFieldEditor labelFieldEditor = new LabelFieldEditor("Editor:",
 		 * getFieldEditorParent());
 		 * labelFieldEditor.setLabelText("Editor: Colours And Fonts");
-		 * addField(labelFieldEditor); } addField(new ColorFieldEditor("colourkey",
+		 * addField(labelFieldEditor); } addField(new com.eco.bio7.util.ThemedColorFieldEditor("colourkey",
 		 * "Colour Keywords:", getFieldEditorParent())); addField(new
 		 * FontFieldEditor("colourkeyfont", "Font:", getFieldEditorParent()));
-		 * addField(new ColorFieldEditor("colourkey1", "Colour Type:",
+		 * addField(new com.eco.bio7.util.ThemedColorFieldEditor("colourkey1", "Colour Type:",
 		 * getFieldEditorParent())); addField(new FontFieldEditor("colourkeyfont1",
 		 * "Font:", getFieldEditorParent())); addField(new
 		 * ColorFieldEditor("colourkey2", "Colour String:", getFieldEditorParent()));
 		 * addField(new FontFieldEditor("colourkeyfont2", "Font:",
-		 * getFieldEditorParent())); addField(new ColorFieldEditor("colourkey3",
+		 * getFieldEditorParent())); addField(new com.eco.bio7.util.ThemedColorFieldEditor("colourkey3",
 		 * "Colour Single Comment:", getFieldEditorParent())); addField(new
 		 * FontFieldEditor("colourkeyfont3", "Font:", getFieldEditorParent()));
-		 * //addField(new ColorFieldEditor("colourkey8", "Colour Multi-Line Comment:",
+		 * //addField(new com.eco.bio7.util.ThemedColorFieldEditor("colourkey8", "Colour Multi-Line Comment:",
 		 * getFieldEditorParent())); //addField(new FontFieldEditor("colourkeyfont8",
 		 * "Font:", getFieldEditorParent())); addField(new
 		 * ColorFieldEditor("colourkey4", "Colour Default:", getFieldEditorParent()));
 		 * addField(new FontFieldEditor("colourkeyfont4", "Font:",
-		 * getFieldEditorParent())); addField(new ColorFieldEditor("colourkey5",
+		 * getFieldEditorParent())); addField(new com.eco.bio7.util.ThemedColorFieldEditor("colourkey5",
 		 * "Operators:", getFieldEditorParent())); addField(new
 		 * FontFieldEditor("colourkeyfont5", "Font:", getFieldEditorParent()));
-		 * addField(new ColorFieldEditor("colourkey6", "Braces:",
+		 * addField(new com.eco.bio7.util.ThemedColorFieldEditor("colourkey6", "Braces:",
 		 * getFieldEditorParent())); addField(new FontFieldEditor("colourkeyfont6",
 		 * "Font:", getFieldEditorParent())); addField(new
 		 * ColorFieldEditor("colourkey7", "Numbers:", getFieldEditorParent()));

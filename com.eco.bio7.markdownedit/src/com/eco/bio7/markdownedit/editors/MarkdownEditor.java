@@ -274,52 +274,10 @@ public class MarkdownEditor extends TextEditor implements IPropertyChangeListene
 	}
 
 	public void updateIncreasedFont(float fontSize) {
-
-		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-
-		FontData f = PreferenceConverter.getFontData(store, "colourkeyfont");
-		FontData f1 = PreferenceConverter.getFontData(store, "colourkeyfont1");
-		FontData f2 = PreferenceConverter.getFontData(store, "colourkeyfont2");
-		FontData f3 = PreferenceConverter.getFontData(store, "colourkeyfont3");
-
-		/* Restrict the size! */
-		if (f.getHeight() + Math.round(fontSize) < 2) {
-			return;
-		} else if (f1.getHeight() + Math.round(fontSize) < 2) {
-			return;
-		} else if (f2.getHeight() + Math.round(fontSize) < 2) {
-			return;
-		} else if (f3.getHeight() + Math.round(fontSize) < 2) {
-			return;
+		/* From the font shown now: the editor font and the syntax fonts get the same size (see EditorFonts) */
+		if (com.eco.bio7.util.EditorFonts.zoom("com.eco.bio7.reditor.markdown.textfont", Activator.getDefault().getPreferenceStore(), Math.round(fontSize))) {
+			invalidateText();
 		}
-
-		f.setHeight(f.getHeight() + Math.round(fontSize));
-		f1.setHeight(f1.getHeight() + Math.round(fontSize));
-		f2.setHeight(f2.getHeight() + Math.round(fontSize));
-		f3.setHeight(f3.getHeight() + Math.round(fontSize));
-
-		// Font f=
-
-		// Method from:
-		// https://github.com/gkorland/Eclipse-Fonts/blob/master/Fonts/src/main/java/fonts/FontsControler.java
-		String font = storeWorkbench.getString("com.eco.bio7.reditor.markdown.textfont");
-		String[] split = font.split("\\|");
-
-		split[2] = Float.toString(f.getHeight());
-		StringBuilder builder = new StringBuilder(split[0]);
-		for (int i = 1; i < split.length; ++i) {
-			builder.append('|').append(split[i]);
-		}
-		storeWorkbench.setValue("com.eco.bio7.reditor.markdown.textfont", builder.toString());
-
-		/* Invokes a property change! */
-		PreferenceConverter.setValue(store, "colourkeyfont", f);
-		PreferenceConverter.setValue(store, "colourkeyfont1", f1);
-		PreferenceConverter.setValue(store, "colourkeyfont2", f2);
-		PreferenceConverter.setValue(store, "colourkeyfont3", f3);
-
-		invalidateText();
-
 	}
 
 	private static void goToLine(IEditorPart editorPart, int toLine) {

@@ -199,7 +199,7 @@ public class BatchModel {
 					a.setDefaultColor();
 				}
 				if (test) {
-					MessageBox messageBox = new MessageBox(new Shell(),
+					com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 							SWT.ICON_WARNING);
 					messageBox.setMessage("No errors detected!");
@@ -416,7 +416,7 @@ public class BatchModel {
 
 	private static void warning(String message) {
 		Bio7Action.stopFlow();
-		MessageBox messageBox = new MessageBox(new Shell(),
+		com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 				SWT.ICON_WARNING);
 		messageBox.setMessage(message);

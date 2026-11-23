@@ -41,7 +41,7 @@ public class OpenColorHexDialog extends Action {
 		ITextEditor editor = (ITextEditor) editore;
 		IDocumentProvider dp = editor.getDocumentProvider();
 		IDocument doc = dp.getDocument(editor.getEditorInput());
-		ColorDialog dlg = new ColorDialog(Util.getShell());
+		com.eco.bio7.util.ThemedColorDialog dlg = new com.eco.bio7.util.ThemedColorDialog(Util.getShell());
 		dlg.setText("Choose a Color");
 		/* Set some custom defined colors! */
 		/*RGB[] rgbValues = new RGB[customColorPalette.length];
