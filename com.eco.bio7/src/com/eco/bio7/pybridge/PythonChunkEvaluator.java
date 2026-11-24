@@ -103,18 +103,22 @@ public final class PythonChunkEvaluator {
 		}
 	}
 
-	/* The module of the chunks (once) */
+	/*
+	 * The module of the chunks: loaded once and again if its source changed (e.g.,
+	 * a new version of Bio7 with a running Python of the workspace)
+	 */
 	private static void load(PySession py) throws PyException, IOException {
-		PyValue loaded = py.eval("'_bio7chunk' in __import__('sys').modules");
-		if (loaded instanceof PyValue.Array a && a.getDouble(0) != 0) {
-			return;
-		}
 		String source;
 		try (InputStream in = PythonChunkEvaluator.class.getResourceAsStream("python_chunk.py")) {
 			source = new String(in.readAllBytes(), StandardCharsets.UTF_8);
 		}
+		String version = Integer.toHexString(source.hashCode());
+		PyValue loaded = py.eval("getattr(__import__('sys').modules.get('_bio7chunk'), '_bio7_version', None) == '" + version + "'");
+		if (loaded instanceof PyValue.Array a && a.getDouble(0) != 0) {
+			return;
+		}
 		py.assign("_bio7_src", PyValue.of(source));
 		py.exec("import types as _t, sys as _s\n_m = _t.ModuleType('_bio7chunk')\nexec(compile(_bio7_src, '<_bio7chunk>', 'exec'), _m.__dict__)\n"
-				+ "_s.modules['_bio7chunk'] = _m\ndel _t, _s, _m, _bio7_src");
+				+ "_m._bio7_version = '" + version + "'\n_s.modules['_bio7chunk'] = _m\ndel _t, _s, _m, _bio7_src");
 	}
 }

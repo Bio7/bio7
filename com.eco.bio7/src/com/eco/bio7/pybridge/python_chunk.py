@@ -29,6 +29,31 @@ def _figures():
     return {m.num: m.canvas.figure for m in Gcf.get_all_fig_managers()}
 
 
+def _hide_figures():
+    """Removes the open figures from pyplot (not closed); returns them (number: figure) in their order."""
+    if "matplotlib.pyplot" not in sys.modules:
+        return {}
+    from matplotlib._pylab_helpers import Gcf
+    hidden = dict(Gcf.figs)
+    Gcf.figs.clear()
+    return {n: m.canvas.figure for n, m in hidden.items()}
+
+
+def _restore_figures(hidden):
+    """Puts the figures set aside back into pyplot (the last one is the current figure again)."""
+    if not hidden:
+        return
+    from matplotlib._pylab_helpers import Gcf
+    import matplotlib.pyplot as plt
+    # A figure of the chunk which is still open with the number of a former figure: closed
+    for n in hidden:
+        m = Gcf.figs.get(n)
+        if m is not None:
+            plt.close(m.canvas.figure)
+    for n, f in hidden.items():
+        Gcf.figs[n] = f.canvas.manager
+
+
 def run(code, folder, width, height, dpi, embed=False):
     """Runs the code of a chunk; returns 'error' or 'ok'.
 
@@ -38,7 +63,15 @@ def run(code, folder, width, height, dpi, embed=False):
     folder/chartNNN.html, else shown in the browser view of Bio7.
     """
     bio7 = sys.modules["_bio7"]
-    before = _figures()
+    # The open figures (e.g., of a script before, in the plot view) are set aside while the chunk
+    # runs: as in a notebook, a chunk starts without a current figure (plt.plot() draws into a new
+    # figure, not into the figure of the script before). A chunk can still change such a figure by
+    # its object (e.g., fig.axes[0]); only a change marks it as stale (a figure stays stale until
+    # it is drawn again).
+    hidden = _hide_figures()
+    was_stale = {n: f._stale for n, f in hidden.items()}
+    for f in hidden.values():
+        f._stale = False
     out = io.StringIO()
     error = False
     charts = []
@@ -93,25 +126,30 @@ def run(code, folder, width, height, dpi, embed=False):
                 out.write("[Interactive %s chart: shown in the Browser view]\n" % kind)
             except Exception as e:
                 out.write("The chart could not be shown: %s\n" % e)
-    # The new figures and the changed figures of the plot view
-    after = _figures()
-    plots = [n for n, f in after.items() if n not in before or before[n] is not f or f.stale]
-    if plots:
-        import matplotlib.pyplot as plt
-        default = tuple(plt.rcParams["figure.figsize"])
-        for i, n in enumerate(sorted(plots)):
-            fig = after[n]
-            try:
-                new = n not in before
-                if new and tuple(fig.get_size_inches()) == default:
-                    # Without an explicit figsize: the size of the plots of the editor
-                    fig.set_size_inches(width / 96.0, height / 96.0)
-                fig.savefig(os.path.join(folder, "plot%03d.png" % (i + 1)), dpi=dpi, facecolor="white")
-                if new:
-                    # As in a notebook: the figure belongs to the chunk
-                    plt.close(fig)
-            except Exception:
-                out.write(traceback.format_exc())
+    # The changed figures of the plot view and the new figures of the chunk
+    try:
+        changed = [f for f in hidden.values() if f.stale]
+        plots = [(f, False) for f in changed] + [(f, True) for _, f in sorted(_figures().items())]
+        if plots:
+            import matplotlib.pyplot as plt
+            default = tuple(plt.rcParams["figure.figsize"])
+            for i, (fig, new) in enumerate(plots):
+                try:
+                    if new and tuple(fig.get_size_inches()) == default:
+                        # Without an explicit figsize: the size of the plots of the editor
+                        fig.set_size_inches(width / 96.0, height / 96.0)
+                    fig.savefig(os.path.join(folder, "plot%03d.png" % (i + 1)), dpi=dpi, facecolor="white")
+                    if new:
+                        # As in a notebook: the figure belongs to the chunk
+                        plt.close(fig)
+                except Exception:
+                    out.write(traceback.format_exc())
+    finally:
+        _restore_figures(hidden)
+    for n, f in hidden.items():
+        if not f.stale and was_stale.get(n):
+            f._stale = True
+    if changed:
         try:
             # The changed figures of the plot view are drawn again
             bio7._flush()
