@@ -492,7 +492,7 @@ public class SimulationRecorder {
 		}
 		r.append("],\"data\":\"").append(blob.compressed()).append("\"}");
 		HtmlSimulation sim = new HtmlSimulation(title).description(description).view(view).colorMap(colorMap).speed(speed).background(background).autoplay(autoplay)
-				.checkbox("loop", "Loop (play again from the start)", loop).timeline(frames.size()).code(PLAYER.replace("/*RECORDING*/", r.toString()));
+				.checkbox("loop", "Loop (play again from the start)", loop).timeline(frames.size()).code(PlotHtml.INFLATE_JS + PLAYER.replace("/*RECORDING*/", r.toString()));
 		if (chartTitle != null) {
 			sim.chart(chartTitle);
 		}
@@ -535,7 +535,8 @@ public class SimulationRecorder {
 	/*
 	 * The binary data of the frames: the arrays are appended (aligned to 4 bytes
 	 * for the floats) and referenced with [offset, length], the block is
-	 * compressed (zlib, DecompressionStream('deflate') of the web browser).
+	 * compressed (zlib: the DecompressionStream of the web browser or the decoder
+	 * of the page, see PlotHtml.INFLATE_JS).
 	 */
 	private static final class Blob {
 		private final java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream(1 << 20);
@@ -598,8 +599,7 @@ public class SimulationRecorder {
 			async function prepare(sim) {
 			  const s = atob(REC.data), z = new Uint8Array(s.length);
 			  for (let i = 0; i < s.length; i++) z[i] = s.charCodeAt(i);
-			  const stream = new Blob([z]).stream().pipeThrough(new DecompressionStream('deflate'));
-			  DATA = await new Response(stream).arrayBuffer();
+			  DATA = (await bio7Unzip(z)).buffer;
 			}
 			function bytes(ref) { return new Uint8Array(DATA, ref[0], ref[1]); }
 			/* The 16 bit values of the range [ref[2], ref[3]] as floats (65535 = NaN) */

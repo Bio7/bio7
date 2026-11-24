@@ -35,7 +35,7 @@ final class PlotHtml {
 
 	/* The page with the data of the frames ({"frames": [...]} or {"data": compressed frames, ...}) */
 	static String page(String data, String title) {
-		String page = TEMPLATE.replace("/*DATA*/", data);
+		String page = TEMPLATE.replace("/*DATA*/", data).replace("/*INFLATE*/", INFLATE_JS);
 		return page.replace("<title></title>", "<title>" + escape(title != null ? title.split("\n")[0] : "3D Plot") + "</title>");
 	}
 
@@ -255,6 +255,109 @@ final class PlotHtml {
 	}
 
 	/* The WebGL viewer (the data replaces the DATA comment) */
+	/**
+	 * The JavaScript function bio7Unzip(bytes) of the exported pages: unpacks zlib
+	 * data (RFC 1950/1951) with the DecompressionStream of the browser or, if the
+	 * browser has none (e.g., an older WebKit, the browser view of some systems),
+	 * with an own decoder (the decoding of the Huffman codes as in puff.c of zlib
+	 * by M. Adler). Returns a Uint8Array (a Promise).
+	 */
+	public static final String INFLATE_JS = """
+			/* zlib data (RFC 1950/1951): the DecompressionStream of the browser or, without it, the decoder below */
+			async function bio7Unzip(z) {
+			  if (typeof DecompressionStream !== 'undefined') {
+			    try { return new Uint8Array(await new Response(new Blob([z]).stream().pipeThrough(new DecompressionStream('deflate'))).arrayBuffer()); }
+			    catch (e) { /* the decoder below */ }
+			  }
+			  return bio7Inflate(z);
+			}
+			/* A decoder of RFC 1950/1951: the decoding of the Huffman codes as in puff.c of zlib (M. Adler) */
+			function bio7Inflate(src) {
+			  let pos = 2, bitBuf = 0, bitCnt = 0, n = 0, out = new Uint8Array(Math.max(1024, src.length * 4));
+			  if (src[1] & 0x20) pos += 4;
+			  const need = function (k) { if (n + k > out.length) { const o = new Uint8Array(Math.max(out.length * 2, n + k)); o.set(out.subarray(0, n)); out = o; } };
+			  const bits = function (k) {
+			    while (bitCnt < k) { if (pos >= src.length) throw new Error('The compressed data ends too early'); bitBuf |= src[pos++] << bitCnt; bitCnt += 8; }
+			    const v = bitBuf & ((1 << k) - 1); bitBuf >>>= k; bitCnt -= k; return v;
+			  };
+			  /* A canonical Huffman code: the number of codes of each length and the symbols in the order of the codes */
+			  const table = function (lengths) {
+			    const counts = new Uint16Array(16), offsets = new Uint16Array(16), symbols = new Uint16Array(lengths.length);
+			    for (let i = 0; i < lengths.length; i++) counts[lengths[i]]++;
+			    counts[0] = 0;
+			    for (let l = 1; l < 16; l++) offsets[l] = offsets[l - 1] + counts[l - 1];
+			    for (let i = 0; i < lengths.length; i++) if (lengths[i]) symbols[offsets[lengths[i]]++] = i;
+			    return { counts: counts, symbols: symbols };
+			  };
+			  const decode = function (h) {
+			    let code = 0, first = 0, index = 0;
+			    for (let l = 1; l < 16; l++) {
+			      code |= bits(1);
+			      const c = h.counts[l];
+			      if (code - first < c) return h.symbols[index + code - first];
+			      index += c; first = (first + c) << 1; code <<= 1;
+			    }
+			    throw new Error('An invalid code in the compressed data');
+			  };
+			  const LBASE = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258];
+			  const LEXT = [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0];
+			  const DBASE = [1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577];
+			  const DEXT = [0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13];
+			  const ORDER = [16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15];
+			  let fixedL = null, fixedD = null, last = 0;
+			  do {
+			    last = bits(1);
+			    const type = bits(2);
+			    if (type === 0) {
+			      /* A stored block: the bytes as they are (after the end of the current byte) */
+			      bitBuf = 0; bitCnt = 0;
+			      const len = src[pos] | (src[pos + 1] << 8);
+			      pos += 4; need(len); out.set(src.subarray(pos, pos + len), n); n += len; pos += len;
+			      continue;
+			    }
+			    let lt, dt;
+			    if (type === 1) {
+			      if (!fixedL) {
+			        const l = new Uint8Array(288); l.fill(8, 0, 144); l.fill(9, 144, 256); l.fill(7, 256, 280); l.fill(8, 280, 288);
+			        fixedL = table(l); fixedD = table(new Uint8Array(30).fill(5));
+			      }
+			      lt = fixedL; dt = fixedD;
+			    } else if (type === 2) {
+			      const nlen = bits(5) + 257, ndist = bits(5) + 1, ncode = bits(4) + 4, cl = new Uint8Array(19);
+			      for (let i = 0; i < ncode; i++) cl[ORDER[i]] = bits(3);
+			      const ct = table(cl), lens = new Uint8Array(nlen + ndist);
+			      for (let i = 0; i < nlen + ndist;) {
+			        const sym = decode(ct);
+			        if (sym < 16) { lens[i++] = sym; continue; }
+			        let rep, val = 0;
+			        if (sym === 16) { if (i === 0) throw new Error('Invalid code lengths'); val = lens[i - 1]; rep = 3 + bits(2); }
+			        else if (sym === 17) rep = 3 + bits(3);
+			        else rep = 11 + bits(7);
+			        if (i + rep > nlen + ndist) throw new Error('Invalid code lengths');
+			        while (rep-- > 0) lens[i++] = val;
+			      }
+			      lt = table(lens.subarray(0, nlen)); dt = table(lens.subarray(nlen));
+			    } else {
+			      throw new Error('An invalid block of the compressed data');
+			    }
+			    for (;;) {
+			      let sym = decode(lt);
+			      if (sym < 256) { need(1); out[n++] = sym; continue; }
+			      if (sym === 256) break;
+			      sym -= 257;
+			      if (sym >= 29) throw new Error('An invalid length in the compressed data');
+			      const len = LBASE[sym] + bits(LEXT[sym]), ds = decode(dt);
+			      if (ds >= 30) throw new Error('An invalid distance in the compressed data');
+			      const dist = DBASE[ds] + bits(DEXT[ds]);
+			      if (dist > n) throw new Error('An invalid distance in the compressed data');
+			      need(len);
+			      for (let k = 0; k < len; k++) { out[n] = out[n - dist]; n++; }
+			    }
+			  } while (!last);
+			  return out.slice(0, n);
+			}
+			""";
+
 	private static final String TEMPLATE = """
 			<!DOCTYPE html>
 			<html>
@@ -542,13 +645,14 @@ final class PlotHtml {
 			canvas.addEventListener('touchend', function () { drag = null; });
 			window.addEventListener('resize', redraw);
 
+			/*INFLATE*/
 			/* The frames (a recording, see PlotRecorder): Play/Pause, the timeline, the speed and a loop */
 			let FRAMES = [], frameIndex = 0, playing = false, last = 0, acc = 0;
 			async function load() {
 			  if (!PLOT.data) return PLOT.frames;
 			  const s = atob(PLOT.data), z = new Uint8Array(s.length);
 			  for (let i = 0; i < s.length; i++) z[i] = s.charCodeAt(i);
-			  const text = await new Response(new Blob([z]).stream().pipeThrough(new DecompressionStream('deflate'))).text();
+			  const text = new TextDecoder().decode(await bio7Unzip(z));
 			  return JSON.parse(text);
 			}
 			function showFrame(k) {
