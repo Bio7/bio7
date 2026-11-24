@@ -72,6 +72,9 @@ final class GridDisplay {
 		if (w <= 0 || h <= 0) {
 			return;
 		}
+		if (model != null) {
+			inputModel = model;
+		}
 		java.util.List<Shape> drawing = model == null ? java.util.List.of() : model.getDrawing();
 		if (!pending.compareAndSet(false, true)) {
 			again = redo;
@@ -131,6 +134,7 @@ final class GridDisplay {
 					image.setProcessor(new ColorProcessor(iw, ih, pixels));
 					image.updateAndDraw();
 				}
+				listen(image);
 			} finally {
 				pending.set(false);
 				Runnable r = again;
@@ -183,5 +187,156 @@ final class GridDisplay {
 
 	ImagePlus getImage() {
 		return image;
+	}
+
+	/* ----- The input of the image: clicks, drags and keys for the model ----- */
+
+	/* The model which gets the input */
+	private volatile Simulation inputModel;
+	/* The canvas with the listeners, its key listeners of ImageJ (removed while the model gets the keys) */
+	private org.eclipse.swt.widgets.Control listened;
+	private org.eclipse.swt.widgets.Listener[] imageJKeys;
+	private boolean imageJMouseOff;
+
+	/* The listeners on the canvas of the image (a new image: a new canvas; in the thread of the user interface) */
+	private void listen(ImagePlus imp) {
+		ij.gui.ImageCanvas canvas = imp.getCanvas();
+		Simulation model = inputModel;
+		if (canvas == null || canvas.isDisposed() || model == null) {
+			return;
+		}
+		if (canvas != listened) {
+			listened = canvas;
+			imageJKeys = null;
+			imageJMouseOff = false;
+			Input in = new Input(canvas);
+			canvas.addListener(org.eclipse.swt.SWT.MouseDown, in);
+			canvas.addListener(org.eclipse.swt.SWT.MouseMove, in);
+			canvas.addListener(org.eclipse.swt.SWT.MouseUp, in);
+			canvas.addListener(org.eclipse.swt.SWT.KeyDown, in);
+		}
+		/*
+		 * A model with click() or drag(): the mouse is not used by the tools of ImageJ
+		 * in this image (no selections while painting; the wheel still zooms)
+		 */
+		if (!imageJMouseOff && (model.handles("click") || model.handles("drag"))) {
+			imageJMouseOff = true;
+			for (int type : new int[] { org.eclipse.swt.SWT.MouseDown, org.eclipse.swt.SWT.MouseUp, org.eclipse.swt.SWT.MouseMove, org.eclipse.swt.SWT.MouseDoubleClick }) {
+				for (org.eclipse.swt.widgets.Listener l : canvas.getListeners(type)) {
+					if (!(l instanceof Input)) {
+						canvas.removeListener(type, l);
+					}
+				}
+			}
+		}
+		/* A model with key(): the keys are not shortcuts of ImageJ in this image */
+		if (imageJKeys == null && model.handles("key")) {
+			imageJKeys = canvas.getListeners(org.eclipse.swt.SWT.KeyDown);
+			for (org.eclipse.swt.widgets.Listener k : imageJKeys) {
+				if (!(k instanceof Input)) {
+					canvas.removeListener(org.eclipse.swt.SWT.KeyDown, k);
+				}
+			}
+		}
+	}
+
+	/* The position of the mouse in cells of the grid (null: outside) */
+	private double[] cell(ij.gui.ImageCanvas canvas, int mx, int my) {
+		ImagePlus imp = image;
+		int w = shownW, h = shownH;
+		if (imp == null || w <= 0 || h <= 0) {
+			return null;
+		}
+		double scale = imp.getWidth() / (double) w;
+		double x = canvas.offScreenXD(mx) / scale, y = canvas.offScreenYD(my) / scale;
+		return x >= 0 && y >= 0 && x < w && y < h ? new double[] { x, y } : null;
+	}
+
+	/* Clicks (without a drag), drags with the left button (each new cell), keys (in the thread of the user interface) */
+	private final class Input implements org.eclipse.swt.widgets.Listener {
+		private final ij.gui.ImageCanvas canvas;
+		private double[] pressed;
+		private boolean dragging;
+		private int lastX, lastY, pressX, pressY;
+
+		Input(ij.gui.ImageCanvas canvas) {
+			this.canvas = canvas;
+		}
+
+		@Override
+		public void handleEvent(org.eclipse.swt.widgets.Event e) {
+			Simulation m = inputModel;
+			if (m == null) {
+				return;
+			}
+			switch (e.type) {
+			case org.eclipse.swt.SWT.MouseDown -> {
+				pressed = e.button == 1 ? cell(canvas, e.x, e.y) : null;
+				pressX = e.x;
+				pressY = e.y;
+				dragging = false;
+			}
+			case org.eclipse.swt.SWT.MouseMove -> {
+				if (pressed == null || (e.stateMask & org.eclipse.swt.SWT.BUTTON1) == 0 || !m.handles("drag")) {
+					return;
+				}
+				if (!dragging && Math.abs(e.x - pressX) <= 2 && Math.abs(e.y - pressY) <= 2) {
+					return;
+				}
+				double[] c = cell(canvas, e.x, e.y);
+				if (!dragging) {
+					/* The first cell: where the drag started */
+					dragging = true;
+					lastX = (int) pressed[0];
+					lastY = (int) pressed[1];
+					m.input("drag", pressed[0], pressed[1], null, false);
+				}
+				if (c != null && ((int) c[0] != lastX || (int) c[1] != lastY)) {
+					lastX = (int) c[0];
+					lastY = (int) c[1];
+					m.input("drag", c[0], c[1], null, false);
+				}
+			}
+			case org.eclipse.swt.SWT.MouseUp -> {
+				if (pressed != null && !dragging && e.button == 1) {
+					double[] c = cell(canvas, e.x, e.y);
+					if (c != null) {
+						m.input("click", c[0], c[1], null, false);
+					}
+				}
+				pressed = null;
+				dragging = false;
+			}
+			case org.eclipse.swt.SWT.KeyDown -> {
+				if ((e.stateMask & (org.eclipse.swt.SWT.CTRL | org.eclipse.swt.SWT.COMMAND)) != 0 || !m.handles("key")) {
+					return;
+				}
+				String key = Simulation.keyName(e.character, special(e.keyCode));
+				if (key != null) {
+					m.input("key", 0, 0, key, false);
+					e.doit = false;
+				}
+			}
+			default -> {
+			}
+			}
+		}
+	}
+
+	/* The names of the special keys (as JavaScript), "" for modifier keys */
+	private static String special(int code) {
+		return switch (code) {
+		case org.eclipse.swt.SWT.ARROW_LEFT -> "ArrowLeft";
+		case org.eclipse.swt.SWT.ARROW_RIGHT -> "ArrowRight";
+		case org.eclipse.swt.SWT.ARROW_UP -> "ArrowUp";
+		case org.eclipse.swt.SWT.ARROW_DOWN -> "ArrowDown";
+		case org.eclipse.swt.SWT.CR, org.eclipse.swt.SWT.KEYPAD_CR -> "Enter";
+		case org.eclipse.swt.SWT.ESC -> "Escape";
+		case org.eclipse.swt.SWT.BS -> "Backspace";
+		case org.eclipse.swt.SWT.DEL -> "Delete";
+		case org.eclipse.swt.SWT.TAB -> "Tab";
+		case org.eclipse.swt.SWT.SHIFT, org.eclipse.swt.SWT.CTRL, org.eclipse.swt.SWT.ALT, org.eclipse.swt.SWT.COMMAND, org.eclipse.swt.SWT.CAPS_LOCK -> "";
+		default -> null;
+		};
 	}
 }

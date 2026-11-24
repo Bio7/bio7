@@ -33,7 +33,7 @@ final class Assets {
 		return o instanceof BufferedImage b ? b : null;
 	}
 
-	/** The glTF model of a file (null if it can't be read). */
+	/** The 3D model of a file (glTF; OBJ and STL converted; null if it can't be read). */
 	static Gltf model(String file) {
 		Object o = load(file, false);
 		return o instanceof Gltf g ? g : null;
@@ -51,7 +51,7 @@ final class Assets {
 		}
 		Object value = null;
 		try {
-			value = image ? javax.imageio.ImageIO.read(f) : Gltf.load(f);
+			value = image ? javax.imageio.ImageIO.read(f) : ModelConverter.converted(file) ? Gltf.parse(ModelConverter.glb(f), f.getAbsoluteFile().getParentFile()) : Gltf.load(f);
 		} catch (Exception ex) {
 			System.err.println("The " + (image ? "image" : "3D model") + " " + file + " could not be read: " + ex.getMessage());
 		}

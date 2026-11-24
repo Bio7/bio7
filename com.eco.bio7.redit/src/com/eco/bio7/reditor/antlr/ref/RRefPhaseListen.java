@@ -750,6 +750,13 @@ public class RRefPhaseListen extends RBaseListener {
 		if (isMemberCall(ctx.expr())) {
 			return;
 		}
+		/*
+		 * A function of a package called with pkg::f or pkg:::f: the call names the
+		 * package (it needs not to be attached), not a missing function
+		 */
+		if (ctx.expr().getText().contains("::")) {
+			return;
+		}
 
 		/* Return number of args and names after function call! */
 		RSymbol meth = currentScope.resolve(funcName);

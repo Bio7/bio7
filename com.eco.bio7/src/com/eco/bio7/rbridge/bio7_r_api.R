@@ -62,6 +62,36 @@ local({
 
   # ------------------------------------------------------------------ Python
 
+  env$bio7_progress <- function(done, total = NULL, text = "") {
+    "Shows the progress of the running code in Bio7 (a job in the status bar and the Progress view, its stop button interrupts R), e.g. bio7_progress(i, length(files), basename(f)) in a loop. The job ends when done reaches total (or with bio7_progress_end())."
+    call("progress", c("progress", as.character(done), if (is.null(total)) "" else as.character(total), as.character(text)), NULL)
+    invisible(NULL)
+  }
+  env$bio7_progress_end <- function() {
+    "Ends the job of bio7_progress (e.g., after an interrupted loop)."
+    call("progress_end", "progress", NULL)
+    invisible(NULL)
+  }
+  task_count <- 0
+  env$bio7_task <- function(text, total = NULL) {
+    "A task with progress (a job of its own in the Progress view, its stop button interrupts R):
+    t <- bio7_task(\"Bootstrap\", total = 200); then t$update() for one step (t$update(n, text)
+    for more steps or a new text) and t$done() at the end (the job also ends when total is reached)."
+    task_count <<- task_count + 1
+    key <- paste0("task", task_count)
+    count <- 0
+    total_text <- if (is.null(total)) "" else as.character(total)
+    call("progress", c(key, "0", total_text, as.character(text)), NULL)
+    list(update = function(n = 1, text = NULL) {
+           count <<- count + n
+           call("progress", c(key, as.character(count), total_text, if (is.null(text)) "" else as.character(text)), NULL)
+           invisible(count)
+         },
+         done = function() {
+           call("progress_end", key, NULL)
+           invisible(NULL)
+         })
+  }
   env$bio7_python <- function(code) {
     "Runs Python code in the embedded Python (the workspace of the Python console):
     the value of a last expression converted to R (numbers, arrays, lists, dicts,

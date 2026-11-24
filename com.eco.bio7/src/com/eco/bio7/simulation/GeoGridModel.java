@@ -273,7 +273,7 @@ public abstract class GeoGridModel extends GridModel {
 			load();
 			loaded = true;
 			/* showOnGlobe() in load(): the globe and its options in the Custom perspective */
-			if (onGlobe && arrangeViews && Simulation.hasDisplay()) {
+			if (onGlobe && arrangeViews && Simulation.hasDisplay() && !headless) {
 				if (org.eclipse.swt.widgets.Display.getCurrent() != null) {
 					SimulationLayout.arrange(this);
 				} else {
@@ -284,7 +284,7 @@ public abstract class GeoGridModel extends GridModel {
 		cells = new int[width * height];
 		next = new int[width * height];
 		if (onGlobe) {
-			if (!arrangeViews) {
+			if (!arrangeViews && !headless) {
 				GlobeDisplay.open();
 			}
 			flown = false;
@@ -403,6 +403,7 @@ public abstract class GeoGridModel extends GridModel {
 
 	@Override
 	protected void display() {
+		showAgents();
 		double[] v = shownValues;
 		if (onGlobe) {
 			displayOnGlobe(v);

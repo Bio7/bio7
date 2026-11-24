@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2004-2019 M. Austenfeld
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * Copyright (c) 2007-2026 M. Austenfeld
+ *
+ * This program and the accompanying materials are made available under
+ * the terms of the Eclipse Public License 2.0 which is available at
+ * https://www.eclipse.org/legal/epl-2.0
  *
  * Contributors:
- *     M. Austenfeld
+ * Marcel Austenfeld - initial API and implementation
  *******************************************************************************/
 package com.eco.bio7.ijmacro.editor.toolbar.debug;
 
@@ -18,118 +18,67 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.source.IVerticalRulerInfo;
-import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.Window;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorActionDelegate;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractRulerActionDelegate;
-import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
+
 import com.eco.bio7.util.Util;
 
-public class ToggleDebugConditionalBreakpointAction extends AbstractRulerActionDelegate
-		implements IEditorActionDelegate {
+/**
+ * The ruler action "Breakpoint Properties..." of the ImageJ macro editor (as in
+ * the R and Python editors): the condition of the breakpoint of the line (a new
+ * breakpoint if there is none).
+ */
+public class ToggleDebugConditionalBreakpointAction extends AbstractRulerActionDelegate implements IEditorActionDelegate {
 
-	private class ToggleBreakpointAction extends Action {
+	private static class PropertiesAction extends Action {
 
-		private final IVerticalRulerInfo mRulerInfo;
-		private final ITextEditor mEditor;
-		private int startline;
-		private int stopline;
+		private final IVerticalRulerInfo rulerInfo;
+		private final ITextEditor editor;
 
-		public ToggleBreakpointAction(ITextEditor editor, IVerticalRulerInfo rulerInfo) {
-			super("Toggle conditional line breakpoint");
-			mEditor = editor;
-			mRulerInfo = rulerInfo;
+		PropertiesAction(ITextEditor editor, IVerticalRulerInfo rulerInfo) {
+			super("Breakpoint Properties...");
+			this.editor = editor;
+			this.rulerInfo = rulerInfo;
 		}
 
 		@Override
 		public void run() {
-
-			String rDebugExpression = null;
-			IEditorPart editore = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-					.getActiveEditor();
-
-			//InputDialog dlg = new InputDialog(Util.getShell(), "", "Enter Expressions:  e.g. 'if(x==5) browser()'", "", null);
-			//if (dlg.open() == Window.OK) {
-
-			//rDebugExpression = dlg.getValue();
-			SetDebugBreakpointMacroValueDialog dialog = new SetDebugBreakpointMacroValueDialog(
-					Util.getShell(), "Set Expression",null);
-
-			
-
-				IResource resource = (IResource) editore.getEditorInput().getAdapter(IResource.class);
-				if (resource != null) {
-					try {
-
-						ITextEditor editor = (ITextEditor) editore;
-						ISelectionProvider sp = editor.getSelectionProvider();
-
-						IDocumentProvider provider = mEditor.getDocumentProvider();
-
-						ITextSelection selection = null;
-						try {
-							int line = mRulerInfo.getLineOfLastMouseButtonActivity();
-
-							provider.connect(this);
-							IDocument document = provider.getDocument(mEditor.getEditorInput());
-							IRegion region = document.getLineInformation(line);
-							selection = new TextSelection(document, region.getOffset(), region.getLength());
-						} catch (CoreException e1) {
-						} catch (BadLocationException e) {
-						} finally {
-							provider.disconnect(this);
-						}
-
-						if (selection != null && !selection.isEmpty()) {
-
-							startline = selection.getStartLine() + 1;
-							stopline = selection.getEndLine() + 1;
-							
-							// get the new values from the dialog
-							if (dialog.open() == Window.OK) {
-
-								String name = dialog.getName();
-								String value = dialog.getValue();
-								String operator = dialog.getOperator();
-
-								rDebugExpression = name + " " + operator + " " + value;
-							}
-
-							else {
-								return;
-							}
-
-							IMarker marker;
-
-							marker = resource.createMarker("com.eco.bio7.ijmacro.editor.debugrulermark");
-							marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
-							marker.setAttribute(IMarker.LINE_NUMBER, new Integer(startline));
-							marker.setAttribute(IMarker.MESSAGE, rDebugExpression);
-							marker.setAttribute(IMarker.LOCATION, "" + startline);
-							/* Mark it as a breakpoint with expression! */
-							marker.setAttribute(IMarker.TEXT, "EXPRESSION");
-
-						}
-
-					} catch (CoreException e) {
-
-					}
+			IResource resource = editor.getEditorInput().getAdapter(IResource.class);
+			IDocument doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
+			int line = rulerInfo.getLineOfLastMouseButtonActivity() + 1;
+			if (resource == null || doc == null || line <= 0 || line > doc.getNumberOfLines()) {
+				return;
+			}
+			try {
+				IMarker old = ToggleDebugBreakpointAction.markerAt(resource, line);
+				String expression = old == null ? null : old.getAttribute(IMarker.MESSAGE, null);
+				String code = "";
+				try {
+					IRegion r = doc.getLineInformation(line - 1);
+					code = doc.get(r.getOffset(), r.getLength()).strip();
+				} catch (BadLocationException e) {
+					/* No code */
 				}
-
-			
-
+				String info = "Line " + line + (code.isEmpty() ? "" : ": " + (code.length() > 70 ? code.substring(0, 70) + "…" : code));
+				SetDebugBreakpointMacroValueDialog d = new SetDebugBreakpointMacroValueDialog(Util.getShell(), "Breakpoint Properties", expression, info);
+				if (d.open() != Window.OK) {
+					return;
+				}
+				if (old != null) {
+					old.delete();
+				}
+				ToggleDebugBreakpointAction.create(resource, line, d.getExpression());
+			} catch (CoreException e) {
+				/* Not changed */
+			}
 		}
 	}
 
 	@Override
 	protected IAction createAction(ITextEditor editor, IVerticalRulerInfo rulerInfo) {
-		return new ToggleBreakpointAction(editor, rulerInfo);
+		return new PropertiesAction(editor, rulerInfo);
 	}
 }

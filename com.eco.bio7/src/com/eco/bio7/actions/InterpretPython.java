@@ -30,8 +30,6 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 import com.eco.bio7.Bio7Plugin;
-import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.console.ConsolePageParticipant;
 import com.eco.bio7.rcp.StartBio7Utils;
 
 public class InterpretPython extends Action {
@@ -71,12 +69,9 @@ public class InterpretPython extends Action {
 
 			String a = doc.get();
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-			boolean extraProcess = store.getBoolean("python_process_extra");
 			String pathPython = store.getString("python_pipe_path");
 
 			{
-				String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
-
 				if (editor.isDirty()) {
 					editor.doSave(new NullProgressMonitor());
 				}
@@ -97,44 +92,8 @@ public class InterpretPython extends Action {
 					}
 					return;
 				}
-				{
-
-					boolean python3x = store.getBoolean("python_3x");
-					if (python3x == false) {
-						if (extraProcess == false) {
-							/* Execute in Bio7 Python Shell! */
-							if (selectionConsole.equals("Python")) {
-								ConsolePageParticipant.pipeInputToConsole("execfile('" + loc + "')", true, true);
-								ConsolePageParticipant.pipeInputToConsole("", true, true);
-							} else {
-
-								Bio7Dialog.message("Please start the \"Native Python\" Shell in the Bio7 console!");
-							}
-						} else {
-							/* Execute in seperate process! */
-							executePythonProcess(pathPython, loc);
-						}
-					} else {
-						if (extraProcess == false) {
-							/* Execute in Bio7 Python Shell! */
-							if (selectionConsole.equals("Python")) {
-								ConsolePageParticipant.pipeInputToConsole(
-
-										"exec(compile(open('" + loc + "').read(),'" + loc + "', 'exec'))", true, true);
-							} else {
-
-								Bio7Dialog.message("Please start the \"Native Python\" Shell in the Bio7 console!");
-							}
-						} else {
-							/* Execute in seperate process! */
-
-							executePythonProcess(pathPython, loc);
-						}
-					}
-
-				}
-
-
+				/* Otherwise the script runs in a separate Python process (python_pipe_path). */
+				executePythonProcess(pathPython, loc);
 			}
 		}
 

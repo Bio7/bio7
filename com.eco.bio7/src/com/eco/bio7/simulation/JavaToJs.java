@@ -128,12 +128,14 @@ public class JavaToJs {
 	private static final Set<String> API_METHODS = Set.of("init", "step", "seed", "random", "randomInt", "chart", "size", "palette", "get", "set", "setNext", "swap", "countNeighbors", "count", "box", "range", "colorMap", "sum4", "sum8", "mean", "chance", "randomGaussian", "randomExponential", "randomPoisson",
 			"randomElement", "shuffle", "count4", "laplacian", "distance", "neighbors", "nearest", "keepInBox", "wrapInBox", "layer", "showValues", "showStates", "colAt",
 			"rowAt", "lon", "lat", "gradient", "slopeDegrees", "value", "load", "grid", "raster", "vector", "addLayer", "area", "distanceKm", "move", "moveTowards",
-			"neighborsKm", "showOnGlobe", "cosLat", "cosDeg", "sinDeg", "attribution", "randomAt", "drawLine", "drawLine3", "drawPath", "drawPolygon", "drawCircle", "drawRect", "drawText", "drawImage", "drawPillar", "placeModel", "removeModel", "clearModels","loadImage", "loadModel", "chartXY", "chartBars", "dot", "norm", "matMul", "matVec", "transpose", "solve", "inverse", "determinant", "linearRegression", "correlation", "quantile", "median", "normalPdf", "normalCdf", "noise", "fractalNoise", "headingOf", "randomBinomial", "randomWeighted");
+			"neighborsKm", "showOnGlobe", "cosLat", "cosDeg", "sinDeg", "attribution", "randomAt", "cameraFollow", "links", "neighborPairs", "drawLine", "drawLine3", "drawPath", "drawPolygon", "drawCircle", "drawRect", "drawText", "record", "stop", "isStopped", "addAgent", "removeAgent", "forward", "moveTo", "face", "agentDistance", "agentsAt", "countAgentsAt", "agentsNear", "index", "link", "unlink", "removeLinks", "clearLinks", "linked", "linkNeighbors", "degree", "linkColorOf", "setLinkColor", "getLinks", "linkCount", "linkRandom", "linkSmallWorld", "linkScaleFree", "linkNearby", "components", "shortestPath", "clustering", "layoutCircle", "layoutSpring", "drawImage", "drawPillar", "drawPoint3", "drawPath3", "drawBox", "drawSphere", "drawPolygon3", "placeModel", "removeModel", "clearModels","loadImage", "loadModel", "chartXY", "chartBars", "dot", "norm", "matMul", "matVec", "transpose", "solve", "inverse", "determinant", "linearRegression", "correlation", "quantile", "median", "normalPdf", "normalCdf", "noise", "fractalNoise", "headingOf", "randomBinomial", "randomWeighted");
 
 	private final List<String> errors = new ArrayList<>();
 	private final List<String> warnings = new ArrayList<>();
 	private final List<ParamInfo> params = new ArrayList<>();
 	private final List<ActionInfo> actions = new ArrayList<>();
+	/* The input methods of the model: click(x, y), drag(x, y), key(key) */
+	private final List<String> inputs = new ArrayList<>();
 	private final Set<String> chartNames = new java.util.LinkedHashSet<>();
 	private CompilationUnit unit;
 	private String modelName;
@@ -262,6 +264,11 @@ public class JavaToJs {
 		return actions;
 	}
 
+	/** The input methods of the model ("click", "drag", "key"). */
+	public List<String> getInputs() {
+		return inputs;
+	}
+
 	/** The names of the chart series (the constant names of chart(name, value)). */
 	public Set<String> getChartNames() {
 		return chartNames;
@@ -387,6 +394,13 @@ public class JavaToJs {
 		if (isModel) {
 			collectParams(instanceFields);
 			collectActions(methods);
+			for (MethodDeclaration md : methods) {
+				String n = md.getName().getIdentifier();
+				int count = n.equals("key") ? 1 : 2;
+				if ((n.equals("click") || n.equals("drag") || n.equals("key")) && md.parameters().size() == count && !Modifier.isStatic(md.getModifiers()) && !inputs.contains(n)) {
+					inputs.add(n);
+				}
+			}
 		}
 		out.append("class ").append(name);
 		if (sup != null) {

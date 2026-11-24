@@ -111,6 +111,8 @@ public final class ExportSimulation {
 		options.title = dialog.getPageTitle();
 		options.description = dialog.getDescription();
 		options.speed = dialog.getSpeed();
+		/* The seed of the running model (the field Seed of the settings) */
+		options.seed = startSeed(source.name);
 		options.autoplay = dialog.isAutoplay();
 		options.theme = dialog.getTheme();
 		options.layout = dialog.getPageLayout();
@@ -145,6 +147,15 @@ public final class ExportSimulation {
 	private static boolean isScript(String name) {
 		String n = name.toLowerCase(java.util.Locale.ROOT);
 		return n.endsWith(".py") || n.endsWith(".r");
+	}
+
+	/* The seed of the running model of the class (the field Seed of the settings; else 42) */
+	private static int startSeed(String javaFile) {
+		Model model = Compiled.getModel();
+		if (model instanceof com.eco.bio7.simulation.Simulation sim && javaFile != null && javaFile.equals(sim.getClass().getSimpleName() + ".java")) {
+			return sim.getStartSeed();
+		}
+		return com.eco.bio7.simulation.Simulation.DEFAULT_SEED;
 	}
 
 	private static ScriptSource findScript() {
@@ -220,6 +231,7 @@ public final class ExportSimulation {
 		options.title = dialog.getPageTitle();
 		options.description = dialog.getDescription();
 		options.speed = dialog.getSpeed();
+		options.seed = source.model != null ? source.model.getStartSeed() : com.eco.bio7.simulation.Simulation.DEFAULT_SEED;
 		options.autoplay = dialog.isAutoplay();
 		options.theme = dialog.getTheme();
 		options.layout = dialog.getPageLayout();

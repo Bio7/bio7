@@ -156,15 +156,54 @@ public abstract class AgentModel<A extends Agent> extends Simulation {
 
 	/** Sets the size of the box. */
 	public void box(double width, double height, double depth) {
+		/* Only a new size changes the bounds of the view (a script model sets the box after each step) */
+		boolean changed = width != boxWidth || height != boxHeight || depth != boxDepth;
 		boxWidth = width;
 		boxHeight = height;
 		boxDepth = depth;
-		bounds();
+		if (changed) {
+			bounds();
+		}
 	}
 
-	/** The distance of two agents (3D). */
+	/** The distance of two agents (3D); the same as {@link #agentDistance(Agent, Agent)}. */
 	public double distance(Agent a, Agent b) {
 		return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z));
+	}
+
+	/** The distance of two agents (3D): the same name as for the agents of a grid (GridModel.agentDistance). */
+	public double agentDistance(Agent a, Agent b) {
+		return distance(a, b);
+	}
+
+	/**
+	 * The camera of the 3D view follows the agent with this index (the split view
+	 * shows the global view beside it); a negative index: no camera (the same as
+	 * the field followAgent, camera_follow in Python and R).
+	 */
+	public void cameraFollow(int index) {
+		followAgent = index < 0 ? -1 : index;
+	}
+
+	/**
+	 * All pairs of agents closer than the distance (with a spatial index: fast for
+	 * thousands of agents) as indices of the list: i0, j0, i1, j1, ... (i < j,
+	 * ordered by i and j; as neighbor_pairs in Python and R and as links()).
+	 */
+	public int[] neighborPairs(double distance) {
+		java.util.IdentityHashMap<Agent, Integer> idx = indices();
+		java.util.List<long[]> pairs = new ArrayList<>();
+		index(distance).forEachPair(distance, (a, b) -> {
+			int i = idx.get(a), j = idx.get(b);
+			pairs.add(new long[] { Math.min(i, j), Math.max(i, j) });
+		});
+		pairs.sort((p, q) -> p[0] != q[0] ? Long.compare(p[0], q[0]) : Long.compare(p[1], q[1]));
+		int[] out = new int[pairs.size() * 2];
+		for (int k = 0; k < pairs.size(); k++) {
+			out[2 * k] = (int) pairs.get(k)[0];
+			out[2 * k + 1] = (int) pairs.get(k)[1];
+		}
+		return out;
 	}
 
 	/** The other agents within the radius of the agent (in the order of the list). */
@@ -183,6 +222,16 @@ public abstract class AgentModel<A extends Agent> extends Simulation {
 		return found;
 	}
 
+	/**
+	 * A spatial index of the agents (their positions now; the size of the cells:
+	 * e.g., the radius of the searches): fast searches of the neighbors of many
+	 * agents (see {@link SpatialIndex}). Build it again after the agents moved
+	 * (e.g., at the start of each step).
+	 */
+	public SpatialIndex<A> index(double cellSize) {
+		return new SpatialIndex<>(agents, cellSize);
+	}
+
 	/** The nearest other agent within the radius (null if none). */
 	public A nearest(A agent, double radius) {
 		A best = null;
@@ -198,6 +247,381 @@ public abstract class AgentModel<A extends Agent> extends Simulation {
 			}
 		}
 		return best;
+	}
+
+	/* ===================== Networks ===================== */
+
+	/** The color of the links (drawn as lines between the agents; null or "": not drawn). */
+	public String linkColor = "#8a94a6";
+
+	/** The width of the links in pixels. */
+	public double linkWidth = 1;
+
+	/* The links: an agent -> its linked agents (in the order of the links) and the color of the link (null: linkColor) */
+	private final java.util.LinkedHashMap<Agent, java.util.LinkedHashMap<Agent, String>> links = new java.util.LinkedHashMap<>();
+
+	/** Links two agents (undirected; no link of an agent with itself, a link once). */
+	public void link(A a, A b) {
+		link(a, b, null);
+	}
+
+	/** Links two agents with a color of the link (e.g., "#d62728" for a path of an infection). */
+	public void link(A a, A b, String color) {
+		if (a == null || b == null || a == b) {
+			return;
+		}
+		links.computeIfAbsent(a, k -> new java.util.LinkedHashMap<>()).put(b, color);
+		links.computeIfAbsent(b, k -> new java.util.LinkedHashMap<>()).put(a, color);
+	}
+
+	/** Removes the link of two agents. */
+	public void unlink(A a, A b) {
+		java.util.LinkedHashMap<Agent, String> la = links.get(a), lb = links.get(b);
+		if (la != null) {
+			la.remove(b);
+		}
+		if (lb != null) {
+			lb.remove(a);
+		}
+	}
+
+	/** Removes all links of the agent (e.g., before it is removed from the list). */
+	public void removeLinks(A a) {
+		java.util.LinkedHashMap<Agent, String> la = links.remove(a);
+		if (la != null) {
+			for (Agent o : la.keySet()) {
+				java.util.LinkedHashMap<Agent, String> lo = links.get(o);
+				if (lo != null) {
+					lo.remove(a);
+				}
+			}
+		}
+	}
+
+	/** Removes all links. */
+	public void clearLinks() {
+		links.clear();
+	}
+
+	/** True if the agents are linked. */
+	public boolean linked(A a, A b) {
+		java.util.LinkedHashMap<Agent, String> la = links.get(a);
+		return la != null && la.containsKey(b);
+	}
+
+	/**
+	 * The agents linked with the agent (in the order of the links). Remove the
+	 * links of an agent (removeLinks) when it is removed from the list.
+	 */
+	@SuppressWarnings("unchecked")
+	public ArrayList<A> linkNeighbors(A a) {
+		ArrayList<A> out = new ArrayList<>();
+		java.util.LinkedHashMap<Agent, String> la = links.get(a);
+		if (la != null) {
+			for (Agent o : la.keySet()) {
+				out.add((A) o);
+			}
+		}
+		return out;
+	}
+
+	/** The number of links of the agent. */
+	public int degree(A a) {
+		java.util.LinkedHashMap<Agent, String> la = links.get(a);
+		return la == null ? 0 : la.size();
+	}
+
+	/** The color of the link of two agents (null: linkColor or no link). */
+	public String linkColorOf(A a, A b) {
+		java.util.LinkedHashMap<Agent, String> la = links.get(a);
+		return la == null ? null : la.get(b);
+	}
+
+	/** Sets the color of an existing link (null: linkColor). */
+	public void setLinkColor(A a, A b, String color) {
+		if (linked(a, b)) {
+			link(a, b, color);
+		}
+	}
+
+	/* The index of each agent in the list */
+	private java.util.IdentityHashMap<Agent, Integer> indices() {
+		java.util.IdentityHashMap<Agent, Integer> idx = new java.util.IdentityHashMap<>();
+		for (int i = 0; i < agents.size(); i++) {
+			idx.putIfAbsent(agents.get(i), i);
+		}
+		return idx;
+	}
+
+	/** The links as pairs of the indices of the agents in the list: i0, j0, i1, j1, ... (i < j; i ascending); the same as getLinks(). */
+	public int[] links() {
+		return getLinks();
+	}
+
+	/** The links as pairs of the indices of the agents in the list (i, j with i < j; i ascending). */
+	public int[] getLinks() {
+		java.util.IdentityHashMap<Agent, Integer> idx = indices();
+		java.util.List<Integer> out = new ArrayList<>();
+		for (int i = 0; i < agents.size(); i++) {
+			java.util.LinkedHashMap<Agent, String> la = links.get(agents.get(i));
+			if (la == null) {
+				continue;
+			}
+			for (Agent o : la.keySet()) {
+				Integer j = idx.get(o);
+				if (j != null && j > i) {
+					out.add(i);
+					out.add(j);
+				}
+			}
+		}
+		return out.stream().mapToInt(Integer::intValue).toArray();
+	}
+
+	/** The number of links (between agents of the list). */
+	public int linkCount() {
+		return getLinks().length / 2;
+	}
+
+	/* The colors of the links of getLinks() (null: linkColor) */
+	private String[] linkColors(int[] pairs) {
+		String[] c = new String[pairs.length / 2];
+		for (int k = 0; k < c.length; k++) {
+			java.util.LinkedHashMap<Agent, String> la = links.get(agents.get(pairs[k * 2]));
+			c[k] = la == null ? null : la.get(agents.get(pairs[k * 2 + 1]));
+		}
+		return c;
+	}
+
+	/** A random network: each pair of agents is linked with the probability p (Erdos-Renyi). */
+	public void linkRandom(double p) {
+		int n = agents.size();
+		for (int i = 0; i < n; i++) {
+			for (int j = i + 1; j < n; j++) {
+				if (random() < p) {
+					link(agents.get(i), agents.get(j));
+				}
+			}
+		}
+	}
+
+	/**
+	 * A small-world network (Watts-Strogatz): a ring of the agents (in the order
+	 * of the list), each linked with its k nearest (k / 2 on each side), then each
+	 * link is moved to a random agent with the probability p.
+	 */
+	public void linkSmallWorld(int k, double p) {
+		int n = agents.size(), half = Math.max(1, k / 2);
+		if (n < 2) {
+			return;
+		}
+		for (int i = 0; i < n; i++) {
+			for (int d = 1; d <= half; d++) {
+				link(agents.get(i), agents.get((i + d) % n));
+			}
+		}
+		for (int i = 0; i < n; i++) {
+			for (int d = 1; d <= half; d++) {
+				A a = agents.get(i), b = agents.get((i + d) % n);
+				if (random() < p && linked(a, b)) {
+					/* A new partner (not the agent itself, not linked yet; at most n tries) */
+					for (int tries = 0; tries < n; tries++) {
+						A c = agents.get(randomInt(n));
+						if (c != a && !linked(a, c)) {
+							unlink(a, b);
+							link(a, c);
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * A scale-free network (Barabasi-Albert): the first m + 1 agents are linked
+	 * with each other, each further agent links with m agents before it, chosen
+	 * with a probability proportional to their number of links.
+	 */
+	public void linkScaleFree(int m) {
+		int n = agents.size();
+		m = Math.max(1, m);
+		java.util.List<Integer> ends = new ArrayList<>();
+		int start = Math.min(n, m + 1);
+		for (int i = 0; i < start; i++) {
+			for (int j = i + 1; j < start; j++) {
+				link(agents.get(i), agents.get(j));
+				ends.add(i);
+				ends.add(j);
+			}
+		}
+		for (int i = start; i < n; i++) {
+			java.util.List<Integer> chosen = new ArrayList<>();
+			while (chosen.size() < Math.min(m, i)) {
+				int j = ends.isEmpty() ? randomInt(i) : ends.get(randomInt(ends.size()));
+				if (!chosen.contains(j)) {
+					chosen.add(j);
+				}
+			}
+			for (int j : chosen) {
+				link(agents.get(i), agents.get(j));
+				ends.add(i);
+				ends.add(j);
+			}
+		}
+	}
+
+	/** Links all agents within the distance (a network of the neighborhood, with a spatial index). */
+	public void linkNearby(double radius) {
+		index(radius).forEachPair(radius, this::link);
+	}
+
+	/** The groups of the agents which are connected by links (each in the order of the list; isolated agents are a group). */
+	public ArrayList<ArrayList<A>> components() {
+		ArrayList<ArrayList<A>> out = new ArrayList<>();
+		java.util.Set<Agent> seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+		java.util.IdentityHashMap<Agent, Integer> idx = indices();
+		for (A a : agents) {
+			if (seen.contains(a)) {
+				continue;
+			}
+			java.util.List<Integer> group = new ArrayList<>();
+			java.util.ArrayDeque<A> queue = new java.util.ArrayDeque<>();
+			queue.add(a);
+			seen.add(a);
+			while (!queue.isEmpty()) {
+				A c = queue.poll();
+				group.add(idx.get(c));
+				for (A o : linkNeighbors(c)) {
+					if (idx.containsKey(o) && seen.add(o)) {
+						queue.add(o);
+					}
+				}
+			}
+			java.util.Collections.sort(group);
+			ArrayList<A> g = new ArrayList<>();
+			for (int i : group) {
+				g.add(agents.get(i));
+			}
+			out.add(g);
+		}
+		return out;
+	}
+
+	/** The number of links on the shortest path between two agents (-1: not connected). */
+	public int shortestPath(A a, A b) {
+		if (a == b) {
+			return 0;
+		}
+		java.util.IdentityHashMap<Agent, Integer> dist = new java.util.IdentityHashMap<>();
+		java.util.ArrayDeque<A> queue = new java.util.ArrayDeque<>();
+		dist.put(a, 0);
+		queue.add(a);
+		while (!queue.isEmpty()) {
+			A c = queue.poll();
+			for (A o : linkNeighbors(c)) {
+				if (!dist.containsKey(o)) {
+					dist.put(o, dist.get(c) + 1);
+					if (o == b) {
+						return dist.get(o);
+					}
+					queue.add(o);
+				}
+			}
+		}
+		return -1;
+	}
+
+	/** The clustering coefficient of an agent: the share of the pairs of its linked agents which are linked too (0 with less than 2). */
+	public double clustering(A a) {
+		ArrayList<A> nb = linkNeighbors(a);
+		int k = nb.size();
+		if (k < 2) {
+			return 0;
+		}
+		int closed = 0;
+		for (int i = 0; i < k; i++) {
+			for (int j = i + 1; j < k; j++) {
+				if (linked(nb.get(i), nb.get(j))) {
+					closed++;
+				}
+			}
+		}
+		return 2.0 * closed / (k * (k - 1.0));
+	}
+
+	/** Places the agents on a circle in the middle of the box (in the order of the list; z: the middle of the box). */
+	public void layoutCircle() {
+		int n = agents.size();
+		double cx = boxWidth / 2, cy = boxHeight / 2, r = Math.min(boxWidth, boxHeight) * 0.42;
+		for (int i = 0; i < n; i++) {
+			/* cosDeg and sinDeg: the same numbers in Java and in the page */
+			double a = 360.0 * i / Math.max(1, n);
+			A ag = agents.get(i);
+			ag.x = cx + r * cosDeg(a);
+			ag.y = cy + r * sinDeg(a);
+			ag.z = boxDepth / 2;
+		}
+	}
+
+	/**
+	 * Arranges the network in x and y (a spring layout of Fruchterman and
+	 * Reingold: the links pull, all agents push each other away), in the box; z is
+	 * kept. Call it once (e.g., 100 iterations in init()) or a few iterations in
+	 * each step (a moving layout).
+	 */
+	public void layoutSpring(int iterations) {
+		int n = agents.size();
+		if (n == 0) {
+			return;
+		}
+		double w = boxWidth, h = boxHeight, k = Math.sqrt(w * h / n);
+		int[] pairs = getLinks();
+		double[] px = new double[n], py = new double[n];
+		for (int i = 0; i < n; i++) {
+			px[i] = agents.get(i).x;
+			py[i] = agents.get(i).y;
+		}
+		for (int it = 0; it < iterations; it++) {
+			double temp = Math.max(w, h) * 0.1 * (1 - (double) it / iterations);
+			double[] dx = new double[n], dy = new double[n];
+			for (int i = 0; i < n; i++) {
+				for (int j = i + 1; j < n; j++) {
+					double ex = px[i] - px[j], ey = py[i] - py[j], d = Math.sqrt(ex * ex + ey * ey);
+					if (d < 1e-9) {
+						/* At the same place: apart by their indices */
+						ex = 0.01 * k * cosDeg(37.0 * (i + j));
+						ey = 0.01 * k * sinDeg(37.0 * (i + j));
+						d = 0.01 * k;
+					}
+					double f = k * k / d;
+					dx[i] += ex / d * f;
+					dy[i] += ey / d * f;
+					dx[j] -= ex / d * f;
+					dy[j] -= ey / d * f;
+				}
+			}
+			for (int p = 0; p + 1 < pairs.length; p += 2) {
+				int i = pairs[p], j = pairs[p + 1];
+				double ex = px[i] - px[j], ey = py[i] - py[j], d = Math.max(1e-9, Math.sqrt(ex * ex + ey * ey)), f = d * d / k;
+				dx[i] -= ex / d * f;
+				dy[i] -= ey / d * f;
+				dx[j] += ex / d * f;
+				dy[j] += ey / d * f;
+			}
+			for (int i = 0; i < n; i++) {
+				double d = Math.sqrt(dx[i] * dx[i] + dy[i] * dy[i]);
+				if (d > 0) {
+					double s = Math.min(d, temp) / d;
+					px[i] = Math.max(0, Math.min(w, px[i] + dx[i] * s));
+					py[i] = Math.max(0, Math.min(h, py[i] + dy[i] * s));
+				}
+			}
+		}
+		for (int i = 0; i < n; i++) {
+			agents.get(i).x = px[i];
+			agents.get(i).y = py[i];
+		}
 	}
 
 	/** Keeps the agent in the box (the position is limited to the box). */
@@ -227,14 +651,165 @@ public abstract class AgentModel<A extends Agent> extends Simulation {
 	@Override
 	protected void prepareDisplay() {
 		agents = new ArrayList<>();
+		links.clear();
 		/* The environment is built again by init() */
 		clearModels();
-		if (!Simulation.hasDisplay()) {
+		if (!Simulation.hasDisplay() || headless) {
 			return;
 		}
 		Work.openView("com.eco.bio7.spatial");
 		bounds();
 		startDrawing(10);
+		/* The clicks, drags and keys of the 3D view */
+		SpatialStructure.setModelInput(viewInput);
+	}
+
+	/* ----- The input of the 3D view: positions on the floor of the box ----- */
+
+	/* The matrices of the last frame of each viewport (the main view, the split view): the floor under the mouse */
+	private record ViewFrame(double[] modelview, double[] projection, int[] viewport, double scale, double ox, double oy, long time) {
+	}
+
+	private final java.util.concurrent.ConcurrentHashMap<String, ViewFrame> frames = new java.util.concurrent.ConcurrentHashMap<>();
+
+	private final SpatialStructure.ModelInput viewInput = new SpatialStructure.ModelInput() {
+		/* Only the model of the view (not an earlier model) */
+		private boolean active() {
+			return com.eco.bio7.methods.Compiled.getModel() == AgentModel.this;
+		}
+
+		@Override
+		public boolean handles(String event) {
+			return active() && AgentModel.this.handles(event);
+		}
+
+		@Override
+		public void pointer(String event, double x, double y, int surfaceHeight) {
+			double[] p = floorAt(x, y, surfaceHeight);
+			if (p != null && active()) {
+				input(event, p[0], p[1], null, true);
+			}
+		}
+
+		@Override
+		public void key(String key) {
+			if (active()) {
+				input("key", 0, 0, key, false);
+			}
+		}
+	};
+
+	/*
+	 * The point of the floor (z = 0, in the box) under a position of the OpenGL
+	 * surface (pixels from the left and the top), or null
+	 */
+	double[] floorAt(double x, double y, int surfaceHeight) {
+		/* The viewports drawn in the last half second (the split view may be switched off) */
+		long newest = 0;
+		for (ViewFrame f : frames.values()) {
+			newest = Math.max(newest, f.time());
+		}
+		double gx = x, gy = surfaceHeight - y;
+		ViewFrame best = null;
+		for (ViewFrame f : frames.values()) {
+			int[] v = f.viewport();
+			if (f.time() < newest - 500_000_000L || gx < v[0] || gy < v[1] || gx > v[0] + v[2] || gy > v[1] + v[3]) {
+				continue;
+			}
+			/* The smallest viewport (the split view is drawn on top of the main view) */
+			if (best == null || (long) v[2] * v[3] < (long) best.viewport()[2] * best.viewport()[3]) {
+				best = f;
+			}
+		}
+		if (best == null) {
+			return null;
+		}
+		int[] v = best.viewport();
+		double nx = 2 * (gx - v[0]) / v[2] - 1, ny = 2 * (gy - v[1]) / v[3] - 1;
+		double[] inv = invert(multiply(best.projection(), best.modelview()));
+		if (inv == null) {
+			return null;
+		}
+		double[] a = unproject(inv, nx, ny, -1), b = unproject(inv, nx, ny, 1);
+		if (a == null || b == null || Math.abs(b[2] - a[2]) < 1e-12) {
+			return null;
+		}
+		double t = -a[2] / (b[2] - a[2]);
+		if (t < 0 || t > 1) {
+			return null;
+		}
+		double px = a[0] + t * (b[0] - a[0]), py = a[1] + t * (b[1] - a[1]);
+		double mx = (px - best.ox()) / best.scale(), my = (py - best.oy()) / best.scale();
+		return mx >= 0 && my >= 0 && mx <= boxWidth && my <= boxHeight ? new double[] { mx, my } : null;
+	}
+
+	private static double[] unproject(double[] inv, double nx, double ny, double nz) {
+		double[] o = new double[4];
+		double[] in = { nx, ny, nz, 1 };
+		for (int r = 0; r < 4; r++) {
+			o[r] = inv[r] * in[0] + inv[4 + r] * in[1] + inv[8 + r] * in[2] + inv[12 + r] * in[3];
+		}
+		return Math.abs(o[3]) < 1e-15 ? null : new double[] { o[0] / o[3], o[1] / o[3], o[2] / o[3] };
+	}
+
+	/* 4x4 matrices of OpenGL (column-major) */
+	private static double[] multiply(double[] a, double[] b) {
+		double[] r = new double[16];
+		for (int c = 0; c < 4; c++) {
+			for (int rr = 0; rr < 4; rr++) {
+				double sum = 0;
+				for (int k = 0; k < 4; k++) {
+					sum += a[k * 4 + rr] * b[c * 4 + k];
+				}
+				r[c * 4 + rr] = sum;
+			}
+		}
+		return r;
+	}
+
+	private static double[] invert(double[] m) {
+		double[] a = new double[32];
+		for (int r = 0; r < 4; r++) {
+			for (int c = 0; c < 4; c++) {
+				a[r * 8 + c] = m[c * 4 + r];
+			}
+			a[r * 8 + 4 + r] = 1;
+		}
+		for (int c = 0; c < 4; c++) {
+			int piv = c;
+			for (int r = c + 1; r < 4; r++) {
+				if (Math.abs(a[r * 8 + c]) > Math.abs(a[piv * 8 + c])) {
+					piv = r;
+				}
+			}
+			if (Math.abs(a[piv * 8 + c]) < 1e-15) {
+				return null;
+			}
+			for (int k = 0; k < 8; k++) {
+				double tmp = a[c * 8 + k];
+				a[c * 8 + k] = a[piv * 8 + k];
+				a[piv * 8 + k] = tmp;
+			}
+			double d = a[c * 8 + c];
+			for (int k = 0; k < 8; k++) {
+				a[c * 8 + k] /= d;
+			}
+			for (int r = 0; r < 4; r++) {
+				if (r != c) {
+					double f = a[r * 8 + c];
+					for (int k = 0; k < 8; k++) {
+						a[r * 8 + k] -= f * a[c * 8 + k];
+					}
+				}
+			}
+		}
+		double[] inv = new double[16];
+		for (int r = 0; r < 4; r++) {
+			for (int c = 0; c < 4; c++) {
+				inv[c * 4 + r] = a[r * 8 + 4 + c];
+			}
+		}
+		return inv;
 	}
 
 	/* The run method of the 3D view draws the agents (the view may be created later) */
@@ -264,7 +839,7 @@ public abstract class AgentModel<A extends Agent> extends Simulation {
 	 */
 	private record Shown(double[] xyz, int[] rgb, String[] images, String[] models, String[] animations, double[] headings, double[] sizes, List<Shape> drawing,
 			java.util.Map<String, String> imageFiles, java.util.Map<String, String> modelFiles, double[] yaw, double[] pitch, double[] bank,
-			String shape, String floor, boolean shadows, int follow, List<Placed> scenery) {
+			String shape, String floor, boolean shadows, int follow, List<Placed> scenery, int[] links, String[] linkColors, String linkColor, double linkWidth) {
 	}
 
 	private volatile Shown shown;
@@ -337,8 +912,9 @@ public abstract class AgentModel<A extends Agent> extends Simulation {
 		}
 		shownRgb = rgb;
 		shownXyz = xyz;
+		int[] pairs = getLinks();
 		shown = new Shown(xyz, rgb, images, models, animations, headings, sizes, getDrawing(), getImageFiles(), getModelFiles(), yaw, pitch, bank,
-				agentShape, floor, shadows, followAgent, getModels());
+				agentShape, floor, shadows, followAgent, getModels(), pairs, linkColors(pairs), linkColor, linkWidth);
 		camera(followAgent);
 	}
 
@@ -370,6 +946,13 @@ public abstract class AgentModel<A extends Agent> extends Simulation {
 		int[] rgb = sh != null ? sh.rgb : shownRgb;
 		double s = scale(), ox = -boxWidth * s / 2, oy = -boxHeight * s / 2;
 		double r = (agentRadius > 0 ? agentRadius : Math.max(boxWidth, Math.max(boxHeight, boxDepth)) * 0.01) * s;
+		/* The matrices of this viewport: clicks and drags on the floor */
+		double[] mv = new double[16], pr = new double[16];
+		int[] vp = new int[4];
+		gl.glGetDoublev(GL2.GL_MODELVIEW_MATRIX, mv, 0);
+		gl.glGetDoublev(GL2.GL_PROJECTION_MATRIX, pr, 0);
+		gl.glGetIntegerv(GL2.GL_VIEWPORT, vp, 0);
+		frames.put(vp[0] + "," + vp[1] + "," + vp[2] + "," + vp[3], new ViewFrame(mv, pr, vp, s, ox, oy, System.nanoTime()));
 		gl.glEnable(GL2.GL_COLOR_MATERIAL);
 		gl.glEnable(GL2.GL_NORMALIZE);
 		/* The box */
@@ -394,6 +977,7 @@ public abstract class AgentModel<A extends Agent> extends Simulation {
 		}
 		if (sh != null) {
 			shapes(gl, glu, glut, sh.drawing, sh.imageFiles, s, ox, oy);
+			links(gl, sh, s, ox, oy);
 		}
 		gl.glEnable(GL2.GL_LIGHTING);
 		/* The agents: spheres, gliders, 3D models (glTF) or images */
@@ -579,39 +1163,50 @@ public abstract class AgentModel<A extends Agent> extends Simulation {
 		gl.glPopAttrib();
 	}
 
+	/* The links of the network: lines between the agents (the color of a link or linkColor) */
+	private static void links(GL2 gl, Shown sh, double s, double ox, double oy) {
+		int[] p = sh.links;
+		float[] base = Assets.rgba(sh.linkColor);
+		if (p.length < 2 || (base == null && java.util.Arrays.stream(sh.linkColors).allMatch(java.util.Objects::isNull))) {
+			return;
+		}
+		int n = sh.xyz.length / 3;
+		gl.glDisable(GL2.GL_LIGHTING);
+		gl.glEnable(GL2.GL_BLEND);
+		gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
+		gl.glLineWidth((float) Math.max(1, sh.linkWidth));
+		gl.glBegin(GL2.GL_LINES);
+		for (int k = 0; k + 1 < p.length; k += 2) {
+			int i = p[k], j = p[k + 1];
+			if (i >= n || j >= n) {
+				continue;
+			}
+			float[] c = sh.linkColors[k / 2] != null ? Assets.rgba(sh.linkColors[k / 2]) : base;
+			if (c == null) {
+				continue;
+			}
+			gl.glColor4fv(c, 0);
+			gl.glVertex3d(ox + sh.xyz[i * 3] * s, oy + sh.xyz[i * 3 + 1] * s, sh.xyz[i * 3 + 2] * s);
+			gl.glVertex3d(ox + sh.xyz[j * 3] * s, oy + sh.xyz[j * 3 + 1] * s, sh.xyz[j * 3 + 2] * s);
+		}
+		gl.glEnd();
+		gl.glLineWidth(1);
+		gl.glDisable(GL2.GL_BLEND);
+	}
+
 	/* The quadric of the pillars */
 	private com.jogamp.opengl.glu.GLUquadric quadric;
 
-	/* The shapes: 2D shapes on the floor, lines in 3D, pillars, texts and images (billboards standing on the floor) */
+	/* The shapes: 2D shapes on the floor (or at a height z), lines and paths in 3D, the solids (pillars, boxes, spheres, points, polygons; lit), texts and images (billboards standing at the height) */
 	private void shapes(GL2 gl, GLU glu, GLUT glut, List<Shape> drawing, java.util.Map<String, String> imageFiles, double s, double ox, double oy) {
-		/* The pillars (lit, from the floor): x, y, the radius and the height */
-		for (Shape sh : drawing) {
-			if (!"pillar".equals(sh.kind) || sh.p.length < 4) {
-				continue;
-			}
-			if (quadric == null) {
-				quadric = glu.gluNewQuadric();
-				glu.gluQuadricNormals(quadric, GLU.GLU_SMOOTH);
-			}
-			float[] fill = Assets.rgba(sh.fill != null ? sh.fill : "#9aa6b8");
-			double[] p = sh.p;
-			gl.glEnable(GL2.GL_LIGHTING);
-			gl.glPushMatrix();
-			gl.glTranslated(ox + p[0] * s, oy + p[1] * s, 0);
-			gl.glColor3f(fill[0], fill[1], fill[2]);
-			glu.gluCylinder(quadric, p[2] * s, p[2] * s * 0.85, p[3] * s, 32, 1);
-			gl.glTranslated(0, 0, p[3] * s);
-			gl.glColor3f(Math.min(1, fill[0] * 1.2f), Math.min(1, fill[1] * 1.2f), Math.min(1, fill[2] * 1.2f));
-			glu.gluDisk(quadric, 0, p[2] * s * 0.85, 32, 1);
-			gl.glPopMatrix();
-			gl.glDisable(GL2.GL_LIGHTING);
-		}
-		double z0 = 0.5;
+		solids(gl, glu, glut, drawing, s, ox, oy);
 		gl.glEnable(GL2.GL_BLEND);
 		gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
 		for (Shape sh : drawing) {
 			double[] p = sh.p;
 			float[] stroke = Assets.rgba(sh.stroke), fill = Assets.rgba(sh.fill);
+			/* The height above the floor (a small offset: not hidden by the floor) */
+			double z0 = 0.5 + sh.z * s;
 			gl.glLineWidth((float) Math.max(1, sh.width));
 			switch (sh.kind) {
 			case "line3" -> {
@@ -623,6 +1218,38 @@ public abstract class AgentModel<A extends Agent> extends Simulation {
 					gl.glEnd();
 				}
 			}
+			case "path3" -> {
+				if (stroke != null && p.length >= 6) {
+					gl.glColor4fv(stroke, 0);
+					gl.glBegin(GL2.GL_LINE_STRIP);
+					for (int i = 0; i + 2 < p.length; i += 3) {
+						gl.glVertex3d(ox + p[i] * s, oy + p[i + 1] * s, p[i + 2] * s);
+					}
+					gl.glEnd();
+				}
+			}
+			case "polygon3" -> {
+				if (stroke != null && p.length >= 9) {
+					gl.glColor4fv(stroke, 0);
+					gl.glBegin(GL2.GL_LINE_LOOP);
+					for (int i = 0; i + 2 < p.length; i += 3) {
+						gl.glVertex3d(ox + p[i] * s, oy + p[i + 1] * s, p[i + 2] * s);
+					}
+					gl.glEnd();
+				}
+			}
+			case "box" -> {
+				if (stroke != null && p.length >= 6) {
+					gl.glColor4fv(stroke, 0);
+					gl.glBegin(GL2.GL_LINES);
+					double[][] c = boxCorners(p, s, ox, oy);
+					int[] e = { 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7 };
+					for (int k : e) {
+						gl.glVertex3d(c[k][0], c[k][1], c[k][2]);
+					}
+					gl.glEnd();
+				}
+			}
 			case "line", "path", "polygon", "rect", "circle" -> {
 				double[] q = outline(sh);
 				boolean closed = !sh.kind.equals("line") && !sh.kind.equals("path");
@@ -630,7 +1257,7 @@ public abstract class AgentModel<A extends Agent> extends Simulation {
 					gl.glColor4fv(fill, 0);
 					gl.glBegin(GL2.GL_POLYGON);
 					for (int i = 0; i + 1 < q.length; i += 2) {
-						gl.glVertex3d(ox + q[i] * s, oy + q[i + 1] * s, z0 * 0.5);
+						gl.glVertex3d(ox + q[i] * s, oy + q[i + 1] * s, z0 - 0.25);
 					}
 					gl.glEnd();
 				}
@@ -651,13 +1278,137 @@ public abstract class AgentModel<A extends Agent> extends Simulation {
 					glut.glutBitmapString(GLUT.BITMAP_HELVETICA_12, sh.text);
 				}
 			}
-			case "image" -> ModelGl.billboard(gl, Assets.image(imageFiles.get(sh.text)), ox + p[0] * s, oy + p[1] * s, sh.width * s / 2, sh.width * s, sh.angle);
+			case "image" -> ModelGl.billboard(gl, Assets.image(imageFiles.get(sh.text)), ox + p[0] * s, oy + p[1] * s, (sh.z + sh.width / 2) * s, sh.width * s, sh.angle);
 			default -> {
 			}
 			}
 		}
 		gl.glLineWidth(1);
 		gl.glDisable(GL2.GL_BLEND);
+	}
+
+	/* The solids (lit): pillars from the floor, boxes, spheres, points and flat polygons in 3D; a fill with alpha is transparent */
+	private void solids(GL2 gl, GLU glu, GLUT glut, List<Shape> drawing, double s, double ox, double oy) {
+		boolean any = false;
+		for (Shape sh : drawing) {
+			double[] p = sh.p;
+			float[] fill;
+			switch (sh.kind) {
+			case "pillar" -> {
+				if (p.length < 4) {
+					continue;
+				}
+				fill = Assets.rgba(sh.fill != null ? sh.fill : "#9aa6b8");
+			}
+			case "sphere", "point3" -> {
+				if (p.length < 4) {
+					continue;
+				}
+				fill = Assets.rgba(sh.fill != null ? sh.fill : "#d0d4dc");
+			}
+			case "box" -> {
+				if (p.length < 6 || sh.fill == null) {
+					continue;
+				}
+				fill = Assets.rgba(sh.fill);
+			}
+			case "polygon3" -> {
+				if (p.length < 9 || sh.fill == null) {
+					continue;
+				}
+				fill = Assets.rgba(sh.fill);
+			}
+			default -> {
+				continue;
+			}
+			}
+			if (fill == null) {
+				continue;
+			}
+			if (!any) {
+				any = true;
+				gl.glEnable(GL2.GL_LIGHTING);
+				gl.glEnable(GL2.GL_NORMALIZE);
+				/* Both sides of the polygons lit */
+				gl.glLightModeli(GL2.GL_LIGHT_MODEL_TWO_SIDE, GL2.GL_TRUE);
+				gl.glEnable(GL2.GL_BLEND);
+				gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
+				if (quadric == null) {
+					quadric = glu.gluNewQuadric();
+					glu.gluQuadricNormals(quadric, GLU.GLU_SMOOTH);
+				}
+			}
+			gl.glColor4f(fill[0], fill[1], fill[2], fill[3]);
+			switch (sh.kind) {
+			case "pillar" -> {
+				gl.glPushMatrix();
+				gl.glTranslated(ox + p[0] * s, oy + p[1] * s, 0);
+				glu.gluCylinder(quadric, p[2] * s, p[2] * s * 0.85, p[3] * s, 32, 1);
+				gl.glTranslated(0, 0, p[3] * s);
+				gl.glColor4f(Math.min(1, fill[0] * 1.2f), Math.min(1, fill[1] * 1.2f), Math.min(1, fill[2] * 1.2f), fill[3]);
+				glu.gluDisk(quadric, 0, p[2] * s * 0.85, 32, 1);
+				gl.glPopMatrix();
+			}
+			case "sphere", "point3" -> {
+				double r = sh.kind.equals("sphere") ? p[3] : p[3] / 2;
+				gl.glPushMatrix();
+				gl.glTranslated(ox + p[0] * s, oy + p[1] * s, p[2] * s);
+				glu.gluSphere(quadric, Math.max(1e-6, r * s), sh.kind.equals("sphere") ? 32 : 12, sh.kind.equals("sphere") ? 20 : 8);
+				gl.glPopMatrix();
+			}
+			case "box" -> {
+				double[][] c = boxCorners(p, s, ox, oy);
+				/* The faces (corners 0-3 below, 4-7 above) with their normals */
+				int[][] f = { { 0, 3, 2, 1 }, { 4, 5, 6, 7 }, { 0, 1, 5, 4 }, { 1, 2, 6, 5 }, { 2, 3, 7, 6 }, { 3, 0, 4, 7 } };
+				double[][] n = { { 0, 0, -1 }, { 0, 0, 1 }, { 0, -1, 0 }, { 1, 0, 0 }, { 0, 1, 0 }, { -1, 0, 0 } };
+				gl.glBegin(GL2.GL_QUADS);
+				for (int k = 0; k < 6; k++) {
+					gl.glNormal3d(n[k][0], n[k][1], n[k][2]);
+					for (int i : f[k]) {
+						gl.glVertex3d(c[i][0], c[i][1], c[i][2]);
+					}
+				}
+				gl.glEnd();
+			}
+			case "polygon3" -> {
+				double[] nn = newell(p);
+				gl.glBegin(GL2.GL_POLYGON);
+				gl.glNormal3d(nn[0], nn[1], nn[2]);
+				for (int i = 0; i + 2 < p.length; i += 3) {
+					gl.glVertex3d(ox + p[i] * s, oy + p[i + 1] * s, p[i + 2] * s);
+				}
+				gl.glEnd();
+			}
+			default -> {
+			}
+			}
+		}
+		if (any) {
+			gl.glLightModeli(GL2.GL_LIGHT_MODEL_TWO_SIDE, GL2.GL_FALSE);
+			gl.glDisable(GL2.GL_BLEND);
+			gl.glDisable(GL2.GL_NORMALIZE);
+			gl.glDisable(GL2.GL_LIGHTING);
+		}
+	}
+
+	/* The 8 corners of a box (x, y, z, w, h, d of the model) in the coordinates of OpenGL: 0-3 below, 4-7 above */
+	private static double[][] boxCorners(double[] p, double s, double ox, double oy) {
+		double x0 = ox + p[0] * s, y0 = oy + p[1] * s, z0 = p[2] * s, x1 = x0 + p[3] * s, y1 = y0 + p[4] * s, z1 = z0 + p[5] * s;
+		return new double[][] { { x0, y0, z0 }, { x1, y0, z0 }, { x1, y1, z0 }, { x0, y1, z0 }, { x0, y0, z1 }, { x1, y0, z1 }, { x1, y1, z1 }, { x0, y1, z1 } };
+	}
+
+	/* The normal of a polygon in 3D (x0, y0, z0, x1, ...; the method of Newell) */
+	static double[] newell(double[] p) {
+		double nx = 0, ny = 0, nz = 0;
+		int n = p.length / 3;
+		for (int i = 0; i < n; i++) {
+			int j = (i + 1) % n;
+			nx += (p[i * 3 + 1] - p[j * 3 + 1]) * (p[i * 3 + 2] + p[j * 3 + 2]);
+			ny += (p[i * 3 + 2] - p[j * 3 + 2]) * (p[i * 3] + p[j * 3]);
+			nz += (p[i * 3] - p[j * 3]) * (p[i * 3 + 1] + p[j * 3 + 1]);
+		}
+		double l = Math.sqrt(nx * nx + ny * ny + nz * nz);
+		return l == 0 ? new double[] { 0, 0, 1 } : new double[] { nx / l, ny / l, nz / l };
 	}
 
 	/* The points of the outline of a 2D shape (x0, y0, x1, y1, ...) */

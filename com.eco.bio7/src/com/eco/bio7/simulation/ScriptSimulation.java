@@ -118,11 +118,37 @@ public final class ScriptSimulation {
 		}
 
 		State run(String op, String arg) {
+			State st;
 			try {
-				return engine.run(op, arg == null ? "" : arg);
+				st = engine.run(op, arg == null ? "" : arg);
 			} catch (Exception e) {
 				throw new ScriptException(e);
 			}
+			/* The input functions of the model (click, drag, key) */
+			if (st != null && st.has("inputs")) {
+				inputs = java.util.Set.of(st.strings("inputs"));
+			}
+			return st;
+		}
+
+		/* The input functions which the model defines (click, drag, key) */
+		private volatile java.util.Set<String> inputs = java.util.Set.of();
+
+		/** The input functions of the model: "click", "drag", "key". */
+		public java.util.Set<String> inputs() {
+			return inputs;
+		}
+
+		/* An input of a view (in the thread of the script, as an action): the argument when it runs (a merged drag) */
+		void input(Simulation model, java.util.function.Supplier<String> arg) {
+			later(() -> {
+				synchronized (model) {
+					State st = run("input", arg.get());
+					((Applier) model).apply(st);
+					charts(model, st);
+				}
+				model.display();
+			});
 		}
 
 		/** Sets a setting (in the thread of the script), then the setup (restart) or the display. */
@@ -243,7 +269,7 @@ public final class ScriptSimulation {
 						p.add(v.asDouble());
 					}
 					model.addShape(new Shape(d.path("k").asText(), p.stream().mapToDouble(Double::doubleValue).toArray(), nullable(d.get("s")), nullable(d.get("f")), nullable(d.get("t")),
-							d.path("w").asDouble(1), d.path("a").asDouble(0)));
+							d.path("w").asDouble(1), d.path("a").asDouble(0), d.path("z").asDouble(0)));
 				}
 			}
 		} catch (IOException e) {
@@ -316,9 +342,13 @@ public final class ScriptSimulation {
 	/* The life cycle of the proxies: the setup in the thread of the script, errors are reported */
 	private static void initScript(Simulation model, Script script) {
 		try {
-			State s = script.run("setup", "");
+			/* The seed of the settings (the field Seed) */
+			State s = script.run("setup", Integer.toString(model.getStartSeed()));
 			((Applier) model).apply(s);
 			charts(model, s);
+			if (s.number("stopped", 0) != 0) {
+				model.stop();
+			}
 		} catch (RuntimeException e) {
 			report(e);
 		}
@@ -329,6 +359,10 @@ public final class ScriptSimulation {
 			State s = script.run("step", "");
 			((Applier) model).apply(s);
 			charts(model, s);
+			/* stop() of the script: the simulation pauses */
+			if (s.number("stopped", 0) != 0) {
+				model.stop();
+			}
 		} catch (RuntimeException e) {
 			report(e);
 		}
@@ -576,6 +610,21 @@ public final class ScriptSimulation {
 				a.size = i < sizes.length ? sizes[i] : 0;
 			}
 			agents = list;
+			/* The links of the network (pairs of the indices from 0), their colors ("": linkColor) */
+			clearLinks();
+			double[] pairs = s.doubles("links");
+			String[] lc = strings(s, "link_colors", pairs.length / 2);
+			for (int k = 0; k + 1 < pairs.length; k += 2) {
+				int i = (int) pairs[k], j = (int) pairs[k + 1];
+				if (i >= 0 && j >= 0 && i < n && j < n) {
+					link(list.get(i), list.get(j), lc[k / 2]);
+				}
+			}
+			String[] linkC = s.strings("link_color");
+			if (linkC.length > 0) {
+				linkColor = linkC[0];
+			}
+			linkWidth = s.number("link_width", linkWidth);
 		}
 	}
 

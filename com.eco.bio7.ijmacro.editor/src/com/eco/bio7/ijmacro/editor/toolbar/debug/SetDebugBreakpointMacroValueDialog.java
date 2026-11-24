@@ -1,176 +1,164 @@
+/*******************************************************************************
+ * Copyright (c) 2007-2026 M. Austenfeld
+ *
+ * This program and the accompanying materials are made available under
+ * the terms of the Eclipse Public License 2.0 which is available at
+ * https://www.eclipse.org/legal/epl-2.0
+ *
+ * Contributors:
+ * Marcel Austenfeld - initial API and implementation
+ *******************************************************************************/
 package com.eco.bio7.ijmacro.editor.toolbar.debug;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import com.eco.bio7.util.Util;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-
-/*Class from: http://www.vogella.com/tutorials/EclipseDialogs/article.html*/
-
+/**
+ * The condition of a breakpoint of the ImageJ macro editor: the debugger stops
+ * in the line only if "variable operator value" is true (a numeric variable of
+ * the macro, a number). Without a variable, the breakpoint stops always.
+ */
 public class SetDebugBreakpointMacroValueDialog extends Dialog {
-	private Text txtName;
-	private Text txtValue;
-	private String name = "";
 
-	private String value = "";
-	private String buttonText;
-	private String operator = "==";
+	private static final String[] OPERATORS = { "==", "!=", ">", ">=", "<", "<=" };
+
+	private final String title;
+	private final String info;
+	private String name = "", operator = "==", value = "";
+	private Text txtName, txtValue;
 	private Combo combo;
-	private String expression;
+	private Label error;
 
-	public void setName(String name) {
-		this.name = name;
-		txtName.setText(name);
+	/**
+	 * @param parentShell the parent
+	 * @param title       the title of the dialog
+	 * @param expression  the condition "variable operator value" (null: none)
+	 */
+	public SetDebugBreakpointMacroValueDialog(Shell parentShell, String title, String expression) {
+		this(parentShell, title, expression, null);
 	}
 
-	public void setValue(String value) {
-		this.value = value;
-		txtValue.setText(value);
-	}
-
-	public void setOperator(String operator) {
-		this.operator = operator;
-		int count = combo.getItemCount();
-		for (int i = 0; i < count; i++) {
-			if (combo.getItem(i).equals(operator)) {
-				combo.select(i);
+	/** As above with a line of information (e.g., the line and its code). */
+	public SetDebugBreakpointMacroValueDialog(Shell parentShell, String title, String expression, String info) {
+		super(parentShell);
+		this.title = title;
+		this.info = info;
+		setShellStyle(getShellStyle() | SWT.RESIZE);
+		/* The condition of the breakpoint: three parts separated by spaces */
+		if (expression != null) {
+			String[] p = expression.trim().split("\\s+");
+			if (p.length == 3) {
+				name = p[0];
+				operator = p[1];
+				value = p[2];
 			}
 		}
 	}
 
-	public String getOperator() {
-		return operator;
-	}
-	
-
-	public SetDebugBreakpointMacroValueDialog(Shell parentShell, String buttonText, String expression) {
-		super(parentShell);
-		parentShell.setText(buttonText);
-		/* Center the dialog! */
-		/*Monitor primary = Util.getDisplay().getPrimaryMonitor();
-		Rectangle bounds = primary.getBounds();
-		Rectangle rect = parentShell.getBounds();
-		
-		int x = bounds.x + (bounds.width - rect.width) / 2;
-		int y = bounds.y + (bounds.height - rect.height) / 2;
-		
-		parentShell.setLocation(x, y);*/
-		this.buttonText = buttonText;
-		this.expression = expression;
-		setShellStyle(SWT.RESIZE | SWT.TITLE);
-
+	@Override
+	protected void configureShell(Shell shell) {
+		super.configureShell(shell);
+		shell.setText(title);
 	}
 
 	@Override
 	protected Control createDialogArea(Composite parent) {
 		Composite container = (Composite) super.createDialogArea(parent);
 		GridLayout layout = new GridLayout(2, false);
-		layout.marginRight = 5;
 		layout.marginLeft = 10;
+		layout.marginRight = 10;
 		container.setLayout(layout);
-
-		Label lblUser = new Label(container, SWT.NONE);
-		lblUser.setText("Variable:");
-
-		txtName = new Text(container, SWT.BORDER);
-		txtName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		txtName.setText(name);
-		txtName.addModifyListener(new ModifyListener() {
-
-			@Override
-			public void modifyText(ModifyEvent e) {
-				Text textWidget = (Text) e.getSource();
-				String userText = textWidget.getText();
-				name = userText;
-			}
-		});
-
-		Label lblOperator = new Label(container, SWT.NONE);
-		lblOperator.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
-		lblOperator.setText("Operator:");
-
-		combo = new Combo(container, SWT.NONE);
-		combo.addSelectionListener(new SelectionAdapter() {
-
-			public void widgetSelected(SelectionEvent e) {
-
-				operator = combo.getText();
-			}
-		});
-		combo.setItems(new String[] { "==", "!=", ">", ">=", "<", "<=" });
-		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		combo.select(0);
-
-		Label lblPassword = new Label(container, SWT.NONE);
-		GridData gd_lblNewLabel = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-		gd_lblNewLabel.horizontalIndent = 1;
-		lblPassword.setLayoutData(gd_lblNewLabel);
-		lblPassword.setText("Value:");
-
-		txtValue = new Text(container, SWT.BORDER);
-		txtValue.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		txtValue.setText(value);
-		txtValue.addModifyListener(new ModifyListener() {
-
-			@Override
-			public void modifyText(ModifyEvent e) {
-				Text textWidget = (Text) e.getSource();
-				String passwordText = textWidget.getText();
-				value = passwordText;
-			}
-		});
-		/*Set the default values!*/
-		if (expression != null) {
-			String[] expr = expression.split(" ");
-			setName(expr[0]);
-			setOperator(expr[1]);
-			setValue(expr[2]);
+		if (info != null) {
+			Label l = new Label(container, SWT.WRAP);
+			l.setText(info);
+			l.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 		}
-
+		Label hint = new Label(container, SWT.WRAP);
+		hint.setText("Stop only if the condition is true (e.g., i >= 10). Without a variable the breakpoint always stops.");
+		GridData hd = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
+		hd.widthHint = 420;
+		hint.setLayoutData(hd);
+		new Label(container, SWT.NONE).setText("Variable:");
+		txtName = new Text(container, SWT.BORDER);
+		txtName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		txtName.setText(name);
+		new Label(container, SWT.NONE).setText("Operator:");
+		combo = new Combo(container, SWT.READ_ONLY);
+		combo.setItems(OPERATORS);
+		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		int k = java.util.Arrays.asList(OPERATORS).indexOf(operator);
+		combo.select(Math.max(0, k));
+		new Label(container, SWT.NONE).setText("Value:");
+		txtValue = new Text(container, SWT.BORDER);
+		txtValue.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		txtValue.setText(value);
+		error = new Label(container, SWT.WRAP);
+		error.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		error.setForeground(container.getDisplay().getSystemColor(SWT.COLOR_RED));
+		/* A changed value: the message of a wrong value is removed */
+		txtName.addModifyListener(e -> error.setText(""));
+		txtValue.addModifyListener(e -> error.setText(""));
 		return container;
 	}
 
-	// override method to use "Login" as label for the OK button
 	@Override
 	protected void createButtonsForButtonBar(Composite parent) {
-		createButton(parent, IDialogConstants.OK_ID, buttonText, true);
+		createButton(parent, IDialogConstants.OK_ID, "Set", true);
 		createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
 	}
 
 	@Override
 	protected Point getInitialSize() {
-		return new Point(564, 300);
+		Point p = super.getInitialSize();
+		return new Point(Math.max(480, p.x), p.y);
 	}
 
 	@Override
 	protected void okPressed() {
-		name = txtName.getText();
-		value = txtValue.getText();
+		String n = txtName.getText().trim(), v = txtValue.getText().trim();
+		if (!n.isEmpty()) {
+			if (!n.matches("[A-Za-z_][A-Za-z0-9_]*")) {
+				error.setText("The variable must be a name of the macro (e.g., i).");
+				return;
+			}
+			try {
+				Double.parseDouble(v);
+			} catch (NumberFormatException e) {
+				error.setText("The value must be a number (e.g., 10 or 0.5).");
+				return;
+			}
+		}
+		name = n;
+		value = v;
+		operator = combo.getText();
 		super.okPressed();
 	}
 
+	/** The variable ("" for a breakpoint without a condition). */
 	public String getName() {
 		return name;
+	}
+
+	public String getOperator() {
+		return operator;
 	}
 
 	public String getValue() {
 		return value;
 	}
 
+	/** The condition "variable operator value" (null without a variable). */
+	public String getExpression() {
+		return name.isEmpty() ? null : name + " " + operator + " " + value;
+	}
 }

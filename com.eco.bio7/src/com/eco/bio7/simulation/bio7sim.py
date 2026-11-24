@@ -262,6 +262,56 @@ def normal_cdf(x, mean=0.0, sd=1.0):
 # ------------------------------------------------------------------ models
 
 
+def pairs_within(points, radius):
+    """All pairs of points within the distance (fast for many points: a grid of cells, numpy).
+
+    points: an array (n, 2) or (n, 3). Returns two arrays i, j of the indices (i < j, sorted by
+    i, then j), e.g. the neighbours of all boids of a flock in one call."""
+    p = np.asarray(points, dtype=float)
+    if p.ndim == 1:
+        p = p.reshape(-1, 1)
+    n = len(p)
+    empty = (np.zeros(0, dtype=np.int64), np.zeros(0, dtype=np.int64))
+    if n < 2 or radius <= 0:
+        return empty
+    d = p.shape[1]
+    cell = np.floor(p / radius).astype(np.int64)
+    cell -= cell.min(axis=0)
+    # one empty column after each row of cells: the cells -1 and +1 never mix rows
+    dims = cell.max(axis=0) + 2
+    mult = np.cumprod(np.concatenate([[1], dims[:-1]])).astype(np.int64)
+    key = cell @ mult
+    order = np.argsort(key, kind="stable")
+    sk = key[order]
+    # half of the neighbouring cells (each pair of cells once) and the cell itself
+    offsets = [o for o in np.ndindex(*([3] * d))]
+    offsets = [np.array(o) - 1 for o in offsets]
+    offsets = [o for o in offsets if not o.any() or o[np.nonzero(o)[0][0]] > 0]
+    ii_all, jj_all = [], []
+    for o in offsets:
+        tk = key + int(o @ mult)
+        lo = np.searchsorted(sk, tk, "left")
+        cnt = np.searchsorted(sk, tk, "right") - lo
+        total = int(cnt.sum())
+        if total == 0:
+            continue
+        ii = np.repeat(np.arange(n), cnt)
+        within = np.arange(total) - np.repeat(np.cumsum(cnt) - cnt, cnt)
+        jj = order[np.repeat(lo, cnt) + within]
+        if not o.any():
+            keep = ii < jj
+            ii, jj = ii[keep], jj[keep]
+        ii_all.append(ii)
+        jj_all.append(jj)
+    if not ii_all:
+        return empty
+    ii, jj = np.concatenate(ii_all), np.concatenate(jj_all)
+    near = ((p[ii] - p[jj]) ** 2).sum(axis=1) <= radius * radius
+    a, b = np.minimum(ii[near], jj[near]), np.maximum(ii[near], jj[near])
+    k = np.lexsort((b, a))
+    return a[k], b[k]
+
+
 class Simulation:
     """The methods of all models: random numbers, the chart and the time step t."""
 
@@ -289,9 +339,12 @@ class Simulation:
     def __init__(self):
         self.t = 0
         self.rng = np.random.default_rng(DEFAULT_SEED)
+        self._seed_value = DEFAULT_SEED
         self._charts = []
         self._more_charts = []
         self._drawing = []
+        self._records = {}
+        self._stopped = False
 
     def init(self):
         """The start state (after the start, the Setup button and a restart setting)."""
@@ -304,6 +357,24 @@ class Simulation:
     def seed(self, n):
         """Sets the seed of the random numbers (e.g., in init())."""
         self.rng = np.random.default_rng(int(n))
+        self._seed_value = int(n)
+
+    def random_at(self, index, k=0):
+        """A random number in [0, 1) for an index (e.g., of a cell or an agent) and the number k of the draw:
+        always the same for the seed, the step and the index (independent of the order of the calls; the
+        same numbers as randomAt in Java and in the page). index can be an int or a numpy array."""
+        # 32-bit arithmetic as in Java: the values below 2^32 in uint64 (a product of two of them doesn't overflow)
+        M = np.uint64(0xFFFFFFFF)
+        u = lambda v: np.asarray(np.asarray(v, dtype=np.int64) & 0xFFFFFFFF, dtype=np.uint64)
+        h = ((u(self._seed_value) * np.uint64(0x9E3779B1)) & M) ^ ((u(self.t) * np.uint64(0x85EBCA77)) & M) \
+            ^ ((u(index) * np.uint64(0xC2B2AE3D)) & M) ^ ((u(k) * np.uint64(0x27D4EB2F)) & M)
+        h = h ^ (h >> np.uint64(16))
+        h = (h * np.uint64(0x7FEB352D)) & M
+        h = h ^ (h >> np.uint64(15))
+        h = (h * np.uint64(0x846CA68B)) & M
+        h = h ^ (h >> np.uint64(16))
+        r = h / 4294967296.0
+        return float(r) if np.ndim(r) == 0 else r
 
     def random(self, min=0.0, max=1.0):
         """A random number from min to max (0 to 1)."""
@@ -362,6 +433,20 @@ class Simulation:
         else:
             self._more_charts.append({"t": str(chart), "k": "line", "n": str(name), "x": self.t, "y": float(value)})
 
+    def stop(self):
+        """Ends the simulation after this step, e.g. `if infected == 0: self.stop()` in step():
+        Bio7 pauses the simulation (Play continues it), the page stops, an experiment ends the run."""
+        self._stopped = True
+
+    def is_stopped(self):
+        """True if stop() was called in this step (or in init())."""
+        return bool(getattr(self, "_stopped", False))
+
+    def record(self, name, value):
+        """Records a value of the current step for an experiment (a column of its table,
+        besides the values of the line charts)."""
+        self._records[str(name)] = float(value)
+
     def chart_xy(self, chart, name, x, y):
         """A point (x, y) of a series of an XY chart (e.g., a phase plot)."""
         self._more_charts.append({"t": str(chart), "k": "xy", "n": str(name), "x": float(x), "y": float(y)})
@@ -372,33 +457,61 @@ class Simulation:
 
     # drawing (in the coordinates of the model: cells, the box, longitude and latitude)
 
-    def _shape(self, k, p, s=None, f=None, t=None, w=1.0, a=0.0):
-        self._drawing.append({"k": k, "p": [float(v) for v in p], "s": s or None, "f": f or None, "t": t, "w": float(w), "a": float(a)})
+    def _shape(self, k, p, s=None, f=None, t=None, w=1.0, a=0.0, z=0.0):
+        d = {"k": k, "p": [float(v) for v in p], "s": s or None, "f": f or None, "t": t, "w": float(w), "a": float(a)}
+        if z:
+            d["z"] = float(z)
+        self._drawing.append(d)
 
-    def draw_line(self, x1, y1, x2, y2, color="#000000", width=1):
-        self._shape("line", (x1, y1, x2, y2), color, None, None, width)
+    def draw_line(self, x1, y1, x2, y2, color="#000000", width=1, z=0):
+        self._shape("line", (x1, y1, x2, y2), color, None, None, width, z=z)
 
     def draw_line3(self, x1, y1, z1, x2, y2, z2, color="#000000", width=1):
         self._shape("line3", (x1, y1, z1, x2, y2, z2), color, None, None, width)
 
-    def draw_path(self, xs, ys, color="#000000", width=1):
-        self._shape("path", [v for xy in zip(xs, ys) for v in xy], color, None, None, width)
+    def draw_path(self, xs, ys, color="#000000", width=1, z=0):
+        self._shape("path", [v for xy in zip(xs, ys) for v in xy], color, None, None, width, z=z)
 
-    def draw_polygon(self, xs, ys, fill=None, stroke="#000000"):
-        self._shape("polygon", [v for xy in zip(xs, ys) for v in xy], stroke, fill)
+    def draw_polygon(self, xs, ys, fill=None, stroke="#000000", z=0):
+        self._shape("polygon", [v for xy in zip(xs, ys) for v in xy], stroke, fill, z=z)
 
-    def draw_circle(self, x, y, radius, fill=None, stroke="#000000"):
-        self._shape("circle", (x, y, radius), stroke, fill)
+    def draw_circle(self, x, y, radius, fill=None, stroke="#000000", z=0):
+        self._shape("circle", (x, y, radius), stroke, fill, z=z)
 
-    def draw_rect(self, x, y, w, h, fill=None, stroke="#000000"):
-        self._shape("rect", (x, y, w, h), stroke, fill)
+    def draw_rect(self, x, y, w, h, fill=None, stroke="#000000", z=0):
+        self._shape("rect", (x, y, w, h), stroke, fill, z=z)
 
-    def draw_text(self, x, y, text, color="#000000", size=1):
-        self._shape("text", (x, y), color, None, str(text), size)
+    def draw_text(self, x, y, text, color="#000000", size=1, z=0):
+        """A text; z: the height above the floor (an agent model, e.g. a label above an object)."""
+        self._shape("text", (x, y), color, None, str(text), size, z=z)
 
-    def draw_image(self, name, x, y, size=1, angle=0):
-        """An image (load_image) centered at x, y: the size and the angle (degrees, clockwise)."""
-        self._shape("image", (x, y), None, None, name, size, angle)
+    def draw_image(self, name, x, y, size=1, angle=0, z=0):
+        """An image (load_image) centered at x, y: the size and the angle (degrees, clockwise);
+        z: the height above the floor (an agent model)."""
+        self._shape("image", (x, y), None, None, name, size, angle, z=z)
+
+    # 3D shapes of an agent model (x, y, z of the box; lit solids)
+
+    def draw_point3(self, x, y, z, size=1, color="#e53935"):
+        """A point in 3D: a small sphere with the diameter size, e.g. a marker."""
+        self._shape("point3", (x, y, z, size), None, color)
+
+    def draw_path3(self, xs, ys, zs, color="#000000", width=1):
+        """A line through the points in 3D (the width in pixels), e.g. a flight path."""
+        self._shape("path3", [v for p in zip(xs, ys, zs) for v in p], color, None, None, width)
+
+    def draw_box(self, x, y, z, w, h, d, fill="#b0b8c4", stroke=None):
+        """A box in 3D: the corner x, y, z (the lowest values), the width (x), the height (y)
+        and the depth (z, upwards) as in box(); fill: the sides, stroke: the edges (None: none)."""
+        self._shape("box", (x, y, z, w, h, d), stroke, fill)
+
+    def draw_sphere(self, x, y, z, r, fill="#d0d4dc"):
+        """A sphere in 3D: the center and the radius, e.g. a balloon or a tree crown."""
+        self._shape("sphere", (x, y, z, r), None, fill)
+
+    def draw_polygon3(self, xs, ys, zs, fill="#b0b8c4", stroke=None):
+        """A flat polygon in 3D (the points in a plane): the fill and the outline (None: none), e.g. a roof."""
+        self._shape("polygon3", [v for p in zip(xs, ys, zs) for v in p], stroke, fill)
 
     def draw_pillar(self, x, y, radius, height=None, color="#9aa6b8"):
         """A pillar in 3D (an agent model): a vertical cylinder from the floor at x, y with the
@@ -416,7 +529,8 @@ class Simulation:
             bio7.call("sim_asset", "image", name, file)
 
     def load_model(self, name, file):
-        """Loads a 3D model (glTF .glb or .gltf, also animated) for the agents (agent.model = name)."""
+        """Loads a 3D model (glTF .glb or .gltf, also animated; OBJ with .mtl and textures; STL)
+        for the agents (agent.model = name) and place_model."""
         if not BROWSER:
             import bio7
             bio7.call("sim_asset", "model", name, file)
@@ -445,7 +559,110 @@ _N8 = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
 _N4 = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
 
-class GridModel(Simulation):
+class GridAgent:
+    """An agent on a grid (a turtle): x, y in cells (the centre of the cell (i, j) is i + 0.5,
+    j + 0.5), the heading (degrees, 0 up, clockwise), the color, an image (load_image), the size
+    (cells) and the shape ("circle", "arrow" or "square"). Extend it with own fields."""
+
+    def __init__(self, x=0.5, y=0.5, heading=0.0, color="#e53935", image=None, size=0.8, shape="circle"):
+        self.x, self.y, self.heading = float(x), float(y), float(heading)
+        self.color, self.image, self.size, self.shape = color, image, float(size), shape
+
+    def cell_x(self):
+        """The column of the cell of the agent."""
+        return int(math.floor(self.x))
+
+    def cell_y(self):
+        """The row of the cell of the agent."""
+        return int(math.floor(self.y))
+
+
+def _agent_shapes(agents):
+    """The shapes of the agents of a grid (drawn on top of the grid in Bio7 and in the page)."""
+    out = []
+    for a in agents:
+        size = float(getattr(a, "size", 0.8) or 0.8)
+        if getattr(a, "image", None):
+            out.append({"k": "image", "p": [a.x, a.y], "s": None, "f": None, "t": a.image, "w": size, "a": a.heading})
+            continue
+        color = a.color or "#e53935"
+        shape = getattr(a, "shape", "circle") or "circle"
+        if shape == "arrow":
+            r, h, p = size / 2, a.heading, []
+            for d, f in ((0, 1.0), (140, 1.0), (180, 0.35), (220, 1.0)):
+                p += [a.x + r * f * sin_deg(h + d), a.y - r * f * cos_deg(h + d)]
+            out.append({"k": "polygon", "p": p, "s": "#00000066", "f": color, "t": None, "w": 1.0, "a": 0.0})
+        elif shape == "square":
+            out.append({"k": "rect", "p": [a.x - size / 2, a.y - size / 2, size, size], "s": "#00000066", "f": color, "t": None, "w": 1.0, "a": 0.0})
+        else:
+            out.append({"k": "circle", "p": [a.x, a.y, size / 2], "s": "#00000066", "f": color, "t": None, "w": 1.0, "a": 0.0})
+    return out
+
+
+class _GridAgents:
+    """The agents of a grid model (GridModel, ValueGridModel, GeoGridModel): agents is a list of
+    GridAgent, drawn on the grid in each step (Setup removes them)."""
+
+    def add_agent(self, agent):
+        """Adds an agent (a GridAgent) and returns it."""
+        self.agents.append(agent)
+        return agent
+
+    def remove_agent(self, agent):
+        if agent in self.agents:
+            self.agents.remove(agent)
+
+    def _keep_on_grid(self, a):
+        if self.wrap:
+            a.x, a.y = a.x % self.width, a.y % self.height
+        else:
+            a.x = min(max(a.x, 0.0), self.width - 1e-9)
+            a.y = min(max(a.y, 0.0), self.height - 1e-9)
+
+    def forward(self, agent, distance):
+        """Moves the agent in its heading (0 up, clockwise; a torus or stops at the edge: wrap)."""
+        agent.x += distance * sin_deg(agent.heading)
+        agent.y -= distance * cos_deg(agent.heading)
+        self._keep_on_grid(agent)
+
+    def move_to(self, agent, x, y):
+        agent.x, agent.y = float(x), float(y)
+        self._keep_on_grid(agent)
+
+    def face(self, agent, x, y):
+        """Turns the agent to the point (the shortest way on a torus)."""
+        dx, dy = x - agent.x, y - agent.y
+        if self.wrap:
+            dx -= self.width * round(dx / self.width)
+            dy -= self.height * round(dy / self.height)
+        if dx or dy:
+            agent.heading = heading_of(dx, -dy)
+
+    def agent_distance(self, a, b):
+        """The distance of two agents (cells; the shortest way on a torus)."""
+        dx, dy = b.x - a.x, b.y - a.y
+        if self.wrap:
+            dx -= self.width * round(dx / self.width)
+            dy -= self.height * round(dy / self.height)
+        return math.sqrt(dx * dx + dy * dy)
+
+    def agents_at(self, x, y):
+        """The agents in the cell (x, y)."""
+        return [a for a in self.agents if a.cell_x() == x and a.cell_y() == y]
+
+    def count_agents_at(self, x, y):
+        return sum(1 for a in self.agents if a.cell_x() == x and a.cell_y() == y)
+
+    def agents_near(self, agent, radius):
+        """The other agents within the radius (cells)."""
+        return [o for o in self.agents if o is not agent and self.agent_distance(agent, o) <= radius]
+
+    def _prepare(self):
+        self.agents = []
+        super()._prepare()
+
+
+class GridModel(_GridAgents, Simulation):
     """A 2D grid with integer states (shown with the colors of the palette).
 
     cells: a numpy array cells[y, x] (shape (height, width)), wrap: a torus.
@@ -457,6 +674,7 @@ class GridModel(Simulation):
         self.cells = np.zeros((0, 0), dtype=np.int32)
         self.wrap = True
         self._palette = ["#ffffff", "#000000"]
+        self.agents = []
 
     def size(self, w, h):
         """A new grid (all states 0)."""
@@ -500,7 +718,7 @@ class GridModel(Simulation):
         return {"width": self.width, "height": self.height, "cells": c.ravel(), "palette": list(self._palette)}
 
 
-class ValueGridModel(Simulation):
+class ValueGridModel(_GridAgents, Simulation):
     """A 2D grid with double values (shown with a color map from range(min, max)).
 
     values: a numpy array values[y, x] (shape (height, width)), wrap: a torus.
@@ -512,6 +730,7 @@ class ValueGridModel(Simulation):
         self.width = self.height = 0
         self.values = np.zeros((0, 0))
         self.wrap = True
+        self.agents = []
         self._min, self._max = 0.0, 1.0
         self._colors = list(VIRIDIS)
 
@@ -587,6 +806,10 @@ class AgentModel(Simulation):
         self.shadows = False
         self._follow = -1
         self._scenery = []
+        # the network: the links (an agent -> its linked agents and the color of the link), drawn as lines
+        self._links = {}
+        self.link_color = "#8a94a6"
+        self.link_width = 1.0
 
     def place_model(self, model, x, y, z=0.0, heading=0.0, size=0.0, animation=None):
         """Places a 3D model (glTF, load_model) in the environment, e.g. a house, a tree or a rock:
@@ -621,7 +844,12 @@ class AgentModel(Simulation):
         self.box_width, self.box_height, self.box_depth = float(w), float(h), float(d)
 
     def distance(self, a, b):
+        """The distance of two agents (3D); the same as agent_distance(a, b)."""
         return math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2)
+
+    def agent_distance(self, a, b):
+        """The distance of two agents (3D): the same name as for the agents of a grid."""
+        return self.distance(a, b)
 
     def neighbors(self, agent, radius):
         """The other agents within the radius."""
@@ -649,6 +877,206 @@ class AgentModel(Simulation):
         a.y = ((a.y % self.box_height) + self.box_height) % self.box_height
         a.z = max(0.0, min(self.box_depth, a.z))
 
+    def neighbor_pairs(self, radius):
+        """All pairs of agents within the distance as two arrays of their indices i < j (fast for
+        many agents: pairs_within of the positions)."""
+        return pairs_within(self.positions(), radius)
+
+    # networks: links between the agents (drawn as lines in the 3D view and in the page)
+
+    def link(self, a, b, color=None):
+        """Links two agents (undirected, once; color: of this link, None: link_color)."""
+        if a is None or b is None or a is b:
+            return
+        self._links.setdefault(a, {})[b] = color
+        self._links.setdefault(b, {})[a] = color
+
+    def unlink(self, a, b):
+        self._links.get(a, {}).pop(b, None)
+        self._links.get(b, {}).pop(a, None)
+
+    def remove_links(self, a):
+        """Removes all links of the agent (e.g. before it is removed from agents)."""
+        for o in self._links.pop(a, {}):
+            self._links.get(o, {}).pop(a, None)
+
+    def clear_links(self):
+        self._links = {}
+
+    def linked(self, a, b):
+        return b in self._links.get(a, {})
+
+    def link_neighbors(self, a):
+        """The agents linked with the agent (in the order of the links)."""
+        return list(self._links.get(a, {}))
+
+    def degree(self, a):
+        return len(self._links.get(a, {}))
+
+    def set_link_color(self, a, b, color):
+        if self.linked(a, b):
+            self.link(a, b, color)
+
+    def link_count(self):
+        """The number of links (between agents of the list)."""
+        return len(self.links())
+
+    def links(self):
+        """The links as a list of pairs of the indices of the agents (i < j)."""
+        idx = {}
+        for i, a in enumerate(self.agents):
+            idx.setdefault(id(a), i)
+        out = []
+        for i, a in enumerate(self.agents):
+            for o in self._links.get(a, {}):
+                j = idx.get(id(o))
+                if j is not None and j > i:
+                    out.append((i, j))
+        return out
+
+    def link_random(self, p):
+        """A random network: each pair of agents is linked with the probability p (Erdos-Renyi)."""
+        n = len(self.agents)
+        i, j = np.triu_indices(n, 1)
+        hit = self.rng.random(len(i)) < p
+        for a, b in zip(i[hit], j[hit]):
+            self.link(self.agents[a], self.agents[b])
+
+    def link_small_world(self, k, p):
+        """A small-world network (Watts-Strogatz): a ring of the agents (their order), each linked
+        with its k nearest (k / 2 on each side), then each link is moved with the probability p."""
+        ag, n, half = self.agents, len(self.agents), max(1, int(k) // 2)
+        if n < 2:
+            return
+        for i in range(n):
+            for d in range(1, half + 1):
+                self.link(ag[i], ag[(i + d) % n])
+        for i in range(n):
+            for d in range(1, half + 1):
+                a, b = ag[i], ag[(i + d) % n]
+                if self.random() < p and self.linked(a, b):
+                    for _ in range(n):
+                        c = ag[self.random_int(n)]
+                        if c is not a and not self.linked(a, c):
+                            self.unlink(a, b)
+                            self.link(a, c)
+                            break
+
+    def link_scale_free(self, m):
+        """A scale-free network (Barabasi-Albert): the first m + 1 agents are linked with each
+        other, each further agent links with m agents before it (chosen by their number of links)."""
+        ag, n, m = self.agents, len(self.agents), max(1, int(m))
+        ends, start = [], min(n, m + 1)
+        for i in range(start):
+            for j in range(i + 1, start):
+                self.link(ag[i], ag[j])
+                ends += [i, j]
+        for i in range(start, n):
+            chosen = []
+            while len(chosen) < min(m, i):
+                j = ends[self.random_int(len(ends))] if ends else self.random_int(i)
+                if j not in chosen:
+                    chosen.append(j)
+            for j in chosen:
+                self.link(ag[i], ag[j])
+                ends += [i, j]
+
+    def link_nearby(self, radius):
+        """Links all agents within the distance (a network of the neighbourhood)."""
+        for i, j in zip(*self.neighbor_pairs(radius)):
+            self.link(self.agents[i], self.agents[j])
+
+    def components(self):
+        """The groups of agents connected by links (lists in the order of agents)."""
+        idx = {id(a): i for i, a in enumerate(self.agents)}
+        seen, out = set(), []
+        for a in self.agents:
+            if id(a) in seen:
+                continue
+            group, queue = [], [a]
+            seen.add(id(a))
+            while queue:
+                c = queue.pop(0)
+                group.append(idx[id(c)])
+                for o in self._links.get(c, {}):
+                    if id(o) in idx and id(o) not in seen:
+                        seen.add(id(o))
+                        queue.append(o)
+            out.append([self.agents[i] for i in sorted(group)])
+        return out
+
+    def shortest_path(self, a, b):
+        """The number of links on the shortest path between two agents (-1: not connected)."""
+        if a is b:
+            return 0
+        dist, queue = {id(a): 0}, [a]
+        while queue:
+            c = queue.pop(0)
+            for o in self._links.get(c, {}):
+                if id(o) not in dist:
+                    dist[id(o)] = dist[id(c)] + 1
+                    if o is b:
+                        return dist[id(o)]
+                    queue.append(o)
+        return -1
+
+    def clustering(self, a):
+        """The share of the pairs of the linked agents of a which are linked too (0 with less than 2)."""
+        nb = self.link_neighbors(a)
+        k = len(nb)
+        if k < 2:
+            return 0.0
+        closed = sum(1 for i in range(k) for j in range(i + 1, k) if self.linked(nb[i], nb[j]))
+        return 2.0 * closed / (k * (k - 1))
+
+    def layout_circle(self):
+        """Places the agents on a circle in the middle of the box (their order; z: the middle)."""
+        n = len(self.agents)
+        r = min(self.box_width, self.box_height) * 0.42
+        for i, a in enumerate(self.agents):
+            t = 2 * math.pi * i / max(1, n)
+            a.x, a.y, a.z = self.box_width / 2 + r * math.cos(t), self.box_height / 2 + r * math.sin(t), self.box_depth / 2
+        return self
+
+    def layout_spring(self, iterations=50):
+        """Arranges the network in x and y (a spring layout: the links pull, all agents push each
+        other away; in the box, z kept). Once (e.g. 100 iterations in init) or a few in each step."""
+        n = len(self.agents)
+        if n == 0:
+            return
+        w, h = self.box_width, self.box_height
+        k = math.sqrt(w * h / n)
+        pairs = np.array(self.links(), dtype=np.int64).reshape(-1, 2)
+        p = np.array([(a.x, a.y) for a in self.agents], dtype=float)
+        iu, ju = np.triu_indices(n, 1)
+        for it in range(int(iterations)):
+            temp = max(w, h) * 0.1 * (1 - it / iterations)
+            disp = np.zeros((n, 2))
+            e = p[iu] - p[ju]
+            d = np.sqrt((e ** 2).sum(axis=1))
+            same = d < 1e-9
+            if same.any():
+                s = (iu[same] + ju[same]).astype(float)
+                e[same] = 0.01 * k * np.column_stack([np.cos(s), np.sin(s)])
+                d[same] = 0.01 * k
+            f = (e / d[:, None]) * (k * k / d)[:, None]
+            np.add.at(disp, iu, f)
+            np.add.at(disp, ju, -f)
+            if len(pairs):
+                e = p[pairs[:, 0]] - p[pairs[:, 1]]
+                d = np.maximum(1e-9, np.sqrt((e ** 2).sum(axis=1)))
+                f = (e / d[:, None]) * (d * d / k)[:, None]
+                np.add.at(disp, pairs[:, 0], -f)
+                np.add.at(disp, pairs[:, 1], f)
+            dl = np.sqrt((disp ** 2).sum(axis=1))
+            move = dl > 0
+            sc = np.where(move, np.minimum(dl, temp) / np.where(move, dl, 1), 0)
+            p = p + disp * sc[:, None]
+            p[:, 0] = np.clip(p[:, 0], 0, w)
+            p[:, 1] = np.clip(p[:, 1], 0, h)
+        for a, (x, y) in zip(self.agents, p):
+            a.x, a.y = float(x), float(y)
+
     def positions(self):
         """The positions of the agents as an array (n, 3)."""
         return np.array([(a.x, a.y, a.z) for a in self.agents], dtype=float).reshape(-1, 3)
@@ -656,6 +1084,7 @@ class AgentModel(Simulation):
     def _prepare(self):
         self.agents = []
         self._scenery = []
+        self._links = {}
 
     def _state(self):
         xyz = np.array([(a.x, a.y, a.z) for a in self.agents], dtype=np.float64).ravel()
@@ -667,6 +1096,12 @@ class AgentModel(Simulation):
              "scenery_models": [p[0] for p in self._scenery],
              "scenery": np.array([v for p in self._scenery for v in p[1:6]], dtype=np.float64),
              "scenery_animations": ["" if p[6] is None else str(p[6]) for p in self._scenery]}
+        pairs = self.links()
+        if pairs:
+            s["links"] = np.array(pairs, dtype=np.float64).ravel()
+            s["link_colors"] = [self._links[self.agents[i]][self.agents[j]] or "" for i, j in pairs]
+        s["link_color"] = str(self.link_color or "")
+        s["link_width"] = float(self.link_width)
         if any(getattr(a, "image", None) or getattr(a, "model", None) for a in self.agents):
             s.update({"images": [a.image or "" for a in self.agents], "models": [a.model or "" for a in self.agents],
                       "animations": [a.animation or "" for a in self.agents],
@@ -814,6 +1249,7 @@ class GeoGridModel(GridModel):
             self.load()
 
     def _prepare(self):
+        self.agents = []
         self.cells = np.zeros((self.height, self.width), dtype=np.int32)
         self._work = {k: v.copy() for k, v in self._layers.items()}
         self._shown = None
@@ -861,6 +1297,11 @@ def cos_deg(deg):
 
 def sin_deg(deg):
     return cos_deg(90 - deg)
+
+
+# for all models (as in Java): the same numbers in Bio7 and in the page
+Simulation.cos_deg = staticmethod(cos_deg)
+Simulation.sin_deg = staticmethod(sin_deg)
 
 
 class GeoAgentModel(Simulation):
@@ -984,6 +1425,165 @@ def simulation(cls, source=None):
     return _model
 
 
+def _param_names(cls):
+    names = []
+    for c in reversed(cls.__mro__):
+        for name, v in c.__dict__.items():
+            if isinstance(v, param) and name not in names:
+                names.append(name)
+    return names
+
+
+def _measures(m):
+    """The values of the step: the line charts (the first chart by the name of the series,
+    the others "chart: series") and the recorded values."""
+    r = {}
+    for name, value in m._charts:
+        r[name] = value
+    for c in m._more_charts:
+        if c.get("k") == "line":
+            r[c["t"] + ": " + c["n"]] = c["y"]
+    r.update(m._records)
+    return r
+
+
+def _design_rows(design):
+    """The parameter sets of a design: a pandas DataFrame, a dict of columns or a list of dicts."""
+    if design is None:
+        return None
+    if hasattr(design, "to_dict") and hasattr(design, "columns"):
+        return design.to_dict("records")
+    if isinstance(design, dict):
+        cols = {k: list(v) if isinstance(v, (list, tuple, range, np.ndarray)) else [v] for k, v in design.items()}
+        n = max((len(v) for v in cols.values()), default=0)
+        return [{k: v[i] for k, v in cols.items()} for i in range(n)]
+    return [dict(r) for r in design]
+
+
+def _as_kind(kind, v):
+    """A value of a design or a sweep as the kind of the parameter (an int parameter: rounded)."""
+    if isinstance(v, np.generic):
+        v = v.item()
+    if kind is bool:
+        return bool(v)
+    if kind is int and isinstance(v, (int, float)):
+        return int(round(v))
+    if kind is float and isinstance(v, (int, float)):
+        return float(v)
+    return v
+
+
+def experiment(model, params=None, steps=100, repetitions=1, seed=DEFAULT_SEED, every=1, as_frame=True, progress=None, design=None):
+    """Runs the model several times without a display (batch runs) and returns a table.
+
+    model: the class of the model (the parameters: its defaults) or a model (its parameter
+    values are the start values), params: a dict of the swept parameters and their values
+    (a list or a single value; all combinations are run), steps: the steps of each run,
+    repetitions: the runs of each combination (the seeds seed, seed + 1, ...: the same for all
+    parameter values), every: a row every n steps (step 0 and the last step always).
+    The rows: run, seed, the swept parameters, step, the values of the line charts in the step
+    (chart(...): the name of the series, a second chart "chart: series") and of record(name, value).
+    Returns a pandas DataFrame (if pandas is installed and as_frame) or a list of dicts.
+    progress(done, total): called after each run.
+    design: given parameter sets instead of (or combined with) the sweep, e.g. a Latin hypercube or
+    the samples of a sensitivity analysis (SALib): a pandas DataFrame, a dict of columns or a list
+    of dicts (the column names are parameters). Each row is run with the repetitions; the column
+    "point" of the table is the row of the design (0, 1, ...). Values of int parameters are rounded."""
+    import itertools
+    cls = model if isinstance(model, type) else type(model)
+    base = None if isinstance(model, type) else model
+    kinds = {n: type(getattr(cls, n).value) if isinstance(getattr(cls, n, None), param) else None for n in _param_names(cls)}
+    params = dict(params or {})
+    points = _design_rows(design)
+    lists = [list(v) if isinstance(v, (list, tuple, range, np.ndarray)) else [v] for v in params.values()]
+    grid = [dict(zip(params, c)) for c in itertools.product(*lists)]
+    # the parameter sets: each row of the design with each combination of the sweep
+    combos = [(None, g) for g in grid] if points is None else [(i, {**pt, **g}) for i, pt in enumerate(points) for g in grid]
+    names = list(dict.fromkeys([n for _, c in combos for n in c]))
+    unknown = [n for n in names if n not in kinds]
+    if unknown:
+        raise ValueError("Not a parameter of the model: " + ", ".join(unknown))
+    total, rows, run = len(combos) * max(1, int(repetitions)), [], 0
+    if progress is None and not BROWSER:
+        # in Bio7: a job in the Progress view (its stop button interrupts the experiment)
+        try:
+            import bio7
+
+            def progress(done, all_runs):
+                bio7.progress(done, all_runs, "Experiment: run %d of %d" % (done, all_runs))
+        except ImportError:
+            pass
+    if progress is not None:
+        progress(0, total)
+    for point, combo in combos:
+        for k in range(max(1, int(repetitions))):
+            run += 1
+            m = cls()
+            if base is not None:
+                for n in _param_names(cls):
+                    setattr(m, n, getattr(base, n))
+            for n, v in combo.items():
+                setattr(m, n, _as_kind(kinds[n], v))
+            m.t = 0
+            m.seed(int(seed) + k)
+            m._charts, m._more_charts, m._drawing, m._records = [], [], [], {}
+            m._stopped = False
+            m._prepare()
+            m.init()
+
+            def row():
+                r = {"run": run} if point is None else {"run": run, "point": point}
+                r["seed"] = int(seed) + k
+                r.update({n: getattr(m, n) for n in names})
+                r["step"] = m.t
+                r.update(_measures(m))
+                return r
+
+            rows.append(row())
+            for s in range(1, int(steps) + 1):
+                if m._stopped:
+                    break
+                m._charts, m._more_charts, m._drawing = [], [], []
+                m.step()
+                m.t += 1
+                # the last step of the run: also a step with stop()
+                if s % max(1, int(every)) == 0 or s == int(steps) or m._stopped:
+                    rows.append(row())
+            if progress is not None:
+                progress(run, total)
+    if as_frame:
+        try:
+            import pandas as pd
+            return pd.DataFrame(rows)
+        except ImportError:
+            pass
+    return rows
+
+
+def _csv(rows, file):
+    """Writes the rows (dicts) as CSV (NA for missing values)."""
+    cols = []
+    for r in rows:
+        for c in r:
+            if c not in cols:
+                cols.append(c)
+
+    def cell(v):
+        if v is None or (isinstance(v, float) and math.isnan(v)):
+            return "NA"
+        if isinstance(v, bool):
+            return "TRUE" if v else "FALSE"
+        if isinstance(v, (int, float, np.integer, np.floating)):
+            f = float(v)
+            return str(int(f)) if f == int(f) and abs(f) < 1e15 else repr(f)
+        return '"' + str(v).replace('"', '""') + '"'
+
+    with open(file, "w", encoding="utf-8") as fh:
+        fh.write(",".join('"' + c.replace('"', '""') + '"' for c in cols) + "\n")
+        for r in rows:
+            fh.write(",".join(cell(r.get(c)) for c in cols) + "\n")
+
+
 def _do(op, arg=""):
     """The protocol of Bio7 and of the page: setup, step, action, set, load; returns the state."""
     m = _model
@@ -995,7 +1595,9 @@ def _do(op, arg=""):
         return {}
     if op == "setup":
         m.t = 0
-        m.seed(DEFAULT_SEED)
+        m._stopped = False
+        # the seed of the settings (the field Seed of Bio7 and of the page)
+        m.seed(int(float(arg)) if str(arg).strip() else DEFAULT_SEED)
         m._charts = []
         m._more_charts = []
         m._drawing = []
@@ -1003,19 +1605,38 @@ def _do(op, arg=""):
         m.init()
     elif op == "step":
         m._drawing = []
+        m._stopped = False
         m.step()
         m.t += 1
     elif op == "action":
         getattr(m, arg)()
+    elif op == "input":
+        # a click, a drag (x, y: cells of a grid, the floor of an agent model) or a key of the view
+        ev = arg.split("\x1f")
+        if ev[0] == "key":
+            m.key(ev[1] if len(ev) > 1 else "")
+        else:
+            getattr(m, ev[0])(float(ev[1]), float(ev[2]))
     elif op == "set":
         for k, v in json.loads(arg).items():
             setattr(m, k, v)
         return {}
+    elif op == "experiment":
+        # an experiment of Bio7 (the dialog): the settings of the model are the start values, the table as CSV
+        spec = json.loads(arg)
+        rows = experiment(m, spec.get("params", {}), spec.get("steps", 100), spec.get("repetitions", 1),
+                          spec.get("seed", DEFAULT_SEED), spec.get("every", 1), as_frame=False)
+        _csv(rows, spec["file"])
+        return {"rows": float(len(rows))}
     s = m._state()
     s["chart_names"] = [c[0] for c in m._charts]
     s["chart_values"] = np.array([c[1] for c in m._charts], dtype=np.float64)
     s["more_charts"] = json.dumps(m._more_charts)
-    s["draw"] = json.dumps(m._drawing)
+    # the agents of a grid are drawn on top of the shapes of the step
+    s["draw"] = json.dumps(m._drawing + (_agent_shapes(m.agents) if isinstance(m, _GridAgents) else []))
+    s["stopped"] = 1.0 if getattr(m, "_stopped", False) else 0.0
+    # the input methods of the model (Bio7 and the page give it the clicks, drags and keys of the view)
+    s["inputs"] = [n for n in ("click", "drag", "key") if callable(getattr(m, n, None))]
     m._charts = []
     m._more_charts = []
     return s

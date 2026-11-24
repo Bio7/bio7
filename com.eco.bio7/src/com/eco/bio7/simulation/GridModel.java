@@ -10,6 +10,8 @@
  *******************************************************************************/
 package com.eco.bio7.simulation;
 
+import java.util.ArrayList;
+
 import ij.ImagePlus;
 
 /**
@@ -133,13 +135,90 @@ public abstract class GridModel extends Simulation {
 		return n;
 	}
 
+	/* ===================== Agents on the grid ===================== */
+
+	/**
+	 * The agents on the grid (turtles on the patches, see {@link GridAgent}),
+	 * drawn on top of the grid; Setup removes them. Add them with addAgent.
+	 */
+	public ArrayList<GridAgent> agents = new ArrayList<>();
+
+	/* The shapes of the agents when the grid was shown (drawn in another thread) */
+	private volatile java.util.List<Shape> shownAgents = java.util.List.of();
+
+	/** Adds an agent (e.g., an own subclass of GridAgent) and returns it. */
+	public <A extends GridAgent> A addAgent(A agent) {
+		agents.add(agent);
+		return agent;
+	}
+
+	/** Removes an agent. */
+	public void removeAgent(GridAgent agent) {
+		agents.remove(agent);
+	}
+
+	/** Moves the agent in its heading (0 up, clockwise): on a torus (wrap) or it stops at the edge. */
+	public void forward(GridAgent agent, double distance) {
+		GridAgents.forward(agent, distance, width, height, wrap);
+	}
+
+	/** Moves the agent to the position (cells; on a torus or limited to the grid). */
+	public void moveTo(GridAgent agent, double x, double y) {
+		agent.x = x;
+		agent.y = y;
+		GridAgents.keep(agent, width, height, wrap);
+	}
+
+	/** Turns the agent to the position (cells; the shortest way on a torus). */
+	public void face(GridAgent agent, double x, double y) {
+		GridAgents.face(agent, x, y, width, height, wrap);
+	}
+
+	/** The distance of two agents in cells (the shortest way on a torus). */
+	public double agentDistance(GridAgent a, GridAgent b) {
+		return GridAgents.distance(a, b, width, height, wrap);
+	}
+
+	/** The agents in the cell (x, y). */
+	public ArrayList<GridAgent> agentsAt(int x, int y) {
+		return GridAgents.at(agents, x, y);
+	}
+
+	/** The number of the agents in the cell (x, y). */
+	public int countAgentsAt(int x, int y) {
+		return GridAgents.at(agents, x, y).size();
+	}
+
+	/** The other agents within the radius (cells) of the agent. */
+	public ArrayList<GridAgent> agentsNear(GridAgent agent, double radius) {
+		return GridAgents.near(agents, agent, radius, width, height, wrap);
+	}
+
+	/* The shapes of the agents for the display (called by display()) */
+	void showAgents() {
+		shownAgents = GridAgents.shapes(agents);
+	}
+
+	/** The shapes of the step and (on top) the agents. */
+	@Override
+	public java.util.List<Shape> getDrawing() {
+		java.util.List<Shape> d = super.getDrawing();
+		d.addAll(shownAgents);
+		return d;
+	}
+
 	@Override
 	protected void prepareDisplay() {
-		GridDisplay.prepare();
+		agents = new ArrayList<>();
+		shownAgents = java.util.List.of();
+		if (!headless) {
+			GridDisplay.prepare();
+		}
 	}
 
 	@Override
 	protected void display() {
+		showAgents();
 		int[] colors = new int[palette.length];
 		for (int i = 0; i < colors.length; i++) {
 			colors[i] = Simulation.rgb(palette[i]);

@@ -19,10 +19,19 @@ package com.eco.bio7.simulation;
  */
 public final class Shape {
 
-	/** The kind: line, line3, path, polygon, circle, rect, text, image. */
+	/**
+	 * The kind: line, line3, path, polygon, circle, rect, text, image and the 3D
+	 * shapes of an agent model pillar, point3, path3, box, sphere, polygon3.
+	 */
 	public final String kind;
 
-	/** The coordinates (line: x1, y1, x2, y2; line3: x1, y1, z1, x2, y2, z2; path and polygon: x0, y0, x1, y1, ...; circle: x, y, radius; rect: x, y, w, h; text and image: x, y). */
+	/**
+	 * The coordinates (line: x1, y1, x2, y2; line3: x1, y1, z1, x2, y2, z2; path
+	 * and polygon: x0, y0, x1, y1, ...; circle: x, y, radius; rect: x, y, w, h;
+	 * text and image: x, y; pillar: x, y, radius, height; point3: x, y, z, size;
+	 * path3 and polygon3: x0, y0, z0, x1, y1, z1, ...; box: x, y, z (the corner),
+	 * width, height, depth; sphere: x, y, z, radius).
+	 */
 	public final double[] p;
 
 	/** The color of the line (or of the text), null: none. */
@@ -40,8 +49,19 @@ public final class Shape {
 	/** The angle of an image in degrees (clockwise). */
 	public final double angle;
 
+	/**
+	 * The height of a 2D shape above the floor of an agent model (rect, circle,
+	 * polygon, path, line, text, image; 0: on the floor).
+	 */
+	public final double z;
+
 	public Shape(String kind, double[] p, String stroke, String fill, String text, double width, double angle) {
+		this(kind, p, stroke, fill, text, width, angle, 0);
+	}
+
+	public Shape(String kind, double[] p, String stroke, String fill, String text, double width, double angle, double z) {
 		this.kind = kind;
+		this.z = Double.isFinite(z) ? z : 0;
 		this.p = p;
 		this.stroke = empty(stroke);
 		this.fill = empty(fill);
@@ -69,6 +89,9 @@ public final class Shape {
 		}
 		if (text != null) {
 			b.append(",\"t\":").append(JavaToJs.quote(text));
+		}
+		if (z != 0) {
+			b.append(",\"z\":").append(z);
 		}
 		return b.append(",\"w\":").append(width).append(",\"a\":").append(angle).append('}').toString();
 	}

@@ -51,6 +51,12 @@ public abstract class Simulation extends Model {
 	private SimRandom random = new SimRandom(DEFAULT_SEED);
 	private int seedValue = DEFAULT_SEED;
 
+	/* The seed of the setup (the field Seed of the settings; init() can set another with seed(...)) */
+	private volatile int startSeed = DEFAULT_SEED;
+
+	/* stop() in this step: the simulation ends (Bio7 pauses, the page stops, an experiment ends the run) */
+	private volatile boolean stopped;
+
 	/* The charts (the first chart has the title "") */
 	private final Map<String, ChartData> charts = new LinkedHashMap<>();
 
@@ -61,6 +67,15 @@ public abstract class Simulation extends Model {
 	private final Map<String, String> imageFiles = new LinkedHashMap<>(), modelFiles = new LinkedHashMap<>();
 
 	private volatile boolean ready;
+
+	/*
+	 * A run without a display (an Experiment): no views, no charts view, no
+	 * display() of the steps
+	 */
+	volatile boolean headless;
+
+	/* The values of record(name, value) of the current step (the columns of an Experiment) */
+	private final Map<String, Double> records = new LinkedHashMap<>();
 
 	private boolean settingsShown;
 
@@ -113,6 +128,133 @@ public abstract class Simulation extends Model {
 	/** Displays the model (ImageJ image or 3D view). */
 	protected abstract void display();
 
+	/**
+	 * A click of the mouse in the view of the model (override it): for a grid the
+	 * position in cells (the cell {@code ((int) x, (int) y)}, y from the top as
+	 * in get(x, y)), for an agent model the point on the floor of the box. Called
+	 * between the steps (also when the simulation is paused; the view is updated
+	 * after the call), in the HTML export with the same values.
+	 *
+	 * @param x the x position
+	 * @param y the y position
+	 */
+	public void click(double x, double y) {
+	}
+
+	/**
+	 * A drag of the mouse in the view of the model (override it), e.g., to paint
+	 * cells: called for the position where the drag started and for each further
+	 * position (a grid: each new cell). In the 2D view a drag with the left mouse
+	 * button, in the 3D view with the Shift key (a drag without it rotates the
+	 * view). The positions as in {@link #click(double, double)}.
+	 *
+	 * @param x the x position
+	 * @param y the y position
+	 */
+	public void drag(double x, double y) {
+	}
+
+	/**
+	 * A key pressed in the view of the model (override it): a character ("a",
+	 * "A", "1", " ") or the name of a special key ("ArrowLeft", "ArrowRight",
+	 * "ArrowUp", "ArrowDown", "Enter", "Escape", "Backspace", "Delete", "Tab"; the
+	 * names of the key of JavaScript). With this method, the view gives the keys to
+	 * the model (not to its own shortcuts).
+	 *
+	 * @param key the key
+	 */
+	public void key(String key) {
+	}
+
+	/* The input of the views: one after the other, between the steps (Java models; scripts in the thread of the script) */
+	private static final java.util.concurrent.ExecutorService INPUT = java.util.concurrent.Executors.newSingleThreadExecutor(r -> {
+		Thread t = new Thread(r, "Bio7 simulation input");
+		t.setDaemon(true);
+		return t;
+	});
+
+	/* A drag which waits (fast drags of the 3D view: only the last position) */
+	private final java.util.concurrent.atomic.AtomicReference<double[]> pendingDrag = new java.util.concurrent.atomic.AtomicReference<>();
+
+	/* True if the model handles the input ("click", "drag" or "key"): its method is overridden (a script: defined) */
+	boolean handles(String event) {
+		if (this instanceof ScriptSimulation.Host h) {
+			return h.script().inputs().contains(event);
+		}
+		try {
+			java.lang.reflect.Method m = "key".equals(event) ? getClass().getMethod("key", String.class) : getClass().getMethod(event, double.class, double.class);
+			return m.getDeclaringClass() != Simulation.class;
+		} catch (NoSuchMethodException | SecurityException e) {
+			return false;
+		}
+	}
+
+	/*
+	 * An input of a view: "click", "drag" (x, y) or "key" (the key). Queued and
+	 * called between the steps; coalesce: a drag replaces a drag which still waits
+	 */
+	void input(String event, double x, double y, String key, boolean coalesce) {
+		if (!ready || headless || !handles(event)) {
+			return;
+		}
+		boolean merge = coalesce && "drag".equals(event);
+		if (merge && pendingDrag.getAndSet(new double[] { x, y }) != null) {
+			return;
+		}
+		java.util.function.Supplier<double[]> position = () -> {
+			if (merge) {
+				double[] p = pendingDrag.getAndSet(null);
+				if (p != null) {
+					return p;
+				}
+			}
+			return new double[] { x, y };
+		};
+		if (this instanceof ScriptSimulation.Host h) {
+			h.script().input(this, () -> {
+				if ("key".equals(event)) {
+					return "key\u001f" + key;
+				}
+				double[] p = position.get();
+				return event + "\u001f" + p[0] + "\u001f" + p[1];
+			});
+			return;
+		}
+		INPUT.execute(() -> {
+			try {
+				synchronized (this) {
+					if ("key".equals(event)) {
+						key(key);
+					} else {
+						double[] p = position.get();
+						if ("click".equals(event)) {
+							click(p[0], p[1]);
+						} else {
+							drag(p[0], p[1]);
+						}
+					}
+				}
+				display();
+				ChartDisplay.update(this);
+			} catch (RuntimeException e) {
+				System.err.println("The input " + event + " of the model failed:");
+				e.printStackTrace();
+			}
+		});
+	}
+
+	/* The name of a key (as KeyboardEvent.key of JavaScript): a character or a special key; null for keys which are not given to the model */
+	static String keyName(char c, String special) {
+		if (special != null) {
+			/* "": a modifier key (Shift, Ctrl, ...) */
+			return special.isEmpty() ? null : special;
+		}
+		if (c >= ' ' && c != 127 && c != 0xFFFF) {
+			return String.valueOf(c);
+		}
+		return null;
+	}
+
 	/** Prepares the display before init() (called in the thread of the user interface). */
 	protected void prepareDisplay() {
 	}
@@ -130,8 +272,9 @@ public abstract class Simulation extends Model {
 		}
 		synchronized (this) {
 			t = 0;
-			random = new SimRandom(DEFAULT_SEED);
-			seedValue = DEFAULT_SEED;
+			random = new SimRandom(startSeed);
+			seedValue = startSeed;
+			stopped = false;
 			synchronized (charts) {
 				charts.clear();
 			}
@@ -151,20 +294,135 @@ public abstract class Simulation extends Model {
 		display();
 	}
 
+	/* The setup of a run without a display (an Experiment): the seed of the run */
+	void setupHeadless(int seed) {
+		headless = true;
+		synchronized (this) {
+			t = 0;
+			stopped = false;
+			random = new SimRandom(seed);
+			seedValue = seed;
+			synchronized (charts) {
+				charts.clear();
+			}
+			synchronized (drawing) {
+				drawing.clear();
+			}
+			records.clear();
+			seriesBefore.clear();
+			prepareDisplay();
+			init();
+			ready = true;
+		}
+	}
+
+	/* The lengths of the line chart series before the step (a value of the step: the series is longer) */
+	private final Map<String, Integer> seriesBefore = new java.util.HashMap<>();
+
+	/* A step of a run without a display */
+	void stepHeadless() {
+		seriesBefore.clear();
+		synchronized (charts) {
+			for (ChartData c : charts.values()) {
+				for (Map.Entry<String, List<double[]>> e : c.series.entrySet()) {
+					seriesBefore.put(c.title + "\u001f" + e.getKey(), e.getValue().size());
+				}
+			}
+		}
+		synchronized (this) {
+			synchronized (drawing) {
+				drawing.clear();
+			}
+			stopped = false;
+			step();
+			t++;
+		}
+	}
+
+	/**
+	 * Ends the simulation after this step, e.g., {@code if (infected == 0) stop();}
+	 * in step(): Bio7 pauses the simulation (Play continues it), the HTML page
+	 * stops, an Experiment ends the run (its last step is recorded).
+	 */
+	public void stop() {
+		stopped = true;
+	}
+
+	/** True if stop() was called in the last step (or in init()). */
+	public boolean isStopped() {
+		return stopped;
+	}
+
+	/** The seed of the setup (default 42; the field Seed of the settings in Bio7). */
+	public int getStartSeed() {
+		return startSeed;
+	}
+
+	/**
+	 * Sets the seed of the next setup (the field Seed of the settings). A seed set
+	 * in init() with seed(...) has priority.
+	 */
+	public void setStartSeed(int seed) {
+		startSeed = seed;
+	}
+
+	/**
+	 * Records a value of the current step for an Experiment (a column of its
+	 * table, besides the values of the line charts). Without an Experiment, the
+	 * value is kept but not shown.
+	 */
+	public void record(String name, double value) {
+		synchronized (records) {
+			records.put(name, value);
+		}
+	}
+
+	/*
+	 * The values of the step for an Experiment: the values of the line charts in
+	 * this step (the first chart: the name of the series, the others "chart:
+	 * series") and the recorded values
+	 */
+	Map<String, Double> measures() {
+		Map<String, Double> m = new LinkedHashMap<>();
+		synchronized (charts) {
+			for (ChartData c : charts.values()) {
+				if (!ChartData.LINE.equals(c.kind)) {
+					continue;
+				}
+				for (Map.Entry<String, List<double[]>> e : c.series.entrySet()) {
+					List<double[]> s = e.getValue();
+					Integer before = seriesBefore.get(c.title + "\u001f" + e.getKey());
+					boolean added = !s.isEmpty() && (before == null || s.size() > before);
+					m.put(c.title.isEmpty() ? e.getKey() : c.title + ": " + e.getKey(), added ? s.get(s.size() - 1)[1] : Double.NaN);
+				}
+			}
+		}
+		synchronized (records) {
+			m.putAll(records);
+		}
+		return m;
+	}
+
 	@Override
 	public void run() {
-		if (!ready) {
+		if (!ready || headless) {
 			return;
 		}
 		synchronized (this) {
 			synchronized (drawing) {
 				drawing.clear();
 			}
+			stopped = false;
 			step();
 			t++;
 		}
 		display();
 		ChartDisplay.update(this);
+		/* stop() in the step: the simulation pauses (the Play button continues it) */
+		if (stopped && hasDisplay()) {
+			/* At once (thread-safe; its listeners update the user interface): no further step of the timer */
+			com.eco.bio7.time.Time.setPause(true);
+		}
 	}
 
 	/**
@@ -892,10 +1150,11 @@ public abstract class Simulation extends Model {
 	/*
 	 * The shapes are drawn in the coordinates of the model: the cells of a grid (x
 	 * to the right, y down, fractions between the cells), the box of an agent
-	 * model (2D shapes on the floor) or longitude and latitude of a geospatial
-	 * agent model (the radius of a circle in km, the size of a text or an image
-	 * in pixels). A color null or "" is no line (or no fill). The shapes are
-	 * drawn again in each step (cleared before step()).
+	 * model (2D shapes on the floor or at a height z, the 3D shapes in the box) or
+	 * longitude and latitude of a geospatial agent model (the radius of a circle
+	 * in km, the size of a text or an image in pixels). A color null or "" is no
+	 * line (or no fill). The shapes are drawn again in each step (cleared before
+	 * step()).
 	 */
 
 	void clearDrawing() {
@@ -905,14 +1164,34 @@ public abstract class Simulation extends Model {
 	}
 
 	void addShape(Shape s) {
+		/* 3D shapes in a 2D view (a grid): not drawn, a message once */
+		if (!threeD() && !warned3d && THREE_D_SHAPES.contains(s.kind)) {
+			warned3d = true;
+			System.err.println("The model " + getClass().getSimpleName() + " draws a 3D shape (" + s.kind
+					+ "): 3D shapes are drawn only in the 3D view of an agent model (the 2D view of a grid ignores them)");
+		}
 		synchronized (drawing) {
 			drawing.add(s);
 		}
 	}
 
+	/* The shapes which only the 3D view draws */
+	private static final java.util.Set<String> THREE_D_SHAPES = java.util.Set.of("box", "sphere", "point3", "path3", "polygon3", "pillar");
+	private boolean warned3d;
+
+	/* True for a model of the 3D view (an agent model) or of the globe (it decides itself which shapes it shows) */
+	boolean threeD() {
+		return this instanceof AgentModel || this instanceof GeoAgentModel;
+	}
+
 	/** A line (the width in pixels). */
 	public void drawLine(double x1, double y1, double x2, double y2, String color, double width) {
-		addShape(new Shape("line", new double[] { x1, y1, x2, y2 }, color, null, null, width, 0));
+		drawLine(x1, y1, x2, y2, color, width, 0);
+	}
+
+	/** A line at the height z above the floor (an agent model). */
+	public void drawLine(double x1, double y1, double x2, double y2, String color, double width, double z) {
+		addShape(new Shape("line", new double[] { x1, y1, x2, y2 }, color, null, null, width, 0, z));
 	}
 
 	/** A line in 3D (an agent model: x, y, z of the box). */
@@ -931,27 +1210,52 @@ public abstract class Simulation extends Model {
 
 	/** A line through the points (e.g., the track of an agent). */
 	public void drawPath(double[] xs, double[] ys, String color, double width) {
-		addShape(new Shape("path", interleave(xs, ys), color, null, null, width, 0));
+		drawPath(xs, ys, color, width, 0);
+	}
+
+	/** A line through the points at the height z above the floor (an agent model). */
+	public void drawPath(double[] xs, double[] ys, String color, double width, double z) {
+		addShape(new Shape("path", interleave(xs, ys), color, null, null, width, 0, z));
 	}
 
 	/** A polygon (the fill and the color of the line, null: none; e.g., a pasture or a territory). */
 	public void drawPolygon(double[] xs, double[] ys, String fill, String stroke) {
-		addShape(new Shape("polygon", interleave(xs, ys), stroke, fill, null, 1, 0));
+		drawPolygon(xs, ys, fill, stroke, 0);
+	}
+
+	/** A polygon at the height z above the floor (an agent model). */
+	public void drawPolygon(double[] xs, double[] ys, String fill, String stroke, double z) {
+		addShape(new Shape("polygon", interleave(xs, ys), stroke, fill, null, 1, 0, z));
 	}
 
 	/** A circle (a geospatial agent model: the radius in km). */
 	public void drawCircle(double x, double y, double radius, String fill, String stroke) {
-		addShape(new Shape("circle", new double[] { x, y, radius }, stroke, fill, null, 1, 0));
+		drawCircle(x, y, radius, fill, stroke, 0);
+	}
+
+	/** A circle at the height z above the floor (an agent model). */
+	public void drawCircle(double x, double y, double radius, String fill, String stroke, double z) {
+		addShape(new Shape("circle", new double[] { x, y, radius }, stroke, fill, null, 1, 0, z));
 	}
 
 	/** A rectangle (x, y: the upper left corner of a grid). */
 	public void drawRect(double x, double y, double w, double h, String fill, String stroke) {
-		addShape(new Shape("rect", new double[] { x, y, w, h }, stroke, fill, null, 1, 0));
+		drawRect(x, y, w, h, fill, stroke, 0);
+	}
+
+	/** A rectangle at the height z above the floor (an agent model). */
+	public void drawRect(double x, double y, double w, double h, String fill, String stroke, double z) {
+		addShape(new Shape("rect", new double[] { x, y, w, h }, stroke, fill, null, 1, 0, z));
 	}
 
 	/** A text (the size in cells of a grid, in pixels on a map or the globe). */
 	public void drawText(double x, double y, String text, String color, double size) {
-		addShape(new Shape("text", new double[] { x, y }, color, null, text, size, 0));
+		drawText(x, y, text, color, size, 0);
+	}
+
+	/** A text at the height z above the floor (an agent model, e.g., a label above an object). */
+	public void drawText(double x, double y, String text, String color, double size, double z) {
+		addShape(new Shape("text", new double[] { x, y }, color, null, text, size, 0, z));
 	}
 
 	/**
@@ -960,7 +1264,47 @@ public abstract class Simulation extends Model {
 	 * degrees (clockwise, e.g., the heading of an animal).
 	 */
 	public void drawImage(String name, double x, double y, double size, double angle) {
-		addShape(new Shape("image", new double[] { x, y }, null, null, name, size, angle));
+		drawImage(name, x, y, size, angle, 0);
+	}
+
+	/** An image at the height z above the floor (an agent model: the lower edge of the image, standing). */
+	public void drawImage(String name, double x, double y, double size, double angle, double z) {
+		addShape(new Shape("image", new double[] { x, y }, null, null, name, size, angle, z));
+	}
+
+	/* The 3D shapes of an agent model (x, y, z of the box; lit solids) */
+
+	/** A point in 3D (an agent model): a small sphere with the diameter size, e.g., a marker. */
+	public void drawPoint3(double x, double y, double z, double size, String color) {
+		addShape(new Shape("point3", new double[] { x, y, z, size }, null, color, null, 1, 0));
+	}
+
+	/** A line through the points in 3D (an agent model; the width in pixels), e.g., a flight path. */
+	public void drawPath3(double[] xs, double[] ys, double[] zs, String color, double width) {
+		addShape(new Shape("path3", interleave3(xs, ys, zs), color, null, null, width, 0));
+	}
+
+	/**
+	 * A box in 3D (an agent model): the corner x, y, z (the lowest values), the
+	 * width (x), the height (y) and the depth (z, upwards) as in box(...); fill:
+	 * the color of the sides, stroke: the color of the edges (null: none), e.g., a
+	 * house or a tower.
+	 */
+	public void drawBox(double x, double y, double z, double w, double h, double d, String fill, String stroke) {
+		addShape(new Shape("box", new double[] { x, y, z, w, h, d }, stroke, fill, null, 1, 0));
+	}
+
+	/** A sphere in 3D (an agent model): the center and the radius, e.g., a balloon or a tree crown. */
+	public void drawSphere(double x, double y, double z, double radius, String fill) {
+		addShape(new Shape("sphere", new double[] { x, y, z, radius }, null, fill, null, 1, 0));
+	}
+
+	/**
+	 * A flat polygon in 3D (an agent model; the points should lie in a plane): the
+	 * fill and the color of the outline (null: none), e.g., a roof or a ramp.
+	 */
+	public void drawPolygon3(double[] xs, double[] ys, double[] zs, String fill, String stroke) {
+		addShape(new Shape("polygon3", interleave3(xs, ys, zs), stroke, fill, null, 1, 0));
 	}
 
 	/** The shapes of the current step (a copy). */
@@ -980,6 +1324,17 @@ public abstract class Simulation extends Model {
 		return p;
 	}
 
+	private static double[] interleave3(double[] xs, double[] ys, double[] zs) {
+		int n = Math.min(xs.length, Math.min(ys.length, zs.length));
+		double[] p = new double[n * 3];
+		for (int i = 0; i < n; i++) {
+			p[i * 3] = xs[i];
+			p[i * 3 + 1] = ys[i];
+			p[i * 3 + 2] = zs[i];
+		}
+		return p;
+	}
+
 	/* ===================== Images and 3D models ===================== */
 
 	/**
@@ -992,10 +1347,12 @@ public abstract class Simulation extends Model {
 	}
 
 	/**
-	 * Loads a 3D model (glTF: .glb or .gltf, also animated) for the agents
-	 * (agent.model = name, agent.animation = the name of an animation). A relative
-	 * path is searched in the project of the model; the HTML export embeds the
-	 * model.
+	 * Loads a 3D model (glTF: .glb or .gltf, also animated; Wavefront OBJ with
+	 * the materials and textures of its .mtl file, y up; STL, binary or ASCII, z
+	 * up) for the agents (agent.model = name, agent.animation = the name of an
+	 * animation) and placeModel. A relative path is searched in the project of
+	 * the model; the HTML export embeds the model (OBJ and STL converted to
+	 * glTF).
 	 */
 	public void loadModel(String name, String file) {
 		modelFiles.put(name, resolve(file));

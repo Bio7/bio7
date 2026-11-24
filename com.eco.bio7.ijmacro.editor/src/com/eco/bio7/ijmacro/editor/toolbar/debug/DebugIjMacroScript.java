@@ -35,7 +35,8 @@ public class DebugIjMacroScript extends Action {
 		setToolTipText(
 				"Starts running the macro in debug mode and opens the \"Debug\" window, which\n"
 				+ "initially displays the memory usage, number of open images, and the active image's title.\n"
-				+ "The macro stops running at the first executable line of code, which is highlighted.\n"
+				+ "The macro runs to the first breakpoint (without breakpoints it stops at the first\n"
+				+ "executable line of code), which is highlighted.\n"
 				+ "Use one of the following commands to continue execution.");
 		//ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/rundebug.gif")));
 		ImageDescriptor desc = IJMacroEditorPlugin.getImageDescriptor("/icons/ijmacrodebug/rundebug.svg");

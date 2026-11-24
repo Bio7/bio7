@@ -51,82 +51,18 @@ public class DebugMarkerAction extends Action {
 		this.debugVariablesView = debugVariablesView;
 		setId("RunTomarker");
 		setText("Run To Debug Marker");
-		setToolTipText(
-				"Runs the macro to the defined breakpoints or to the evaluated\nexpression of the expression breakpoints.");
+		setToolTipText("Runs the macro to the next breakpoint (each time its line is reached,\nalso in a loop; a breakpoint with a condition only if it is true).");
 		//ImageDescriptor desc = ImageDescriptor.createFromImage(new Image(Display.getCurrent(), getClass().getResourceAsStream("/pics/stepinto_co.gif")));
 		ImageDescriptor desc = IJMacroEditorPlugin.getImageDescriptor("/icons/ijmacrodebug/changevariablevalue_co.svg");
 		this.setImageDescriptor(desc);
 	}
 
+	/* Continues to the next breakpoint (each time its line is entered, also in a loop; a condition: if it is true) */
 	public void run() {
-		IEditorPart editore = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-				.getActiveEditor();
-		IResource resource = (IResource) editore.getEditorInput().getAdapter(IResource.class);
-		if (editore != null) {
-			IJMacroEditor editor = (IJMacroEditor) editore;
-
-			if (resource != null) {
-				Map<Integer, String> map1 = findMyMarkers(resource);
-				/* Sorting the Map with a Treemap! */
-				Map<Integer, String> map = new TreeMap<Integer, String>(map1);
-				counter = 0;
-				for (Map.Entry<Integer, String> entry : map.entrySet()) {
-
-					Integer lineNum = entry.getKey();
-					String expression = entry.getValue();
-
-					if (counter == markerCount) {
-						if (lineNum > 0) {
-
-							if (expression != null) {
-								editor.setMarkerExpression(expression);
-
-								/*IDocumentProvider dp = editor.getDocumentProvider();
-								IDocument doc = dp.getDocument(editor.getEditorInput());
-								
-								IRegion reg = null;
-								try {
-									reg = doc.getLineInformation(lineNum);
-								} catch (BadLocationException e1) {
-								
-									e1.printStackTrace();
-								}
-								
-								editor.selectAndReveal(reg.getOffset()-1, 0);
-								
-								
-								
-								editor.runToInsertionPoint();*/
-
-								editor.runToExpression();
-							} else {
-
-								IDocumentProvider dp = editor.getDocumentProvider();
-								IDocument doc = dp.getDocument(editor.getEditorInput());
-
-								IRegion reg = null;
-								try {
-									reg = doc.getLineInformation(lineNum);
-								} catch (BadLocationException e1) {
-
-									e1.printStackTrace();
-								}
-
-								editor.selectAndReveal(reg.getOffset() - 1, 0);
-
-								editor.runToInsertionPoint();
-							}
-
-							markerCount++;
-							break;
-						}
-					}
-					counter++;
-				}
-
-			}
+		IEditorPart editore = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+		if (editore instanceof IJMacroEditor editor) {
+			editor.runToBreakpoints();
 		}
-
 	}
 
 	public Map<Integer, String> findMyMarkers(IResource target) {

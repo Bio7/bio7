@@ -527,7 +527,6 @@ public final class PythonEnvironment {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		store.setValue("python_pipe_path", binFolder.toString());
 		store.setValue(EmbeddedPython.PREF_EMBEDDED, true);
-		store.setValue("python_3x", true);
 		/*
 		 * Saved at once: else the preferences are only written when Bio7 ends normally
 		 * (ended otherwise, e.g., from the IDE, the next start uses the former Python)

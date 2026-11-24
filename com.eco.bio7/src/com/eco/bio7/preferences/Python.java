@@ -6,7 +6,6 @@ import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -14,23 +13,6 @@ import com.eco.bio7.Bio7Plugin;
 
 public class Python extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
-	/* A check box which can be set by the detection of Python */
-	private static final class CheckField extends BooleanFieldEditor {
-		private final Composite parent;
-
-		CheckField(String name, String label, Composite parent) {
-			super(name, label, BooleanFieldEditor.DEFAULT, parent);
-			this.parent = parent;
-		}
-
-		void select(boolean value) {
-			boolean old = getBooleanValue();
-			getChangeControl(parent).setSelection(value);
-			valueChanged(old, value);
-		}
-	}
-
-	private CheckField python3;
 	private DirectoryFieldEditor pythonPath;
 
 	/**
@@ -61,9 +43,6 @@ public class Python extends FieldEditorPreferencePage implements IWorkbenchPrefe
 		BooleanFieldEditor embedded = new BooleanFieldEditor("python_embedded", "Embedded Python (in the Bio7 process: data transfer, plots; a change of the Python needs a restart)",
 				BooleanFieldEditor.DEFAULT, getFieldEditorParent());
 		addField(embedded);
-		addField(new BooleanFieldEditor("python_process_extra", "Execute Editor Source in Seperate Python Process (not sent to Bio7 Python Shell)", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
-		python3 = new CheckField("python_3x", "Python 3 is used to evaluate scripts (only important if sent to Bio7 Python Shell)", getFieldEditorParent());
-		addField(python3);
 		pythonPath = new DirectoryFieldEditor("python_pipe_path", "Path Python", getFieldEditorParent());
 		addField(pythonPath);
 		addField(new ActionButtonFieldEditor("Find Python on this computer:", "Detect Python...", this::detectPython, getFieldEditorParent()));
@@ -71,7 +50,6 @@ public class Python extends FieldEditorPreferencePage implements IWorkbenchPrefe
 			com.eco.bio7.pybridge.PythonPackagesDialog.open(getShell());
 			/* A new Bio7 environment may have been selected (else 'Apply' writes the former values back) */
 			pythonPath.load();
-			python3.load();
 			embedded.load();
 		}, getFieldEditorParent()));
 		addField(new BooleanFieldEditor(com.eco.bio7.pybridge.PythonEnvironment.PREF_USE_UV,
@@ -117,7 +95,6 @@ public class Python extends FieldEditorPreferencePage implements IWorkbenchPrefe
 			selected = (com.eco.bio7.console.PythonFinder.Found) dialog.getResult()[0];
 		}
 		pythonPath.setStringValue(selected.folder());
-		python3.select(true);
 		org.eclipse.jface.dialogs.MessageDialog.openInformation(getShell(), "Detect Python",
 				selected.version() + " was selected:\n" + selected.executable() + "\n\nPress 'Apply' to keep it.");
 	}

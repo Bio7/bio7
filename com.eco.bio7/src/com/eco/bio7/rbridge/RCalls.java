@@ -73,6 +73,22 @@ public final class RCalls {
 		case "to_python":
 			python().assign(args[0], PythonConvert.fromR(value));
 			return RValue.NULL;
+		case "progress": {
+			/* bio7_progress(done, total, text): a job in the Progress view, its stop button interrupts R */
+			String key = "r:" + (args.length > 0 && !args[0].isEmpty() ? args[0] : "progress");
+			double done = args.length > 1 && !args[1].isEmpty() ? Double.parseDouble(args[1]) : 0;
+			double total = args.length > 2 && !args[2].isEmpty() ? Double.parseDouble(args[2]) : -1;
+			com.eco.bio7.pybridge.PythonJobs.progress(key, done, total, args.length > 3 ? args[3] : "", "R", () -> {
+				RSession s = RSession.current();
+				if (s != null) {
+					s.interrupt();
+				}
+			});
+			return RValue.NULL;
+		}
+		case "progress_end":
+			com.eco.bio7.pybridge.PythonJobs.finishTask("r:" + (args.length > 0 && !args[0].isEmpty() ? args[0] : "progress"));
+			return RValue.NULL;
 		default:
 			break;
 		}

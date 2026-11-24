@@ -187,7 +187,7 @@ public abstract class GeoAgentModel<A extends GeoAgent> extends Simulation {
 		agents = new ArrayList<>();
 		flown = false;
 		last.clear();
-		if (!arrangeViews) {
+		if (!arrangeViews && !headless) {
 			GlobeDisplay.open();
 		}
 	}

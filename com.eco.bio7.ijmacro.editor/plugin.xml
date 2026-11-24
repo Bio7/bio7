@@ -772,40 +772,44 @@
    </extension>
  <extension
        point="org.eclipse.ui.popupMenus">
+    <!-- The breakpoints in the ruler: the same actions as in the R and Python editors (the actions in reverse order of the menu) -->
     <viewerContribution
           id="IJMacroDebug.rulerActions"
           targetID="com.eco.bio7.editors.ijmacro.editor.RulerContext">
        <action
              class="com.eco.bio7.ijmacro.editor.toolbar.debug.DeleteBreakpointAction"
              id="DeleteBreakpointAction"
-             label="Delete All Breakpoints"
-             menubarPath="debug">
-       </action>
-       <action
-             class="com.eco.bio7.ijmacro.editor.toolbar.debug.DeleteSelBreakpointAction"
-             id="DeleteSelectedBreakpointAction"
-             label="Delete Selected Breakpoint"
-             menubarPath="debug">
-       </action>
-       <action
-             class="com.eco.bio7.ijmacro.editor.toolbar.debug.EditSelBreakpointAction"
-             id="EditConditionalBreakpointAction"
-             label="Edit Conditional Breakpoint"
+             label="Remove All Breakpoints"
              menubarPath="debug">
        </action>
        <action
              class="com.eco.bio7.ijmacro.editor.toolbar.debug.ToggleDebugConditionalBreakpointAction"
              id="AddConditionalBreakpointAction"
-             label="Add Conditional Breakpoint"
+             label="Breakpoint Properties..."
              menubarPath="debug">
        </action>
        <action
              class="com.eco.bio7.ijmacro.editor.toolbar.debug.ToggleDebugBreakpointAction"
              id="AddBreakpointAction"
-             label="Add Breakpoint"
+             label="Toggle Breakpoint"
              menubarPath="debug">
        </action>
     </viewerContribution>
+ </extension>
+ <extension
+       point="org.eclipse.ui.editorActions">
+    <!-- A double-click in the ruler toggles a breakpoint (as in the R and Python editors) -->
+    <editorContribution
+          id="com.eco.bio7.ijmacro.editor.debug.rulerDoubleClick"
+          targetID="com.eco.bio7.editors.ijmacro.editor">
+       <action
+             actionID="RulerDoubleClick"
+             class="com.eco.bio7.ijmacro.editor.toolbar.debug.ToggleDebugBreakpointAction"
+             id="com.eco.bio7.ijmacro.editor.debug.toggleBreakpoint"
+             label="Toggle Breakpoint"
+             style="push">
+       </action>
+    </editorContribution>
  </extension>
  	<extension
     id="com.eco.bio7.ijmacroeditor.debugrulermarkarrow"

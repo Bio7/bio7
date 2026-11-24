@@ -132,6 +132,16 @@ public class IJMacroEditor extends TextEditor implements IPropertyChangeListener
 	/* Bio7 debug mode (not available in the ImageJ Debugger interface)! */
 	public static final int RUN_TO_EXPRESSION = 6;
 
+	/* Bio7 debug mode: runs to the next breakpoint (a breakpoint with a condition: if it is true), as in the R and Python editors */
+	public static final int RUN_TO_BREAKPOINT = 7;
+
+	/* The breakpoints of the debug run: the line (from 1) and the condition (null: none) */
+	private volatile java.util.Map<Integer, String> breakpoints = java.util.Map.of();
+	/* A new debug run with breakpoints: runs to the first breakpoint (else it stops at the first line) */
+	private volatile boolean startAtBreakpoint;
+	/* The line of the last statement in RUN_TO_BREAKPOINT (a breakpoint stops once when its line is entered) */
+	private int lastBreakpointLine = -1;
+
 
 	private static final String TEMPLATE_PROPOSALS = "template_proposals_action";
 
@@ -588,7 +598,75 @@ public class IJMacroEditor extends TextEditor implements IPropertyChangeListener
 			changes = true;
 			checkForCurlyQuotes = false;
 		}
+		if (debug) {
+			/* With breakpoints the debugger runs to the first one (as in the R and Python editors) */
+			loadBreakpoints();
+			startAtBreakpoint = !breakpoints.isEmpty();
+			lastBreakpointLine = -1;
+		}
 		new com.eco.bio7.ijmacro.editors.MacroRunner(text, debug ? IJMacroEditor.this : null);
+	}
+
+	/* Reads the breakpoints of the editor (the markers of the ruler) */
+	private void loadBreakpoints() {
+		java.util.Map<Integer, String> map = new java.util.HashMap<>();
+		IResource resource = getEditorInput() == null ? null : getEditorInput().getAdapter(IResource.class);
+		if (resource != null) {
+			try {
+				for (IMarker m : resource.findMarkers("com.eco.bio7.ijmacro.editor.debugrulermark", false, IResource.DEPTH_ZERO)) {
+					int line = m.getAttribute(IMarker.LINE_NUMBER, -1);
+					if (line > 0) {
+						map.put(line, m.getAttribute(IMarker.MESSAGE, null));
+					}
+				}
+			} catch (CoreException e) {
+				/* No breakpoints */
+			}
+		}
+		breakpoints = map;
+	}
+
+	/**
+	 * Continues a paused debug run to the next breakpoint (each time its line is
+	 * entered, also in a loop; a breakpoint with a condition only if the condition
+	 * is true). Without a further breakpoint the macro runs to its end.
+	 */
+	public final void runToBreakpoints() {
+		Interpreter interp = Interpreter.getInstance();
+		if (interp == null) {
+			IJ.beep();
+			return;
+		}
+		loadBreakpoints();
+		/* The line where the debugger stopped is not a new hit */
+		lastBreakpointLine = previousLine;
+		setDebugMode(RUN_TO_BREAKPOINT);
+	}
+
+	/* The condition "variable operator value" of a breakpoint (null: always true; a variable which is not defined: false) */
+	private static boolean conditionTrue(Interpreter interp, String expression) {
+		if (expression == null || expression.isBlank()) {
+			return true;
+		}
+		String[] p = expression.trim().split("\\s+");
+		if (p.length != 3) {
+			return true;
+		}
+		double val = interp.getVariable2(p[0]), v;
+		try {
+			v = Double.parseDouble(p[2]);
+		} catch (NumberFormatException e) {
+			return true;
+		}
+		return switch (p[1]) {
+		case "==" -> val == v;
+		case "!=" -> val != v;
+		case "<=" -> val <= v;
+		case ">=" -> val >= v;
+		case "<" -> val < v;
+		case ">" -> val > v;
+		default -> true;
+		};
 	}
 
 	public int debug(Interpreter interp, int mode) {
@@ -597,6 +675,25 @@ public class IJMacroEditor extends TextEditor implements IPropertyChangeListener
 		if (mode == RUN_TO_COMPLETION)
 			return 0;
 		int n = interp.getLineNumber();
+		/* The first statement of a debug run with breakpoints: run to the first breakpoint */
+		if (startAtBreakpoint) {
+			startAtBreakpoint = false;
+			mode = RUN_TO_BREAKPOINT;
+			interp.setDebugMode(mode);
+			lastBreakpointLine = -1;
+		}
+		if (mode == RUN_TO_BREAKPOINT) {
+			/* A breakpoint stops when its line is entered (several statements of a line: once) */
+			boolean entered = n != lastBreakpointLine;
+			lastBreakpointLine = n;
+			if (!entered || !breakpoints.containsKey(n) || !conditionTrue(interp, breakpoints.get(n))) {
+				return 0;
+			}
+			mode = STEP;
+			interp.setDebugMode(mode);
+			/* The line is shown even if the debugger stopped here before (a loop) */
+			previousLine = 0;
+		}
 		if (mode == RUN_TO_CARET) {
 			if (n == runToLine) {
 				mode = STEP;
@@ -605,57 +702,11 @@ public class IJMacroEditor extends TextEditor implements IPropertyChangeListener
 				return 0;
 		}
 		if (mode == RUN_TO_EXPRESSION) {
-			if (markerExpression != null) {
-				String[] valueOfEx = markerExpression.split(" ");
-				String existingVar = valueOfEx[0];
-				String operator = valueOfEx[1];
-				String valueToCompare = valueOfEx[2];
-				double val = interp.getVariable(existingVar);
-
-				if (operator.equals("==")) {
-					if (val == Double.parseDouble(valueToCompare)) {
-						mode = STEP;
-						interp.setDebugMode(mode);
-					} else {
-						return 0;
-					}
-				} else if (operator.equals("!=")) {
-					if (val != Double.parseDouble(valueToCompare)) {
-						mode = STEP;
-						interp.setDebugMode(mode);
-					} else {
-						return 0;
-					}
-				} else if (operator.equals("<=")) {
-					if (val <= Double.parseDouble(valueToCompare)) {
-						mode = STEP;
-						interp.setDebugMode(mode);
-					} else {
-						return 0;
-					}
-				} else if (operator.equals(">=")) {
-					if (val >= Double.parseDouble(valueToCompare)) {
-						mode = STEP;
-						interp.setDebugMode(mode);
-					} else {
-						return 0;
-					}
-				} else if (operator.equals("<")) {
-					if (val < Double.parseDouble(valueToCompare)) {
-						mode = STEP;
-						interp.setDebugMode(mode);
-					} else {
-						return 0;
-					}
-				} else if (operator.equals(">")) {
-					if (val > Double.parseDouble(valueToCompare)) {
-						mode = STEP;
-						interp.setDebugMode(mode);
-					} else {
-						return 0;
-					}
-				}
+			if (!conditionTrue(interp, markerExpression)) {
+				return 0;
 			}
+			mode = STEP;
+			interp.setDebugMode(mode);
 		}
 
 		/*

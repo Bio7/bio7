@@ -71,13 +71,18 @@ public final class ScriptExport {
 			    sim.box = [box[0], box[1], box[2]];
 			    sim.points = { xyz: Array.from(xyz), dirs: dirs, colors: own ? rgb : null, color: base, radius: s.radius > 0 ? s.radius : size * 0.01 };
 		    /* The shape, the floor and the shadows of the model; the objects of the environment */
-		    applyModelScene(bio7One(s.shape), bio7One(s.floor), bio7One(s.shadows));
-		    sim.scenery = sceneryOf(s.scenery_models, s.scenery, s.scenery_animations);
+		    sim.applyModelScene(bio7One(s.shape), bio7One(s.floor), bio7One(s.shadows));
+		    sim.scenery = sim.sceneryOf(s.scenery_models, s.scenery, s.scenery_animations);
 			    if (s.images || s.models) {
 			      const arr = function (v) { return v === undefined || v === null ? [] : Array.isArray(v) ? v : Array.from(v); }, nn = function (v) { return v || null; };
 			      sim.points.images = arr(s.images).map(nn); sim.points.models = arr(s.models).map(nn); sim.points.animations = arr(s.animations).map(nn);
 			      sim.points.headings = arr(s.headings).map(function (v) { return v === null ? NaN : v; }); sim.points.sizes = arr(s.sizes).map(Number);
 			    }
+			    /* The links of the network (pairs of indices from 0) */
+			    if (s.links !== undefined && s.links !== null && s.links.length) {
+			      const lc = s.link_colors === undefined || s.link_colors === null ? [] : typeof s.link_colors === 'string' ? [s.link_colors] : Array.from(s.link_colors);
+			      sim.links = { pairs: Array.from(s.links).map(Number), colors: lc, color: bio7One(s.link_color) || '', width: s.link_width === undefined ? 1 : Number(bio7One(s.link_width)) };
+			    } else sim.links = null;
 			  } else if (kind === 'GeoAgentModel') {
 			    const n = s.lon.length, g = { lon: Array.from(s.lon), lat: Array.from(s.lat), colors: new Array(n), sizes: new Array(n), labels: new Array(n) };
 			    for (let i = 0; i < n; i++) { g.colors[i] = (s.colors && s.colors[i]) || s.color; g.sizes[i] = s.sizes && s.sizes[i] > 0 ? s.sizes[i] : s.size; g.labels[i] = (s.labels && s.labels[i]) || null; }
@@ -154,20 +159,36 @@ public final class ScriptExport {
 			  const changed = bio7Changed(sim, all);
 			  if (changed.length) bio7Do('set', JSON.stringify(Object.fromEntries(changed)));
 			}
-			function setup(sim) { bio7Set(sim, true); bio7Show.last = null; bio7Show.geo = null; bio7Show(sim, bio7Do('setup', '')); }
-			function step(sim) { bio7Set(sim, false); bio7Show(sim, bio7Do('step', '')); }
+			function setup(sim) { bio7Set(sim, true); bio7Show.last = null; bio7Show.geo = null; bio7Show(sim, bio7Do('setup', String(sim.seed))); }
+			/* stop() of the script: the page stops */
+			function step(sim) { bio7Set(sim, false); const s = bio7Do('step', ''); bio7Show(sim, s); if (Number(bio7One(s.stopped))) return 'stop'; }
 			function bio7Action(sim, name) { bio7Set(sim, false); bio7Show(sim, bio7Do('action', name)); }
+			/* The input of the view: click(x, y), drag(x, y) or key(key) of the model */
+			function input(sim, ev) { bio7Set(sim, false); bio7Show(sim, bio7Do('input', ev.type === 'key' ? 'key\\u001f' + ev.key : ev.type + '\\u001f' + ev.x + '\\u001f' + ev.y)); }
 			""";
 
 	/* R in the browser: webR (asynchronous) */
 	private static final String R = """
 			let bio7webR = null;
+			/*
+			 * webR: a page opened as a file has no origin in Firefox ("null"), webR can't build its URLs
+			 * with it (new URL(url, location.origin)); then the module is loaded as text with the address
+			 * of the page as the base and imported from a blob
+			 */
+			async function bio7ImportWebR() {
+			  if (location.origin !== 'null') return import(BIO7.runtime);
+			  const code = await (await fetch(BIO7.runtime)).text();
+			  const fixed = code.replace(/new URL\\((\\w+),location\\.origin\\)/g, 'new URL($1,location.href)');
+			  const url = URL.createObjectURL(new Blob([fixed], { type: 'text/javascript' }));
+			  try { return await import(url); } finally { URL.revokeObjectURL(url); }
+			}
 			async function prepare(sim) {
 			  sim.status('Loading R (webR) ...');
 			  let WebR;
-			  try { WebR = (await import(BIO7.runtime)).WebR; }
+			  try { WebR = (await bio7ImportWebR()).WebR; }
 			  catch (e) { throw new Error('R (webR) could not be loaded from ' + BIO7.runtime + ' (an internet connection is needed)'); }
-			  bio7webR = new WebR();
+			  /* The base URL of webR (its folder): a page opened as a file has no origin in Firefox (null) */
+			  bio7webR = new WebR({ baseUrl: BIO7.runtime.replace(/[^/]*$/, '') });
 			  await bio7webR.init();
 			  await bio7webR.evalRVoid('.bio7sim_browser <- TRUE');
 			  if (typeof GEO !== 'undefined') {
@@ -199,9 +220,12 @@ public final class ScriptExport {
 			async function bio7Set(sim, all) {
 			  for (const c of bio7Changed(sim, all)) await bio7Do('set', c[0] + '\\u001f' + c[1]);
 			}
-			async function setup(sim) { await bio7Set(sim, true); bio7Show.last = null; bio7Show.geo = null; bio7Show(sim, await bio7Do('setup', '')); }
-			async function step(sim) { await bio7Set(sim, false); bio7Show(sim, await bio7Do('step', '')); }
+			async function setup(sim) { await bio7Set(sim, true); bio7Show.last = null; bio7Show.geo = null; bio7Show(sim, await bio7Do('setup', String(sim.seed))); }
+			/* m$stop() of the script: the page stops */
+			async function step(sim) { await bio7Set(sim, false); const s = await bio7Do('step', ''); bio7Show(sim, s); if (Number(bio7One(s.stopped))) return 'stop'; }
 			async function bio7Action(sim, name) { await bio7Set(sim, false); bio7Show(sim, await bio7Do('action', name)); }
+			/* The input of the view: m$click(m, x, y), m$drag(m, x, y) or m$key(m, key) of the model */
+			async function input(sim, ev) { await bio7Set(sim, false); bio7Show(sim, await bio7Do('input', ev.type === 'key' ? 'key\\u001f' + ev.key : ev.type + '\\u001f' + ev.x + '\\u001f' + ev.y)); }
 			""";
 
 	/* The layers of a geospatial model (base64 of little endian doubles) */
@@ -276,9 +300,9 @@ public final class ScriptExport {
 		result.title = title;
 		result.description = description;
 		HtmlSimulation page = new HtmlSimulation(title).description(SimulationExport.escape(description))
-				.view(spec.kind.equals("AgentModel") ? HtmlSimulation.View.SCENE_3D : HtmlSimulation.View.GRID_2D).speed(options.speed).autoplay(options.autoplay).theme(options.theme)
+				.view(spec.kind.equals("AgentModel") ? HtmlSimulation.View.SCENE_3D : HtmlSimulation.View.GRID_2D).speed(options.speed).seed(options.seed).autoplay(options.autoplay).theme(options.theme)
 				.layout(options.layout).accent(options.accent).scene(options.background, options.lighting, options.shape, options.floor, options.shadows).autoRotate(options.rotate)
-				.asynchronous(!python);
+				.asynchronous(!python).inputs(host.script().inputs().stream().sorted().toList());
 		/* The settings and the buttons in the groups (as in Bio7) */
 		Map<String, List<Object>> groups = new LinkedHashMap<>(host.script().groups());
 		boolean headings = groups.keySet().stream().anyMatch(g -> !g.isEmpty() && !g.equals("\u0000"));

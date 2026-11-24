@@ -107,7 +107,60 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	private int dox;
 	private int doy;
 	private static final int DEFAULT_VIEW_DISTANCE = 2000;
-	private int doz = DEFAULT_VIEW_DISTANCE;
+	/* The distance of the camera rotated with the mouse (a float: slow drags and the wheel zoom in small steps) */
+	private volatile float doz = DEFAULT_VIEW_DISTANCE;
+	/* The closest distance of the camera to the center (else the view flips) */
+	private static final float MIN_VIEW_DISTANCE = 5f;
+
+	/**
+	 * The input of a model of the 3D view (an agent model of the simulation API):
+	 * clicks, drags (with Shift) and keys. The positions are pixels of the OpenGL
+	 * surface (from the left and from the top, like the measurement tools).
+	 */
+	public interface ModelInput {
+		/** True if the model handles the input ("click", "drag" or "key"). */
+		boolean handles(String event);
+
+		/** A click or a drag at the position (surfaceHeight: the height of the OpenGL surface). */
+		void pointer(String event, double x, double y, int surfaceHeight);
+
+		/** A key: a character or the name of a special key (as in JavaScript). */
+		void key(String key);
+	}
+
+	private static volatile ModelInput modelInput;
+
+	/** Sets the model which gets the clicks, drags and keys of the 3D view (null: none). */
+	public static void setModelInput(ModelInput input) {
+		modelInput = input;
+	}
+
+	/* A drag of the model (Shift + drag), the position of the press (a click: released without a movement) */
+	private boolean modelDrag;
+	private int pressX = Integer.MIN_VALUE, pressY;
+
+	/* The model gets the input (no measurement tool, not in the walkthrough) */
+	private ModelInput inputFor(String event) {
+		ModelInput in = modelInput;
+		return in != null && !walkthrough && clipping.getTool() == Clipping.TOOL_NONE && in.handles(event) ? in : null;
+	}
+
+	/* The names of the special keys (as JavaScript), "" for modifier keys, null for the others */
+	private static String specialKey(short code) {
+		return switch (code) {
+		case KeyEvent.VK_LEFT -> "ArrowLeft";
+		case KeyEvent.VK_RIGHT -> "ArrowRight";
+		case KeyEvent.VK_UP -> "ArrowUp";
+		case KeyEvent.VK_DOWN -> "ArrowDown";
+		case KeyEvent.VK_ENTER -> "Enter";
+		case KeyEvent.VK_ESCAPE -> "Escape";
+		case KeyEvent.VK_BACK_SPACE -> "Backspace";
+		case KeyEvent.VK_DELETE -> "Delete";
+		case KeyEvent.VK_TAB -> "Tab";
+		case KeyEvent.VK_SHIFT, KeyEvent.VK_CONTROL, KeyEvent.VK_ALT, KeyEvent.VK_META, KeyEvent.VK_WINDOWS, KeyEvent.VK_CAPS_LOCK, KeyEvent.VK_ALT_GRAPH -> "";
+		default -> null;
+		};
+	}
 	// The texture size the view distance was fitted to (0 = no texture)
 	private float fitTextureWidth = 0;
 	private float fitTextureHeight = 0;
@@ -1329,6 +1382,17 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	public void keyPressed(KeyEvent evt) {
 		SpatialEvents.setKeyPressed(true);
 		SpatialEvents.setKeyPressEvent(evt);
+		/* A model with key(): the keys go to the model (not to the shortcuts of the view) */
+		ModelInput keyInput = evt.isMetaDown() || evt.isControlDown() ? null : inputFor("key");
+		if (keyInput != null) {
+			String special = specialKey(evt.getKeyCode());
+			char c = evt.getKeyChar();
+			String key = special != null ? (special.isEmpty() ? null : special) : (c >= ' ' && c != 127 && c != 0xFFFF ? String.valueOf(c) : null);
+			if (key != null) {
+				keyInput.key(key);
+			}
+			return;
+		}
 
 		if (evt.getKeyCode() == KeyEvent.VK_SPACE) {
 			/* Space + drag rotates the view while a mouse tool is selected */
@@ -1587,7 +1651,16 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		prevMouseX = evt.getX();
 		prevMouseY = evt.getY();
 		mouseButton = evt.getButton();
-		mouseButton = evt.getButton();
+		/* The model: Shift + drag (the view is not rotated), a click (released at the press position) */
+		pressX = evt.getButton() == 1 ? evt.getX() : Integer.MIN_VALUE;
+		pressY = evt.getY();
+		ModelInput dragInput = evt.getButton() == 1 && evt.isShiftDown() ? inputFor("drag") : null;
+		modelDrag = dragInput != null;
+		if (modelDrag) {
+			clippingDrag = false;
+			dragInput.pointer("drag", evt.getX(), evt.getY(), glWindow.getSurfaceHeight());
+			return;
+		}
 		/* A click on the number of a measured object selects the object (NEWT: pixel units)! */
 		if (evt.getButton() == 1 && !walkthrough && measurement.selectLabelAt(evt.getX(), evt.getY())) {
 			clippingDrag = false;
@@ -1614,6 +1687,13 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	public void mouseDragged(MouseEvent e) {
 		SpatialEvents.setMouseDragged(true);
 		SpatialEvents.setDragEvent(e);
+		if (modelDrag) {
+			ModelInput in = modelInput;
+			if (in != null) {
+				in.pointer("drag", e.getX(), e.getY(), glWindow.getSurfaceHeight());
+			}
+			return;
+		}
 		if (clippingDrag) {
 			clipping.toolDragged(e.getX(), e.getY());
 			return;
@@ -1652,7 +1732,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 
 					/* Faster for large distances (e.g., a large texture)! */
 					float distanceSpeed = Math.max(1.0f, doz / (float) DEFAULT_VIEW_DISTANCE);
-					doz += thetaY * multiplyDragCameraSpeed * distanceSpeed;// adjust camera speed for the distance to the object!
+					doz = Math.max(MIN_VIEW_DISTANCE, doz + thetaY * multiplyDragCameraSpeed * distanceSpeed);// adjust camera speed for the distance to the object!
 
 				}
 			} else {
@@ -1775,6 +1855,17 @@ public class SpatialStructure implements KeyListener, MouseListener {
 
 	public void mouseReleased(MouseEvent evt) {
 		mousePressed = false;
+		/* A click of the model: the left button released (almost) where it was pressed, without Shift */
+		boolean wasModelDrag = modelDrag;
+		modelDrag = false;
+		if (!wasModelDrag && evt.getButton() == 1 && pressX != Integer.MIN_VALUE && !evt.isShiftDown() && !clippingDrag
+				&& Math.abs(evt.getX() - pressX) <= 3 && Math.abs(evt.getY() - pressY) <= 3) {
+			ModelInput in = inputFor("click");
+			if (in != null) {
+				in.pointer("click", evt.getX(), evt.getY(), glWindow.getSurfaceHeight());
+			}
+		}
+		pressX = Integer.MIN_VALUE;
 		if (clippingDrag) {
 			clippingDrag = false;
 			clipping.toolReleased(evt.getX(), evt.getY());
@@ -1800,7 +1891,20 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	public void mouseWheelMoved(MouseEvent e) {
 		SpatialEvents.setMouseWheelMoved(true);
 		SpatialEvents.setMouseWheelEvent(e);
-
+		/*
+		 * The wheel (and the scrolling of a trackpad) zooms the camera rotated with the
+		 * mouse: each step of the wheel 10% (like the exported HTML pages)
+		 */
+		if (walkthrough || stopMovement) {
+			return;
+		}
+		float[] rotation = e.getRotation();
+		float steps = rotation != null && rotation.length > 1 ? rotation[1] : 0;
+		if (steps == 0 || Float.isNaN(steps)) {
+			return;
+		}
+		/* Upwards (away from the user): closer */
+		doz = (float) Math.max(MIN_VIEW_DISTANCE, doz * Math.pow(1.1, -steps));
 	}
 
 	public com.eco.bio7.spatial.FPSAnimator getLoop() {
@@ -1964,6 +2068,10 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	public void setDataBounds(double[] bounds) {
 		if (bounds != null && bounds.length != 6) {
 			throw new IllegalArgumentException("The bounds need six values: x0, x1, y0, y1, z0, z1");
+		}
+		/* The same bounds again: the camera (e.g., zoomed with the mouse) is kept */
+		if (java.util.Arrays.equals(bounds, dataBounds)) {
+			return;
 		}
 		dataBounds = bounds != null ? bounds.clone() : null;
 		/* The camera distance fitted to the data */

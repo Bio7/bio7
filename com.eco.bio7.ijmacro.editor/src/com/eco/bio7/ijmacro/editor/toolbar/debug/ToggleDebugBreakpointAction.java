@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2007-2014 M. Austenfeld
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * Copyright (c) 2007-2026 M. Austenfeld
+ *
+ * This program and the accompanying materials are made available under
+ * the terms of the Eclipse Public License 2.0 which is available at
+ * https://www.eclipse.org/legal/epl-2.0
  *
  * Contributors:
- *     M. Austenfeld
+ * Marcel Austenfeld - initial API and implementation
  *******************************************************************************/
 package com.eco.bio7.ijmacro.editor.toolbar.debug;
 
@@ -15,97 +15,79 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.source.IVerticalRulerInfo;
-import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ui.IEditorActionDelegate;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractRulerActionDelegate;
-import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-
+/**
+ * The ruler action "Toggle Breakpoint" of the ImageJ macro editor (also a
+ * double-click in the ruler, as in the R and Python editors): sets a breakpoint
+ * in the line or removes it.
+ */
 public class ToggleDebugBreakpointAction extends AbstractRulerActionDelegate implements IEditorActionDelegate {
 
-	private class ToggleBreakpointAction extends Action {
+	/** The marker of the breakpoints of the ImageJ macro editor. */
+	public static final String MARKER = "com.eco.bio7.ijmacro.editor.debugrulermark";
 
-		private final IVerticalRulerInfo mRulerInfo;
-		private final ITextEditor mEditor;
-		private int startline;
-		private int stopline;
+	private static class ToggleAction extends Action {
 
-		
+		private final IVerticalRulerInfo rulerInfo;
+		private final ITextEditor editor;
 
-		public ToggleBreakpointAction(ITextEditor editor, IVerticalRulerInfo rulerInfo) {
-			super("Toggle line breakpoint");
-			mEditor = editor;
-			mRulerInfo = rulerInfo;
+		ToggleAction(ITextEditor editor, IVerticalRulerInfo rulerInfo) {
+			super("Toggle Breakpoint");
+			this.editor = editor;
+			this.rulerInfo = rulerInfo;
 		}
 
 		@Override
 		public void run() {
-
-			IEditorPart editore = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-
-			IResource resource = (IResource) editore.getEditorInput().getAdapter(IResource.class);
-
-			
-			if (resource != null) {
-				try {
-
-					ITextEditor editor = (ITextEditor) editore;
-					ISelectionProvider sp = editor.getSelectionProvider();
-
-					IDocumentProvider provider = mEditor.getDocumentProvider();
-
-					ITextSelection selection = null;
-					try {
-						int line = mRulerInfo.getLineOfLastMouseButtonActivity();
-
-						provider.connect(this);
-						IDocument document = provider.getDocument(mEditor.getEditorInput());
-						IRegion region = document.getLineInformation(line);
-
-						selection = new TextSelection(document, region.getOffset(), region.getLength());
-					} catch (CoreException e1) {
-					} catch (BadLocationException e) {
-					} finally {
-						provider.disconnect(this);
-					}
-
-					if (selection != null && !selection.isEmpty()) {
-						// int start = selection.getOffset();
-
-						// int length = selection.getLength();
-						startline = selection.getStartLine() + 1;
-						stopline = selection.getEndLine() + 1;
-
-						IMarker marker;
-
-						marker = resource.createMarker("com.eco.bio7.ijmacro.editor.debugrulermark");
-						marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
-						marker.setAttribute(IMarker.LINE_NUMBER, new Integer(startline));
-						marker.setAttribute(IMarker.MESSAGE, null);
-						marker.setAttribute(IMarker.LOCATION, "" + startline);
-						marker.setAttribute(IMarker.TEXT, "-");
-
-					}
-
-				} catch (CoreException e) {
-
-				}
+			IResource resource = editor.getEditorInput().getAdapter(IResource.class);
+			IDocument doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
+			int line = rulerInfo.getLineOfLastMouseButtonActivity() + 1;
+			if (resource == null || doc == null || line <= 0 || line > doc.getNumberOfLines()) {
+				return;
 			}
-
+			try {
+				/* A breakpoint in this line: removed */
+				IMarker old = markerAt(resource, line);
+				if (old != null) {
+					old.delete();
+					return;
+				}
+				create(resource, line, null);
+			} catch (CoreException e) {
+				/* Not changed */
+			}
 		}
+	}
+
+	/** The breakpoint of the line (from 1; null if there is none). */
+	static IMarker markerAt(IResource resource, int line) throws CoreException {
+		for (IMarker m : resource.findMarkers(MARKER, true, IResource.DEPTH_ZERO)) {
+			if (m.getAttribute(IMarker.LINE_NUMBER, -1) == line) {
+				return m;
+			}
+		}
+		return null;
+	}
+
+	/** Creates a breakpoint in the line (from 1); expression: the condition "variable operator value" (null: none). */
+	static IMarker create(IResource resource, int line, String expression) throws CoreException {
+		IMarker marker = resource.createMarker(MARKER);
+		marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
+		marker.setAttribute(IMarker.LINE_NUMBER, line);
+		marker.setAttribute(IMarker.LOCATION, "" + line);
+		marker.setAttribute(IMarker.MESSAGE, expression);
+		/* A breakpoint with a condition is marked as such (the debugger runs to the expression) */
+		marker.setAttribute(IMarker.TEXT, expression == null ? "-" : "EXPRESSION");
+		return marker;
 	}
 
 	@Override
 	protected IAction createAction(ITextEditor editor, IVerticalRulerInfo rulerInfo) {
-		return new ToggleBreakpointAction(editor, rulerInfo);
+		return new ToggleAction(editor, rulerInfo);
 	}
 }

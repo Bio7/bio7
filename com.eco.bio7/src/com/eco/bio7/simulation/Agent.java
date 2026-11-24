@@ -18,8 +18,10 @@ package com.eco.bio7.simulation;
  */
 public class Agent {
 
+	/** The position in the box of the model (z: the height above the floor). */
 	public double x, y, z;
 
+	/** The color (e.g., "#d62728"; null: the color of the model, agentColor). */
 	public String color;
 
 	/** An image (loaded with loadImage) instead of the sphere: a billboard (null: none). */
@@ -37,9 +39,11 @@ public class Agent {
 	/** The size of the image or the height of the model (0: the diameter of the sphere). */
 	public double size;
 
+	/** An agent at 0, 0, 0. */
 	public Agent() {
 	}
 
+	/** An agent at the position. */
 	public Agent(double x, double y, double z) {
 		this.x = x;
 		this.y = y;

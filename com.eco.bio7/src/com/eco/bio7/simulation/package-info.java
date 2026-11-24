@@ -35,15 +35,44 @@
  * {@link com.eco.bio7.simulation.Simulation}.
  * <p>
  * All models can show images (loadImage, drawImage, Agent.image), animated 3D
- * models of glTF (loadModel, Agent.model, Agent.animation; {@link com.eco.bio7.simulation.Gltf}),
- * shapes drawn in each step ({@link com.eco.bio7.simulation.Shape}: drawLine,
- * drawPath, drawPolygon, drawCircle, drawRect, drawText) and several charts
+ * models of glTF (loadModel, Agent.model, Agent.animation; {@link com.eco.bio7.simulation.Gltf};
+ * also OBJ with its materials and STL, converted to glTF), shapes drawn in
+ * each step ({@link com.eco.bio7.simulation.Shape}: drawLine, drawPath,
+ * drawPolygon, drawCircle, drawRect, drawText; in agent models also at a
+ * height z and the 3D shapes drawPoint3, drawPath3, drawBox, drawSphere,
+ * drawPolygon3 and drawPillar) and several charts
  * ({@link com.eco.bio7.simulation.ChartData}: chart, chartXY, chartBars; the
  * Charts view of Bio7). The mathematical functions (vectors, matrices,
  * regression, quantiles, the normal distribution, noise) give the same results
  * in Bio7 and in the HTML page. The first setup arranges the views in the
  * Custom perspective: the settings on the left, the editor above the display
  * of the model and the charts beside the display.
+ * <p>
+ * The 3D scene of an agent model: the shape of the agents (spheres or
+ * gliders), a floor, shadows, a camera which follows an agent and objects of
+ * the environment (placeModel). Agents can be linked to networks (link,
+ * linkRandom, linkSmallWorld, linkScaleFree, linkNearby, components,
+ * shortestPath, clustering, layoutSpring; drawn as lines), and a
+ * {@link com.eco.bio7.simulation.SpatialIndex} finds the neighbors of many
+ * agents fast.
+ * <p>
+ * A model can react to the mouse and the keyboard of its view (the ImageJ
+ * image of a grid, the 3D view of an agent model, the HTML export):
+ * {@link com.eco.bio7.simulation.Simulation#click(double, double)},
+ * {@link com.eco.bio7.simulation.Simulation#drag(double, double)} (in the 3D
+ * view with Shift) and {@link com.eco.bio7.simulation.Simulation#key(String)},
+ * called between the steps.
+ * <p>
+ * Grid models can carry agents ({@link com.eco.bio7.simulation.GridAgent}:
+ * addAgent, forward, face, agentsAt, agentsNear), drawn on top of the grid.
+ * A model ends a run with stop(); the field Seed of the settings (and of the
+ * page) sets the seed of the setup.
+ * <p>
+ * An {@link com.eco.bio7.simulation.Experiment} runs a model several times
+ * without a display (a sweep of the parameters, repetitions with other seeds,
+ * parallel threads) and returns a table (CSV, a data frame in R) of the
+ * values of the line charts and of record(name, value); in Bio7 also the
+ * button "Experiment..." of the settings (Java, Python and R models).
  * <p>
  * The wizard "Bio7 Simulation Project" creates a model (in Java, Python or R),
  * "Export Simulation as HTML..." (the menu of the Play/Pause button, the
@@ -61,7 +90,7 @@
  * geospatial data of GDAL. The HTML export
  * ({@link com.eco.bio7.simulation.ScriptExport}) runs the script in the web
  * browser with Pyodide or webR (loaded from the internet) with the same
- * results. The examples are in the project Bio7_Script_Examples (folders
- * Python/Simulation and R_Simulation).
+ * results. The examples are in the projects Bio7_Python_Examples and
+ * Bio7_R_Examples (folder Simulation).
  */
 package com.eco.bio7.simulation;

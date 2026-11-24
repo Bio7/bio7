@@ -32,10 +32,23 @@ public final class RLiveNames {
 			"InsectSprays", "Loblolly", "Indometh", "Puromycin", "Theoph", "CO2", "DNase", "BOD", "Formaldehyde", "freeny", "eurodist",
 			"euro", "UKgas", "USAccDeaths", "WorldPhones", "VADeaths", "uspop", "presidents", "discoveries", "nhtemp", "lh", "randu");
 
-	/* The API of Bio7 for R (attached environment "bio7" of the embedded R, see bio7_r_api.R) */
-	private static final Set<String> BIO7_API = Set.of("bio7_image", "bio7_show_image", "bio7_ij_macro", "bio7_ij_macro_file", "bio7_ij_run",
-			"bio7_results_table", "bio7_roi", "bio7_browse", "bio7_python", "bio7_to_python", "J", "bio7_java_new", "bio7_java_ui", "is_java",
-			"bio7_api");
+	/*
+	 * The API of Bio7 for R: the functions of the attached environment "bio7" of the
+	 * embedded R (com.eco.bio7/.../rbridge/bio7_r_api.R) and of the simulation API
+	 * (the environment "bio7sim", com.eco.bio7/.../simulation/bio7sim.R). Without R
+	 * these names are known (no warning "Function not available?"); keep them up to
+	 * date with the two files.
+	 */
+	private static final Set<String> BIO7_API = Set.of("J", "bio7_api", "bio7_area3d", "bio7_bars3d", "bio7_boxplot3d", "bio7_browse", "bio7_contour3d", "bio7_histogram3d",
+			"bio7_ij_macro", "bio7_ij_macro_file", "bio7_ij_run", "bio7_image", "bio7_java_new", "bio7_java_ui", "bio7_line3d",
+			"bio7_linegraph3d", "bio7_pie3d", "bio7_plot3d", "bio7_plot3d_clear", "bio7_plot3d_export", "bio7_plot3d_recorder",
+			"bio7_progress", "bio7_progress_end", "bio7_python", "bio7_radar3d", "bio7_results_table", "bio7_roi", "bio7_rose3d",
+			"bio7_scatter3d", "bio7_show_image", "bio7_surface3d", "bio7_task", "bio7_to_python", "bio7_treemap3d", "bio7_violin3d",
+			"bio7_wireframe3d", "is_java",
+			"VIRIDIS", "agent_model", "clamp", "cos_deg", "cos_lat", "distance", "distance3", "experiment", "fractal_noise",
+			"geo_agent_model", "geo_grid_model", "grid_model", "heading_of", "lerp", "linear_regression", "logistic", "logistic_growth",
+			"map_range", "noise", "normal_cdf", "normal_pdf", "pairs_within", "rk4", "simulation", "sin_deg", "sq", "value_grid_model",
+			"wrap_around");
 
 	private static volatile Set<String> names;
 

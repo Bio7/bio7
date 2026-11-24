@@ -210,9 +210,14 @@ public final class SimulationSettings {
 		line.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 		Composite buttons = new Composite(c, SWT.NONE);
 		buttons.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-		GridLayout bl = new GridLayout(1, true);
+		GridLayout bl = new GridLayout(2, true);
 		bl.marginWidth = 0;
 		buttons.setLayout(bl);
+		Button experiment = new Button(buttons, SWT.PUSH);
+		experiment.setText("Experiment...");
+		experiment.setToolTipText("Run the model several times without a display (parameter sweeps, repetitions) and save the data (CSV, R)");
+		experiment.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		experiment.addListener(SWT.Selection, e -> ExperimentDialog.open(experiment.getShell(), model));
 		Button export = new Button(buttons, SWT.PUSH);
 		export.setText("Export HTML...");
 		export.setToolTipText("Export the simulation as an HTML page (runs in the web browser)");
@@ -323,6 +328,38 @@ public final class SimulationSettings {
 		});
 		com.eco.bio7.time.Time.addIntervalListener(intervalListener);
 		slider.addListener(SWT.Dispose, e -> com.eco.bio7.time.Time.removeIntervalListener(intervalListener));
+		/* The seed of the random numbers: a change sets the model up again (the same seed: the same run) */
+		new Label(speed, SWT.NONE).setText("Seed");
+		Composite seedRow = new Composite(speed, SWT.NONE);
+		GridLayout srl = new GridLayout(2, false);
+		srl.marginWidth = 0;
+		srl.marginHeight = 0;
+		seedRow.setLayout(srl);
+		seedRow.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		org.eclipse.swt.widgets.Spinner seed = new org.eclipse.swt.widgets.Spinner(seedRow, SWT.BORDER);
+		seed.setValues(model.getStartSeed(), 0, Integer.MAX_VALUE, 0, 1, 100);
+		seed.setToolTipText("The seed of the random numbers: the same seed gives the same run (also in the exported page);\na change sets the model up again");
+		seed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		Button newSeed = new Button(seedRow, SWT.PUSH);
+		newSeed.setText("New");
+		newSeed.setToolTipText("A random seed (another run of the model)");
+		Runnable applySeed = () -> {
+			if (seed.isDisposed() || seed.getSelection() == model.getStartSeed()) {
+				return;
+			}
+			model.setStartSeed(seed.getSelection());
+			com.eco.bio7.time.Time.Timereset();
+			com.eco.bio7.time.Time.setCounter(0);
+			showCounter(c.getDisplay());
+			model.setup();
+		};
+		seed.addListener(SWT.Selection, e -> applySeed.run());
+		seed.addListener(SWT.DefaultSelection, e -> applySeed.run());
+		seed.addListener(SWT.FocusOut, e -> applySeed.run());
+		newSeed.addListener(SWT.Selection, e -> {
+			seed.setSelection(new java.util.Random().nextInt(1_000_000));
+			applySeed.run();
+		});
 		Label line = new Label(c, SWT.SEPARATOR | SWT.HORIZONTAL);
 		line.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 	}
@@ -583,6 +620,8 @@ public final class SimulationSettings {
 						b.addListener(SWT.Selection, ev -> action(model, m));
 					} else if (name.equals("setup")) {
 						b.addListener(SWT.Selection, ev -> model.setup());
+					} else if (name.equals("experiment")) {
+						b.addListener(SWT.Selection, ev -> ExperimentDialog.open(b.getShell(), model));
 					} else if (name.equals("export") || name.equals("exportHtml")) {
 						b.addListener(SWT.Selection, ev -> com.eco.bio7.actions.ExportSimulation.run(b.getShell()));
 					} else {

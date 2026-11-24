@@ -353,8 +353,8 @@ _spec_cache = {}
 
 
 # The modules which Bio7 installs in the embedded Python at its start (not in the
-# packages of the Python of this analysis)
-_BIO7_MODULES = {"bio7", "_bio7"}
+# packages of the Python of this analysis): bio7, the simulation API bio7sim
+_BIO7_MODULES = {"bio7", "_bio7", "bio7sim"}
 
 
 def module_exists(name, folder):

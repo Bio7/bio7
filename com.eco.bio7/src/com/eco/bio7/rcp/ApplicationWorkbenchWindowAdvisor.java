@@ -719,8 +719,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("python_embedded", true);
 		/* The switch R/Python of the Image-Methods view closes the views of the other language */
 		store.setDefault("IMAGE_METHODS_CLOSE_VIEWS", true);
-		store.setDefault("python_3x", true);
-		store.setDefault("python_process_extra", true);
 
 		/* A default FPS setting for the 3d view! */
 		store.setDefault("fixedFps", 60);

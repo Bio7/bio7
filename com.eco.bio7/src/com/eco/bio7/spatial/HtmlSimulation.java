@@ -49,7 +49,8 @@ import java.util.Set;
  * sim.chart('Name', value) adds a value to a series of the chart (one value
  * per step), sim.clearChart() removes the values. sim.t is the number of the
  * steps, sim.random() a random number and sim.pause() pauses the simulation
- * (step(sim) can also return false to stop). An optional (async) function
+ * (step(sim) can also return false to stop without counting the step, or
+ * 'stop' to stop after the step). An optional (async) function
  * prepare(sim) is called once before the start (e.g., to load data).
  * <p>
  * Example:
@@ -81,8 +82,11 @@ public class HtmlSimulation {
 	private String code;
 	private int[] colorMap = PlotLegend.VIRIDIS;
 	private double speed = 20;
+	private int seed = 42;
 	private boolean autoplay = false;
 	private boolean asynchronous = false;
+	/* The input of the model: "click", "drag", "key" (a function input(sim, ev) of the code) */
+	private java.util.List<String> inputs = java.util.List.of();
 	private String background = null;
 	private String theme = "auto";
 	private String layout = "classic", accent = "blue";
@@ -122,6 +126,15 @@ public class HtmlSimulation {
 		return this;
 	}
 
+	/**
+	 * The seed of the random numbers of the setup (default 42; sim.seed in the
+	 * code; the page has a field Seed: the same seed gives the same run).
+	 */
+	public HtmlSimulation seed(int seed) {
+		this.seed = seed;
+		return this;
+	}
+
 	/** The default speed in steps per second (default 20). */
 	public HtmlSimulation speed(double stepsPerSecond) {
 		this.speed = Math.max(0.5, Math.min(500, stepsPerSecond));
@@ -135,6 +148,18 @@ public class HtmlSimulation {
 	 */
 	public HtmlSimulation asynchronous(boolean asynchronous) {
 		this.asynchronous = asynchronous;
+		return this;
+	}
+
+	/**
+	 * The input of the view for the model: "click", "drag" and/or "key". The page
+	 * calls the function input(sim, ev) of the code with ev = {type: 'click', x,
+	 * y} (a grid: cells, x and y from the top left; the 3D view: the point on the
+	 * floor), {type: 'drag', x, y} (the 2D view: a drag, the 3D view: Shift +
+	 * drag) or {type: 'key', key} (the key of the keyboard event). Default: none.
+	 */
+	public HtmlSimulation inputs(java.util.Collection<String> events) {
+		this.inputs = events == null ? java.util.List.of() : java.util.List.copyOf(events);
 		return this;
 	}
 
@@ -454,8 +479,14 @@ public class HtmlSimulation {
 		}
 		config.append("],");
 		config.append("\"speed\":").append(PlotHtml.num(speed)).append(',');
+		config.append("\"seed\":").append(seed).append(',');
 		config.append("\"autoplay\":").append(autoplay).append(',');
 		config.append("\"async\":").append(asynchronous).append(',');
+		config.append("\"inputs\":[");
+		for (int k = 0; k < inputs.size(); k++) {
+			config.append(k > 0 ? "," : "").append(PlotHtml.string(inputs.get(k)));
+		}
+		config.append("],");
 		config.append("\"timeline\":").append(timeline).append(',');
 		config.append("\"theme\":").append(PlotHtml.string(theme)).append(',');
 		config.append("\"layout\":").append(PlotHtml.string(layout)).append(',');
@@ -473,7 +504,7 @@ public class HtmlSimulation {
 		}
 		config.append("\"background\":").append(background == null ? "null" : PlotHtml.string(background));
 		config.append('}');
-		String page = TEMPLATE.replace("/*GLTF*/\n", GLTF_JS).replace("/*DRAW3D*/\n", DRAW3D_JS).replace("/*CANVAS*/\n", CANVAS_JS).replace("/*CHARTS*/\n", CHARTS_JS).replace("/*MODELS3D*/\n", MODELS3D_JS).replace("<title></title>", "<title>" + PlotHtml.escape(title) + "</title>")
+		String page = TEMPLATE.replace("/*GLTF*/\n", GLTF_JS).replace("/*DRAW3D*/\n", DRAW3D_JS).replace("/*CANVAS*/\n", CANVAS_JS).replace("/*CHARTS*/\n", CHARTS_JS).replace("/*INPUT*/\n", INPUT_JS).replace("/*MODELS3D*/\n", MODELS3D_JS).replace("<title></title>", "<title>" + PlotHtml.escape(title) + "</title>")
 				.replace("/*CONFIG*/", config.toString());
 		if (mapBounds != null) {
 			/* Leaflet for the map (online, a fixed version with the hashes of the files) */
@@ -575,6 +606,88 @@ public class HtmlSimulation {
 			function cssHex(c) { if (c.length === 9) { const a = parseInt(c.substr(7, 2), 16) / 255; return 'rgba(' + parseInt(c.substr(1, 2), 16) + ',' + parseInt(c.substr(3, 2), 16) + ',' + parseInt(c.substr(5, 2), 16) + ',' + a + ')'; } return c; }
 """;
 
+	/* The JavaScript of the input of the model: clicks, drags and keys of the 2D and the 3D view (CONFIG.inputs, input(sim, ev)) */
+	private static final String INPUT_JS = """
+			/* Ready: the runtime of the model (prepare(sim): Pyodide, webR, data) is loaded; before, the buttons are disabled */
+			let pageReady = true;
+			function setPageReady(ready) {
+			  pageReady = ready;
+			  document.querySelectorAll('#play, #step, #reset, #newseed, #seed, #controls button').forEach(function (b) { b.disabled = !ready; });
+			}
+			/* The input of the model (CONFIG.inputs, a function input(sim, ev)): the grid and the camera of the last frame */
+			let gridFrame = null, pickMvp = null;
+			const INPUT_KEYS = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Enter', 'Escape', 'Backspace', 'Delete', 'Tab'];
+			function hasInput(type) { return (CONFIG.inputs || []).indexOf(type) >= 0 && !!userFunction('input'); }
+			/* A click, a drag or a key for the model (merge: a drag replaces a drag which still waits) */
+			let pendingDrag = null;
+			function modelInput(ev, merge) {
+			  const fn = userFunction('input'); if (!fn || !pageReady) return;
+			  if (CONFIG.async) {
+			    if (merge && pendingDrag) { pendingDrag.x = ev.x; pendingDrag.y = ev.y; return; }
+			    if (merge) pendingDrag = ev;
+			    enqueue(async function () { if (merge) pendingDrag = null; await fn(sim, ev); render(); });
+			    return;
+			  }
+			  try { fn(sim, ev); render(); } catch (e) { report(e); }
+			}
+			/* The 2D view: the cell under the mouse (x, y in cells from the top left) */
+			function cellAt(ev) {
+			  const f = gridFrame; if (!f) return null;
+			  const rect = view.getBoundingClientRect(), k = view.width / Math.max(1, rect.width);
+			  const x = ((ev.clientX - rect.left) * k - f.ox) / f.scale, y = ((ev.clientY - rect.top) * k - f.oy) / f.scale;
+			  return x >= 0 && y >= 0 && x < f.w && y < f.h ? [x, y] : null;
+			}
+			let gridPress = null, gridPressAt = null, gridDragging = false, gridLast = null;
+			view.addEventListener('pointerdown', function (ev) {
+			  if (ev.button !== 0 || mapActive()) return;
+			  gridPress = cellAt(ev); gridPressAt = [ev.clientX, ev.clientY]; gridDragging = false;
+			  if (gridPress && hasInput('drag')) { try { view.setPointerCapture(ev.pointerId); } catch (e) { /* the drag works without */ } }
+			});
+			view.addEventListener('pointermove', function (ev) {
+			  if (!gridPress || !hasInput('drag')) return;
+			  if (!gridDragging && Math.abs(ev.clientX - gridPressAt[0]) <= 2 && Math.abs(ev.clientY - gridPressAt[1]) <= 2) return;
+			  const c = cellAt(ev);
+			  if (!gridDragging) { gridDragging = true; gridLast = [Math.floor(gridPress[0]), Math.floor(gridPress[1])]; modelInput({ type: 'drag', x: gridPress[0], y: gridPress[1] }); }
+			  if (c && (Math.floor(c[0]) !== gridLast[0] || Math.floor(c[1]) !== gridLast[1])) { gridLast = [Math.floor(c[0]), Math.floor(c[1])]; modelInput({ type: 'drag', x: c[0], y: c[1] }); }
+			});
+			view.addEventListener('pointerup', function (ev) {
+			  if (gridPress && !gridDragging && hasInput('click')) { const c = cellAt(ev); if (c) modelInput({ type: 'click', x: c[0], y: c[1] }); }
+			  gridPress = null; gridDragging = false;
+			});
+			/* The 3D view: the point of the floor (z = 0, in the box) under the mouse */
+			function floorAt(ev) {
+			  if (!pickMvp) return null;
+			  const rect = view3d.getBoundingClientRect(), nx = 2 * (ev.clientX - rect.left) / rect.width - 1, ny = 1 - 2 * (ev.clientY - rect.top) / rect.height;
+			  const inv = invert4(pickMvp); if (!inv) return null;
+			  const un = function (z) { const v = [nx, ny, z, 1], o = [0, 0, 0, 0]; for (let r = 0; r < 4; r++) o[r] = inv[r] * v[0] + inv[4 + r] * v[1] + inv[8 + r] * v[2] + inv[12 + r] * v[3]; return [o[0] / o[3], o[1] / o[3], o[2] / o[3]]; };
+			  const a = un(-1), b = un(1); if (Math.abs(b[2] - a[2]) < 1e-12) return null;
+			  const t = -a[2] / (b[2] - a[2]); if (t < 0 || t > 1) return null;
+			  const x = a[0] + t * (b[0] - a[0]), y = a[1] + t * (b[1] - a[1]), box = sim.box || [1, 1, 1];
+			  return x >= 0 && y >= 0 && x <= box[0] && y <= box[1] ? [x, y] : null;
+			}
+			function invert4(m) {
+			  const a = []; for (let r = 0; r < 4; r++) { for (let c = 0; c < 4; c++) a.push(m[c * 4 + r]); for (let c = 0; c < 4; c++) a.push(r === c ? 1 : 0); }
+			  for (let c = 0; c < 4; c++) {
+			    let p = c; for (let r = c + 1; r < 4; r++) if (Math.abs(a[r * 8 + c]) > Math.abs(a[p * 8 + c])) p = r;
+			    if (Math.abs(a[p * 8 + c]) < 1e-15) return null;
+			    for (let k = 0; k < 8; k++) { const t = a[c * 8 + k]; a[c * 8 + k] = a[p * 8 + k]; a[p * 8 + k] = t; }
+			    const d = a[c * 8 + c]; for (let k = 0; k < 8; k++) a[c * 8 + k] /= d;
+			    for (let r = 0; r < 4; r++) if (r !== c) { const f = a[r * 8 + c]; for (let k = 0; k < 8; k++) a[r * 8 + k] -= f * a[c * 8 + k]; }
+			  }
+			  const inv = new Array(16); for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) inv[c * 4 + r] = a[r * 8 + 4 + c];
+			  return inv;
+			}
+			/* The keys: to the model (not in the fields of the settings; Space and Enter still press a focused button) */
+			document.addEventListener('keydown', function (ev) {
+			  if (!hasInput('key') || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+			  const t = ev.target, tag = t && t.tagName;
+			  if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || (t && t.isContentEditable)) return;
+			  if (tag === 'BUTTON' && (ev.key === ' ' || ev.key === 'Enter')) return;
+			  if (ev.key.length !== 1 && INPUT_KEYS.indexOf(ev.key) < 0) return;
+			  ev.preventDefault(); modelInput({ type: 'key', key: ev.key });
+			});
+			""";
+
 	/* The JavaScript of the charts */
 	private static final String CHARTS_JS = """
 			function niceStep(span) { const p = Math.pow(10, Math.floor(Math.log10(span / 5))), f = span / 5 / p; return (f < 1.5 ? 1 : f < 3.5 ? 2 : f < 7.5 ? 5 : 10) * p; }
@@ -647,14 +760,17 @@ public class HtmlSimulation {
 			  const box = sim.box || [1, 1, 1], center = [box[0] / 2, box[1] / 2, box[2] / 2], size = Math.max(box[0], box[1], box[2]);
 			  if (!(dist > 0)) dist = size * 3.2;
 			  gl.viewport(0, 0, view3d.width, view3d.height); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+			  clearLabels3d(true);
 			  gl.enable(gl.DEPTH_TEST); gl.disable(gl.BLEND); gl.depthMask(true);
 			  const e = [center[0] + dist * Math.cos(phi) * Math.cos(theta), center[1] + dist * Math.cos(phi) * Math.sin(theta), center[2] + dist * Math.sin(phi)];
 			  const fov = 30 * Math.PI / 180, viewM = lookAt(e, center, [0, 0, 1]);
 			  spriteView = viewM;
 			  const mvp = new Float32Array(multiply(perspective(fov, view3d.width / view3d.height, dist * 0.02, dist * 20), viewM));
+			  pickMvp = mvp;
 			  const light = LIGHTS[scene.lighting] || LIGHTS.studio;
-			  function lit(data, buffer) {
+			  function lit(data, buffer, alpha) {
 			    if (data.length === 0) return;
+			    const transparent = alpha !== undefined && alpha < 1;
 			    useProgram(litProgram); gl.bindBuffer(gl.ARRAY_BUFFER, buffer); gl.bufferData(gl.ARRAY_BUFFER, data instanceof Float32Array ? data : new Float32Array(data), gl.DYNAMIC_DRAW);
 			    attribute(litProgram, 'p', 3, 9, 0); attribute(litProgram, 'n', 3, 9, 3); attribute(litProgram, 'c', 3, 9, 6);
 			    gl.uniformMatrix4fv(gl.getUniformLocation(litProgram, 'mvp'), false, mvp);
@@ -663,7 +779,10 @@ public class HtmlSimulation {
 			    gl.uniform4fv(gl.getUniformLocation(litProgram, 'k'), light.k);
 			    gl.uniform3fv(gl.getUniformLocation(litProgram, 'sky'), dark ? [0.72, 0.8, 1.0] : [1.0, 1.0, 1.0]);
 			    gl.uniform3fv(gl.getUniformLocation(litProgram, 'ground'), dark ? [0.28, 0.25, 0.24] : [0.62, 0.58, 0.54]);
+			    gl.uniform1f(gl.getUniformLocation(litProgram, 'alpha'), transparent ? alpha : 1);
+			    if (transparent) { gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false); }
 			    gl.drawArrays(gl.TRIANGLES, 0, data.length / 9);
+			    if (transparent) { gl.depthMask(true); gl.disable(gl.BLEND); }
 			  }
 			  function lines(data, buffer, alpha) {
 			    if (data.length === 0) return;
@@ -715,6 +834,20 @@ public class HtmlSimulation {
 			  }
 			  /* The lines (and the pillars, lit) */
 			  drawShapes3d(mvp, lines, size, lit);
+			  /* The links of a network: lines between the agents (the color of a link or the color of the links) */
+			  const lk = sim.links, lp = sim.points;
+			  if (lk && lk.pairs && lk.pairs.length >= 2 && lp && lp.xyz) {
+			    const data = [], n = lp.xyz.length / 3, base = lk.color ? color3(lk.color) : null;
+			    let alpha = 1;
+			    if (lk.color && lk.color.length === 9) alpha = parseInt(lk.color.substr(7, 2), 16) / 255;
+			    for (let k = 0; k + 1 < lk.pairs.length; k += 2) {
+			      const i = lk.pairs[k], j = lk.pairs[k + 1], own = lk.colors && lk.colors[k / 2];
+			      if (i >= n || j >= n) continue;
+			      const c = own ? color3(own) : base; if (!c) continue;
+			      data.push(lp.xyz[i * 3], lp.xyz[i * 3 + 1], lp.xyz[i * 3 + 2], c[0], c[1], c[2], lp.xyz[j * 3], lp.xyz[j * 3 + 1], lp.xyz[j * 3 + 2], c[0], c[1], c[2]);
+			    }
+			    lines(data, buffers.line, alpha);
+			  }
 			  const l = sim.lines;
 			  if (l && l.xyz && l.xyz.length >= 6) {
 			    const data = [], c = color3(l.color, dark ? '#c8d0dc' : '#555555');
@@ -1008,6 +1141,8 @@ public class HtmlSimulation {
 			      const tex = me.tex >= 0 && m.textures[me.tex] ? glTexture(m.textures[me.tex].bytes || m.textures[me.tex].uri, m.textures[me.tex].bytes ? m.textures[me.tex] : m.textures[me.tex].uri) : null;
 			      if (tex && me.uv) { gl.bindBuffer(gl.ARRAY_BUFFER, buffers.mu); gl.bufferData(gl.ARRAY_BUFFER, me.uv, gl.DYNAMIC_DRAW); attribute(meshProgram, 'uv', 2, 2, 0);
 			        gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex.tex); gl.uniform1i(gl.getUniformLocation(meshProgram, 'tex'), 0); }
+			      else { /* No texture: the array of the texture coordinates off (else a mesh with more vertices than the last textured one is not drawn) */
+			        const uvLoc = gl.getAttribLocation(meshProgram, 'uv'); if (uvLoc >= 0) gl.disableVertexAttribArray(uvLoc); }
 			      gl.uniform1f(gl.getUniformLocation(meshProgram, 'useTex'), tex && me.uv ? 1 : 0);
 			      gl.uniform4fv(gl.getUniformLocation(meshProgram, 'color'), me.color);
 			      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.mi);
@@ -1020,46 +1155,116 @@ public class HtmlSimulation {
 			  /* Animated models: the view is drawn again (each frame) */
 			  if (animated && !animating3d) { animating3d = true; requestAnimationFrame(function again() { if (!animating3d) return; animating3d = false; draw3d(); }); }
 			}
-			/* The shapes of an agent model: lines in 3D, 2D shapes on the floor, pillars, images (billboards standing on the floor) */
+			/* The shapes of an agent model: lines and paths in 3D, 2D shapes on the floor (or at a height z), the solids (pillars, boxes, spheres, points, polygons; lit), texts (labels) and images (billboards standing at the height) */
 			function drawShapes3d(mvp, lines, size, lit) {
 			  const d = sim.drawing; if (!d || !d.length) return;
-			  const segs = [], sprites = [], z0 = size * 0.002;
-			  /* The pillars: a vertical cylinder from the floor (x, y, the radius, the height), the top a little smaller and lighter */
-			  const pil = [];
+			  const segs = [], sprites = [], texts = [], z0 = size * 0.002;
+			  function alphaOf(c) { return c && c.length === 9 ? parseInt(c.substr(7, 2), 16) / 255 : 1; }
+			  /* The solids: opaque ones together, a transparent fill (#rrggbbaa) with its own alpha */
+			  const solid = [], glass = [];
+			  function V(out, x, y, z, n, c) { out.push(x, y, z, n[0], n[1], n[2], c[0], c[1], c[2]); }
 			  for (const s of d) {
-			    if (s.k !== 'pillar' || !s.p || s.p.length < 4) continue;
-			    const x = s.p[0], y = s.p[1], r0 = s.p[2], r1 = s.p[2] * 0.85, h = s.p[3], c = color3(s.f || '#9aa6b8'), ct = [Math.min(1, c[0] * 1.2), Math.min(1, c[1] * 1.2), Math.min(1, c[2] * 1.2)], seg = 32;
-			    for (let j = 0; j < seg; j++) {
-			      const a1 = 2 * Math.PI * j / seg, a2 = 2 * Math.PI * (j + 1) / seg, c1 = Math.cos(a1), s1 = Math.sin(a1), c2 = Math.cos(a2), s2 = Math.sin(a2);
-			      const v = function (cc, ss, r, z, col) { pil.push(x + r * cc, y + r * ss, z, cc, ss, 0.15, col[0], col[1], col[2]); };
-			      v(c1, s1, r0, 0, c); v(c2, s2, r0, 0, c); v(c2, s2, r1, h, c);
-			      v(c1, s1, r0, 0, c); v(c2, s2, r1, h, c); v(c1, s1, r1, h, c);
-			      pil.push(x, y, h, 0, 0, 1, ct[0], ct[1], ct[2], x + r1 * c1, y + r1 * s1, h, 0, 0, 1, ct[0], ct[1], ct[2], x + r1 * c2, y + r1 * s2, h, 0, 0, 1, ct[0], ct[1], ct[2]);
-			    }
+			    const p = s.p; if (!p) continue;
+			    const fc = s.f || (s.k === 'pillar' ? '#9aa6b8' : s.k === 'sphere' || s.k === 'point3' ? '#d0d4dc' : null);
+			    if (!fc) continue;
+			    const a = alphaOf(fc), out = a < 1 ? [] : solid, c = color3(fc);
+			    if (s.k === 'pillar' && p.length >= 4) {
+			      /* A vertical cylinder from the floor (x, y, the radius, the height), the top a little smaller and lighter */
+			      const x = p[0], y = p[1], r0 = p[2], r1 = p[2] * 0.85, h = p[3], ct = [Math.min(1, c[0] * 1.2), Math.min(1, c[1] * 1.2), Math.min(1, c[2] * 1.2)], seg = 32;
+			      for (let j = 0; j < seg; j++) {
+			        const a1 = 2 * Math.PI * j / seg, a2 = 2 * Math.PI * (j + 1) / seg, c1 = Math.cos(a1), s1 = Math.sin(a1), c2 = Math.cos(a2), s2 = Math.sin(a2);
+			        const v = function (cc, ss, r, z, col) { V(out, x + r * cc, y + r * ss, z, [cc, ss, 0.15], col); };
+			        v(c1, s1, r0, 0, c); v(c2, s2, r0, 0, c); v(c2, s2, r1, h, c);
+			        v(c1, s1, r0, 0, c); v(c2, s2, r1, h, c); v(c1, s1, r1, h, c);
+			        V(out, x, y, h, [0, 0, 1], ct); V(out, x + r1 * c1, y + r1 * s1, h, [0, 0, 1], ct); V(out, x + r1 * c2, y + r1 * s2, h, [0, 0, 1], ct);
+			      }
+			    } else if ((s.k === 'sphere' || s.k === 'point3') && p.length >= 4) {
+			      const r = s.k === 'sphere' ? p[3] : p[3] / 2, u = SHAPES.sphere;
+			      for (let i = 0; i < u.length; i += 6) V(out, p[0] + u[i] * r, p[1] + u[i + 1] * r, p[2] + u[i + 2] * r, [u[i + 3], u[i + 4], u[i + 5]], c);
+			    } else if (s.k === 'box' && p.length >= 6) {
+			      const q = boxCorners(p), f = [[0, 3, 2, 1], [4, 5, 6, 7], [0, 1, 5, 4], [1, 2, 6, 5], [2, 3, 7, 6], [3, 0, 4, 7]], n = [[0, 0, -1], [0, 0, 1], [0, -1, 0], [1, 0, 0], [0, 1, 0], [-1, 0, 0]];
+			      for (let k = 0; k < 6; k++) [0, 1, 2, 0, 2, 3].forEach(function (i) { const v = q[f[k][i]]; V(out, v[0], v[1], v[2], n[k], c); });
+			    } else if (s.k === 'polygon3' && p.length >= 9) {
+			      const n = newell(p);
+			      for (let i = 3; i + 5 < p.length; i += 3) { V(out, p[0], p[1], p[2], n, c); V(out, p[i], p[i + 1], p[i + 2], n, c); V(out, p[i + 3], p[i + 4], p[i + 5], n, c); }
+			    } else continue;
+			    if (a < 1 && out.length) glass.push([out, a]);
 			  }
-			  if (pil.length && lit) lit(pil, buffers.tri);
+			  if (lit) { lit(solid, buffers.tri); glass.forEach(function (g) { lit(g[0], buffers.tri, g[1]); }); }
 			  function seg(a, b, c) { segs.push(a[0], a[1], a[2], c[0], c[1], c[2], b[0], b[1], b[2], c[0], c[1], c[2]); }
 			  function outline(s) { const p = s.p; if (s.k === 'rect') return [p[0], p[1], p[0] + p[2], p[1], p[0] + p[2], p[1] + p[3], p[0], p[1] + p[3]];
 			    if (s.k === 'circle') { const q = []; for (let i = 0; i < 48; i++) { const a = 2 * Math.PI * i / 48; q.push(p[0] + p[2] * Math.cos(a), p[1] + p[2] * Math.sin(a)); } return q; } return p; }
 			  for (const s of d) {
-			    if (s.k === 'image') { sprites.push([s.p[0], s.p[1], (s.w || 1) / 2, s.w || 1, s.a || 0, s.t]); continue; }
-			    if (s.k === 'text' || s.k === 'pillar') continue;
+			    const h = s.z || 0;
+			    if (s.k === 'image') { sprites.push([s.p[0], s.p[1], h + (s.w || 1) / 2, s.w || 1, s.a || 0, s.t]); continue; }
+			    if (s.k === 'text') { if (s.t !== null && s.t !== undefined) texts.push(s); continue; }
+			    if (s.k === 'pillar' || s.k === 'sphere' || s.k === 'point3') continue;
 			    if (s.k === 'line3') { if (s.s) seg([s.p[0], s.p[1], s.p[2]], [s.p[3], s.p[4], s.p[5]], color3(s.s)); continue; }
-			    const q = outline(s), closed = s.k !== 'line' && s.k !== 'path';
+			    if (s.k === 'path3' || s.k === 'polygon3') {
+			      if (!s.s) continue; const p = s.p, c = color3(s.s);
+			      for (let i = 0; i + 5 < p.length; i += 3) seg([p[i], p[i + 1], p[i + 2]], [p[i + 3], p[i + 4], p[i + 5]], c);
+			      if (s.k === 'polygon3' && p.length >= 9) seg([p[p.length - 3], p[p.length - 2], p[p.length - 1]], [p[0], p[1], p[2]], c);
+			      continue;
+			    }
+			    if (s.k === 'box') {
+			      if (!s.s || s.p.length < 6) continue; const q = boxCorners(s.p), c = color3(s.s), e = [0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6, 6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7];
+			      for (let i = 0; i < e.length; i += 2) seg(q[e[i]], q[e[i + 1]], c);
+			      continue;
+			    }
+			    const q = outline(s), closed = s.k !== 'line' && s.k !== 'path', zf = h + z0 * 0.5, zl = h + z0;
 			    if (s.f && closed && q.length >= 6) {
-			      /* A transparent fill on the floor (a fan of triangles) */
-			      const c = color3(s.f), alpha = s.f.length === 9 ? parseInt(s.f.substr(7, 2), 16) / 255 : 1, data = [];
-			      for (let i = 2; i + 3 < q.length; i += 2) data.push(q[0], q[1], z0 * 0.5, c[0], c[1], c[2], q[i], q[i + 1], z0 * 0.5, c[0], c[1], c[2], q[i + 2], q[i + 3], z0 * 0.5, c[0], c[1], c[2]);
+			      /* A transparent fill (a fan of triangles) */
+			      const c = color3(s.f), alpha = alphaOf(s.f), data = [];
+			      for (let i = 2; i + 3 < q.length; i += 2) data.push(q[0], q[1], zf, c[0], c[1], c[2], q[i], q[i + 1], zf, c[0], c[1], c[2], q[i + 2], q[i + 3], zf, c[0], c[1], c[2]);
 			      useProgram(lineProgram); gl.bindBuffer(gl.ARRAY_BUFFER, buffers.fill); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.DYNAMIC_DRAW);
 			      attribute(lineProgram, 'p', 3, 6, 0); attribute(lineProgram, 'c', 3, 6, 3);
 			      gl.uniformMatrix4fv(gl.getUniformLocation(lineProgram, 'mvp'), false, mvp); gl.uniform1f(gl.getUniformLocation(lineProgram, 'alpha'), alpha);
 			      gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false);
 			      gl.drawArrays(gl.TRIANGLES, 0, data.length / 6); gl.depthMask(true); gl.disable(gl.BLEND);
 			    }
-			    if (s.s) { const c = color3(s.s); for (let i = 0; i + 3 < q.length; i += 2) seg([q[i], q[i + 1], z0], [q[i + 2], q[i + 3], z0], c); if (closed && q.length >= 6) seg([q[q.length - 2], q[q.length - 1], z0], [q[0], q[1], z0], c); }
+			    if (s.s) { const c = color3(s.s); for (let i = 0; i + 3 < q.length; i += 2) seg([q[i], q[i + 1], zl], [q[i + 2], q[i + 3], zl], c); if (closed && q.length >= 6) seg([q[q.length - 2], q[q.length - 1], zl], [q[0], q[1], zl], c); }
 			  }
 			  lines(segs, buffers.line);
 			  drawSprites(sprites, mvp);
+			  drawLabels3d(texts, mvp);
+			}
+			/* The 8 corners of a box (x, y, z, w, h, d): 0-3 below, 4-7 above */
+			function boxCorners(p) {
+			  const x0 = p[0], y0 = p[1], z0 = p[2], x1 = p[0] + p[3], y1 = p[1] + p[4], z1 = p[2] + p[5];
+			  return [[x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0], [x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]];
+			}
+			/* The normal of a polygon in 3D (x0, y0, z0, x1, ...; the method of Newell) */
+			function newell(p) {
+			  let nx = 0, ny = 0, nz = 0; const n = p.length / 3;
+			  for (let i = 0; i < n; i++) { const j = (i + 1) % n;
+			    nx += (p[i * 3 + 1] - p[j * 3 + 1]) * (p[i * 3 + 2] + p[j * 3 + 2]); ny += (p[i * 3 + 2] - p[j * 3 + 2]) * (p[i * 3] + p[j * 3]); nz += (p[i * 3] - p[j * 3]) * (p[i * 3 + 1] + p[j * 3 + 1]); }
+			  const l = Math.hypot(nx, ny, nz); return l === 0 ? [0, 0, 1] : [nx / l, ny / l, nz / l];
+			}
+			/* The texts of an agent model: labels at their position in 3D (a canvas above the view, the size in pixels as in Bio7) */
+			function labelCanvas() {
+			  let c = document.getElementById('labels3d');
+			  if (!c) { c = document.createElement('canvas'); c.id = 'labels3d'; c.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none'; viewbox.appendChild(c); }
+			  return c;
+			}
+			function clearLabels3d(show) {
+			  const c = document.getElementById('labels3d'); if (!c) return;
+			  c.style.display = show ? '' : 'none'; c.getContext('2d').clearRect(0, 0, c.width, c.height);
+			}
+			function drawLabels3d(texts, mvp) {
+			  if (!texts.length) return;
+			  const c = labelCanvas(), r = window.devicePixelRatio || 1, w = view3d.clientWidth, h = view3d.clientHeight;
+			  if (c.width !== Math.round(w * r) || c.height !== Math.round(h * r)) { c.width = Math.round(w * r); c.height = Math.round(h * r); }
+			  c.style.display = '';
+			  const ctx = c.getContext('2d'), m = mvp;
+			  ctx.font = (12 * r) + 'px ' + cssColor('--font'); ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+			  for (const s of texts) {
+			    const x = s.p[0], y = s.p[1], z = (s.z || 0), cw = m[3] * x + m[7] * y + m[11] * z + m[15];
+			    if (cw <= 0) continue;
+			    const cx = (m[0] * x + m[4] * y + m[8] * z + m[12]) / cw, cy = (m[1] * x + m[5] * y + m[9] * z + m[13]) / cw;
+			    if (Math.abs(cx) > 1.2 || Math.abs(cy) > 1.2) continue;
+			    ctx.fillStyle = s.s ? cssHex(s.s) : cssColor('--text');
+			    ctx.fillText(String(s.t), (cx * 0.5 + 0.5) * c.width, (0.5 - cy * 0.5) * c.height);
+			  }
 			}
 """;
 
@@ -1126,6 +1331,10 @@ public class HtmlSimulation {
 			h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 18px 0 8px 0; }
 			#controls > h2:first-child, #scenebox > h2:first-child { margin-top: 0; }
 			#controls:empty { display: none; }
+			.seedrow { display: flex; align-items: center; gap: 8px; }
+			.seedrow label { margin: 0; flex: none; }
+			.control.seedrow input[type=number] { flex: 1; width: auto; min-width: 0; }
+			.seedrow button { flex: none; padding: 6px 10px; }
 			#status { display: inline-block; font-size: 12px; color: var(--muted); background: var(--bg); border-radius: 999px; padding: 3px 10px; margin-top: 2px; font-variant-numeric: tabular-nums; }
 			#error { color: var(--error); font-size: 12px; white-space: pre-wrap; border: 1px solid var(--error); border-radius: 10px; padding: 8px 10px; }
 			#error:empty { display: none; }
@@ -1216,6 +1425,7 @@ public class HtmlSimulation {
 			<div class="card" id="runcard">
 			<div class="buttons"><button id="play" class="play">Play</button><button id="step">Step</button><button id="reset">Reset</button></div>
 			<div class="control"><label>Speed <span class="value" id="speedValue"></span></label><input type="range" id="speed" min="0" max="100" step="1"></div>
+			<div class="control seedrow"><label for="seed">Seed</label><input type="number" id="seed" min="0" step="1" title="The seed of the random numbers: the same seed gives the same run; a change starts the model again"><button id="newseed" title="A random seed (another run of the model)">New</button></div>
 			<div id="status">Step 0</div>
 			<div class="control" id="timelineBox" style="display:none"><label>Timeline</label><input type="range" id="timeline" min="0" max="0" step="1" value="0"></div>
 			</div>
@@ -1313,7 +1523,7 @@ public class HtmlSimulation {
 			  return moreCharts.get(title);
 			}
 			const sim = {
-			  p: {}, t: 0, width: 0, height: 0, cells: null, palette: null, min: 0, max: 1, agents: null,
+			  p: {}, t: 0, seed: CONFIG.seed === undefined ? 42 : CONFIG.seed, width: 0, height: 0, cells: null, palette: null, min: 0, max: 1, agents: null,
 			  box: [1, 1, 1], points: null, lines: null, surface: null,
 			  random: Math.random,
 			  chart: function (name, value) { if (!series.has(name)) series.set(name, []); series.get(name).push([this.t, value]); },
@@ -1380,6 +1590,8 @@ public class HtmlSimulation {
 			const playButton = document.getElementById('play'), statusElement = document.getElementById('status');
 			/* sim.status(text): a message in the status line (e.g., while prepare(sim) loads) */
 			sim.status = function (text) { statusElement.textContent = text; };
+			/* For the code of the model (outside of this function): the scene of the model and its objects of the environment */
+			sim.applyModelScene = applyModelScene; sim.sceneryOf = sceneryOf;
 			const speedInput = document.getElementById('speed'), speedValue = document.getElementById('speedValue');
 			/* The speed slider: 0.5 - 500 steps per second (logarithmic) */
 			function speedFromSlider(v) { return 0.5 * Math.pow(1000, v / 100); }
@@ -1387,6 +1599,12 @@ public class HtmlSimulation {
 			function showSpeed() { speedValue.textContent = (stepsPerSecond < 10 ? stepsPerSecond.toFixed(1) : Math.round(stepsPerSecond)) + ' steps/s'; }
 			showSpeed();
 			speedInput.addEventListener('input', function () { stepsPerSecond = speedFromSlider(parseFloat(speedInput.value)); showSpeed(); });
+			/* The seed: a change starts the model again (the same seed: the same run) */
+			const seedInput = document.getElementById('seed');
+			seedInput.value = sim.seed;
+			function applySeed(v) { v = Math.max(0, Math.floor(Number(v))); if (!isFinite(v)) { seedInput.value = sim.seed; return; } seedInput.value = v; if (v === sim.seed) return; sim.seed = v; playing = false; updatePlay(); reset(); }
+			seedInput.addEventListener('change', function () { applySeed(seedInput.value); });
+			document.getElementById('newseed').addEventListener('click', function () { applySeed(Math.floor(Math.random() * 1000000)); });
 			function updatePlay() { playButton.textContent = playing ? 'Pause' : 'Play'; playButton.classList.toggle('on', playing); }
 			playButton.addEventListener('click', function () { playing = !playing; updatePlay(); lastTime = performance.now(); accumulator = 0; if (playing) requestAnimationFrame(loop); });
 			document.getElementById('step').addEventListener('click', function () {
@@ -1402,20 +1620,28 @@ public class HtmlSimulation {
 			}
 			async function doStepAsync() {
 			  if (typeof step !== 'function') throw new Error('The code needs a function step(sim)');
-			  if (await step(sim) === false) { playing = false; updatePlay(); return false; }
-			  sim.t++; return true;
+			  const r = await step(sim);
+			  if (r === false) { playing = false; updatePlay(); return false; }
+			  sim.t++;
+			  /* 'stop': the step was done and the simulation ends (stop() of the model) */
+			  if (r === 'stop') { playing = false; updatePlay(); render(); return false; }
+			  return true;
 			}
 			document.getElementById('reset').addEventListener('click', reset);
 			function doStep() {
 			  try {
 			    if (typeof step !== 'function') throw new Error('The code needs a function step(sim)');
-			    /* step(sim) returns false to stop (e.g., at the end of a recording) */
-			    if (step(sim) === false) { playing = false; updatePlay(); return false; }
-			    sim.t++; return true;
+			    /* step(sim) returns false to stop without a step (e.g., at the end of a recording), 'stop' after the step (stop() of the model) */
+			    const r = step(sim);
+			    if (r === false) { playing = false; updatePlay(); return false; }
+			    sim.t++;
+			    if (r === 'stop') { playing = false; updatePlay(); render(); return false; }
+			    return true;
 			  }
 			  catch (e) { report(e); return false; }
 			}
 			function reset() {
+			  if (!pageReady) return;
 			  if (CONFIG.async) {
 			    return enqueue(async function () {
 			      errorElement.textContent = ''; series.clear(); moreCharts.clear(); sim.t = 0;
@@ -1447,6 +1673,7 @@ public class HtmlSimulation {
 
 			/* ----- The 2D grid view ----- */
 			const view = document.getElementById('view'), view3d = document.getElementById('view3d');
+			/*INPUT*/
 			const offscreen = document.createElement('canvas');
 			function resizeCanvas(c) {
 			  const r = window.devicePixelRatio || 1, w = Math.round(c.clientWidth * r), h = Math.round(c.clientHeight * r);
@@ -1473,6 +1700,7 @@ public class HtmlSimulation {
 			  if (mapActive()) { view.style.display = 'none'; updateMapOverlay(); return; }
 			  view.style.display = '';
 			  const scale = Math.min(view.width / w, view.height / h), ox = (view.width - w * scale) / 2, oy = (view.height - h * scale) / 2;
+			  gridFrame = { scale: scale, ox: ox, oy: oy, w: w, h: h };
 			  ctx.imageSmoothingEnabled = false; ctx.drawImage(offscreen, ox, oy, w * scale, h * scale);
 			  ctx.strokeStyle = cssColor('--frame'); ctx.lineWidth = r; ctx.strokeRect(ox, oy, w * scale, h * scale);
 			  const a = sim.agents;
@@ -1772,11 +2000,11 @@ public class HtmlSimulation {
 			    'attribute vec3 p; attribute vec3 n; attribute vec3 c; uniform mat4 mvp; varying vec3 vp; varying vec3 vn; varying vec3 vc;' +
 			    'void main() { gl_Position = mvp * vec4(p, 1.0); vp = p; vn = n; vc = c; }',
 			    'precision mediump float; varying vec3 vp; varying vec3 vn; varying vec3 vc;' +
-			    'uniform vec3 eye; uniform vec3 light; uniform vec4 k; uniform vec3 sky; uniform vec3 ground;' +
+			    'uniform vec3 eye; uniform vec3 light; uniform vec4 k; uniform vec3 sky; uniform vec3 ground; uniform float alpha;' +
 			    'void main() { vec3 n = normalize(vn); vec3 v = normalize(eye - vp); if (dot(n, v) < 0.0) n = -n; vec3 l = normalize(light);' +
 			    ' vec3 amb = mix(ground, sky, 0.5 + 0.5 * n.z) * k.x; float d = max(dot(n, l), 0.0) * k.y;' +
 			    ' float s = pow(max(dot(n, normalize(l + v)), 0.0), 48.0) * k.z; float rim = pow(1.0 - max(dot(n, v), 0.0), 3.0) * k.w;' +
-			    ' gl_FragColor = vec4(min(vc * (amb + d) + vec3(s) + rim * sky * 0.6, 1.0), 1.0); }');
+			    ' gl_FragColor = vec4(min(vc * (amb + d) + vec3(s) + rim * sky * 0.6, 1.0), alpha); }');
 			  lineProgram = program(
 			    'attribute vec3 p; attribute vec3 c; uniform mat4 mvp; varying vec3 vc; void main() { gl_Position = mvp * vec4(p, 1.0); vc = c; }',
 			    'precision mediump float; varying vec3 vc; uniform float alpha; void main() { gl_FragColor = vec4(vc, alpha); }');
@@ -1803,16 +2031,32 @@ public class HtmlSimulation {
 			    'attribute vec3 p; attribute vec2 uv; uniform mat4 mvp; varying vec2 vuv; void main() { gl_Position = mvp * vec4(p, 1.0); vuv = uv; }',
 			    'precision mediump float; varying vec2 vuv; uniform sampler2D tex; void main() { vec4 c = texture2D(tex, vuv); if (c.a < 0.1) discard; gl_FragColor = c; }');
 			  ['tri', 'line', 'point', 'frame', 'shadow', 'shape', 'floor', 'mp', 'mn', 'mu', 'mi', 'sprite', 'fill'].forEach(function (k) { buffers[k] = gl.createBuffer(); });
-			  let drag = null;
-			  view3d.addEventListener('pointerdown', function (ev) { drag = [ev.clientX, ev.clientY]; });
-			  window.addEventListener('pointerup', function () { drag = null; });
+			  /* Drag: rotate; Shift + drag: the model (input), a click (no movement): the model */
+			  let drag = null, press = null, modelDragging = false;
+			  view3d.addEventListener('pointerdown', function (ev) {
+			    press = ev.button === 0 ? [ev.clientX, ev.clientY] : null;
+			    if (ev.button === 0 && ev.shiftKey && hasInput('drag')) {
+			      modelDragging = true; drag = null;
+			      const p = floorAt(ev); if (p) modelInput({ type: 'drag', x: p[0], y: p[1] }, true);
+			      return;
+			    }
+			    drag = [ev.clientX, ev.clientY];
+			  });
+			  window.addEventListener('pointerup', function (ev) {
+			    const wasModel = modelDragging; modelDragging = false; drag = null;
+			    if (!wasModel && press && !ev.shiftKey && ev.target === view3d && Math.abs(ev.clientX - press[0]) <= 3 && Math.abs(ev.clientY - press[1]) <= 3 && hasInput('click')) {
+			      const p = floorAt(ev); if (p) modelInput({ type: 'click', x: p[0], y: p[1] });
+			    }
+			    press = null;
+			  });
 			  window.addEventListener('pointermove', function (ev) {
+			    if (modelDragging) { const p = floorAt(ev); if (p) modelInput({ type: 'drag', x: p[0], y: p[1] }, true); return; }
 			    if (!drag) return; theta -= (ev.clientX - drag[0]) * 0.01; phi = Math.max(-1.55, Math.min(1.55, phi + (ev.clientY - drag[1]) * 0.01));
 			    drag = [ev.clientX, ev.clientY]; draw3d();
 			  });
 			  view3d.addEventListener('wheel', function (ev) { ev.preventDefault(); dist *= ev.deltaY > 0 ? 1.1 : 1 / 1.1; draw3d(); }, { passive: false });
 			  view3d.addEventListener('dblclick', function () { theta = -0.95; phi = 0.45; dist = 0; draw3d(); });
-			  document.getElementById('hint').textContent = 'Drag: rotate \\u00B7 Wheel: zoom \\u00B7 Double click: reset';
+			  document.getElementById('hint').textContent = 'Drag: rotate \\u00B7 Wheel: zoom \\u00B7 Double click: reset' + (hasInput('click') ? ' \\u00B7 Click: model' : '') + (hasInput('drag') ? ' \\u00B7 Shift + drag: model' : '');
 			}
 			function perspective(fovy, aspect, near, far) { const f = 1 / Math.tan(fovy / 2), nf = 1 / (near - far); return [f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) * nf, -1, 0, 0, 2 * far * near * nf, 0]; }
 			function lookAt(e, c, up) {
@@ -1914,7 +2158,7 @@ public class HtmlSimulation {
 			  statusElement.textContent = CONFIG.timeline > 0 ? 'Step ' + sim.t + ' of ' + (CONFIG.timeline - 1) : 'Step ' + sim.t;
 			  if (CONFIG.timeline > 0) timelineInput.value = sim.t;
 			  try {
-			    if (CONFIG.view === 'GRID_2D') { view.style.display = ''; view3d.style.display = 'none'; viewbox.style.background = ''; if (!mapActive()) document.getElementById('mapview').style.display = 'none'; draw2d(); if (sim.geoAgents) drawGeoAgents(); }
+			    if (CONFIG.view === 'GRID_2D') { view.style.display = ''; view3d.style.display = 'none'; clearLabels3d(false); viewbox.style.background = ''; if (!mapActive()) document.getElementById('mapview').style.display = 'none'; draw2d(); if (sim.geoAgents) drawGeoAgents(); }
 			    else { view.style.display = 'none'; view3d.style.display = ''; draw3d(); }
 			    if (typeof draw === 'function') { draw(sim); }
 			    drawChart();
@@ -1924,7 +2168,9 @@ public class HtmlSimulation {
 			/* An optional (asynchronous) function prepare(sim) is called before the start, e.g., to load data */
 			const prepareFunction = userFunction('prepare');
 			statusElement.textContent = prepareFunction ? 'Loading ...' : statusElement.textContent;
+			setPageReady(!prepareFunction);
 			Promise.resolve(prepareFunction ? prepareFunction(sim) : null).then(function () {
+			  setPageReady(true);
 			  reset();
 			  if (CONFIG.autoplay) { playing = true; updatePlay(); lastTime = performance.now(); requestAnimationFrame(loop); }
 			}).catch(report);

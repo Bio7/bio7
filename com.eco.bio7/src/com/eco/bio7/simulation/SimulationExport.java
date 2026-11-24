@@ -48,6 +48,8 @@ public class SimulationExport {
 		public String title;
 		public String description;
 		public double speed = 10;
+		/** The seed of the setup (the field Seed of the page; default 42). */
+		public int seed = Simulation.DEFAULT_SEED;
 		public boolean autoplay;
 		/** The theme of the page: "auto", "light" or "dark". */
 		public String theme = "auto";
@@ -207,15 +209,28 @@ public class SimulationExport {
 			  chart(a, b, c) { if (!this._sim) return; if (c === undefined) this._sim.chart(a, b); else this._sim.chartLine(a, b, this.t, c); }
 			  chartXY(chart, name, x, y) { if (this._sim) this._sim.chartXY(chart, name, x, y); }
 			  chartBars(chart, labels, values) { if (this._sim) this._sim.chartBars(chart, Array.from(labels), Array.from(values)); }
-			  _shape(k, p, s, f, t, w, a) { (this._drawing || (this._drawing = [])).push({ k: k, p: p, s: s || null, f: f || null, t: t === undefined ? null : t, w: w === undefined ? 1 : w, a: a || 0 }); }
-			  drawLine(x1, y1, x2, y2, color, width) { this._shape('line', [x1, y1, x2, y2], color, null, null, width); }
+			  stop() { this._stopped = true; }
+			  isStopped() { return !!this._stopped; }
+			  record(name, value) { (this._records || (this._records = {}))[name] = value; }
+			  _shape(k, p, s, f, t, w, a, z) {
+			    /* 3D shapes in the 2D view of a grid: not drawn, a message once (as in Bio7) */
+			    if (!this._warned3d && ['box', 'sphere', 'point3', 'path3', 'polygon3', 'pillar'].indexOf(k) >= 0 && !(this instanceof AgentModel) && !(this instanceof GeoAgentModel)) {
+			      this._warned3d = true; console.warn('The model draws a 3D shape (' + k + '): 3D shapes are drawn only in the 3D view of an agent model (the 2D view of a grid ignores them)');
+			    }
+			    const d = { k: k, p: p, s: s || null, f: f || null, t: t === undefined ? null : t, w: w === undefined ? 1 : w, a: a || 0 }; if (z) d.z = z; (this._drawing || (this._drawing = [])).push(d); }
+			  drawLine(x1, y1, x2, y2, color, width, z) { this._shape('line', [x1, y1, x2, y2], color, null, null, width, 0, z); }
 			  drawLine3(x1, y1, z1, x2, y2, z2, color, width) { this._shape('line3', [x1, y1, z1, x2, y2, z2], color, null, null, width); }
-			  drawPath(xs, ys, color, width) { const p = []; for (let i = 0; i < Math.min(xs.length, ys.length); i++) p.push(xs[i], ys[i]); this._shape('path', p, color, null, null, width); }
-			  drawPolygon(xs, ys, fill, stroke) { const p = []; for (let i = 0; i < Math.min(xs.length, ys.length); i++) p.push(xs[i], ys[i]); this._shape('polygon', p, stroke, fill, null, 1); }
-			  drawCircle(x, y, radius, fill, stroke) { this._shape('circle', [x, y, radius], stroke, fill, null, 1); }
-			  drawRect(x, y, w, h, fill, stroke) { this._shape('rect', [x, y, w, h], stroke, fill, null, 1); }
-			  drawText(x, y, text, color, size) { this._shape('text', [x, y], color, null, String(text), size); }
-			  drawImage(name, x, y, size, angle) { this._shape('image', [x, y], null, null, name, size, angle); }
+			  drawPath(xs, ys, color, width, z) { const p = []; for (let i = 0; i < Math.min(xs.length, ys.length); i++) p.push(xs[i], ys[i]); this._shape('path', p, color, null, null, width, 0, z); }
+			  drawPolygon(xs, ys, fill, stroke, z) { const p = []; for (let i = 0; i < Math.min(xs.length, ys.length); i++) p.push(xs[i], ys[i]); this._shape('polygon', p, stroke, fill, null, 1, 0, z); }
+			  drawCircle(x, y, radius, fill, stroke, z) { this._shape('circle', [x, y, radius], stroke, fill, null, 1, 0, z); }
+			  drawRect(x, y, w, h, fill, stroke, z) { this._shape('rect', [x, y, w, h], stroke, fill, null, 1, 0, z); }
+			  drawText(x, y, text, color, size, z) { this._shape('text', [x, y], color, null, String(text), size, 0, z); }
+			  drawImage(name, x, y, size, angle, z) { this._shape('image', [x, y], null, null, name, size, angle, z); }
+			  drawPoint3(x, y, z, size, color) { this._shape('point3', [x, y, z, size], null, color, null, 1); }
+			  drawPath3(xs, ys, zs, color, width) { const p = []; for (let i = 0; i < Math.min(xs.length, ys.length, zs.length); i++) p.push(xs[i], ys[i], zs[i]); this._shape('path3', p, color, null, null, width); }
+			  drawBox(x, y, z, w, h, d, fill, stroke) { this._shape('box', [x, y, z, w, h, d], stroke, fill, null, 1); }
+			  drawSphere(x, y, z, radius, fill) { this._shape('sphere', [x, y, z, radius], null, fill, null, 1); }
+			  drawPolygon3(xs, ys, zs, fill, stroke) { const p = []; for (let i = 0; i < Math.min(xs.length, ys.length, zs.length); i++) p.push(xs[i], ys[i], zs[i]); this._shape('polygon3', p, stroke, fill, null, 1); }
 			  drawPillar(x, y, radius, height, color) { this._shape('pillar', [x, y, radius, height], null, color, null, 1); }
 			  loadImage(name, file) {}
 			  loadModel(name, file) {}
@@ -292,11 +307,53 @@ public class SimulationExport {
 			  static cosDeg(d) { return GeoAgentModel.cosDeg(d); }
 			  static sinDeg(d) { return GeoAgentModel.sinDeg(d); }
 			  static headingOf(dx, dy) { const h = Math.atan2(dx, dy) * 57.29577951308232; return h < 0 ? h + 360 : h; }
+			  /* The shapes of the step and (on top) the agents of a grid */
+			  _drawn() { const d = this._drawing || []; return this._gridAgents ? d.concat(Bio7GridAgents.shapes(this.agents)) : d; }
 			  _prepare() {}
 			  _show(sim) {}
 			}
+			/* An agent on a grid (as GridAgent of Java) */
+			class GridAgent {
+			  constructor(x, y) { this.x = x === undefined ? 0.5 : x; this.y = y === undefined ? 0.5 : y; this.heading = 0; this.color = '#e53935'; this.image = null; this.size = 0.8; this.shape = 'circle'; }
+			  cellX() { return Math.floor(this.x); }
+			  cellY() { return Math.floor(this.y); }
+			}
+			/* The agents of the grid models (as GridAgents of Java: the same numbers) */
+			const Bio7GridAgents = {
+			  keep(a, w, h, wrap) { if (wrap) { a.x = ((a.x % w) + w) % w; a.y = ((a.y % h) + h) % h; } else { a.x = Math.max(0, Math.min(w - 1e-9, a.x)); a.y = Math.max(0, Math.min(h - 1e-9, a.y)); } },
+			  delta(d, size, wrap) { return wrap ? d - size * Bio7GridAgents.rint(d / size) : d; },
+			  rint(v) { const f = Math.floor(v), r = v - f; return r > 0.5 ? f + 1 : r < 0.5 ? f : (f % 2 === 0 ? f : f + 1); },
+			  shapes(agents) {
+			    const out = [];
+			    for (const a of agents) {
+			      if (!a) continue;
+			      const size = a.size > 0 ? a.size : 0.8;
+			      if (a.image) { out.push({ k: 'image', p: [a.x, a.y], s: null, f: null, t: a.image, w: size, a: a.heading }); continue; }
+			      const color = a.color || '#e53935', shape = a.shape || 'circle';
+			      if (shape === 'arrow') {
+			        const r = size / 2, d = [0, 140, 180, 220], f = [1, 1, 0.35, 1], p = [];
+			        for (let k = 0; k < 4; k++) p.push(a.x + r * f[k] * Simulation.sinDeg(a.heading + d[k]), a.y - r * f[k] * Simulation.cosDeg(a.heading + d[k]));
+			        out.push({ k: 'polygon', p: p, s: '#00000066', f: color, t: null, w: 1, a: 0 });
+			      } else if (shape === 'square') out.push({ k: 'rect', p: [a.x - size / 2, a.y - size / 2, size, size], s: '#00000066', f: color, t: null, w: 1, a: 0 });
+			      else out.push({ k: 'circle', p: [a.x, a.y, size / 2], s: '#00000066', f: color, t: null, w: 1, a: 0 });
+			    }
+			    return out;
+			  },
+			  methods: {
+			    addAgent(a) { this.agents.push(a); return a; },
+			    removeAgent(a) { const i = this.agents.indexOf(a); if (i >= 0) this.agents.splice(i, 1); },
+			    forward(a, d) { a.x += d * Simulation.sinDeg(a.heading); a.y -= d * Simulation.cosDeg(a.heading); Bio7GridAgents.keep(a, this.width, this.height, this.wrap); },
+			    moveTo(a, x, y) { a.x = x; a.y = y; Bio7GridAgents.keep(a, this.width, this.height, this.wrap); },
+			    face(a, x, y) { const dx = Bio7GridAgents.delta(x - a.x, this.width, this.wrap), dy = Bio7GridAgents.delta(y - a.y, this.height, this.wrap); if (dx !== 0 || dy !== 0) a.heading = Simulation.headingOf(dx, -dy); },
+			    agentDistance(a, b) { const dx = Bio7GridAgents.delta(b.x - a.x, this.width, this.wrap), dy = Bio7GridAgents.delta(b.y - a.y, this.height, this.wrap); return Math.sqrt(dx * dx + dy * dy); },
+			    agentsAt(x, y) { return this.agents.filter(function (a) { return a.cellX() === x && a.cellY() === y; }); },
+			    countAgentsAt(x, y) { return this.agentsAt(x, y).length; },
+			    agentsNear(a, r) { const self = this; return this.agents.filter(function (o) { return o !== a && self.agentDistance(a, o) <= r; }); }
+			  }
+			};
 			class GridModel extends Simulation {
-			  constructor() { super(); this.width = 0; this.height = 0; this.cells = new Int32Array(0); this.next = new Int32Array(0); this.wrap = true; this._palette = ['#ffffff', '#000000']; }
+			  constructor() { super(); this.width = 0; this.height = 0; this.cells = new Int32Array(0); this.next = new Int32Array(0); this.wrap = true; this._palette = ['#ffffff', '#000000']; this.agents = []; this._gridAgents = true; }
+			  _prepare() { this.agents = []; }
 			  size(w, h) { this.width = w; this.height = h; this.cells = new Int32Array(w * h); this.next = new Int32Array(w * h); }
 			  palette(...colors) { this._palette = colors; }
 			  get(x, y) {
@@ -318,7 +375,8 @@ public class SimulationExport {
 			  _show(sim) { sim.width = this.width; sim.height = this.height; sim.cells = this.cells; sim.palette = this._palette; }
 			}
 			class ValueGridModel extends Simulation {
-			  constructor() { super(); this.width = 0; this.height = 0; this.values = new Float64Array(0); this.next = new Float64Array(0); this.wrap = true; this._min = 0; this._max = 1; this._ramp = ['#440154', '#3b528b', '#21908c', '#5dc963', '#fde725']; }
+			  constructor() { super(); this.width = 0; this.height = 0; this.values = new Float64Array(0); this.next = new Float64Array(0); this.wrap = true; this._min = 0; this._max = 1; this._ramp = ['#440154', '#3b528b', '#21908c', '#5dc963', '#fde725']; this.agents = []; this._gridAgents = true; }
+			  _prepare() { this.agents = []; }
 			  size(w, h) { this.width = w; this.height = h; this.values = new Float64Array(w * h); this.next = new Float64Array(w * h); }
 			  range(min, max) { this._min = min; this._max = max; }
 			  colorMap(...colors) { if (colors.length >= 2) this._ramp = colors; }
@@ -339,9 +397,12 @@ public class SimulationExport {
 			}
 			Simulation.DEFAULT_SEED = 42;
 			ValueGridModel.VIRIDIS = ['#440154', '#3b528b', '#21908c', '#5dc963', '#fde725'];
+			Object.assign(GridModel.prototype, Bio7GridAgents.methods);
+			Object.assign(ValueGridModel.prototype, Bio7GridAgents.methods);
 			class GeoGridModel extends GridModel {
 			  constructor() { super(); this.originX = 0; this.originY = 0; this.cellWidth = 1; this.cellHeight = -1; this.cellSizeMeters = 1; this.south = 0; this.west = 0; this.north = 0; this.east = 0; this.crs = ''; this._work = {}; this._shown = null; }
 			  _prepare() {
+			    this.agents = [];
 			    const g = GEO;
 			    ['originX', 'originY', 'cellWidth', 'cellHeight', 'cellSizeMeters', 'south', 'west', 'north', 'east'].forEach(k => { this[k] = g[k]; });
 			    this.size(g.width, g.height);
@@ -452,15 +513,143 @@ public class SimulationExport {
 			class Agent {
 			  constructor(x = 0, y = 0, z = 0) { this.x = x; this.y = y; this.z = z; this.color = null; this.image = null; this.model = null; this.animation = null; this.heading = NaN; this.size = 0; }
 			}
+			/* The spatial index of the agents (as SpatialIndex of Java: the same results in the same order) */
+			class SpatialIndex {
+			  constructor(agents, cellSize) {
+			    this.agents = agents.slice(); this.cell = cellSize > 0 ? cellSize : 1; const n = this.agents.length;
+			    this.x = new Float64Array(n); this.y = new Float64Array(n); this.z = new Float64Array(n); this.cells = new Map(); this.position = new Map();
+			    for (let i = 0; i < n; i++) {
+			      const a = this.agents[i]; this.x[i] = a.x; this.y[i] = a.y; this.z[i] = a.z;
+			      if (!this.position.has(a)) this.position.set(a, i);
+			      const k = this._key(this._c(a.x), this._c(a.y), this._c(a.z)); let list = this.cells.get(k); if (!list) { list = []; this.cells.set(k, list); } list.push(i);
+			    }
+			  }
+			  _c(v) { return Math.floor(v / this.cell); }
+			  _key(cx, cy, cz) { return cx + ',' + cy + ',' + cz; }
+			  _search(px, py, pz, radius, skip) {
+			    const r2 = radius * radius, found = [];
+			    const x0 = this._c(px - radius), x1 = this._c(px + radius), y0 = this._c(py - radius), y1 = this._c(py + radius), z0 = this._c(pz - radius), z1 = this._c(pz + radius);
+			    for (let cx = x0; cx <= x1; cx++) for (let cy = y0; cy <= y1; cy++) for (let cz = z0; cz <= z1; cz++) {
+			      const list = this.cells.get(this._key(cx, cy, cz)); if (!list) continue;
+			      for (const i of list) { if (i === skip) continue; const dx = this.x[i] - px, dy = this.y[i] - py, dz = this.z[i] - pz; if (dx * dx + dy * dy + dz * dz <= r2) found.push(i); }
+			    }
+			    return found.sort(function (a, b) { return a - b; });
+			  }
+			  _index(agent) { const i = this.position.get(agent); return i === undefined ? -1 : i; }
+			  near(px, py, pz, radius) { const ag = this.agents; return this._search(px, py, pz, radius, -1).map(function (i) { return ag[i]; }); }
+			  neighbors(agent, radius) { const i = this._index(agent), ag = this.agents; return (i < 0 ? this._search(agent.x, agent.y, agent.z, radius, -1) : this._search(this.x[i], this.y[i], this.z[i], radius, i)).map(function (k) { return ag[k]; }); }
+			  nearest(agent, radius) {
+			    const self = this._index(agent), px = self < 0 ? agent.x : this.x[self], py = self < 0 ? agent.y : this.y[self], pz = self < 0 ? agent.z : this.z[self];
+			    let best = -1, bestD = Number.MAX_VALUE;
+			    for (const i of this._search(px, py, pz, radius, self)) { const dx = this.x[i] - px, dy = this.y[i] - py, dz = this.z[i] - pz, d2 = dx * dx + dy * dy + dz * dz; if (d2 < bestD) { bestD = d2; best = i; } }
+			    return best < 0 ? null : this.agents[best];
+			  }
+			  forEachPair(radius, action) { for (let i = 0; i < this.agents.length; i++) for (const j of this._search(this.x[i], this.y[i], this.z[i], radius, i)) if (j > i) action(this.agents[i], this.agents[j]); }
+			  size() { return this.agents.length; }
+			}
 			class AgentModel extends Simulation {
 			  constructor() { super(); this.agents = []; this.boxWidth = 100; this.boxHeight = 100; this.boxDepth = 100; this.agentRadius = 0; this.agentColor = '#1f77b4';
-			    this.agentShape = 'sphere'; this.floor = 'none'; this.shadows = false; this.followAgent = -1; this._scenery = []; }
+			    this.agentShape = 'sphere'; this.floor = 'none'; this.shadows = false; this.followAgent = -1; this._scenery = []; this.linkColor = '#8a94a6'; this.linkWidth = 1; this._links = new Map(); }
+			  index(cellSize) { return new SpatialIndex(this.agents, cellSize); }
+			  /* The network (as AgentModel of Java): an agent -> its linked agents and the color of the link */
+			  link(a, b, color) {
+			    if (!a || !b || a === b) return;
+			    if (!this._links.has(a)) this._links.set(a, new Map()); if (!this._links.has(b)) this._links.set(b, new Map());
+			    this._links.get(a).set(b, color === undefined ? null : color); this._links.get(b).set(a, color === undefined ? null : color);
+			  }
+			  unlink(a, b) { const la = this._links.get(a), lb = this._links.get(b); if (la) la.delete(b); if (lb) lb.delete(a); }
+			  removeLinks(a) { const la = this._links.get(a); this._links.delete(a); if (la) for (const o of la.keys()) { const lo = this._links.get(o); if (lo) lo.delete(a); } }
+			  clearLinks() { this._links = new Map(); }
+			  linked(a, b) { const la = this._links.get(a); return !!la && la.has(b); }
+			  linkNeighbors(a) { const la = this._links.get(a); return la ? Array.from(la.keys()) : []; }
+			  degree(a) { const la = this._links.get(a); return la ? la.size : 0; }
+			  linkColorOf(a, b) { const la = this._links.get(a); return la && la.has(b) ? la.get(b) : null; }
+			  setLinkColor(a, b, color) { if (this.linked(a, b)) this.link(a, b, color); }
+			  _indices() { const idx = new Map(); for (let i = 0; i < this.agents.length; i++) if (!idx.has(this.agents[i])) idx.set(this.agents[i], i); return idx; }
+			  getLinks() {
+			    const idx = this._indices(), out = [];
+			    for (let i = 0; i < this.agents.length; i++) { const la = this._links.get(this.agents[i]); if (!la) continue; for (const o of la.keys()) { const j = idx.get(o); if (j !== undefined && j > i) out.push(i, j); } }
+			    return out;
+			  }
+			  linkCount() { return this.getLinks().length / 2; }
+			  links() { return this.getLinks(); }
+			  cameraFollow(index) { this.followAgent = index < 0 ? -1 : index; }
+			  neighborPairs(distance) {
+			    const idx = this._indices(), pairs = [];
+			    this.index(distance).forEachPair(distance, function (a, b) { const i = idx.get(a), j = idx.get(b); pairs.push([Math.min(i, j), Math.max(i, j)]); });
+			    pairs.sort(function (p, q) { return p[0] !== q[0] ? p[0] - q[0] : p[1] - q[1]; });
+			    const out = []; for (const p of pairs) out.push(p[0], p[1]); return out;
+			  }
+			  linkRandom(p) { const n = this.agents.length; for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) if (this.random() < p) this.link(this.agents[i], this.agents[j]); }
+			  linkSmallWorld(k, p) {
+			    const n = this.agents.length, half = Math.max(1, Math.trunc(k / 2)); if (n < 2) return;
+			    for (let i = 0; i < n; i++) for (let d = 1; d <= half; d++) this.link(this.agents[i], this.agents[(i + d) % n]);
+			    for (let i = 0; i < n; i++) for (let d = 1; d <= half; d++) {
+			      const a = this.agents[i], b = this.agents[(i + d) % n];
+			      if (this.random() < p && this.linked(a, b)) { for (let t = 0; t < n; t++) { const c = this.agents[this.randomInt(n)]; if (c !== a && !this.linked(a, c)) { this.unlink(a, b); this.link(a, c); break; } } }
+			    }
+			  }
+			  linkScaleFree(m) {
+			    const n = this.agents.length; m = Math.max(1, m); const ends = [], start = Math.min(n, m + 1);
+			    for (let i = 0; i < start; i++) for (let j = i + 1; j < start; j++) { this.link(this.agents[i], this.agents[j]); ends.push(i, j); }
+			    for (let i = start; i < n; i++) {
+			      const chosen = [];
+			      while (chosen.length < Math.min(m, i)) { const j = ends.length === 0 ? this.randomInt(i) : ends[this.randomInt(ends.length)]; if (chosen.indexOf(j) < 0) chosen.push(j); }
+			      for (const j of chosen) { this.link(this.agents[i], this.agents[j]); ends.push(i, j); }
+			    }
+			  }
+			  linkNearby(radius) { const self = this; this.index(radius).forEachPair(radius, function (a, b) { self.link(a, b); }); }
+			  components() {
+			    const out = [], seen = new Set(), idx = this._indices();
+			    for (const a of this.agents) {
+			      if (seen.has(a)) continue;
+			      const group = [], queue = [a]; seen.add(a);
+			      while (queue.length) { const c = queue.shift(); group.push(idx.get(c)); for (const o of this.linkNeighbors(c)) if (idx.has(o) && !seen.has(o)) { seen.add(o); queue.push(o); } }
+			      group.sort(function (x, y) { return x - y; }); out.push(group.map((i) => this.agents[i]));
+			    }
+			    return out;
+			  }
+			  shortestPath(a, b) {
+			    if (a === b) return 0;
+			    const dist = new Map([[a, 0]]), queue = [a];
+			    while (queue.length) { const c = queue.shift(); for (const o of this.linkNeighbors(c)) if (!dist.has(o)) { dist.set(o, dist.get(c) + 1); if (o === b) return dist.get(o); queue.push(o); } }
+			    return -1;
+			  }
+			  clustering(a) {
+			    const nb = this.linkNeighbors(a), k = nb.length; if (k < 2) return 0;
+			    let closed = 0; for (let i = 0; i < k; i++) for (let j = i + 1; j < k; j++) if (this.linked(nb[i], nb[j])) closed++;
+			    return 2.0 * closed / (k * (k - 1.0));
+			  }
+			  layoutCircle() {
+			    const n = this.agents.length, cx = this.boxWidth / 2, cy = this.boxHeight / 2, r = Math.min(this.boxWidth, this.boxHeight) * 0.42;
+			    for (let i = 0; i < n; i++) { const a = 360.0 * i / Math.max(1, n), ag = this.agents[i]; ag.x = cx + r * Simulation.cosDeg(a); ag.y = cy + r * Simulation.sinDeg(a); ag.z = this.boxDepth / 2; }
+			  }
+			  layoutSpring(iterations) {
+			    const n = this.agents.length; if (n === 0) return;
+			    const w = this.boxWidth, h = this.boxHeight, k = Math.sqrt(w * h / n), pairs = this.getLinks(), px = new Float64Array(n), py = new Float64Array(n);
+			    for (let i = 0; i < n; i++) { px[i] = this.agents[i].x; py[i] = this.agents[i].y; }
+			    for (let it = 0; it < iterations; it++) {
+			      const temp = Math.max(w, h) * 0.1 * (1 - it / iterations), dx = new Float64Array(n), dy = new Float64Array(n);
+			      for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+			        let ex = px[i] - px[j], ey = py[i] - py[j], d = Math.sqrt(ex * ex + ey * ey);
+			        if (d < 1e-9) { ex = 0.01 * k * Simulation.cosDeg(37.0 * (i + j)); ey = 0.01 * k * Simulation.sinDeg(37.0 * (i + j)); d = 0.01 * k; }
+			        const f = k * k / d; dx[i] += ex / d * f; dy[i] += ey / d * f; dx[j] -= ex / d * f; dy[j] -= ey / d * f;
+			      }
+			      for (let p = 0; p + 1 < pairs.length; p += 2) {
+			        const i = pairs[p], j = pairs[p + 1], ex = px[i] - px[j], ey = py[i] - py[j], d = Math.max(1e-9, Math.sqrt(ex * ex + ey * ey)), f = d * d / k;
+			        dx[i] -= ex / d * f; dy[i] -= ey / d * f; dx[j] += ex / d * f; dy[j] += ey / d * f;
+			      }
+			      for (let i = 0; i < n; i++) { const d = Math.sqrt(dx[i] * dx[i] + dy[i] * dy[i]); if (d > 0) { const s = Math.min(d, temp) / d; px[i] = Math.max(0, Math.min(w, px[i] + dx[i] * s)); py[i] = Math.max(0, Math.min(h, py[i] + dy[i] * s)); } }
+			    }
+			    for (let i = 0; i < n; i++) { this.agents[i].x = px[i]; this.agents[i].y = py[i]; }
+			  }
 			  box(w, h, d) { this.boxWidth = w; this.boxHeight = h; this.boxDepth = d; }
 			  /* The objects of the environment (3D models which stay until they are removed) */
 			  placeModel(model, x, y, z, heading, size, animation) { this._scenery.push([model, x, y, z, heading || 0, size || 0, animation || null]); return this._scenery.length - 1; }
 			  removeModel(index) { if (index >= 0 && index < this._scenery.length) this._scenery.splice(index, 1); }
 			  clearModels() { this._scenery = []; }
 			  distance(a, b) { return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z)); }
+			  agentDistance(a, b) { return this.distance(a, b); }
 			  neighbors(agent, radius) {
 			    const found = [], r2 = radius * radius;
 			    for (const o of this.agents) { if (o !== agent) { const dx = o.x - agent.x, dy = o.y - agent.y, dz = o.z - agent.z; if (dx * dx + dy * dy + dz * dz <= r2) found.push(o); } }
@@ -473,11 +662,11 @@ public class SimulationExport {
 			  }
 			  keepInBox(a) { a.x = Math.max(0, Math.min(this.boxWidth, a.x)); a.y = Math.max(0, Math.min(this.boxHeight, a.y)); a.z = Math.max(0, Math.min(this.boxDepth, a.z)); }
 			  wrapInBox(a) { a.x = ((a.x % this.boxWidth) + this.boxWidth) % this.boxWidth; a.y = ((a.y % this.boxHeight) + this.boxHeight) % this.boxHeight; a.z = Math.max(0, Math.min(this.boxDepth, a.z)); }
-			  _prepare() { this.agents = []; this._scenery = []; }
+			  _prepare() { this.agents = []; this._scenery = []; this._links = new Map(); }
 			  _show(sim) {
 			    /* The shape, the floor and the shadows of the model; the objects of the environment */
-			    applyModelScene(this.agentShape, this.floor, this.shadows ? 1 : 0);
-			    sim.scenery = sceneryOf(this._scenery.map(function (p) { return p[0]; }), [].concat.apply([], this._scenery.map(function (p) { return p.slice(1, 6); })), this._scenery.map(function (p) { return p[6]; }));
+			    sim.applyModelScene(this.agentShape, this.floor, this.shadows ? 1 : 0);
+			    sim.scenery = sim.sceneryOf(this._scenery.map(function (p) { return p[0]; }), [].concat.apply([], this._scenery.map(function (p) { return p.slice(1, 6); })), this._scenery.map(function (p) { return p[6]; }));
 			    const n = this.agents.length, xyz = new Array(n * 3), colors = new Array(n * 3), dirs = new Array(n * 3);
 			    let own = false;
 			    const base = this.agentColor;
@@ -500,6 +689,10 @@ public class SimulationExport {
 			      const p = sim.points; p.images = []; p.models = []; p.animations = []; p.headings = []; p.sizes = [];
 			      for (const a of this.agents) { p.images.push(a.image); p.models.push(a.model); p.animations.push(a.animation); p.headings.push(isNaN(a.heading) ? NaN : a.heading); p.sizes.push(a.size); }
 			    }
+			    /* The links of the network */
+			    const pairs = this.getLinks(), lc = [];
+			    for (let k = 0; k < pairs.length; k += 2) lc.push(this.linkColorOf(this.agents[pairs[k]], this.agents[pairs[k + 1]]) || '');
+			    sim.links = pairs.length ? { pairs: pairs, colors: lc, color: this.linkColor || '', width: this.linkWidth } : null;
 			  }
 			}
 			""";
@@ -560,27 +753,44 @@ public class SimulationExport {
 				""");
 		js.append("  if (!model) model = new ").append(name).append("();\n");
 		js.append("""
-				  model._sim = sim; model.t = 0; model._random = new SimRandom(42); model._seed = 42;
+				  /* The seed of the field Seed of the page (the same seed: the same run as in Bio7) */
+				  const seed = sim.seed === undefined ? 42 : sim.seed;
+				  model._sim = sim; model.t = 0; model._random = new SimRandom(seed); model._seed = seed; model._stopped = false;
 				  sim.clearChart();
 				  model._prepare();
 				  applyParams(sim, true);
 				  model._drawing = [];
 				  model.init();
 				  model._show(sim);
-				  sim.drawing = model._drawing;
+				  sim.drawing = model._drawn();
 				}
 				function step(sim) {
 				  applyParams(sim, false);
 				  model._drawing = [];
+				  model._stopped = false;
 				  model.step();
 				  model.t++;
 				  model._show(sim);
-				  sim.drawing = model._drawing;
+				  sim.drawing = model._drawn();
+				  /* stop() of the model: the page stops */
+				  if (model._stopped) return 'stop';
 				}
 				""");
+		/* The input of the view: input(sim, ev) calls click(x, y), drag(x, y) or key(key) of the model */
+		if (!translator.getInputs().isEmpty()) {
+			js.append("""
+					function input(sim, ev) {
+					  applyParams(sim, false);
+					  if (ev.type === 'key') { if (typeof model.key === 'function') model.key(ev.key); }
+					  else if (typeof model[ev.type] === 'function') model[ev.type](ev.x, ev.y);
+					  model._show(sim);
+					  sim.drawing = model._drawn();
+					}
+					""");
+		}
 		/* The actions: buttons of the page */
 		for (JavaToJs.ActionInfo act : translator.getActions()) {
-			js.append("function action_").append(act.jsName).append("(sim) { applyParams(sim, false); model.").append(act.jsName).append("(); model._show(sim); sim.drawing = model._drawing || []; }\n");
+			js.append("function action_").append(act.jsName).append("(sim) { applyParams(sim, false); model.").append(act.jsName).append("(); model._show(sim); sim.drawing = model._drawn(); }\n");
 		}
 		result.javaScript = js.toString();
 		String title = options.title != null && !options.title.isBlank() ? options.title : words(name);
@@ -588,8 +798,9 @@ public class SimulationExport {
 		result.title = title;
 		result.description = description;
 		HtmlSimulation page = new HtmlSimulation(title).description(escape(description)).view(!translator.getKind().equals("AgentModel") ? HtmlSimulation.View.GRID_2D : HtmlSimulation.View.SCENE_3D)
-				.speed(options.speed).autoplay(options.autoplay).theme(options.theme).layout(options.layout).accent(options.accent)
-				.scene(options.background, options.lighting, options.shape, options.floor, options.shadows).autoRotate(options.rotate);
+				.speed(options.speed).seed(options.seed).autoplay(options.autoplay).theme(options.theme).layout(options.layout).accent(options.accent)
+				.scene(options.background, options.lighting, options.shape, options.floor, options.shadows).autoRotate(options.rotate)
+				.inputs(translator.getInputs());
 		List<String> restart = new ArrayList<>();
 		/* The groups as the settings of Bio7: the settings of a group, then its actions; the actions without a group at the end */
 		java.util.Map<String, List<Object>> groups = new java.util.LinkedHashMap<>();
@@ -658,7 +869,8 @@ public class SimulationExport {
 		b.append("}, models: {");
 		first = true;
 		for (java.util.Map.Entry<String, String> e : options.models.entrySet()) {
-			byte[] data = bytes(e.getValue());
+			/* OBJ and STL as binary glTF (the page reads only glTF) */
+			byte[] data = ModelConverter.converted(e.getValue()) ? converted(e.getValue()) : bytes(e.getValue());
 			if (data == null) {
 				continue;
 			}
@@ -666,6 +878,15 @@ public class SimulationExport {
 			first = false;
 		}
 		return b.append("} };\n").toString();
+	}
+
+	private static byte[] converted(String file) {
+		try {
+			return ModelConverter.glb(new java.io.File(file));
+		} catch (IOException | RuntimeException e) {
+			System.err.println("The 3D model " + file + " could not be converted for the page: " + e.getMessage());
+			return null;
+		}
 	}
 
 	private static byte[] bytes(String file) {

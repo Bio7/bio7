@@ -89,18 +89,42 @@ public final class PythonJobs implements PyRunListener {
 	 * The progress of a task (bio7.progress, bio7.task, a tqdm bar): done of total
 	 * (total <= 0: unknown) with a text.
 	 */
-	public static synchronized void progress(String key, double done, double total, String text) {
+	public static void progress(String key, double done, double total, String text) {
+		progress(key, done, total, text, "Python", EmbeddedPython::interrupt);
+	}
+
+	/**
+	 * The progress of a task of a language (e.g., "R" for bio7_progress of R): the
+	 * stop button of the job runs interrupt (e.g., interrupts R).
+	 */
+	public static synchronized void progress(String key, double done, double total, String text, String language, Runnable interrupt) {
 		TaskJob t = TASKS.get(key);
 		if (t == null || t.done) {
 			/* bio7.progress: the name of the script (the text changes), a task or tqdm: its text */
-			boolean plain = "progress".equals(key) || text == null || text.isBlank();
-			t = new TaskJob(plain ? "Python progress" + (runLabel != null ? ": " + runLabel : "") : text);
+			boolean plain = key.endsWith("progress") || text == null || text.isBlank();
+			t = new TaskJob(plain ? language + " progress" + (runLabel != null && "Python".equals(language) ? ": " + runLabel : "") : text, interrupt);
 			TASKS.put(key, t);
 			t.schedule(TASK_DELAY);
 		}
 		t.update(done, total, text);
+		java.util.function.BiConsumer<Double, Double> l = LISTENERS.get(key);
+		if (l != null) {
+			l.accept(done, total);
+		}
 		if (total > 0 && done >= total) {
 			finishTask(key);
+		}
+	}
+
+	/* The listeners of the progress of a key (e.g., the dialog Experiment) */
+	private static final Map<String, java.util.function.BiConsumer<Double, Double>> LISTENERS = new java.util.concurrent.ConcurrentHashMap<>();
+
+	/** A listener of the progress of the key (done, total; null removes it), e.g., "progress" (bio7.progress) or "r:progress" (bio7_progress of R). */
+	public static void setListener(String key, java.util.function.BiConsumer<Double, Double> listener) {
+		if (listener == null) {
+			LISTENERS.remove(key);
+		} else {
+			LISTENERS.put(key, listener);
 		}
 	}
 
@@ -131,7 +155,7 @@ public final class PythonJobs implements PyRunListener {
 	private static IStatus waitOrInterrupt(IProgressMonitor monitor, PythonJob job) {
 		while (!job.done) {
 			if (monitor.isCanceled()) {
-				EmbeddedPython.interrupt();
+				job.interrupt.run();
 				/* Python ends the run with a KeyboardInterrupt (the job ends with it) */
 				long until = System.currentTimeMillis() + 5000;
 				while (!job.done && System.currentTimeMillis() < until) {
@@ -155,6 +179,8 @@ public final class PythonJobs implements PyRunListener {
 
 	private abstract static class PythonJob extends Job {
 		volatile boolean done;
+		/* The stop button: interrupts the language (Python: as Ctrl+C) */
+		Runnable interrupt = EmbeddedPython::interrupt;
 
 		PythonJob(String name) {
 			super(name);
@@ -207,8 +233,11 @@ public final class PythonJobs implements PyRunListener {
 		private int sent;
 		private String shown = "";
 
-		TaskJob(String name) {
+		TaskJob(String name, Runnable interrupt) {
 			super(name);
+			if (interrupt != null) {
+				this.interrupt = interrupt;
+			}
 		}
 
 		void update(double d, double t, String txt) {
