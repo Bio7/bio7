@@ -720,6 +720,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault("STARTUP_SCRIPTS", false);
 		/* The embedded Python is the default (in the process of Bio7: data transfer, plots) */
 		store.setDefault("python_embedded", true);
+		/* The modules of the user are reloaded before a script runs (as Spyder) */
+		store.setDefault("PYTHON_RELOAD_MODULES", true);
+		/* The working directory is the folder of the script while it runs (as Spyder); no clean run by default (flows) */
+		store.setDefault("PYTHON_SCRIPT_CHDIR", true);
+		store.setDefault("PYTHON_CLEAR_BEFORE_RUN", false);
 		/* The switch R/Python of the Image-Methods view closes the views of the other language */
 		store.setDefault("IMAGE_METHODS_CLOSE_VIEWS", true);
 

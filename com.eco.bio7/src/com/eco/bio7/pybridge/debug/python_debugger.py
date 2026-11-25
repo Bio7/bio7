@@ -230,16 +230,14 @@ def run(path, breakpoints, stop_first):
     linecache.checkcache(path)
     with open(path, "rb") as f:
         code = compile(f.read(), path, "exec")
-    folder = os.path.dirname(path)
-    if folder not in sys.path:
-        sys.path.insert(0, folder)
+    # The modules of the user, sys.path and __file__ as for a script run (_bio7._script_begin)
+    state = sys.modules["_bio7"]._script_begin(path)
     d = Debugger(path)
     _debugger = d
     # the breakpoints of bdb are shared by all debuggers: only the ones of this run
     d.clear_all_breaks()
     _apply_breaks(d, breakpoints)
     ns = _main.__dict__
-    ns["__file__"] = path
     try:
         # stops at the first line (without breakpoints or if asked), else at the first breakpoint
         d.run_to_breakpoint = bool(breakpoints) and not stop_first
@@ -254,7 +252,7 @@ def run(path, breakpoints, stop_first):
         except BaseException:
             pass
     finally:
-        ns.pop("__file__", None)
+        sys.modules["_bio7"]._script_end(state)
         d.clear_all_breaks()
         _debugger = None
         try:

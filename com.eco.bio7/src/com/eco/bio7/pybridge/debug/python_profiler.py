@@ -68,12 +68,9 @@ def run(path, code=None, first_line=1, interval=0.001):
         source = "\n" * (max(first_line, 1) - 1) + code
     compiled = compile(source, path, "exec")
     linecache.checkcache(path)
-    folder = os.path.dirname(path)
-    if folder not in sys.path:
-        sys.path.insert(0, folder)
+    # The modules of the user, sys.path and __file__ as for a script run (_bio7._script_begin)
+    state = sys.modules["_bio7"]._script_begin(path)
     ns = _main.__dict__
-    old_file = ns.get("__file__", None)
-    ns["__file__"] = path
     sampler = _Sampler(threading.get_ident(), interval)
     prof = cProfile.Profile()
     message = None
@@ -95,10 +92,7 @@ def run(path, code=None, first_line=1, interval=0.001):
         elapsed = time.perf_counter() - start
         sampler.running = False
         sampler.join(1.0)
-        if old_file is None:
-            ns.pop("__file__", None)
-        else:
-            ns["__file__"] = old_file
+        sys.modules["_bio7"]._script_end(state)
     result = analyze(path, sampler, prof, elapsed, code is not None, message)
     report = html_report(result)
     fd, out = tempfile.mkstemp(suffix=".html", prefix="bio7_profile_")

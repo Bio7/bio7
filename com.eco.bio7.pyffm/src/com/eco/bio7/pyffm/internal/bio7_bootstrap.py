@@ -743,18 +743,118 @@ def _run(addr, n, mode):
                 _prompt(False)
 
 
-def _run_file(path):
+# ---------------------------------------------------------------- script runs
+# A script runs in the workspace (__main__), like in Spyder:
+# - the modules of the user (files in the folder of the script or of the
+#   previous script, not the standard library, site-packages or compiled
+#   extensions) are removed from sys.modules before the run: an edited module
+#   is imported again (User Module Reloader; _reload_user_modules, preference)
+# - only the folder of the current script is added to sys.path (the folder of
+#   the previous script is removed: no shadowing between projects)
+# - __file__ is the path of the script during the run, then the previous value
+# - the working directory is the folder of the script during the run, then the
+#   previous one (_script_chdir, preference; R shares it: the same process)
+# - optionally all variables are removed before the run (_clear_before_run,
+#   preference; off: flows use the variables of earlier steps)
+
+_reload_user_modules = True
+_script_chdir = True
+_clear_before_run = False
+_script_dir = None        # the folder of the last script (added to sys.path by Bio7)
+_script_dir_added = False
+_NO_VALUE = object()
+
+
+def _is_user_module(module, folders):
+    f = getattr(module, "__file__", None)
+    if not f or not isinstance(f, str) or not f.endswith((".py", ".pyc")):
+        return False   # built-in, namespace package or compiled extension
+    f = os.path.normcase(os.path.abspath(f))
+    if any(part in ("site-packages", "dist-packages") for part in f.split(os.sep)):
+        return False
+    for prefix in {sys.prefix, sys.base_prefix, getattr(sys, "exec_prefix", sys.prefix)}:
+        lib = os.path.normcase(os.path.abspath(os.path.join(prefix, "lib")))
+        if f.startswith(lib + os.sep):
+            return False
+    return any(f.startswith(d + os.sep) for d in folders)
+
+
+def _script_begin(path):
+    """Prepares a script run (see above); returns the state for _script_end."""
+    global _script_dir, _script_dir_added
     folder = os.path.dirname(os.path.abspath(path))
+    key = os.path.normcase(folder)
+    # The modules of the user: removed, imported again by the script
+    if _reload_user_modules:
+        folders = {key}
+        if _script_dir:
+            folders.add(os.path.normcase(_script_dir))
+        names = [n for n, m in list(sys.modules.items())
+                 if n not in ("__main__", "bio7", "_bio7") and m is not None and _is_user_module(m, folders)]
+        for n in names:
+            sys.modules.pop(n, None)
+        if names:
+            sys.stdout.write("Reloaded modules: " + ", ".join(sorted(names)) + "\n")
+    # New or changed files of modules are found (the caches of the import finders)
+    import importlib
+    importlib.invalidate_caches()
+    # sys.path: only the folder of the current script
+    if _script_dir and os.path.normcase(_script_dir) != key and _script_dir_added:
+        try:
+            sys.path.remove(_script_dir)
+        except ValueError:
+            pass
+        _script_dir_added = False
     if folder not in sys.path:
         sys.path.insert(0, folder)
+        _script_dir_added = True
+    elif os.path.normcase(_script_dir or "") != key:
+        _script_dir_added = False   # already in sys.path (e.g., the preferences): not removed later
+    _script_dir = folder
+    ns = _main.__dict__
+    # A clean run: the variables of the user are removed (not the names __x__ and bio7)
+    if _clear_before_run:
+        for k in [k for k in ns if not (k.startswith("__") and k.endswith("__")) and k != "bio7"]:
+            del ns[k]
+        sys.stdout.write("Removed all variables (clean run)\n")
+    old_file = ns.get("__file__", _NO_VALUE)
+    ns["__file__"] = path
+    old_cwd = None
+    if _script_chdir:
+        try:
+            old_cwd = os.getcwd()
+        except OSError:
+            old_cwd = None
+        try:
+            os.chdir(folder)
+        except OSError:
+            old_cwd = None
+    return (old_file, old_cwd)
+
+
+def _script_end(state):
+    """Restores __file__ and the working directory after a script run."""
+    old_file, old_cwd = state
+    ns = _main.__dict__
+    if old_file is _NO_VALUE:
+        ns.pop("__file__", None)
+    else:
+        ns["__file__"] = old_file
+    if old_cwd is not None:
+        try:
+            os.chdir(old_cwd)
+        except OSError:
+            pass
+
+
+def _run_file(path):
     with open(path, "rb") as f:
         source = f.read()
-    ns = _main.__dict__
-    ns["__file__"] = path
+    state = _script_begin(path)
     try:
-        exec(compile(source, path, "exec"), ns)
+        exec(compile(source, path, "exec"), _main.__dict__)
     finally:
-        ns.pop("__file__", None)
+        _script_end(state)
         _flush()
 
 

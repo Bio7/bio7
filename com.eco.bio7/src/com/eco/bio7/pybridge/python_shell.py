@@ -540,3 +540,158 @@ def _workspace_first(text, cursor, start, items):
             ws.append((n, k, _doc_line(v, n) if k != "module" else (n + " (module)")))
     names = {n for n, _, _ in ws}
     return ws + [it for it in items if it[0] not in names]
+
+
+# ---------------------------------------------------------------- actions
+# The actions of the view (load, save, plot, ...) run here in their own scope:
+# only their result (e.g., a loaded variable) is written to the workspace, no
+# helper names (the workspace of the user stays as it is).
+
+def _action(fn, *args):
+    """Runs an action with its output (and errors) as text, like run()."""
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+        try:
+            fn(*args)
+        except SystemExit:
+            print("exit() is not available in the embedded Python of Bio7")
+        except BaseException as e:
+            tb = e.__traceback__.tb_next if e.__traceback__ is not None else None
+            traceback.print_exception(type(e), e, tb)
+            print(sys.modules["_bio7"]._missing_hint(e), end="")
+    try:
+        sys.modules["_bio7"]._flush()
+    except Exception:
+        pass
+    return out.getvalue()
+
+
+def collect():
+    """The garbage collection (the action Gc)."""
+    def do():
+        import gc
+        print("Collected objects:", gc.collect())
+    return _action(do)
+
+
+def load_file(path, name):
+    """Loads a file as the variable name (.npy, .npz, .xlsx, .pkl, else a CSV/TSV/text table)."""
+    def do():
+        low = path.lower()
+        if low.endswith(".npy"):
+            import numpy as np
+            v = np.load(path)
+            info = repr(v.shape)
+        elif low.endswith(".npz"):
+            import numpy as np
+            v = dict(np.load(path))
+            info = repr(list(v))
+        elif low.endswith(".xlsx"):
+            import pandas as pd
+            v = pd.read_excel(path)
+            info = repr(v.shape)
+        elif low.endswith(".pkl"):
+            import pickle
+            with open(path, "rb") as f:
+                v = pickle.load(f)
+            info = repr(type(v).__name__)
+        else:
+            import pandas as pd
+            v = pd.read_csv(path, sep=None, engine="python")
+            info = repr(v.shape)
+        _main.__dict__[name] = v
+        print(info)
+    return _action(do)
+
+
+def save_object(name, path):
+    """Saves a variable (.csv, .xlsx as table, .pkl, else .npy)."""
+    def do():
+        v = _main.__dict__[name]
+        low = path.lower()
+        if low.endswith((".csv", ".xlsx")):
+            import pandas as pd
+            df = v if isinstance(v, pd.DataFrame) else pd.DataFrame(v)
+            if low.endswith(".csv"):
+                df.to_csv(path, index=False)
+            else:
+                df.to_excel(path, index=False)
+        elif low.endswith(".pkl"):
+            import pickle
+            with open(path, "wb") as f:
+                pickle.dump(v, f)
+        else:
+            import numpy as np
+            np.save(path, np.asarray(v))
+        print("Saved:", path)
+    return _action(do)
+
+
+def save_objects(path):
+    """Save All Objects: the objects of the workspace which can be pickled (not
+    modules, functions, classes and names beginning with _) as a dict
+    {name: object}; the others are listed."""
+    def do():
+        import pickle
+        objects, skipped = {}, []
+        for k, v in list(_main.__dict__.items()):
+            if k.startswith("_") or isinstance(v, (types.ModuleType, types.FunctionType, types.BuiltinFunctionType, type)):
+                continue
+            try:
+                pickle.dumps(v, protocol=pickle.HIGHEST_PROTOCOL)
+                objects[k] = v
+            except Exception:
+                skipped.append(k)
+        with open(path, "wb") as f:
+            pickle.dump(objects, f, protocol=pickle.HIGHEST_PROTOCOL)
+        print("Saved %d objects:" % len(objects), path)
+        if skipped:
+            print("Not saved (cannot be pickled):", ", ".join(skipped))
+    return _action(do)
+
+
+def load_objects(path):
+    """Load Objects: adds the objects of Save All Objects to the workspace
+    (existing names are replaced)."""
+    def do():
+        import pickle
+        with open(path, "rb") as f:
+            objects = pickle.load(f)
+        if not isinstance(objects, dict) or not all(isinstance(k, str) for k in objects):
+            raise TypeError("The file contains no objects of Save All Objects (a dict {name: object})")
+        _main.__dict__.update(objects)
+        print("Loaded %d objects: %s" % (len(objects), ", ".join(sorted(objects))))
+    return _action(do)
+
+
+def quick_plot(name, kind):
+    """A quick plot of a variable: hist, image or line (or the plot() of the object)."""
+    def do():
+        import matplotlib.pyplot as plt
+        v = _main.__dict__[name]
+        if kind == "hist":
+            import numpy as np
+            a = np.asarray(v, dtype=float).ravel()
+            plt.figure()
+            plt.hist(a[~np.isnan(a)], bins=30)
+        elif kind == "image":
+            plt.figure()
+            plt.imshow(v, cmap="gray")
+            plt.colorbar()
+        elif hasattr(v, "plot"):
+            v.plot()
+        else:
+            plt.figure()
+            plt.plot(v)
+        plt.title(name)
+        plt.show()
+    return _action(do)
+
+
+def run_private(code):
+    """Runs code with the variables of the workspace, but its own names (e.g.,
+    the helper function of Plot with Options) stay out of the workspace."""
+    def do():
+        ns = dict(_main.__dict__)
+        exec(compile(code, "<shell>", "exec"), ns)
+    return _action(do)

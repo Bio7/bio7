@@ -113,7 +113,7 @@ public class PythonShellView extends ViewPart {
 
 		button(parent, "List", "List the objects of the Python workspace", this::refresh);
 		button(parent, "Del", "Delete the selected objects from the workspace", this::delete);
-		button(parent, "Gc", "Causes a garbage collection to take place", () -> runShow("import gc as _gc; print('Collected objects:', _gc.collect()); del _gc"));
+		button(parent, "Gc", "Causes a garbage collection to take place", () -> runShowCall("collect"));
 		button(parent, "Clear", "Clear the text field and the output", () -> {
 			input.setText("");
 			output.setText("");
@@ -301,6 +301,15 @@ public class PythonShellView extends ViewPart {
 		});
 	}
 
+	/* An action of _bio7shell (its own scope, no helper names in the workspace): its output, then the list */
+	private void runShowCall(String function, String... args) {
+		async(() -> {
+			PyValue out = call(function, args);
+			print(text(out));
+			refreshNow();
+		});
+	}
+
 	private void browseHistory(int step) {
 		if (history.isEmpty()) {
 			return;
@@ -467,7 +476,7 @@ public class PythonShellView extends ViewPart {
 				}
 
 				public void plot(com.eco.bio7.plot.PlotOptions o, com.eco.bio7.plot.PlotData d) {
-					runShow(PythonShellPlots.code(d, o) + "del bio7_plot\n");
+					runShowCall("run_private", PythonShellPlots.code(d, o));
 				}
 
 				public String source(com.eco.bio7.plot.PlotOptions o, com.eco.bio7.plot.PlotData d) {
@@ -638,7 +647,7 @@ public class PythonShellView extends ViewPart {
 
 	/* The source of the plot in __main__ (output and errors in the shell); the function of the source is removed */
 	private void plotObjects(List<String> sel, com.eco.bio7.plot.PlotOptions o) {
-		runShow(PythonShellPlots.code(sel, o) + "del bio7_plot\n");
+		runShowCall("run_private", PythonShellPlots.code(sel, o));
 	}
 
 	private void plot(String kind) {
@@ -646,14 +655,7 @@ public class PythonShellView extends ViewPart {
 		if (name == null) {
 			return;
 		}
-		String code = switch (kind) {
-		case "hist" -> "import matplotlib.pyplot as _plt, numpy as _np\n_plt.figure()\n_plt.hist(_np.asarray(" + name
-				+ ", dtype=float).ravel()[~_np.isnan(_np.asarray(" + name + ", dtype=float).ravel())], bins=30)\n_plt.title('" + name + "')\n_plt.show()\ndel _plt, _np";
-		case "image" -> "import matplotlib.pyplot as _plt\n_plt.figure()\n_plt.imshow(" + name + ", cmap='gray')\n_plt.colorbar()\n_plt.title('" + name + "')\n_plt.show()\ndel _plt";
-		default -> "import matplotlib.pyplot as _plt\n_v = " + name + "\nif hasattr(_v, 'plot'):\n    _v.plot()\nelse:\n    _plt.figure()\n    _plt.plot(_v)\n_plt.title('"
-				+ name + "')\n_plt.show()\ndel _plt, _v";
-		};
-		runShow(code);
+		runShowCall("quick_plot", name, kind);
 	}
 
 	/* ---------------- Load, save, documentation ---------------- */
@@ -668,8 +670,6 @@ public class PythonShellView extends ViewPart {
 		String lower = file.toLowerCase(Locale.ROOT);
 		String base = new java.io.File(file).getName().replaceAll("\\.[^.]*$", "");
 		String name = PythonFromSpreadAction.pythonName(base);
-		String path = file.replace("\\", "\\\\").replace("'", "\\'");
-		String code;
 		if (lower.endsWith(".py")) {
 			EmbeddedPython.runFile(file);
 			print("Running " + file + " (output in the console)\n");
@@ -678,19 +678,9 @@ public class PythonShellView extends ViewPart {
 				refreshNow();
 			});
 			return;
-		} else if (lower.endsWith(".npy")) {
-			code = "import numpy as _np\n" + name + " = _np.load('" + path + "')\ndel _np\n" + name + ".shape";
-		} else if (lower.endsWith(".npz")) {
-			code = "import numpy as _np\n" + name + " = dict(_np.load('" + path + "'))\ndel _np\nlist(" + name + ")";
-		} else if (lower.endsWith(".xlsx")) {
-			code = "import pandas as _pd\n" + name + " = _pd.read_excel('" + path + "')\ndel _pd\n" + name + ".shape";
-		} else if (lower.endsWith(".pkl")) {
-			code = "import pickle as _p\nwith open('" + path + "', 'rb') as _f:\n    " + name + " = _p.load(_f)\ndel _p, _f\ntype(" + name + ").__name__";
-		} else {
-			code = "import pandas as _pd\n" + name + " = _pd.read_csv('" + path + "', sep=None, engine='python')\ndel _pd\n" + name + ".shape";
 		}
 		print(">>> load " + file + " as " + name + "\n");
-		runShow(code);
+		runShowCall("load_file", file, name);
 	}
 
 	private void save() {
@@ -718,19 +708,7 @@ public class PythonShellView extends ViewPart {
 		if (file == null) {
 			return;
 		}
-		String lower = file.toLowerCase(Locale.ROOT);
-		String path = file.replace("\\", "\\\\").replace("'", "\\'");
-		String code;
-		if (lower.endsWith(".csv")) {
-			code = "import pandas as _pd\n(" + name + " if isinstance(" + name + ", _pd.DataFrame) else _pd.DataFrame(" + name + ")).to_csv('" + path + "', index=False)\ndel _pd";
-		} else if (lower.endsWith(".xlsx")) {
-			code = "import pandas as _pd\n(" + name + " if isinstance(" + name + ", _pd.DataFrame) else _pd.DataFrame(" + name + ")).to_excel('" + path + "', index=False)\ndel _pd";
-		} else if (lower.endsWith(".pkl")) {
-			code = "import pickle as _p\nwith open('" + path + "', 'wb') as _f:\n    _p.dump(" + name + ", _f)\ndel _p, _f";
-		} else {
-			code = "import numpy as _np\n_np.save('" + path + "', _np.asarray(" + name + "))\ndel _np";
-		}
-		runShow(code + "\nprint('Saved: " + path + "')");
+		runShowCall("save_object", name, file);
 	}
 
 	/*
@@ -748,27 +726,7 @@ public class PythonShellView extends ViewPart {
 		if (file == null) {
 			return;
 		}
-		String path = file.replace("\\", "\\\\").replace("'", "\\'");
-		runShow("""
-				import pickle as _p, types as _t
-				_ws, _skipped = {}, []
-				for _k, _v in list(globals().items()):
-				    if _k.startswith('_') or isinstance(_v, (_t.ModuleType, _t.FunctionType, _t.BuiltinFunctionType, type)):
-				        continue
-				    try:
-				        _p.dumps(_v, protocol=_p.HIGHEST_PROTOCOL)
-				        _ws[_k] = _v
-				    except Exception:
-				        _skipped.append(_k)
-				with open('%s', 'wb') as _f:
-				    _p.dump(_ws, _f, protocol=_p.HIGHEST_PROTOCOL)
-				print('Saved %%d objects:' %% len(_ws), '%s')
-				if _skipped:
-				    print('Not saved (cannot be pickled):', ', '.join(_skipped))
-				del _p, _t, _ws, _skipped, _f
-				globals().pop('_k', None)
-				globals().pop('_v', None)
-				""".formatted(path, path));
+		runShowCall("save_objects", file);
 	}
 
 	/*
@@ -783,18 +741,7 @@ public class PythonShellView extends ViewPart {
 		if (file == null) {
 			return;
 		}
-		String path = file.replace("\\", "\\\\").replace("'", "\\'");
-		runShow("""
-				import pickle as _p
-				with open('%s', 'rb') as _f:
-				    _ws = _p.load(_f)
-				if not isinstance(_ws, dict) or not all(isinstance(_k, str) for _k in _ws):
-				    del _p, _f, _ws
-				    raise TypeError('The file contains no objects of Save All Objects (a dict {name: object})')
-				globals().update(_ws)
-				print('Loaded %%d objects: %%s' %% (len(_ws), ', '.join(sorted(_ws))))
-				del _p, _f, _ws
-				""".formatted(path));
+		runShowCall("load_objects", file);
 	}
 
 	private void doc() {

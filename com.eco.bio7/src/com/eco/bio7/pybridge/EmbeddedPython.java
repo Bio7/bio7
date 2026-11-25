@@ -143,8 +143,41 @@ public final class EmbeddedPython {
 		display.syncExec(() -> PythonPlotView.initSize(session));
 		/* The preferences of the plot view (Preferences Python Plot) */
 		PythonPlotView.applyOptions(session);
+		applyRunOptions();
 		print("Embedded Python " + session.version() + " (" + exe + ")\n", false);
 		return null;
+	}
+
+	/** The preference: reload the modules of the user before a script runs. */
+	public static final String PREF_RELOAD_MODULES = "PYTHON_RELOAD_MODULES";
+	/** The preference: the working directory is the folder of the script during a run. */
+	public static final String PREF_SCRIPT_CHDIR = "PYTHON_SCRIPT_CHDIR";
+	/** The preference: remove all variables before a script runs (a clean run). */
+	public static final String PREF_CLEAR_BEFORE_RUN = "PYTHON_CLEAR_BEFORE_RUN";
+
+	/** Passes the preferences of the script runs to the running Python (see _bio7._script_begin). */
+	public static void applyRunOptions() {
+		PySession s = PySession.current();
+		if (s == null) {
+			return;
+		}
+		org.eclipse.jface.preference.IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
+		String code = "b = __import__('_bio7'); b._reload_user_modules = " + py(store.getBoolean(PREF_RELOAD_MODULES)) + "; b._script_chdir = "
+				+ py(store.getBoolean(PREF_SCRIPT_CHDIR)) + "; b._clear_before_run = " + py(store.getBoolean(PREF_CLEAR_BEFORE_RUN));
+		try {
+			/* In a function: no name in the workspace */
+			s.exec("(lambda: exec(" + pyString(code) + ", {}))()");
+		} catch (PyException e) {
+			print("The options of the script runs could not be set: " + e.getMessage() + "\n", true);
+		}
+	}
+
+	private static String py(boolean b) {
+		return b ? "True" : "False";
+	}
+
+	private static String pyString(String text) {
+		return "'" + text.replace("\\", "\\\\").replace("'", "\\'") + "'";
 	}
 
 	/*

@@ -54,6 +54,16 @@ public class Python extends FieldEditorPreferencePage implements IWorkbenchPrefe
 		}, getFieldEditorParent()));
 		addField(new BooleanFieldEditor(com.eco.bio7.pybridge.PythonEnvironment.PREF_USE_UV,
 				"Install packages with uv instead of pip (if uv is installed: faster, the environment needs no pip)", BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		/* As the User Module Reloader of Spyder: an edited module of the script folder is used at the next run */
+		addField(new BooleanFieldEditor(com.eco.bio7.pybridge.EmbeddedPython.PREF_RELOAD_MODULES,
+				"Reload the modules of the user before a script runs (the modules in the folder of the script, e.g., an edited helper.py)",
+				BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
+		addField(new BooleanFieldEditor(com.eco.bio7.pybridge.EmbeddedPython.PREF_SCRIPT_CHDIR,
+				"Working directory: the folder of the script while it runs (relative paths, e.g., open('data.csv'))", BooleanFieldEditor.DEFAULT,
+				getFieldEditorParent()));
+		addField(new BooleanFieldEditor(com.eco.bio7.pybridge.EmbeddedPython.PREF_CLEAR_BEFORE_RUN,
+				"Remove all variables before a script runs (a clean run; not with flows: their steps use the variables of earlier steps)",
+				BooleanFieldEditor.DEFAULT, getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		/* As the R-Shell code completion (Preferences > R) */
 		addField(new LabelFieldEditor("Python-Shell code completion (close and reopen the Python-Shell view or restart to apply):", getFieldEditorParent()));
@@ -103,6 +113,7 @@ public class Python extends FieldEditorPreferencePage implements IWorkbenchPrefe
 	public boolean performOk() {
 		String before = getPreferenceStore().getString("python_pipe_path");
 		boolean ok = super.performOk();
+		com.eco.bio7.pybridge.EmbeddedPython.applyRunOptions();
 		String after = getPreferenceStore().getString("python_pipe_path");
 		/* The embedded Python can't be changed while Bio7 runs */
 		if (!before.equals(after) && com.eco.bio7.pybridge.EmbeddedPython.isRunning()) {
