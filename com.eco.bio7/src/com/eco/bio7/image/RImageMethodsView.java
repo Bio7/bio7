@@ -666,10 +666,6 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 					return;
 				}
 				if (ensureR()) {
-					if (transferTypeCombo.getSelectionIndex() == 3) {
-						Bio7Dialog.message("RGB transfer to ImageJ is not supported!\n Please use e.g. byte transfer for the R ,G ,B components\n which can be merged with ImageJ!");
-						return;
-					}
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
 						if (canTransfer) {
@@ -1093,11 +1089,37 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 	 * interface stays usable); false with a message if R could not be started.
 	 */
 	static boolean ensureR() {
-		if (com.eco.bio7.rcp.AutoStart.startR() && RTools.isAlive()) {
-			return true;
+		boolean running = RTools.isAlive();
+		if (!com.eco.bio7.rcp.AutoStart.startR() || !RTools.isAlive()) {
+			Bio7Dialog.message("R could not be started!");
+			return false;
 		}
-		Bio7Dialog.message("R could not be started!");
-		return false;
+		if (!running) {
+			/*
+			 * Started now: R evaluates its start (e.g., the functions for the code
+			 * completion) - wait until it is idle (0.5 s, at most 60 s), else the transfer
+			 * would report "R is busy"
+			 */
+			com.eco.bio7.rcp.BackgroundStart.run("Waiting for R", () -> {
+				long end = System.currentTimeMillis() + 60000, idleSince = System.currentTimeMillis();
+				while (System.currentTimeMillis() < end) {
+					long now = System.currentTimeMillis();
+					if (RState.isBusy()) {
+						idleSince = now;
+					} else if (now - idleSince >= 500) {
+						break;
+					}
+					try {
+						Thread.sleep(50);
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+						break;
+					}
+				}
+				return null;
+			});
+		}
+		return true;
 	}
 
 	public static CCombo getTransferTypeCombo() {

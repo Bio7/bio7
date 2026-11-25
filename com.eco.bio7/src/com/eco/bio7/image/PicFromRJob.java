@@ -75,6 +75,14 @@ class PicFromRJob extends WorkspaceJob {
 
 	private void picFromR() {
 		if (RTools.isAliveDialog()) {
+			/* The RGB data of Pic<- (RGB Byte) as a colour image */
+			if (!name.isEmpty() && (type == 0 || transferDataType == 3) && rgbFromR()) {
+				return;
+			}
+			if (transferDataType == 3) {
+				Bio7Dialog.message("RGB Byte: an integer matrix (pixels, 3) or the vectors\n" + name + "_R, " + name + "_G, " + name + "_B with imageSizeX\nand imageSizeY are required (see Pic<- with RGB Byte)!");
+				return;
+			}
 			if (name.isEmpty() == false && name != null) {
 				try {
 					bolExists = c.eval("try(exists(\"" + name + "\"))");
@@ -541,6 +549,49 @@ class PicFromRJob extends WorkspaceJob {
 				Bio7Dialog.message("Pic-> (image from R): the image could not be shown:\n" + e);
 			}
 		});
+	}
+
+	/*
+	 * A colour image from the RGB data of Pic<- (RGB Byte): the integer matrix
+	 * (pixels, 3: R, G, B) or the vectors name_R, name_G, name_B, the pixels in the
+	 * order of the rows with imageSizeX and imageSizeY. False if the data is not
+	 * available (e.g., packed RGB values for Colour).
+	 */
+	private boolean rgbFromR() {
+		try {
+			if (!c.eval("exists('imageSizeX') && exists('imageSizeY')").booleans()[0]) {
+				return false;
+			}
+			int w = (int) c.eval("imageSizeX").firstDouble();
+			int h = (int) c.eval("imageSizeY").firstDouble();
+			int n = w * h;
+			double[] r, g, b;
+			String test = "exists('" + name + "') && is.matrix(" + name + ") && ncol(" + name + ") == 3 && nrow(" + name + ") == " + n;
+			if (c.eval(test).booleans()[0]) {
+				double[] v = c.eval("as.double(" + name + ")").doubles();
+				r = java.util.Arrays.copyOfRange(v, 0, n);
+				g = java.util.Arrays.copyOfRange(v, n, 2 * n);
+				b = java.util.Arrays.copyOfRange(v, 2 * n, 3 * n);
+			} else if (c.eval("all(sapply(paste0('" + name + "', c('_R', '_G', '_B')), function(v) exists(v) && length(get(v)) == " + n + "))").booleans()[0]) {
+				r = c.eval("as.double(as.integer(" + name + "_R))").doubles();
+				g = c.eval("as.double(as.integer(" + name + "_G))").doubles();
+				b = c.eval("as.double(as.integer(" + name + "_B))").doubles();
+			} else {
+				return false;
+			}
+			int[] px = new int[n];
+			for (int i = 0; i < n; i++) {
+				px[i] = 0xff000000 | (channel(r[i]) << 16) | (channel(g[i]) << 8) | channel(b[i]);
+			}
+			show(new ImagePlus(name, new ColorProcessor(w, h, px)));
+			return true;
+		} catch (RException e) {
+			throw new IllegalStateException(e.getMessage(), e);
+		}
+	}
+
+	private static int channel(double v) {
+		return Double.isNaN(v) ? 0 : (int) Math.max(0, Math.min(255, Math.round(v)));
 	}
 
 }
