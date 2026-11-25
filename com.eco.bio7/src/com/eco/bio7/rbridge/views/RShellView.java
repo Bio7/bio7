@@ -1364,6 +1364,12 @@ public class RShellView extends ViewPart {
 				menuStack.push(menu);
 				String loc = store.getString(PreferenceConstants.D_RSHELL_SCRIPTS);
 				createSubMenus(loc);
+				/* The heading of the scripts (a gray, not selectable item) */
+				if (menu.getItemCount() > fixedMenuItems) {
+					MenuItem heading = new MenuItem(menu, SWT.PUSH, fixedMenuItems);
+					heading.setText("Scripts");
+					heading.setEnabled(false);
+				}
 
 			}
 		});
@@ -2484,6 +2490,25 @@ public class RShellView extends ViewPart {
 			item.addListener(SWT.Selection, _ -> transferToTable(listShell.getSelection(), t[1]));
 		}
 
+		/*
+		 * The actions of R (formerly the R main menu): R (start, interrupt), the
+		 * workspace, Editor (evaluation) and Data
+		 */
+		new MenuItem(menu, SWT.SEPARATOR);
+		org.eclipse.ui.IWorkbenchWindow window = getSite().getWorkbenchWindow();
+		/* R: Start R (R Console if R runs) and Interrupt R, updated when shown */
+		com.eco.bio7.rbridge.actions.StartRAction startR = new com.eco.bio7.rbridge.actions.StartRAction("Start R", window);
+		MenuItem rItem = new MenuItem(menu, SWT.CASCADE);
+		rItem.setText("R");
+		rItem.setMenu(startR.getMenu(menu));
+		addActions(menu, new com.eco.bio7.rbridge.actions.LoadRWorkspace("Load Workspace", window),
+				new com.eco.bio7.rbridge.actions.SaveRWorkspace("Save Workspace", window));
+		addActions(cascade(menu, "Editor"), new com.eco.bio7.rbridge.actions.ExecuteRTextSelection("Evaluate Line or Selection", window),
+				new com.eco.bio7.rbridge.actions.PrintExpression("Evaluate Expression", window),
+				new com.eco.bio7.rbridge.actions.ClipboardRScipt("Evaluate Clipboard", window));
+		addActions(cascade(menu, "Data"), new com.eco.bio7.rbridge.actions.ClipboardRValues("Get Clipboard Data", window),
+				new com.eco.bio7.rbridge.actions.ClearRWorkspace("Remove All Objects", window));
+
 		createLibreOfficeMenu(menu);
 
 		new MenuItem(menu, SWT.SEPARATOR);
@@ -2532,6 +2557,22 @@ public class RShellView extends ViewPart {
 		item.setText(text);
 		item.setEnabled(action != null);
 		item.addListener(SWT.Selection, e -> action.run());
+	}
+
+	/* A submenu of the context menu */
+	private static Menu cascade(Menu parent, String text) {
+		MenuItem item = new MenuItem(parent, SWT.CASCADE);
+		item.setText(text);
+		Menu sub = new Menu(item);
+		item.setMenu(sub);
+		return sub;
+	}
+
+	/* Actions as menu items (with their shortcuts) */
+	private static void addActions(Menu menu, org.eclipse.jface.action.IAction... actions) {
+		for (org.eclipse.jface.action.IAction action : actions) {
+			new org.eclipse.jface.action.ActionContributionItem(action).fill(menu, -1);
+		}
 	}
 
 	public void createSubMenus(String directoryName) {

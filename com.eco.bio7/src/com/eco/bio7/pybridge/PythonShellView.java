@@ -477,6 +477,10 @@ public class PythonShellView extends ViewPart {
 		});
 		new MenuItem(menu, SWT.SEPARATOR);
 		item(menu, "Delete", this::delete);
+		/* All objects of the workspace in one pickle file (the data; not the imports and functions) */
+		new MenuItem(menu, SWT.SEPARATOR);
+		item(menu, "Save All Objects...", this::saveWorkspace);
+		item(menu, "Load Objects...", this::loadWorkspace);
 		/* The scripts of the folder of the preferences (as in the R-Shell): created each time the menu opens */
 		int fixed = menu.getItemCount();
 		menu.addListener(SWT.Show, _ -> {
@@ -487,6 +491,10 @@ public class PythonShellView extends ViewPart {
 			File folder = new File(Bio7Plugin.getDefault().getPreferenceStore().getString(PreferenceConstants.D_PYTHON_SHELL_SCRIPTS));
 			if (PythonShellScripts.hasScripts(folder)) {
 				new MenuItem(menu, SWT.SEPARATOR);
+				/* The heading of the scripts (a gray, not selectable item) */
+				MenuItem heading = new MenuItem(menu, SWT.PUSH);
+				heading.setText("Scripts");
+				heading.setEnabled(false);
 				PythonShellScripts.createMenus(menu, folder, this::runScript);
 			}
 		});
@@ -723,6 +731,70 @@ public class PythonShellView extends ViewPart {
 			code = "import numpy as _np\n_np.save('" + path + "', _np.asarray(" + name + "))\ndel _np";
 		}
 		runShow(code + "\nprint('Saved: " + path + "')");
+	}
+
+	/*
+	 * Save All Objects: the objects of the workspace which can be pickled
+	 * (not modules, functions, classes and names beginning with _) as a dict
+	 * {name: object} in a pickle file; the others are reported.
+	 */
+	private void saveWorkspace() {
+		FileDialog d = new FileDialog(getSite().getShell(), SWT.SAVE);
+		d.setText("Save All Objects");
+		d.setFileName("objects.pkl");
+		d.setFilterExtensions(new String[] { "*.pkl", "*" });
+		d.setOverwrite(true);
+		String file = d.open();
+		if (file == null) {
+			return;
+		}
+		String path = file.replace("\\", "\\\\").replace("'", "\\'");
+		runShow("""
+				import pickle as _p, types as _t
+				_ws, _skipped = {}, []
+				for _k, _v in list(globals().items()):
+				    if _k.startswith('_') or isinstance(_v, (_t.ModuleType, _t.FunctionType, _t.BuiltinFunctionType, type)):
+				        continue
+				    try:
+				        _p.dumps(_v, protocol=_p.HIGHEST_PROTOCOL)
+				        _ws[_k] = _v
+				    except Exception:
+				        _skipped.append(_k)
+				with open('%s', 'wb') as _f:
+				    _p.dump(_ws, _f, protocol=_p.HIGHEST_PROTOCOL)
+				print('Saved %%d objects:' %% len(_ws), '%s')
+				if _skipped:
+				    print('Not saved (cannot be pickled):', ', '.join(_skipped))
+				del _p, _t, _ws, _skipped, _f
+				globals().pop('_k', None)
+				globals().pop('_v', None)
+				""".formatted(path, path));
+	}
+
+	/*
+	 * Load Objects: the objects saved with Save All Objects (a dict {name: object}): the
+	 * objects are added to the workspace (existing names are replaced).
+	 */
+	private void loadWorkspace() {
+		FileDialog d = new FileDialog(getSite().getShell(), SWT.OPEN);
+		d.setText("Load Objects");
+		d.setFilterExtensions(new String[] { "*.pkl", "*" });
+		String file = d.open();
+		if (file == null) {
+			return;
+		}
+		String path = file.replace("\\", "\\\\").replace("'", "\\'");
+		runShow("""
+				import pickle as _p
+				with open('%s', 'rb') as _f:
+				    _ws = _p.load(_f)
+				if not isinstance(_ws, dict) or not all(isinstance(_k, str) for _k in _ws):
+				    del _p, _f, _ws
+				    raise TypeError('The file contains no objects of Save All Objects (a dict {name: object})')
+				globals().update(_ws)
+				print('Loaded %%d objects: %%s' %% (len(_ws), ', '.join(sorted(_ws))))
+				del _p, _f, _ws
+				""".formatted(path));
 	}
 
 	private void doc() {

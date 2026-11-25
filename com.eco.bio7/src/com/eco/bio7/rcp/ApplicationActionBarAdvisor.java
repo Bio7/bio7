@@ -90,7 +90,6 @@ import com.eco.bio7.rbridge.actions.LoadRWorkspace;
 import com.eco.bio7.rbridge.actions.OpenRPreferencesAction;
 import com.eco.bio7.rbridge.actions.PrintExpression;
 import com.eco.bio7.rbridge.actions.SaveRWorkspace;
-import com.eco.bio7.rbridge.actions.SaveRWorkspaceAndStart;
 import com.eco.bio7.rbridge.actions.StartRAction;
 import com.eco.bio7.time.Time;
 import com.eco.bio7.util.Util;
@@ -518,7 +517,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		MenuManager prefMenu = new MenuManager("Preferences");
 		/* Set not an references extra menu for MacOSX! */
 		prefMenu.setVisible(!Util.getOS().equals("Mac"));
-		MenuManager rMenu = new MenuManager("R");
 
 		MenuManager WindowMenu = new MenuManager("&Window");
 		helpMenu = new MenuManager("&Help", IWorkbenchActionConstants.M_HELP);// p2
@@ -662,7 +660,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		menuBar.add(findMenu);
 		menuBar.add(prefMenu);
 		menuBar.add(scriptMenu);
-		menuBar.add(rMenu);
 		// menuBar.add(BeanShellMenu);
 		menuBar.add(WindowMenu);
 		menuBar.add(helpMenu);
@@ -724,28 +721,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 
 		};
 		scriptMenu.addMenuListener(ScriptListener);
-		rMenu.add(startR);
-		rMenu.add(new Separator());
-		rMenu.add(loadR);
-		rMenu.add(saveR);
-		rMenu.add(new Separator());
-		rMenu.add(new PrintExpression("Evaluate Expression", window2));
-		rMenu.add(rselect);
-		rMenu.add(clipboardRScript);
-		rMenu.add(new Separator());
-		rMenu.add(clipboardRValues);
-		rMenu.add(new Separator());
-		rMenu.add(clearWorkspace);
-		rMenu.add(new Separator());
-		rMenu.add(new Separator());
-		if (ApplicationWorkbenchWindowAdvisor.getOS().equals("Windows")) {
-			rMenu.add(new SaveRWorkspaceAndStart("Start RGui with Workspace", window2));
-		} else {
-			// No R shell for Bio7 Linux and Mac.
-			// rMenu.add(new SaveRWorkspaceand_Start("Start R Shell", window2));
-		}
 		/*
-		 * rMenu.add(new Separator()); rMenu.add(openRPref);
+		 * The R menu is the submenu R of the context menu of the R-Shell (the actions
+		 * stay registered above: their shortcuts)
 		 */
 
 		/*

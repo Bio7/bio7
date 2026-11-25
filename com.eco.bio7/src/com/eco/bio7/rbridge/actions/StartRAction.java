@@ -115,6 +115,12 @@ public class StartRAction extends Action implements IMenuCreator {
 			menu.dispose();
 		}
 		menu = new Menu(parent);
+		fill(menu);
+		return menu;
+	}
+
+	/* Start R (or R Console if R runs) and Interrupt R */
+	private void fill(Menu menu) {
 		Image image = Bio7Plugin.getImageDescriptor("/icons/views/stopraction.svg").createImage();
 		menu.addDisposeListener(_ -> image.dispose());
 
@@ -128,11 +134,19 @@ public class StartRAction extends Action implements IMenuCreator {
 		interrupt.setImage(image);
 		interrupt.setEnabled(RBridge.isConnected());
 		interrupt.addListener(SWT.Selection, _ -> EmbeddedR.interrupt());
-		return menu;
 	}
 
+	/* In a menu (the R menu, the context menu of the R-Shell): the same items as the toolbar */
 	@Override
 	public Menu getMenu(Menu parent) {
-		return null;
+		Menu sub = new Menu(parent);
+		/* Updated when shown (R Console if R runs, Interrupt R enabled) */
+		sub.addListener(SWT.Show, _ -> {
+			for (MenuItem item : sub.getItems()) {
+				item.dispose();
+			}
+			fill(sub);
+		});
+		return sub;
 	}
 }
