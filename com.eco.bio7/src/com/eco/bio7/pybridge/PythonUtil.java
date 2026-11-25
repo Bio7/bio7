@@ -62,10 +62,11 @@ public final class PythonUtil {
 		}
 	}
 
-	/* The running session (started if necessary) */
+	/* The running session (started if necessary: preference "Start Python when it is used") */
 	private static PySession py() throws PyException {
-		if (!EmbeddedPython.isRunning()) {
-			start();
+		String error = com.eco.bio7.rcp.AutoStart.startPythonOnUse();
+		if (error != null) {
+			throw new PyException(error.replace("\n", " "));
 		}
 		return EmbeddedPython.session();
 	}

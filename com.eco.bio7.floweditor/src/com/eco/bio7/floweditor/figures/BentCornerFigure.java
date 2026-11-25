@@ -10,90 +10,75 @@
  *******************************************************************************/
 package com.eco.bio7.floweditor.figures;
 
-import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.Graphics;
-import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 
 /**
- * A figure that has a bent corner in the top right hand. Typically used for
- * sticky notes.
+ * A note of a flow: an amber card with rounded corners, a folded corner at the
+ * top right and an info icon.
  */
-public class BentCornerFigure extends Figure {
+public class BentCornerFigure extends Figure implements RunningFigure {
 
-	/**
-	 * The default amount of pixels subtracted from the figure's height and
-	 * width to determine the size of the corner.
-	 */
-	protected static int DEFAULT_CORNER_SIZE = 10;
+	/** The size of the folded corner. */
+	protected static int DEFAULT_CORNER_SIZE = 14;
 
 	private int cornerSize;
+	private boolean running;
 
-	/**
-	 * Constructs an empty BentCornerFigure with default background color of
-	 * ColorConstants.tooltipBackground and default corner size.
-	 */
 	public BentCornerFigure() {
-		setBackgroundColor(ColorConstants.tooltipBackground);
-		setForegroundColor(ColorConstants.tooltipForeground);
 		setCornerSize(DEFAULT_CORNER_SIZE);
 	}
 
-	/**
-	 * Returns the size, in pixels, that the figure should use to draw its bent
-	 * corner.
-	 * 
-	 * @return size of the corner
-	 */
 	public int getCornerSize() {
 		return cornerSize;
 	}
 
-	/**
-	 * @see org.eclipse.draw2d.Figure#paintFigure(org.eclipse.draw2d.Graphics)
-	 */
-	protected void paintFigure(Graphics graphics) {
-		Rectangle rect = getBounds().getCopy();
-
-		graphics.translate(getLocation());
-
-		// fill the note
-		PointList outline = new PointList();
-
-		outline.addPoint(0, 0);
-		outline.addPoint(rect.width - cornerSize, 0);
-		outline.addPoint(rect.width - 1, cornerSize);
-		outline.addPoint(rect.width - 1, rect.height - 1);
-		outline.addPoint(0, rect.height - 1);
-
-		graphics.fillPolygon(outline);
-
-		// draw the inner outline
-		PointList innerLine = new PointList();
-
-		innerLine.addPoint(rect.width - cornerSize - 1, 0);
-		innerLine.addPoint(rect.width - cornerSize - 1, cornerSize);
-		innerLine.addPoint(rect.width - 1, cornerSize);
-		innerLine.addPoint(rect.width - cornerSize - 1, 0);
-		innerLine.addPoint(0, 0);
-		innerLine.addPoint(0, rect.height - 1);
-		innerLine.addPoint(rect.width - 1, rect.height - 1);
-		innerLine.addPoint(rect.width - 1, cornerSize);
-
-		graphics.drawPolygon(innerLine);
-
-		graphics.translate(getLocation().getNegated());
-	}
-
-	/**
-	 * Sets the size of the figure's corner to the given offset.
-	 * 
-	 * @param newSize
-	 *            the new size to use.
-	 */
 	public void setCornerSize(int newSize) {
 		cornerSize = newSize;
 	}
 
+	public void setRunning(boolean running) {
+		if (this.running != running) {
+			this.running = running;
+			repaint();
+		}
+	}
+
+	protected void paintFigure(Graphics graphics) {
+		FlowColors.Palette p = FlowColors.get();
+		/* The text in the color of the note */
+		if (!p.noteText.equals(getLocalForegroundColor())) {
+			setForegroundColor(p.noteText);
+		}
+		Graphics g = graphics;
+		g.setAntialias(SWT.ON);
+		Rectangle r = getBounds().getResized(-1, -1).getShrinked(1, 1);
+		int c = Math.min(cornerSize, Math.min(r.width, r.height) / 2);
+		int radius = 8;
+		g.setBackgroundColor(running ? p.runFill : p.noteFill);
+		g.fillRoundRectangle(r, radius, radius);
+		g.setForegroundColor(running ? p.runBorder : p.noteBorder);
+		g.setLineWidthFloat(running ? 2.5f : 1.5f);
+		g.drawRoundRectangle(r, radius, radius);
+		/* The folded corner: cut off (the color of the canvas) and folded down */
+		Color canvas = getParent() != null ? getParent().getBackgroundColor() : null;
+		if (canvas != null) {
+			g.setBackgroundColor(canvas);
+			g.fillPolygon(new int[] { r.right() - c, r.y - 2, r.right() + 2, r.y - 2, r.right() + 2, r.y + c });
+		}
+		g.setBackgroundColor(running ? p.runBorder : p.noteBorder);
+		g.fillPolygon(new int[] { r.right() - c, r.y, r.right(), r.y + c, r.right() - c + 3, r.y + c });
+		g.drawLine(r.right() - c, r.y, r.right(), r.y + c);
+		/* The info icon */
+		int ix = r.x + 10, iy = r.y + 10, d = 14;
+		g.setForegroundColor(p.noteIcon);
+		g.setLineWidthFloat(1.6f);
+		g.drawOval(ix, iy, d, d);
+		g.setLineCap(SWT.CAP_ROUND);
+		g.drawLine(ix + d / 2, iy + 6, ix + d / 2, iy + 10);
+		g.drawLine(ix + d / 2, iy + 3, ix + d / 2, iy + 3);
+	}
 }

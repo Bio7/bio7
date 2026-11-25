@@ -208,6 +208,12 @@ public final class EmbeddedR {
 		try {
 			session.registerDevice(CANVAS_DEVICE, RPlotCanvasDevice.factory(session));
 			session.registerDevice(VECTOR_DEVICE, com.eco.bio7.rbridge.plot.RPlotVectorDevice.factory(session));
+			/*
+			 * Screen devices as quartz or windows: dev.interactive() is TRUE, e.g.,
+			 * par(ask = dev.interactive()), demo() and plot.lm() wait for Return before
+			 * the next page (else the pages run through and only the history has them)
+			 */
+			session.voidEval("grDevices::deviceIsInteractive(c('" + CANVAS_DEVICE + "', '" + VECTOR_DEVICE + "'))");
 		} catch (RException | LinkageError e) {
 			print("The plot devices could not be registered: " + e.getMessage() + "\n", true);
 		}

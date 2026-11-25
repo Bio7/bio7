@@ -56,11 +56,27 @@ public final class RUtil {
 		return EmbeddedR.isRunning();
 	}
 
-	/** The session of the embedded R (for the full API of com.eco.bio7.rffm). */
+	/**
+	 * Starts the embedded R if it is not running (always, also without the
+	 * preference "Start R when it is used").
+	 *
+	 * @return true if R runs
+	 */
+	public static boolean start() {
+		return com.eco.bio7.rcp.AutoStart.startR();
+	}
+
+	/**
+	 * The session of the embedded R (for the full API of com.eco.bio7.rffm): R is
+	 * started if it is not running (preference "Start R when it is used").
+	 */
 	public static RSession session() throws RException {
 		RSession s = EmbeddedR.session();
+		if (s == null && com.eco.bio7.rcp.AutoStart.startROnUse()) {
+			s = EmbeddedR.session();
+		}
 		if (s == null) {
-			throw new RException("The embedded R is not running: please start R (Preferences R: embedded R)");
+			throw new RException(com.eco.bio7.rcp.AutoStart.NOT_RUNNING_R.replace("\n", " "));
 		}
 		return s;
 	}

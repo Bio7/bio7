@@ -971,6 +971,9 @@ public final class ScriptSimulation {
 		@Override
 		public State run(String op, String arg) throws Exception {
 			com.eco.bio7.pyffm.PySession s = com.eco.bio7.pybridge.EmbeddedPython.session();
+			if (s == null && com.eco.bio7.rcp.AutoStart.startPythonOnUse() == null) {
+				s = com.eco.bio7.pybridge.EmbeddedPython.session();
+			}
 			if (s == null) {
 				throw new IllegalStateException("The embedded Python is not running");
 			}
@@ -983,6 +986,9 @@ public final class ScriptSimulation {
 		@Override
 		public State run(String op, String arg) throws Exception {
 			com.eco.bio7.rffm.RSession s = com.eco.bio7.rffm.RSession.current();
+			if (s == null && com.eco.bio7.rcp.AutoStart.startROnUse()) {
+				s = com.eco.bio7.rffm.RSession.current();
+			}
 			if (s == null) {
 				throw new IllegalStateException("The embedded R is not running");
 			}

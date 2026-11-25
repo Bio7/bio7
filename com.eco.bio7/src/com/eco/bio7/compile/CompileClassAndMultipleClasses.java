@@ -254,6 +254,18 @@ import ij.plugin.filter.PlugInFilterRunner;
 import ij.plugin.frame.PlugInFrame;
 
 public class CompileClassAndMultipleClasses {
+
+    /* The job of the last compiled and running class (e.g., a step of a flow) */
+    private static volatile Job running;
+
+    /** Cancels the running class (its thread is interrupted), e.g., when a flow is cancelled. */
+    public static void cancelRunning() {
+        Job job = running;
+        if (job != null && job.getState() != Job.NONE) {
+            job.cancel();
+        }
+    }
+
     private File fi;
     private String name;
     private String dir;
@@ -492,6 +504,7 @@ public class CompileClassAndMultipleClasses {
             }
         });
         
+        running = job;
         job.schedule();
         return job;
     }

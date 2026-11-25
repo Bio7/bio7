@@ -398,6 +398,10 @@ public class RTools {
 	 * @return a boolean value.
 	 */
 	public static boolean isAliveDialog() {
+		/* Started when it is used (preferences) */
+		if (RBridge.getBackend() == null && com.eco.bio7.rcp.AutoStart.startROnUse()) {
+			return true;
+		}
 		if (RBridge.getBackend() == null) {
 			Display display = PlatformUI.getWorkbench().getDisplay();
 			display.syncExec(new Runnable() {
@@ -406,7 +410,7 @@ public class RTools {
 					com.eco.bio7.util.ThemedMessageBox messageBox = new com.eco.bio7.util.ThemedMessageBox(new Shell(),
 
 							SWT.ICON_WARNING);
-					messageBox.setMessage("R is not running!\nPlease start R (toolbar action \"Start R\").");
+					messageBox.setMessage(com.eco.bio7.rcp.AutoStart.NOT_RUNNING_R);
 					messageBox.open();
 				}
 			});

@@ -89,6 +89,8 @@ class TransferPicJob extends WorkspaceJob {
 				}
 				/* Get the image processor of the image ! */
 				ImageProcessor ip = imp.getProcessor();
+				/* An RGB image in the types Double, Integer and Byte: its luminance (as for Python) */
+				ip = ImageMethods.luminance(ip, transferDataType);
 				int w = ip.getWidth();
 				int h = ip.getHeight();
 

@@ -332,6 +332,16 @@ public final class EmbeddedPython {
 		}
 	}
 
+	/** Calls r when the code queued before (e.g., runFile) has finished; at once without Python. */
+	public static void whenDone(Runnable r) {
+		PySession s = session();
+		if (s != null) {
+			s.whenDone(r);
+		} else {
+			r.run();
+		}
+	}
+
 	/** Interrupts the running Python code (KeyboardInterrupt). */
 	public static void interrupt() {
 		PySession s = session();

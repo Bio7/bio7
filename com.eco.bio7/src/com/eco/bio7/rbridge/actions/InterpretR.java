@@ -63,6 +63,10 @@ public class InterpretR extends Action {
 
 		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
 		RBackend con = RBridge.getBackend();
+		/* Started when it is used (preferences) */
+		if (con == null && com.eco.bio7.rcp.AutoStart.startROnUse()) {
+			con = RBridge.getBackend();
+		}
 		IEditorInput editorInput = editor.getEditorInput();
 		IFile aFile = null;
 
@@ -83,7 +87,7 @@ public class InterpretR extends Action {
 				System.out.print("source('" + loc + "')");
 				System.out.println();
 			} else {
-				Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
+				Bio7Dialog.message(com.eco.bio7.rcp.AutoStart.NOT_RUNNING_R);
 			}
 
 		} else {

@@ -76,6 +76,15 @@ public class ThemeTabRendering extends Bio7TabRendering {
 		 * (the selected tab is invisible or partly painted), the tab is opaque
 		 */
 		boolean translucent = theme != null && theme.getTabSelectedOpacity() < 100 && !GTK;
+		/*
+		 * The body is painted with the whole folder (PART_BACKGROUND only with the tab
+		 * row), before the header: the wrapped row of the tool bar is filled here
+		 */
+		if (part == PART_BODY) {
+			super.draw(part, state, bounds, gc);
+			paintWrappedRow(gc, bounds, theme);
+			return;
+		}
 		if (part >= 0 && (state & SWT.SELECTED) != 0 && translucent) {
 			drawTranslucentTab(part, state, bounds, gc, theme.getTabSelectedOpacity());
 		} else {
@@ -294,6 +303,67 @@ public class ThemeTabRendering extends Bio7TabRendering {
 			gc.drawImage(image, row.x, row.y);
 		}
 		gc.setClipping(clipping);
+	}
+
+	/*
+	 * A narrow view: its tool bar wraps into a row below the tabs. The folder fills
+	 * that row with its background (the tab row color of the CSS), the tool bar and
+	 * the view below have the color of the view panels: the row gets that color too
+	 * (else a stripe of the tab row color beside the tool bar).
+	 */
+	private void paintWrappedRow(GC gc, Rectangle bounds, CustomTheme theme) {
+		if (theme == null || folder.isDisposed() || folder.getTabPosition() != SWT.TOP || folder.getItemCount() == 0) {
+			return;
+		}
+		org.eclipse.swt.graphics.RGB rgb = theme.getColor("panelBackground");
+		if (rgb == null) {
+			return;
+		}
+		/* The bottom of the tab row (not of the picture, see tabRowBottom) */
+		int top = super.tabRowBottom();
+		int bottom = folder.getClientArea().y;
+		boolean wrapped = bottom - top >= 12;
+		colorTopRight(wrapped, top, new Color(rgb));
+		if (!wrapped) {
+			/* No wrapped row (only the border between the tab row and the view) */
+			return;
+		}
+		Rectangle row = new Rectangle(0, top, folder.getSize().x, bottom - top).intersection(bounds);
+		if (row.isEmpty()) {
+			return;
+		}
+		Color old = gc.getBackground();
+		gc.setBackground(new Color(rgb));
+		gc.fillRectangle(row);
+		gc.setBackground(old);
+	}
+
+	/* The original background of the tool bar composite of the folder (while it has the color of the wrapped row) */
+	private static final String TOP_RIGHT_BACKGROUND = "bio7.themes.topRightBackground";
+
+	/*
+	 * The composite of the tool bars of the folder (its top right control) spans the
+	 * wrapped row and has the tab row color of the CSS: in the wrapped row it gets
+	 * the color of the view panels, back in the tab row its original color again.
+	 */
+	private void colorTopRight(boolean wrapped, int rowTop, Color panel) {
+		Control topRight = folder.getTopRight();
+		if (topRight == null || topRight.isDisposed()) {
+			return;
+		}
+		boolean inWrappedRow = wrapped && topRight.getBounds().y >= rowTop - 1;
+		Object saved = topRight.getData(TOP_RIGHT_BACKGROUND);
+		if (inWrappedRow) {
+			if (saved == null) {
+				topRight.setData(TOP_RIGHT_BACKGROUND, topRight.getBackground());
+			}
+			if (!panel.equals(topRight.getBackground())) {
+				topRight.setBackground(panel);
+			}
+		} else if (saved instanceof Color original) {
+			topRight.setData(TOP_RIGHT_BACKGROUND, null);
+			topRight.setBackground(original);
+		}
 	}
 
 	/* The picture of the tab row over the background of the tab row (the tabs are painted later) */

@@ -286,8 +286,20 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 					/* Break the evaluate line selection action! */
 					ExecuteRTextSelection lineSelection = ExecuteRTextSelection.getInstance();
 					lineSelection.stopEvaluation();
-					/* Embedded R: interrupt the evaluation in the process of Bio7 */
-					if (interpreterSelection.equals("R") && RProcess == null && Backends.isEmbeddedRunning()) {
+					/*
+					 * Embedded R: interrupt the evaluation in the process of Bio7; also if the
+					 * console shows Python while R waits for input (e.g., "Hit <Return> to see
+					 * next plot") or only R evaluates
+					 */
+					boolean rActive = RProcess == null && Backends.isEmbeddedRunning() && (EmbeddedR.isBrowsing() || EmbeddedR.isBusy());
+					boolean pythonActive = pythonProcess == null && com.eco.bio7.pybridge.EmbeddedPython.isRunning() && com.eco.bio7.pybridge.EmbeddedPython.isBusy();
+					boolean rWaits = rActive && !pythonActive || EmbeddedR.isBrowsing();
+					/* The console shows R, but only Python runs (e.g., a chunk or PythonUtil): Python is interrupted */
+					if (interpreterSelection.equals("R") && !rActive && pythonActive) {
+						com.eco.bio7.pybridge.EmbeddedPython.interrupt();
+						return;
+					}
+					if ((interpreterSelection.equals("R") || rWaits) && RProcess == null && Backends.isEmbeddedRunning()) {
 						EmbeddedR.interrupt();
 						return;
 					}
@@ -1223,7 +1235,14 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 							list.add(input);
 						}
 					}
-					if (pythonProcess == null && com.eco.bio7.pybridge.EmbeddedPython.isRunning()) {
+					if (RProcess == null && Backends.isEmbeddedRunning() && EmbeddedR.isBrowsing()) {
+						/*
+						 * R waits for input within an evaluation (e.g., "Hit <Return> to see next
+						 * plot" or readline() of a script, browser()): the line is for R, also if
+						 * the console shows Python (else R would wait forever)
+						 */
+						EmbeddedR.console(input);
+					} else if (pythonProcess == null && com.eco.bio7.pybridge.EmbeddedPython.isRunning()) {
 						/* Embedded Python: the line is evaluated in the process of Bio7 */
 						com.eco.bio7.pybridge.EmbeddedPython.console(input);
 					} else if (pythonProcess != null) {

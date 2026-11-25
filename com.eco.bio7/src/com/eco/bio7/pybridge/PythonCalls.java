@@ -92,6 +92,10 @@ public final class PythonCalls implements PyCallHandler {
 			} else if (holder[0].getWidth() != part.getWidth() || holder[0].getHeight() != part.getHeight()) {
 				throw new IllegalArgumentException("The parts of the stack have different sizes");
 			}
+			if (holder[0].getSize() > 0 && holder[0].getBitDepth() != part.getBitDepth()) {
+				throw new IllegalArgumentException("The parts of the stack have different data types (" + holder[0].getBitDepth() + "-bit and "
+						+ part.getBitDepth() + "-bit), e.g., float32 and float64");
+			}
 			for (int i = 1; i <= part.getSize(); i++) {
 				holder[0].addSlice(null, part.getProcessor(i));
 			}

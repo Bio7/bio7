@@ -47,7 +47,7 @@ public final class PythonConvert {
 	/* ---------------- ImageJ ---------------- */
 
 	/**
-	 * An image as array: 8-bit uint8, 16-bit uint16, 32-bit float32 with the shape
+	 * An image as array: 8-bit uint8, 16-bit uint16, 32-bit float32, 64-bit float64 with the shape
 	 * (height, width), a stack (slices, height, width), RGB uint8 (height, width,
 	 * 3) or (slices, height, width, 3).
 	 */
@@ -86,6 +86,14 @@ public final class PythonConvert {
 			}
 			return new PyValue.Array(d, "u2", shape);
 		}
+		case ImagePlus.GRAY64: {
+			/* 64-bit images (the DoubleProcessor of Bio7): float64, the exact values */
+			double[] d = new double[n * plane];
+			for (int s = 0; s < n; s++) {
+				System.arraycopy((double[]) stack.getProcessor(s + 1).getPixels(), 0, d, s * plane, plane);
+			}
+			return new PyValue.Array(d, "f8", shape);
+		}
 		default: {
 			float[] d = new float[n * plane];
 			for (int s = 0; s < n; s++) {
@@ -102,6 +110,15 @@ public final class PythonConvert {
 	 * int16 16-bit, other types 32-bit images.
 	 */
 	public static ImagePlus toImage(PyValue value, String title) {
+		return toImage(value, title, true);
+	}
+
+	/**
+	 * As toImage(value, title); doubleImage: a float64 array becomes a 64-bit image
+	 * (the DoubleProcessor of Bio7, the exact values; the default, as for the API),
+	 * else a 32-bit image.
+	 */
+	public static ImagePlus toImage(PyValue value, String title, boolean doubleImage) {
 		PyValue.Array a = toArray(value);
 		int[] s = a.shape();
 		boolean rgb = (s.length == 3 || s.length == 4) && s[s.length - 1] == 3 && a.dtype().equals("u1");
@@ -135,6 +152,13 @@ public final class PythonConvert {
 				short[] px = new short[plane];
 				System.arraycopy(sh, k * plane, px, 0, plane);
 				ip = new ShortProcessor(w, h, px, null);
+			} else if (doubleImage && a.dtype().equals("f8")) {
+				/* float64: a 64-bit image (the DoubleProcessor of Bio7), the exact values */
+				double[] px = new double[plane];
+				for (int i = 0; i < plane; i++) {
+					px[i] = a.getDouble(k * plane + i);
+				}
+				ip = new ij.process.DoubleProcessor(w, h, px);
 			} else {
 				float[] px = new float[plane];
 				for (int i = 0; i < plane; i++) {

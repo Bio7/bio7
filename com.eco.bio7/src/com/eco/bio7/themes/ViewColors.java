@@ -90,6 +90,7 @@ final class ViewColors {
 	/* Colors the open views (e.g., after a custom theme was activated) */
 	static void apply() {
 		applyGridHeaders();
+		applyFlowCanvases();
 		/* The gaps of the theme (or of the preferences) */
 		WindowGaps.apply();
 		if (!PlatformUI.isWorkbenchRunning()) {
@@ -106,6 +107,17 @@ final class ViewColors {
 					color(view);
 				}
 			}
+		}
+	}
+
+	/* The canvases of the flow editor (GEF): the editor and the view background of the custom theme (null: its own colors) */
+	static void applyFlowCanvases() {
+		CustomTheme theme = ThemeStore.find(ThemeStore.activeFolder());
+		try {
+			com.eco.bio7.floweditor.figures.FlowColors.setThemeBackgrounds(theme == null ? null : theme.getColor("editorBackground"),
+					theme == null ? null : theme.getColor("viewBackground"), theme == null ? null : theme.getColor("text"));
+		} catch (RuntimeException | LinkageError e) {
+			/* No flow editor */
 		}
 	}
 

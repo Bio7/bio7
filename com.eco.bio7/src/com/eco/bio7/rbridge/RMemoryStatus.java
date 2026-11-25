@@ -158,7 +158,8 @@ public final class RMemoryStatus {
 	 * Packages Completion")
 	 */
 	private static void refreshCompletion(RBackend backend) {
-		if (completionReloading) {
+		/* Not before the completion helper of Bio7 is defined (the start of R) */
+		if (completionReloading || !RConfig.isConfigured()) {
 			return;
 		}
 		java.util.Set<String> known = com.eco.bio7.rpreferences.template.CalculateRProposals.knownPackages();

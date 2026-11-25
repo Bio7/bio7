@@ -12,7 +12,6 @@
  *******************************************************************************/
 package com.eco.bio7.pybridge;
 
-import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -22,7 +21,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Display;
 
@@ -123,6 +121,19 @@ public final class PythonImageTransfer {
 		return imp;
 	}
 
+	/* imageSizeX and imageSizeY of the image (as the transfers to R): e.g., to create an image from a vector (Pic->) */
+	private static void putImageSize(Map<String, PyValue> m, ImagePlus imp) {
+		m.put("imageSizeX", new PyValue.Array(new int[] { imp.getWidth() }, "i4", new int[0]));
+		m.put("imageSizeY", new PyValue.Array(new int[] { imp.getHeight() }, "i4", new int[0]));
+	}
+
+	/* The polygon of a selection as selectionx and selectiony (integer coordinates, as the transfers to R) */
+	private static void putSelection(Map<String, PyValue> m, Roi roi) {
+		java.awt.Polygon p = roi.getPolygon();
+		m.put("selectionx", PyValue.of(java.util.Arrays.copyOf(p.xpoints, p.npoints)));
+		m.put("selectiony", PyValue.of(java.util.Arrays.copyOf(p.ypoints, p.npoints)));
+	}
+
 	private static Map<String, PyValue> one(String name, PyValue value) {
 		Map<String, PyValue> m = new LinkedHashMap<>();
 		m.put(name, value);
@@ -142,28 +153,81 @@ public final class PythonImageTransfer {
 		});
 	}
 
-	/** "IJ Stack": the current image (stack) as numpy array imageStack (slices, height, width). */
-	public static void stack() {
-		run("Transfer ImageJ Stack", () -> one("imageStack", PythonConvert.image(currentImage())));
-	}
-
-	/** "ROI": the coordinates of the current selection (selectionx, selectiony). */
-	public static void roi() {
-		run("Transfer to Python", () -> {
+	/**
+	 * "IJ Stack" (as for R: the data type of the view): all slices of the current
+	 * image as numpy array imageStack (slices, height, width), one image (height,
+	 * width). Double float64 (the exact values), Integer int32, Byte uint8 (an RGB
+	 * image: its luminance); RGB Byte uint8 (slices, height, width, 3). Also
+	 * imageSizeX and imageSizeY.
+	 */
+	public static void stack(int transferType) {
+		run("Transfer ImageJ Stack", () -> {
 			ImagePlus imp = currentImage();
-			Roi roi = imp.getRoi();
-			if (roi == null) {
-				throw new IllegalStateException("The image has no selection");
-			}
-			PyValue.PyDict xy = PythonConvert.roi(roi);
+			ij.ImageStack stack = imp.getStack();
+			int w = imp.getWidth(), h = imp.getHeight(), plane = w * h, n = stack.getSize();
 			Map<String, PyValue> m = new LinkedHashMap<>();
-			m.put("selectionx", xy.get("x"));
-			m.put("selectiony", xy.get("y"));
+			putImageSize(m, imp);
+			if (transferType == 3) {
+				byte[] rgb = new byte[n * plane * 3];
+				for (int k = 0; k < n; k++) {
+					ImageProcessor ip = stack.getProcessor(k + 1);
+					int[] px = (int[]) (ip instanceof ij.process.ColorProcessor ? ip : ip.convertToRGB()).getPixels();
+					int o = k * plane * 3;
+					for (int i = 0; i < plane; i++) {
+						rgb[o + 3 * i] = (byte) (px[i] >> 16);
+						rgb[o + 3 * i + 1] = (byte) (px[i] >> 8);
+						rgb[o + 3 * i + 2] = (byte) px[i];
+					}
+				}
+				m.put("imageStack", new PyValue.Array(rgb, "u1", n == 1 ? new int[] { h, w, 3 } : new int[] { n, h, w, 3 }));
+				return m;
+			}
+			double[] v = new double[n * plane];
+			for (int k = 0; k < n; k++) {
+				values(com.eco.bio7.image.ImageMethods.luminance(stack.getProcessor(k + 1), transferType), v, k * plane);
+			}
+			PyValue.Array a = new PyValue.Array(v, "f8", n == 1 ? new int[] { h, w } : new int[] { n, h, w });
+			m.put("imageStack", convert(a, DTYPES[Math.max(0, Math.min(transferType, 2))]));
 			return m;
 		});
 	}
 
-	/** "Particles": the particle analysis of ImageJ, the results as DataFrame Particles. */
+	/*
+	 * The values of an image in the order of the rows into v from offset (as for R:
+	 * the values of float and double images, else the pixels; an RGB image: its
+	 * luminance)
+	 */
+	private static void values(ImageProcessor ip, double[] v, int offset) {
+		ImageProcessor p = ip instanceof ij.process.ColorProcessor ? ip.convertToFloat() : ip;
+		int w = p.getWidth(), h = p.getHeight();
+		for (int y = 0, i = offset; y < h; y++) {
+			for (int x = 0; x < w; x++, i++) {
+				v[i] = p instanceof ij.process.DoubleProcessor dp ? dp.getPixelValueDouble(x, y)
+						: p instanceof ij.process.FloatProcessor fp ? fp.getf(x, y) : p.getPixel(x, y);
+			}
+		}
+	}
+
+	/** "ROI" (as for R): imageSizeX, imageSizeY and the polygon of the current selection (selectionx, selectiony). */
+	public static void roi() {
+		run("Transfer to Python", () -> {
+			ImagePlus imp = currentImage();
+			Map<String, PyValue> m = new LinkedHashMap<>();
+			putImageSize(m, imp);
+			Roi roi = imp.getRoi();
+			if (roi == null) {
+				throw new IllegalStateException("The image has no selection");
+			}
+			putSelection(m, roi);
+			return m;
+		});
+	}
+
+	/**
+	 * "Particles" (as for R): imageSizeX, imageSizeY, the polygon of the current
+	 * selection (if any), the particle analysis of ImageJ and its results as
+	 * DataFrame Particles.
+	 */
 	public static void particles() {
 		if (!ensurePython()) {
 			return;
@@ -172,45 +236,82 @@ public final class PythonImageTransfer {
 			Bio7Dialog.message("No image opened!");
 			return;
 		}
+		ImagePlus imp = WindowManager.getCurrentImage();
+		Roi selection = imp.getRoi();
 		/* The dialog of the analysis (macro) runs in its own thread */
 		Thread t = new Thread(() -> {
 			IJ.runMacro("run(\"Analyze Particles...\")");
 			run("Transfer to Python", () -> {
+				Map<String, PyValue> m = new LinkedHashMap<>();
+				putImageSize(m, imp);
+				if (selection != null) {
+					putSelection(m, selection);
+				}
 				ResultsTable rt = ResultsTable.getResultsTable();
 				if (rt == null || rt.size() == 0) {
 					throw new IllegalStateException("No particles in the results table (select 'Display results')");
 				}
-				return one("Particles", PythonConvert.resultsTable(rt));
+				m.put("Particles", PythonConvert.resultsTable(rt));
+				return m;
 			});
 		}, "Particle analysis");
 		t.start();
 	}
 
-	/** "Pixel": the pixels of the selection (each slice a column) with an optional class. */
+	/**
+	 * "Pixel" (as for R): imageSizeX, imageSizeY and the pixels of the selection of
+	 * the current image in all opened images (the tabs of the ImageJ view, of a
+	 * stack the current slice): a DataFrame (named in the dialog) with a column per
+	 * image (layer1, layer2, ...) and the class of the dialog (column Class).
+	 */
 	public static void pixels(int transferType) {
-		String[] name = { "imageSelection" };
-		String[] signature = { "" };
-		if (!askNameAndClass(name, signature)) {
+		if (transferType == 3) {
+			Bio7Dialog.message("RGB special transfer not supported!\nPlease split the RGB channels\nand transfer the(layer) selection in e.g. byte mode!");
 			return;
 		}
-		run("Transfer Selection to Python", () -> {
-			ImagePlus imp = currentImage();
-			Roi roi = imp.getRoi();
-			if (roi == null) {
-				throw new IllegalStateException("No selection available!");
+		ImagePlus current = WindowManager.getCurrentImage();
+		if (current == null) {
+			Bio7Dialog.message("No image available!");
+			return;
+		}
+		Roi roi = current.getRoi();
+		if (roi == null) {
+			Bio7Dialog.message("No selection available!");
+			return;
+		}
+		if (!ensurePython()) {
+			return;
+		}
+		/* The dialog of the transfer to R: the name and the class */
+		com.eco.bio7.image.ImageSelectionInputDialog dialog = new com.eco.bio7.image.ImageSelectionInputDialog(Util.getShell());
+		if (dialog.open() != Window.OK) {
+			return;
+		}
+		String name = pythonName(com.eco.bio7.image.ImageSelectionTransferJob.input(), java.util.Set.of());
+		boolean signature = com.eco.bio7.image.ImageSelectionTransferJob.isSignature();
+		int cls = com.eco.bio7.image.ImageSelectionTransferJob.signature();
+		/* The images of the tabs of the ImageJ view (the layers) */
+		List<ImageProcessor> layers = new ArrayList<>();
+		for (org.eclipse.swt.custom.CTabItem item : com.eco.bio7.image.ui.CanvasView.getCanvas_view().tabFolder.getItems()) {
+			ImagePlus imp = com.eco.bio7.image.ui.IJTabs.getImagePlus(item);
+			if (imp != null) {
+				layers.add(imp.getProcessor());
 			}
-			List<Roi> rois = List.of(roi);
-			Integer cls = signature[0].isBlank() ? null : Integer.parseInt(signature[0].trim());
-			return one(name[0], pixelFrame(imp, rois, cls == null ? null : new int[] { cls }, transferType));
+		}
+		run("Transfer Selection to Python", () -> {
+			Map<String, PyValue> m = new LinkedHashMap<>();
+			putImageSize(m, current);
+			m.put(name, layerFrame(roi, layers, null, transferType, signature ? Integer.valueOf(cls) : null));
+			return m;
 		});
 	}
 
 	/**
 	 * "Pixel RM" (as for R): the pixels of the selections of the ROI Manager (the
 	 * selected ones, else all) in all opened images (the tabs of the ImageJ view,
-	 * of a stack the current slice): a DataFrame per selection (named as the
-	 * selection) with a column per image (layer1, layer2, ...) and the class of the
-	 * dialog; roi_pixels: all selections (column ROI).
+	 * of a stack the current slice): imageSizeX, imageSizeY and a DataFrame per
+	 * selection (named as the selection) with a column per image (layer1, layer2,
+	 * ...) and the class of the dialog.
 	 */
 	public static void pixelsRoiManager(int transferType) {
 		if (transferType == 3) {
@@ -246,14 +347,14 @@ public final class PythonImageTransfer {
 				layers.add(imp.getProcessor());
 			}
 		}
-		run("Transfer Selections to Python", () -> roiFrames(rois, layers, null, transferType, mode, number));
+		run("Transfer Selections to Python", () -> roiFrames(current, rois, layers, null, transferType, mode, number));
 	}
 
 	/**
 	 * "Pixel RM Stack" (as for R): the pixels of the selections of the ROI Manager
-	 * in the slices of the current stack (the range of the dialog): a DataFrame
-	 * per selection with a column per slice and the class of the dialog;
-	 * roi_pixels: all selections (column ROI).
+	 * in the slices of the current stack (the range of the dialog): imageSizeX,
+	 * imageSizeY and a DataFrame per selection with a column per slice (layer and
+	 * the number of the slice) and the class of the dialog.
 	 */
 	public static void pixelsRoiManagerStack(int transferType) {
 		if (transferType == 3) {
@@ -295,7 +396,7 @@ public final class PythonImageTransfer {
 			Bio7Dialog.message("No slices in the selected range!");
 			return;
 		}
-		run("Transfer Selections to Python", () -> roiFrames(rois, layers, names, transferType, mode, number));
+		run("Transfer Selections to Python", () -> roiFrames(imp, rois, layers, names, transferType, mode, number));
 	}
 
 	/* The selections of the ROI Manager: the selected ones, else all (null with a message) */
@@ -314,23 +415,16 @@ public final class PythonImageTransfer {
 	}
 
 	/*
-	 * A DataFrame per selection (Class, layer columns) and roi_pixels with all
-	 * selections. layerNames null: layer1, layer2, ...
+	 * As for R: imageSizeX, imageSizeY and a DataFrame per selection (named as the
+	 * selection) with the class (column Class) and a column per layer. layerNames
+	 * null: layer1, layer2, ...
 	 */
-	private static Map<String, PyValue> roiFrames(Roi[] rois, List<ImageProcessor> layers, List<String> layerNames, int transferType, String mode, int number) {
+	private static Map<String, PyValue> roiFrames(ImagePlus imp, Roi[] rois, List<ImageProcessor> layers, List<String> layerNames, int transferType, String mode,
+			int number) {
 		Map<String, PyValue> result = new LinkedHashMap<>();
-		String dtype = DTYPES[Math.max(0, Math.min(transferType, 2))];
-		/* The columns of all selections (roi_pixels) */
-		List<String> allRoi = new ArrayList<>();
-		List<Integer> allClass = new ArrayList<>();
-		List<List<Double>> allLayers = new ArrayList<>();
-		for (int k = 0; k < layers.size(); k++) {
-			allLayers.add(new ArrayList<>());
-		}
-		boolean anyClass = false;
+		putImageSize(result, imp);
 		for (int r = 0; r < rois.length; r++) {
 			Roi roi = rois[r];
-			java.awt.Point[] points = roi.getContainedPoints();
 			Integer cls = switch (mode) {
 			case "fixed" -> number;
 			case "increasing" -> r + 1;
@@ -338,48 +432,42 @@ public final class PythonImageTransfer {
 			case "name" -> classFromName(roi.getName());
 			default -> null;
 			};
-			Map<String, PyValue> cols = new LinkedHashMap<>();
-			if (cls != null) {
-				int[] c = new int[points.length];
-				java.util.Arrays.fill(c, cls);
-				cols.put("Class", PyValue.of(c));
-				anyClass = true;
-			}
 			String roiName = roi.getName() == null ? "roi" + (r + 1) : roi.getName();
-			for (int k = 0; k < layers.size(); k++) {
-				ImageProcessor ip = layers.get(k);
-				double[] v = new double[points.length];
-				for (int i = 0; i < points.length; i++) {
-					int x = points[i].x, y = points[i].y;
-					if (x < 0 || y < 0 || x >= ip.getWidth() || y >= ip.getHeight()) {
-						v[i] = Double.NaN;
-						continue;
-					}
-					v[i] = transferType == 0 ? (ip instanceof ij.process.DoubleProcessor dp ? dp.getPixelValueDouble(x, y) : ip.getPixelValue(x, y))
-							: transferType == 1 ? ip.getPixel(x, y) : ip.getPixel(x, y) & 0xff;
-					allLayers.get(k).add(v[i]);
-				}
-				cols.put(layerNames == null ? "layer" + (k + 1) : layerNames.get(k), convert(PyValue.of(v), dtype));
-			}
-			for (int i = 0; i < points.length; i++) {
-				allRoi.add(roiName);
-				allClass.add(cls == null ? -1 : cls);
-			}
 			String name = pythonName(roiName, result.keySet());
-			result.put(name, new PyValue.Frame(cols, null));
+			result.put(name, layerFrame(roi, layers, layerNames, transferType, cls));
 		}
-		/* All selections in one DataFrame (e.g., for pandas or scikit-learn) */
-		Map<String, PyValue> all = new LinkedHashMap<>();
-		all.put("ROI", PyValue.of(allRoi.toArray(String[]::new)));
-		if (anyClass) {
-			all.put("Class", PyValue.of(allClass.stream().mapToInt(Integer::intValue).toArray()));
+		return result;
+	}
+
+	/*
+	 * The pixels of a selection in the layers (as for R: the contained points, the
+	 * value of the data type): the column Class (if cls is not null) and a column
+	 * per layer (layerNames null: layer1, layer2, ...)
+	 */
+	private static PyValue.Frame layerFrame(Roi roi, List<ImageProcessor> layers, List<String> layerNames, int transferType, Integer cls) {
+		String dtype = DTYPES[Math.max(0, Math.min(transferType, 2))];
+		java.awt.Point[] points = roi.getContainedPoints();
+		Map<String, PyValue> cols = new LinkedHashMap<>();
+		if (cls != null) {
+			int[] c = new int[points.length];
+			java.util.Arrays.fill(c, cls);
+			cols.put("Class", convert(PyValue.of(c), dtype));
 		}
 		for (int k = 0; k < layers.size(); k++) {
-			double[] v = allLayers.get(k).stream().mapToDouble(Double::doubleValue).toArray();
-			all.put(layerNames == null ? "layer" + (k + 1) : layerNames.get(k), convert(PyValue.of(v), dtype));
+			ImageProcessor ip = layers.get(k);
+			double[] v = new double[points.length];
+			for (int i = 0; i < points.length; i++) {
+				int x = points[i].x, y = points[i].y;
+				if (x < 0 || y < 0 || x >= ip.getWidth() || y >= ip.getHeight()) {
+					v[i] = Double.NaN;
+					continue;
+				}
+				v[i] = transferType == 0 ? (ip instanceof ij.process.DoubleProcessor dp ? dp.getPixelValueDouble(x, y) : ip.getPixelValue(x, y))
+						: transferType == 1 ? com.eco.bio7.image.ImageMethods.luminancePixel(ip, x, y) : com.eco.bio7.image.ImageMethods.luminancePixel(ip, x, y) & 0xff;
+			}
+			cols.put(layerNames == null ? "layer" + (k + 1) : layerNames.get(k), convert(PyValue.of(v), dtype));
 		}
-		result.put("roi_pixels", new PyValue.Frame(all, null));
-		return result;
+		return new PyValue.Frame(cols, null);
 	}
 
 	/* The class from the name of a selection: the number after the last '_' (as for R) */
@@ -404,7 +492,7 @@ public final class PythonImageTransfer {
 		if (n.isEmpty() || Character.isDigit(n.charAt(0))) {
 			n = "X" + n;
 		}
-		if (java.util.Set.of("roi_pixels").contains(n) || isKeyword(n)) {
+		if (java.util.Set.of("imageSizeX", "imageSizeY").contains(n) || isKeyword(n)) {
 			n = n + "_";
 		}
 		String unique = n;
@@ -420,51 +508,116 @@ public final class PythonImageTransfer {
 				.contains(n);
 	}
 
-	/** "Selection RM": the coordinates of the selections of the ROI Manager (a list of dicts). */
-	public static void selectionsRoiManager() {
-		run("Transfer Selections to Python", () -> {
-			RoiManager rm = RoiManager.getInstance();
-			if (rm == null || rm.getCount() == 0) {
-				throw new IllegalStateException("The ROI Manager has no selections");
+	/**
+	 * "Measure RM" (as for R, see RoiMeasurements): the measurements of ImageJ for
+	 * each selection of the ROI Manager in the current image as the pandas
+	 * DataFrame RoiMeasurements (one row per selection), imageSizeX and imageSizeY.
+	 */
+	public static void measurements() {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp == null) {
+			Bio7Dialog.message("No image opened!");
+			return;
+		}
+		Roi[] rois = com.eco.bio7.image.RoiMeasurements.selections();
+		if (rois == null) {
+			return;
+		}
+		/* Measured now (the selection of the image is set for each measurement) */
+		Map<String, Object> columns = com.eco.bio7.image.RoiMeasurements.measure(imp, rois);
+		run("Measure RM (Python)", () -> {
+			Map<String, PyValue> m = new LinkedHashMap<>();
+			putImageSize(m, imp);
+			Map<String, PyValue> cols = new LinkedHashMap<>();
+			for (Map.Entry<String, Object> e : columns.entrySet()) {
+				Object v = e.getValue();
+				cols.put(e.getKey(), v instanceof String[] s ? PyValue.of(s) : v instanceof int[] i ? PyValue.of(i) : PyValue.of((double[]) v));
 			}
-			List<PyValue> list = new ArrayList<>();
-			for (Roi roi : rm.getRoisAsArray()) {
-				PyValue.PyDict xy = PythonConvert.roi(roi);
-				Map<String, PyValue> d = new LinkedHashMap<>();
-				d.put("name", PyValue.of(roi.getName() == null ? "" : roi.getName()));
-				d.putAll(xy.values());
-				list.add(new PyValue.PyDict(d));
-			}
-			return one("roiSelections", new PyValue.PyList(list));
-		});
-	}
-
-	/** "Pic&lt;-": the current image as numpy array (the data type of the view). */
-	public static void imageToPython(String name, int transferType) {
-		run("Transfer Image to Python", () -> {
-			ImagePlus imp = currentImage();
-			PyValue.Array a = PythonConvert.image(imp);
-			boolean rgb = imp.getType() == ImagePlus.COLOR_RGB;
-			if (!(rgb && transferType == 3)) {
-				if (rgb) {
-					/* The luminance of an RGB image */
-					ImageStack gray = new ImageStack(imp.getWidth(), imp.getHeight());
-					for (int s = 1; s <= imp.getStackSize(); s++) {
-						gray.addSlice(null, imp.getStack().getProcessor(s).convertToFloat());
-					}
-					a = PythonConvert.image(new ImagePlus("", gray));
-				}
-				a = convert(a, DTYPES[Math.max(0, Math.min(transferType, 3))]);
-			}
-			return one(name, a);
+			m.put(com.eco.bio7.image.RoiMeasurements.NAME, new PyValue.Frame(cols, null));
+			return m;
 		});
 	}
 
 	/**
-	 * "Pic-&gt;": an ImageJ image from a numpy array.
+	 * "Pic&lt;-" (as for R): the current image (of a stack the current slice),
+	 * imageSizeX, imageSizeY and imageDataName. Double: optionally a matrix
+	 * (height, width), else a vector (in the order of the rows); Integer and Byte: a
+	 * vector; RGB: optionally an integer matrix (pixels, 3: R, G, B), else the byte
+	 * vectors name_R, name_G and name_B.
+	 */
+	public static void imageToPython(String name, int transferType) {
+		ImagePlus imp = WindowManager.getCurrentImage();
+		if (imp == null) {
+			Bio7Dialog.message("No image opened!");
+			return;
+		}
+		if (!ensurePython()) {
+			return;
+		}
+		/* The questions of the transfer to R */
+		boolean matrix = false;
+		if (transferType == 0) {
+			matrix = question("Should a matrix be created from the image?", "Matrix?");
+		} else if (transferType == 3) {
+			matrix = question("Do you want to create a integer matrix?", "Bio7");
+		}
+		boolean asMatrix = matrix;
+		/* The current image (of a stack the current slice) */
+		ImageProcessor ip = imp.getProcessor();
+		run("Transfer Image to Python", () -> {
+			int w = ip.getWidth(), h = ip.getHeight(), n = w * h;
+			Map<String, PyValue> m = new LinkedHashMap<>();
+			putImageSize(m, imp);
+			m.put("imageDataName", PyValue.of(name));
+			if (transferType == 3) {
+				byte[] r = new byte[n], g = new byte[n], b = new byte[n];
+				for (int y = 0, i = 0; y < h; y++) {
+					for (int x = 0; x < w; x++, i++) {
+						int c = ip.getPixel(x, y);
+						r[i] = (byte) ((c >> 16) & 0xff);
+						g[i] = (byte) ((c >> 8) & 0xff);
+						b[i] = (byte) (c & 0xff);
+					}
+				}
+				if (asMatrix) {
+					int[] d = new int[n * 3];
+					for (int i = 0; i < n; i++) {
+						d[3 * i] = r[i] & 0xff;
+						d[3 * i + 1] = g[i] & 0xff;
+						d[3 * i + 2] = b[i] & 0xff;
+					}
+					m.put(name, new PyValue.Array(d, "i4", new int[] { n, 3 }));
+				} else {
+					m.put(name + "_R", new PyValue.Array(r, "u1", new int[] { n }));
+					m.put(name + "_G", new PyValue.Array(g, "u1", new int[] { n }));
+					m.put(name + "_B", new PyValue.Array(b, "u1", new int[] { n }));
+				}
+				return m;
+			}
+			/* An RGB image in the other types: its luminance */
+			double[] v = new double[n];
+			values(com.eco.bio7.image.ImageMethods.luminance(ip, transferType), v, 0);
+			PyValue.Array a = new PyValue.Array(v, "f8", asMatrix ? new int[] { h, w } : new int[] { n });
+			m.put(name, convert(a, DTYPES[Math.max(0, Math.min(transferType, 2))]));
+			return m;
+		});
+	}
+
+	/* A question with Yes and No (as the transfers to R) */
+	private static boolean question(String text, String title) {
+		com.eco.bio7.util.ThemedMessageBox message = new com.eco.bio7.util.ThemedMessageBox(Util.getShell(),
+				org.eclipse.swt.SWT.ICON_QUESTION | org.eclipse.swt.SWT.YES | org.eclipse.swt.SWT.NO);
+		message.setMessage(text);
+		message.setText(title);
+		return message.open() == org.eclipse.swt.SWT.YES;
+	}
+
+	/**
+	 * "Pic-&gt;": an ImageJ image from a numpy array (a vector, as for R, with
+	 * imageSizeX and imageSizeY).
 	 *
 	 * @param imageType the combo of the view: 0 Colour, 1 Greyscale, 2 Float, 3
-	 *                  Short, 4 Double (Float)
+	 *                  Short, 4 Double (64-bit)
 	 */
 	public static void imageFromPython(String name, int imageType) {
 		if (!ensurePython()) {
@@ -481,15 +634,34 @@ public final class PythonImageTransfer {
 					} catch (IllegalArgumentException e) {
 						throw new IllegalArgumentException(name + ": " + e.getMessage());
 					}
+					/* A vector (e.g., changed pixels): the image with imageSizeX and imageSizeY (as for R) */
+					if (a.shape().length == 1) {
+						int w = (int) PythonConvert.toArray(EmbeddedPython.session().eval("imageSizeX")).getDouble(0);
+						int h = (int) PythonConvert.toArray(EmbeddedPython.session().eval("imageSizeY")).getDouble(0);
+						if (w * h != a.length()) {
+							throw new IllegalArgumentException(name + ": a vector of " + a.length() + " values does not fit imageSizeX * imageSizeY = " + (w * h));
+						}
+						a = new PyValue.Array(a.data(), a.dtype(), new int[] { h, w });
+					} else if (imageType == 0 && a.shape().length == 2 && a.shape()[1] == 3) {
+						/* The RGB matrix of Pic<- (pixels, 3): an RGB image with imageSizeX and imageSizeY */
+						int w = (int) PythonConvert.toArray(EmbeddedPython.session().eval("imageSizeX")).getDouble(0);
+						int h = (int) PythonConvert.toArray(EmbeddedPython.session().eval("imageSizeY")).getDouble(0);
+						if (w * h != a.shape()[0]) {
+							throw new IllegalArgumentException(name + ": " + a.shape()[0] + " pixels do not fit imageSizeX * imageSizeY = " + (w * h));
+						}
+						a = new PyValue.Array(a.data(), a.dtype(), new int[] { h, w, 3 });
+					}
+					/* As for R: Double creates a 64-bit image (DoubleProcessor) */
 					String dtype = switch (imageType) {
 					case 0, 1 -> "u1";
 					case 3 -> "u2";
+					case 4 -> "f8";
 					default -> "f4";
 					};
 					if (imageType == 0 && !(a.shape().length >= 3 && a.shape()[a.shape().length - 1] == 3)) {
 						throw new IllegalArgumentException("A colour image needs an array (height, width, 3)");
 					}
-					ImagePlus imp = PythonConvert.toImage(convert(a, dtype), name);
+					ImagePlus imp = PythonConvert.toImage(convert(a, dtype), name, imageType == 4);
 					Display.getDefault().asyncExec(imp::show);
 				} catch (Exception e) {
 					EmbeddedPython.print("\nImage from Python: " + e.getMessage() + "\n", true);
@@ -502,79 +674,6 @@ public final class PythonImageTransfer {
 	}
 
 	/* ---------------- Helpers ---------------- */
-
-	private static boolean askNameAndClass(String[] name, String[] signature) {
-		InputDialog n = new InputDialog(Util.getShell(), "To Python", "The name of the data:", name[0], s -> s.matches("[A-Za-z_][A-Za-z0-9_]*") ? null : "Not a valid Python name");
-		if (n.open() != Window.OK) {
-			return false;
-		}
-		name[0] = n.getValue();
-		InputDialog c = new InputDialog(Util.getShell(), "To Python", "The class of the pixels (a column 'Class'; empty: no class):", "",
-				s -> s.isBlank() || s.trim().matches("-?\\d+") ? null : "An integer is expected");
-		if (c.open() != Window.OK) {
-			return false;
-		}
-		signature[0] = c.getValue();
-		return true;
-	}
-
-	/*
-	 * The pixels of selections: a DataFrame with the column Class (optional) and a
-	 * column per slice (RGB: R, G, B per slice)
-	 */
-	private static PyValue.Frame pixelFrame(ImagePlus imp, List<Roi> rois, int[] classes, int transferType) {
-		ImageStack stack = imp.getStack();
-		int n = stack.getSize();
-		boolean rgb = imp.getType() == ImagePlus.COLOR_RGB;
-		List<int[]> points = new ArrayList<>();
-		List<Integer> pointClass = new ArrayList<>();
-		for (int r = 0; r < rois.size(); r++) {
-			Roi roi = rois.get(r);
-			Rectangle b = roi.getBounds();
-			ImageProcessor mask = roi.getMask();
-			for (int y = b.y; y < b.y + b.height; y++) {
-				for (int x = b.x; x < b.x + b.width; x++) {
-					if (x < 0 || y < 0 || x >= imp.getWidth() || y >= imp.getHeight()) {
-						continue;
-					}
-					if (mask == null || mask.getPixel(x - b.x, y - b.y) != 0) {
-						points.add(new int[] { x, y });
-						pointClass.add(classes == null ? 0 : classes[Math.min(r, classes.length - 1)]);
-					}
-				}
-			}
-		}
-		Map<String, PyValue> cols = new LinkedHashMap<>();
-		if (classes != null) {
-			int[] c = new int[points.size()];
-			for (int i = 0; i < c.length; i++) {
-				c[i] = pointClass.get(i);
-			}
-			cols.put("Class", PyValue.of(c));
-		}
-		String dtype = DTYPES[Math.max(0, Math.min(transferType, 3))];
-		for (int s = 1; s <= n; s++) {
-			ImageProcessor ip = stack.getProcessor(s);
-			String suffix = n == 1 ? "" : String.valueOf(s);
-			if (rgb) {
-				for (int k = 0; k < 3; k++) {
-					double[] v = new double[points.size()];
-					for (int i = 0; i < v.length; i++) {
-						int c = ip.getPixel(points.get(i)[0], points.get(i)[1]);
-						v[i] = (c >> (16 - 8 * k)) & 0xff;
-					}
-					cols.put("RGB".charAt(k) + suffix, convert(PyValue.of(v), dtype));
-				}
-			} else {
-				double[] v = new double[points.size()];
-				for (int i = 0; i < v.length; i++) {
-					v[i] = ip.getPixelValue(points.get(i)[0], points.get(i)[1]);
-				}
-				cols.put(n == 1 ? "Value" : "Slice" + s, convert(PyValue.of(v), dtype));
-			}
-		}
-		return new PyValue.Frame(cols, null);
-	}
 
 	/* An array in another data type (u1 and u2 are clamped) */
 	static PyValue.Array convert(PyValue.Array a, String dtype) {

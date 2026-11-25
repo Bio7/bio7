@@ -77,8 +77,12 @@ public final class RChunkEvaluator {
 
 	static RChunks.Output evaluate(String code, int widthPoints, int heightPoints) {
 		RBackend backend = RBridge.getBackend();
+		/* Started when it is used (preferences) */
+		if (backend == null && com.eco.bio7.rcp.AutoStart.startROnUse()) {
+			backend = RBridge.getBackend();
+		}
 		if (backend == null) {
-			return new RChunks.Output("R is not running: please start R first.", List.of(), true);
+			return new RChunks.Output(com.eco.bio7.rcp.AutoStart.NOT_RUNNING_R.replace("\n", " "), List.of(), true);
 		}
 		Path dir = null;
 		try {

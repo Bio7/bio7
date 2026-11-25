@@ -178,113 +178,38 @@ class ShapeEditPart extends AbstractGraphicalEditPart implements PropertyChangeL
 	 * @see org.eclipse.gef.editparts.AbstractGraphicalEditPart#createFigure()
 	 */
 	protected IFigure createFigure() {
+		/*
+		 * The shapes paint themselves in the colors of the theme (see FlowColors):
+		 * start and end as green pills, files as cards with the accent of their type,
+		 * loops and decisions in orange, notes in amber
+		 */
 		IFigure f = null;
-
+		label.setOpaque(false);
 		if (getModel() instanceof EllipticalShape) {
 			f = new Ellipse();
-			f.setOpaque(true);
-			Display display = Display.getCurrent();
-
-			f.setBackgroundColor(new Color(display,  99, 141, 67));
-			StackLayout layout = new StackLayout();
-
-			f.setLayoutManager(layout);
+			f.setLayoutManager(new StackLayout());
 			f.setSize(10, 10);
-			label.setBackgroundColor(new Color(display,  99, 141, 67));
-			label.setOpaque(false);
+			/* The count below the glyph of the loop */
+			label.setFont(com.eco.bio7.floweditor.figures.FlowColors.bold());
+			label.setBorder(new org.eclipse.draw2d.MarginBorder(18, 0, 0, 0));
 			f.add(label);
-
-		}
-
-		else if (getModel() instanceof TriangleEndShape) {
+		} else if (getModel() instanceof TriangleEndShape) {
 			f = new TriangleEnd();
-
-			f.setOpaque(true);
-			Display display = Display.getCurrent();
-
-			f.setBackgroundColor(new Color(display,  99, 141, 67));
-
-			StackLayout layout = new StackLayout();
-
-			f.setLayoutManager(layout);
-
-			label.setBackgroundColor(ColorConstants.white);
-			label.setOpaque(false);
-
-			f.add(label);
-
-		}
-
-		else if (getModel() instanceof TriangleShape) {
+		} else if (getModel() instanceof TriangleShape) {
 			f = new Triangle();
-
-			f.setOpaque(true);
-			Display display = Display.getCurrent();
-
-			f.setBackgroundColor(new Color(display,  99, 141, 67));
-			StackLayout layout = new StackLayout();
-
-			f.setLayoutManager(layout);
-
-			label.setOpaque(false);
-
-			f.add(label);
-
 		} else if (getModel() instanceof FlowDecisionShape) {
 			f = new FlowDecision();
-
-			f.setOpaque(true);
-			Display display = Display.getCurrent();
-
-			f.setBackgroundColor(new Color(display,  99, 141, 67));
-			StackLayout layout = new StackLayout();
-
-			f.setLayoutManager(layout);
-
-			label.setOpaque(false);
-
-			label.setBackgroundColor(ColorConstants.white);
-
+			f.setLayoutManager(new StackLayout());
+			label.setFont(com.eco.bio7.floweditor.figures.FlowColors.bold());
 			f.add(label);
-
-		}
-
-		else if (getModel() instanceof BeanShellScript) {
+		} else if (getModel() instanceof BeanShellScript) {
+			/* The type and the name of the file (the path: tooltip) */
 			f = new FileFigure();
-
-			f.setOpaque(true);
-			Display display = Display.getCurrent();
-
-			f.setBackgroundColor(new Color(display,  99, 141, 67));
-
-			f.setLayoutManager(new ToolbarLayout(false));
-
-			label.setOpaque(true);
-
-			f.add(label);
-
-		}
-
-		else if (getModel() instanceof RectangularShape) {
+		} else if (getModel() instanceof RectangularShape) {
+			/* The text of the note, wrapped */
 			f = new StickyNoteFigure();
-
-			f.setOpaque(true);
-			Display display = Display.getCurrent();
-
-			f.setBackgroundColor(new Color(display, 99, 141, 67));
-
-			StackLayout layout = new StackLayout();
-
-			f.setLayoutManager(layout);
-
-			label.setOpaque(false);
-
-			f.add(label);
-
 		}
-
 		return f;
-
 	}
 
 	/**
@@ -415,22 +340,19 @@ class ShapeEditPart extends AbstractGraphicalEditPart implements PropertyChangeL
 			refreshSourceConnections();
 		} else if (Shape.TARGET_CONNECTIONS_PROP.equals(prop)) {
 			refreshTargetConnections();
-		} else if ("color".equals(prop)) {
-			IFigure ifigure = getFigure();
-			ifigure.setBackgroundColor(ColorConstants.white);
-
-			ifigure.repaint();
-		} else if ("defaultcolor".equals(prop)) {
-			Display display = PlatformUI.getWorkbench().getDisplay();
-			display.syncExec(new Runnable() {
-
-				public void run() {
-					IFigure ifigure = getFigure();
-					ifigure.setBackgroundColor(new Color(null,  99, 141, 67));
-
-					ifigure.repaint();
+		} else if ("color".equals(prop) || "defaultcolor".equals(prop)) {
+			/* The shape is executed (color) or finished (defaultcolor): its highlight */
+			boolean running = "color".equals(prop);
+			Runnable update = () -> {
+				if (getFigure() instanceof com.eco.bio7.floweditor.figures.RunningFigure rf) {
+					rf.setRunning(running);
 				}
-			});
+			};
+			if (Display.getCurrent() != null) {
+				update.run();
+			} else {
+				PlatformUI.getWorkbench().getDisplay().syncExec(update);
+			}
 		}
 
 		else if (Shape.FILE_PROP.equals(prop)) {
@@ -445,7 +367,7 @@ class ShapeEditPart extends AbstractGraphicalEditPart implements PropertyChangeL
 			IFigure ifigure = getFigure();
 			List list = ifigure.getChildren();
 			/* Avoid error for label (information) Figure! */
-			if (list.get(0) instanceof Label) {
+			if (!list.isEmpty() && list.get(0) instanceof Label) {
 				Label label = (Label) list.get(0);
 
 				label.setText((String) evt.getNewValue());
@@ -468,7 +390,14 @@ class ShapeEditPart extends AbstractGraphicalEditPart implements PropertyChangeL
 
 		String text = getCastedModel().getText();
 		// Here I get the text of the instance
-		label.setText(text);
+		IFigure figure = getFigure();
+		if (figure instanceof FileFigure file) {
+			file.setPath(text);
+		} else if (figure instanceof StickyNoteFigure note) {
+			note.setText(text);
+		} else {
+			label.setText(text);
+		}
 	}
 
 	public void performRequest(Request req) {

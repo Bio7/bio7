@@ -189,16 +189,26 @@ final class ThemeButtons {
 		gc.setTextAntialias(oldTextAntialias);
 	}
 
-	/* The image and the text in the center of the box */
+	/*
+	 * The image and the text: with both, the image at the left and the text
+	 * directly after it (the images and the texts of buttons below each other are
+	 * aligned), else in the center of the box.
+	 */
 	private static void drawContent(GC gc, Button button, Rectangle box, boolean enabled) {
 		String label = button.getText() == null ? "" : button.getText().replace("&&", "\u0000").replace("&", "").replace("\u0000", "&");
 		Image image = button.getImage();
 		gc.setFont(button.getFont());
 		Point textSize = label.isEmpty() ? new Point(0, 0) : gc.textExtent(label, SWT.DRAW_TRANSPARENT);
 		Rectangle imageBounds = image == null || image.isDisposed() ? null : image.getBounds();
-		int gap = imageBounds != null && !label.isEmpty() ? 4 : 0;
+		int gap = imageBounds != null && !label.isEmpty() ? 8 : 0;
 		int width = textSize.x + gap + (imageBounds != null ? imageBounds.width : 0);
 		int x = box.x + Math.max(2, (box.width - width) / 2);
+		boolean both = imageBounds != null && !label.isEmpty();
+		int pad = 6;
+		if (both) {
+			/* The same distance in all buttons (less only if the text needs the space) */
+			x = box.x + Math.min(pad, Math.max(2, (box.width - width) / 2));
+		}
 		if (imageBounds != null) {
 			int y = box.y + (box.height - imageBounds.height) / 2;
 			if (enabled) {
@@ -208,6 +218,7 @@ final class ThemeButtons {
 				gc.drawImage(gray, x, y);
 				gray.dispose();
 			}
+			/* The text directly after the image: the texts of buttons below each other are aligned, too */
 			x += imageBounds.width + gap;
 		}
 		if (!label.isEmpty()) {

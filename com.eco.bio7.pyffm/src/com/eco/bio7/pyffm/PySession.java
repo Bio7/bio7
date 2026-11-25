@@ -505,6 +505,18 @@ public final class PySession {
 		}, true, String.valueOf(file.getFileName()));
 	}
 
+	/**
+	 * Calls r (in a thread of its own, not holding Python) when the tasks queued
+	 * before have finished, e.g., a script of runFile (also after an error).
+	 */
+	public void whenDone(Runnable r) {
+		executor.submit(() -> {
+			Thread t = new Thread(r, "After Python");
+			t.setDaemon(true);
+			t.start();
+		});
+	}
+
 	/** Runs code in __main__ like a script (errors printed to the console). Returns at once. */
 	public void runAsync(String code) {
 		runAsync(code, "Script");

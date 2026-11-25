@@ -27,6 +27,22 @@ public class FlowStopAction extends Action {
 
 	public void run() {
 		BatchModel.setCancel(true);
+		/* The running step is interrupted: R, Python or a Java class */
+		try {
+			if (com.eco.bio7.rbridge.backend.EmbeddedR.isBusy() || com.eco.bio7.rbridge.backend.EmbeddedR.isBrowsing()) {
+				com.eco.bio7.rbridge.backend.EmbeddedR.interrupt();
+			}
+		} catch (RuntimeException | LinkageError e) {
+			/* No embedded R */
+		}
+		try {
+			if (com.eco.bio7.pybridge.EmbeddedPython.isRunning() && com.eco.bio7.pybridge.EmbeddedPython.isBusy()) {
+				com.eco.bio7.pybridge.EmbeddedPython.interrupt();
+			}
+		} catch (RuntimeException | LinkageError e) {
+			/* No embedded Python */
+		}
+		com.eco.bio7.compile.CompileClassAndMultipleClasses.cancelRunning();
 
 		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench()
 				.getActiveWorkbenchWindow().getActivePage().getActiveEditor();

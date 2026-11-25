@@ -40,14 +40,34 @@ public final class PythonScripts {
 
 	/** Runs a script file (returns at once). */
 	public static void runFile(String path) {
+		runFile(path, null);
+	}
+
+	/**
+	 * Runs a script file (returns at once); done (if not null) is called when the
+	 * script has finished, also after an error or if Python can't run it (e.g., the
+	 * next step of a flow).
+	 */
+	public static void runFile(String path, Runnable done) {
+		Runnable finished = done != null ? done : () -> {
+		};
 		if (EmbeddedPython.isSelected()) {
 			Display display = Display.getDefault();
 			Runnable start = () -> {
+				/* Not running and not started when it is used (preferences): a message */
+				if (!EmbeddedPython.isRunning() && !com.eco.bio7.rcp.AutoStart.option(com.eco.bio7.rcp.AutoStart.PYTHON_ON_USE)) {
+					com.eco.bio7.batch.Bio7Dialog.message(com.eco.bio7.rcp.AutoStart.NOT_RUNNING_PYTHON);
+					finished.run();
+					return;
+				}
 				/* The console with the embedded Python (started if not running) */
 				com.eco.bio7.console.ConsoleInterpreterAction.getInstance().startPython();
 				if (EmbeddedPython.isRunning()) {
 					EmbeddedPython.runFile(path);
 					EmbeddedPython.prompt();
+					EmbeddedPython.whenDone(finished);
+				} else {
+					finished.run();
 				}
 			};
 			if (display.getThread() == Thread.currentThread()) {
@@ -57,11 +77,11 @@ public final class PythonScripts {
 			}
 			return;
 		}
-		runProcess(path);
+		runProcess(path, finished);
 	}
 
 	/* The Python of the preferences in a process: the output in the console, the job can stop it */
-	private static void runProcess(String path) {
+	private static void runProcess(String path, Runnable finished) {
 		String folder = Bio7Plugin.getDefault().getPreferenceStore().getString("python_pipe_path");
 		String exe = PythonFinder.executable(folder);
 		Job job = new Job("Python: " + new File(path).getName()) {
@@ -118,6 +138,12 @@ public final class PythonScripts {
 				return Status.OK_STATUS;
 			}
 		};
+		job.addJobChangeListener(new org.eclipse.core.runtime.jobs.JobChangeAdapter() {
+			@Override
+			public void done(org.eclipse.core.runtime.jobs.IJobChangeEvent event) {
+				finished.run();
+			}
+		});
 		job.setUser(false);
 		job.schedule();
 	}

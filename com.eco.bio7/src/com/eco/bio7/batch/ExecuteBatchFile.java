@@ -116,8 +116,8 @@ public class ExecuteBatchFile {
 			BatchModel.pause();
 			fileprop = fileroot + fileprop;
 
-			/* The embedded Python or a Python process (preferences) */
-			com.eco.bio7.pybridge.PythonScripts.runFile(fileprop);
+			/* The embedded Python or a Python process (preferences); the flow continues when the script has finished */
+			com.eco.bio7.pybridge.PythonScripts.runFile(fileprop, BatchModel::resumeFlow);
 
 		}
 		/* Interprets a R script! */
@@ -181,7 +181,7 @@ public class ExecuteBatchFile {
 		}
 
 		/* Executes a nested flow! */
-		else if (fileextension.equals("ecoflow")) {
+		else if (fileextension.equals("flow") || fileextension.equals("ecoflow")) {
 			/* At the moment only works with one component inside a child flow! */
 			IEditorPart editorstart = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
 					.getActiveEditor();
@@ -426,7 +426,7 @@ public class ExecuteBatchFile {
 			String name = fi.getName();
 			final String theName = name.replaceFirst("[.][^.]+$", "");
 
-			if (RTools.isAlive()) {
+			if (RTools.isAlive() || com.eco.bio7.rcp.AutoStart.startROnUse()) {
 				if (RState.isBusy() == false) {
 
 					RBackend c = RBridge.getBackend();
@@ -554,7 +554,7 @@ public class ExecuteBatchFile {
 			String name = fi.getName();
 			final String theName = name.replaceFirst("[.][^.]+$", "");
 
-			if (RTools.isAlive()) {
+			if (RTools.isAlive() || com.eco.bio7.rcp.AutoStart.startROnUse()) {
 				if (RState.isBusy() == false) {
 
 					RBackend c = RBridge.getBackend();

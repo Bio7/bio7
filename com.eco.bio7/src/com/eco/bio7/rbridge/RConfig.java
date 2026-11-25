@@ -28,6 +28,18 @@ public class RConfig {
 		}
 	}
 
+	/* The R functions of Bio7 (e.g., the completion helper) are defined */
+	private static volatile boolean configured;
+
+	/**
+	 * Returns true when the R functions of Bio7 are defined after the start of R
+	 * (R is already registered as running before: e.g., the status poll must
+	 * not call them earlier).
+	 */
+	public static boolean isConfigured() {
+		return configured;
+	}
+
 	public static void config(RBackend con) {
 		IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		
@@ -102,6 +114,7 @@ public class RConfig {
 			// e1.printStackTrace();
 			System.out.println("Error occured!");
 		}
+		configured = true;
 		/*
 		 * R runs and the completion helper is defined: the packages of the R scripts
 		 * opened before R was started are loaded now (in a job, when R is free)

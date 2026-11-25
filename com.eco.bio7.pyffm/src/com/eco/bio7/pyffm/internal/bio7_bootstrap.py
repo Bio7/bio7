@@ -1215,12 +1215,18 @@ import _bio7
 
 def image(title=None):
     """The current (or the named) ImageJ image: 2-d (height, width), a stack
-    (slices, height, width), RGB (height, width, 3)."""
+    (slices, height, width), RGB (height, width, 3). The data type of the
+    image: uint8 (8-bit, RGB), uint16 (16-bit), float32 (32-bit), float64
+    (64-bit, the exact values)."""
     return _bio7._call("image", title or "")
 
 
 def show_image(array, title="Python", display_range=None):
     """Shows a 2-d array (or a stack, RGB uint8 (h, w, 3)) as ImageJ image.
+
+    The data type gives the image type: uint8 8-bit, uint16 16-bit, float64
+    64-bit (the exact values), other types 32-bit (e.g., float32; for a
+    32-bit image of float64 values: array.astype("float32")).
 
     display_range: the contrast, (min, max) or "auto" (the range of the values,
     e.g., for labels 1..k in uint8 which look black with the range 0..255);

@@ -59,9 +59,11 @@ public final class PythonChunkEvaluator {
 	 */
 	static RChunks.Output evaluate(String code, int widthPoints, int heightPoints, int dpi, boolean embed) {
 		if (!EmbeddedPython.isRunning()) {
-			String error = EmbeddedPython.start();
+			/* Started when it is used (preferences) */
+			String error = com.eco.bio7.rcp.AutoStart.startPythonOnUse();
 			if (error != null) {
-				return new RChunks.Output("Python could not be started: " + error, List.of(), true);
+				return new RChunks.Output(error.equals(com.eco.bio7.rcp.AutoStart.NOT_RUNNING_PYTHON) ? error.replace("\n", " ") : "Python could not be started: " + error,
+						List.of(), true);
 			}
 		}
 		PySession py = EmbeddedPython.session();

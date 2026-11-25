@@ -37,13 +37,14 @@ public class ClipboardRScipt extends Action {
 		// IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 		// boolean rPipe = store.getBoolean("r_pipe");
 
-		if (RBridge.getBackend() == null) {
+		/* Started when it is used (preferences) */
+		if (RBridge.getBackend() == null && !com.eco.bio7.rcp.AutoStart.startROnUse()) {
 			String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
 			if (selectionConsole.equals("R")) {
 				ConsolePageParticipant.pipeInputToConsole("fileClipboardTemp<-file(\"clipboard\", open=\"r\");source(fileClipboardTemp,echo=T);close(fileClipboardTemp);remove(fileClipboardTemp)", true, true);
 				System.out.println();
 			} else {
-				Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
+				Bio7Dialog.message(com.eco.bio7.rcp.AutoStart.NOT_RUNNING_R);
 			}
 
 		}

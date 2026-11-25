@@ -681,6 +681,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor {
 		store.setDefault(AutoStart.START_R, false);
 		store.setDefault(AutoStart.START_PYTHON, false);
 		store.setDefault(AutoStart.CONSOLE, "R");
+		/* R and Python when they are used (as GDAL) */
+		store.setDefault(AutoStart.R_ON_USE, true);
+		store.setDefault(AutoStart.PYTHON_ON_USE, true);
 		/* The Python plot view */
 		store.setDefault("PY_PLOT_FIT", true);
 		store.setDefault("PY_PLOT_HIDPI", true);

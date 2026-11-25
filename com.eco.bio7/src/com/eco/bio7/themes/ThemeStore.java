@@ -68,10 +68,10 @@ public final class ThemeStore {
 	 * The version of the example themes: an example of an older version is
 	 * installed again if it has not been changed by the user!
 	 */
-	private static final int EXAMPLES_VERSION = 13;
+	private static final int EXAMPLES_VERSION = 23;
 	/* Examples of earlier versions (removed from Bio7): deleted if installed and unchanged */
-	private static final List<String> REMOVED_EXAMPLES = List.of("autumn-harvest", "autumn-leaves", "data-science", "dolphin",
-			"ecological-modeling", "fiery", "forest-night", "halloween", "science", "spring", "summer", "winter");
+	private static final List<String> REMOVED_EXAMPLES = List.of("autumn-harvest", "autumn-leaves", "cloud", "data-science", "dolphin", "dusk",
+			"ecological-modeling", "fiery", "fog", "forest-night", "frost", "glacier", "daylight", "halloween", "lavender-haze", "meadow", "modern-light", "pebble", "porcelain", "sage-mist", "sandstone", "science", "spring", "summer", "winter");
 	/* The name of the own image of the view tab rows in the theme folder (without the extension) */
 	private static final String TAB_IMAGE = "tab-artwork";
 
@@ -91,6 +91,8 @@ public final class ThemeStore {
 	public static void startup() {
 		/* The views which paint with own colors (e.g., the Snippets view) */
 		ViewColors.install();
+		/* The canvases of the flow editor: the backgrounds of the custom theme of the last session */
+		ViewColors.applyFlowCanvases();
 		/* GTK: the tab row of the empty editor area has the height of its tool bar */
 		EmptyFolderHeight.install();
 		/* The gaps of the window (below the main toolbar, between the views) */

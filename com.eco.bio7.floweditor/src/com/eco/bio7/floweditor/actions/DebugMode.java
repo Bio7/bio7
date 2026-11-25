@@ -12,6 +12,8 @@ public class DebugMode extends Action {
 		super(text, AS_CHECK_BOX);
 
 		setId("DebugMode");
+		/* On by default (ShapesEditor.debug): the executed shape is highlighted */
+		setChecked(true);
 		
 
 	}

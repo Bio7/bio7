@@ -40,6 +40,11 @@ public class Bio7PaintPreferences extends FieldEditorPreferencePage
 		addField(new org.eclipse.jface.preference.RadioGroupFieldEditor(com.eco.bio7.rcp.AutoStart.CONSOLE, "The console shows (if both are started):", 2,
 				new String[][] { { "R", "R" }, { "Python", "Python" } }, getFieldEditorParent(), false));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
+		/* Else only with the toolbar actions (or at the startup above) */
+		addField(new LabelFieldEditor("Start when used (a script, a chunk, the API):", getFieldEditorParent()));
+		addField(new BooleanFieldEditor(com.eco.bio7.rcp.AutoStart.R_ON_USE, "Start R when it is used", getFieldEditorParent()));
+		addField(new BooleanFieldEditor(com.eco.bio7.rcp.AutoStart.PYTHON_ON_USE, "Start Python when it is used", getFieldEditorParent()));
+		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new BooleanFieldEditor("STARTUP_SCRIPTS", "Enable startup scripts", getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));
 		addField(new SpacerFieldEditor(getFieldEditorParent()));

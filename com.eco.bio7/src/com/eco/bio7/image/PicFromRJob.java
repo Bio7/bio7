@@ -58,7 +58,12 @@ class PicFromRJob extends WorkspaceJob {
 
 		monitor.beginTask("Transfer image from R", IProgressMonitor.UNKNOWN);
 		c = RBridge.getBackend();
-		picFromR();
+		try {
+			picFromR();
+		} catch (Throwable e) {
+			/* No silent failure: the error as a message */
+			Bio7Dialog.message("Pic-> (image from R) failed:\n" + e);
+		}
 
 		return Status.OK_STATUS;
 	}
@@ -76,7 +81,7 @@ class PicFromRJob extends WorkspaceJob {
 
 				} catch (RException e1) {
 					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					throw new IllegalStateException(e1.getMessage(), e1);
 				}
 				boolean[] bolE = bolExists.booleans();
 				/*
@@ -87,7 +92,7 @@ class PicFromRJob extends WorkspaceJob {
 						isNumeric = c.eval("try(is.numeric(" + name + ")||is.raw(" + name + "))");
 					} catch (RException e) {
 						// TODO Auto-generated catch block
-						e.printStackTrace();
+						throw new IllegalStateException(e.getMessage(), e);
 					}
 
 					boolean[] bolNumeric = isNumeric.booleans();
@@ -103,7 +108,7 @@ class PicFromRJob extends WorkspaceJob {
 								bol = c.eval("try(is.matrix(" + name + "))");
 							} catch (RException e1) {
 
-								e1.printStackTrace();
+								throw new IllegalStateException(e1.getMessage(), e1);
 							}
 							boolean[] bo = bol.booleans();
 							/************************ as matrix! **************************/
@@ -112,10 +117,10 @@ class PicFromRJob extends WorkspaceJob {
 									matrix = c.eval("try(" + name + ")").matrix();
 								} catch (RTypeException e) {
 
-									e.printStackTrace();
+									throw new IllegalStateException(e.getMessage(), e);
 								} catch (RException e) {
 
-									e.printStackTrace();
+									throw new IllegalStateException(e.getMessage(), e);
 								}
 
 								if (matrix != null) {
@@ -175,7 +180,7 @@ class PicFromRJob extends WorkspaceJob {
 									}
 
 									imp = new ImagePlus(name, ip);
-									imp.show();
+									show(imp);
 									matrix = null;
 								}
 							}
@@ -186,7 +191,7 @@ class PicFromRJob extends WorkspaceJob {
 									bolYExists = c.eval("try(exists(\"imageSizeY\"))");
 								} catch (RException e1) {
 
-									e1.printStackTrace();
+									throw new IllegalStateException(e1.getMessage(), e1);
 								}
 								boolean[] bolX = bolXExists.booleans();
 								boolean[] bolY = bolYExists.booleans();
@@ -279,16 +284,16 @@ class PicFromRJob extends WorkspaceJob {
 											}
 
 											imp = new ImagePlus(name, ip);
-											imp.show();
+											show(imp);
 
 										}
 
 									} catch (RTypeException e) {
 
-										e.printStackTrace();
+										throw new IllegalStateException(e.getMessage(), e);
 									} catch (RException e) {
 
-										e.printStackTrace();
+										throw new IllegalStateException(e.getMessage(), e);
 									}
 									imageData = null;
 
@@ -305,7 +310,7 @@ class PicFromRJob extends WorkspaceJob {
 								bolYExists = c.eval("try(exists(\"imageSizeY\"))");
 							} catch (RException e1) {
 
-								e1.printStackTrace();
+								throw new IllegalStateException(e1.getMessage(), e1);
 							}
 							boolean[] bolX = bolXExists.booleans();
 							boolean[] bolY = bolYExists.booleans();
@@ -388,16 +393,16 @@ class PicFromRJob extends WorkspaceJob {
 										}
 
 										imp = new ImagePlus(name, ip);
-										imp.show();
+										show(imp);
 
 									}
 
 								} catch (RTypeException e) {
 
-									e.printStackTrace();
+									throw new IllegalStateException(e.getMessage(), e);
 								} catch (RException e) {
 
-									e.printStackTrace();
+									throw new IllegalStateException(e.getMessage(), e);
 								}
 								imageData = null;
 							} else {
@@ -416,7 +421,7 @@ class PicFromRJob extends WorkspaceJob {
 								bolYExists = c.eval("try(exists(\"imageSizeY\"))");
 
 							} catch (RException e1) {
-								e1.printStackTrace();
+								throw new IllegalStateException(e1.getMessage(), e1);
 							}
 							boolean[] bolRaw = bolRawExists.booleans();
 							boolean[] bolX = bolXExists.booleans();
@@ -493,7 +498,7 @@ class PicFromRJob extends WorkspaceJob {
 											}
 
 											imp = new ImagePlus(name, ip);
-											imp.show();
+											show(imp);
 
 										}
 									} catch (RTypeException e) {
@@ -501,7 +506,7 @@ class PicFromRJob extends WorkspaceJob {
 										Bio7Dialog.message("An transfer error occured!\n" + "Please select the correct image type!\n" + "For a byte transfer a list has to be present!\n");
 									} catch (RException e) {
 
-										e.printStackTrace();
+										throw new IllegalStateException(e.getMessage(), e);
 									}
 									imageData = null;
 
@@ -525,6 +530,17 @@ class PicFromRJob extends WorkspaceJob {
 				Bio7Dialog.message("No image data name specified!");
 			}
 		}
+	}
+
+	/* Shown in the thread of the user interface (as for Python) */
+	private static void show(ImagePlus image) {
+		org.eclipse.swt.widgets.Display.getDefault().asyncExec(() -> {
+			try {
+				image.show();
+			} catch (Throwable e) {
+				Bio7Dialog.message("Pic-> (image from R): the image could not be shown:\n" + e);
+			}
+		});
 	}
 
 }

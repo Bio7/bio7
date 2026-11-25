@@ -41,7 +41,6 @@ import org.eclipse.ui.part.ViewPart;
 import com.eco.bio7.rbridge.backend.RBackend;
 import com.eco.bio7.Bio7Plugin;
 import com.eco.bio7.batch.Bio7Dialog;
-import com.eco.bio7.collection.Work;
 import com.eco.bio7.image.r.IJTranserResultsTable;
 import com.eco.bio7.image.r.TransferImageStack;
 import com.eco.bio7.rbridge.RTools;
@@ -192,7 +191,7 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 					return;
 				}
 
-				if (RTools.isAliveDialog()) {
+				if (ensureR()) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
 						Job job = new Job("Transfer to R") {
@@ -244,10 +243,10 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 			public void widgetSelected(SelectionEvent e) {
 				/* Python is selected in the view: the transfer to the embedded Python */
 				if (python) {
-					PythonImageTransfer.stack();
+					PythonImageTransfer.stack(transferTypeCombo.getSelectionIndex());
 					return;
 				}
-				RBackend con = RBridge.getBackend();
+				RBackend con = ensureR() ? RBridge.getBackend() : null;
 
 				if (con != null) {
 					if (RState.isBusy() == false) {
@@ -286,7 +285,7 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 					}
 
 				} else {
-					Bio7Dialog.message("R is not running (please start R)!");
+					/* Not started: ensureR() showed the reason */
 				}
 
 			}
@@ -316,7 +315,7 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 					return;
 				}
 
-				if (RTools.isAliveDialog()) {
+				if (ensureR()) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
 						Job job = new Job("Transfer to R") {
@@ -373,7 +372,7 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 					return;
 				}
 
-				if (RTools.isAliveDialog()) {
+				if (ensureR()) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
 						Job job = new Job("Transfer to R") {
@@ -425,7 +424,7 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 					PythonImageTransfer.pixels(transferTypeCombo.getSelectionIndex());
 					return;
 				}
-				if (RTools.isAlive()) {
+				if (ensureR()) {
 					ImagePlus imp = WindowManager.getCurrentImage();
 					if (imp != null) {
 						if (RState.isBusy() == false) {
@@ -455,7 +454,7 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 
 					}
 				} else {
-					Bio7Dialog.message("R is not running (please start R)!");
+					/* Not started: ensureR() showed the reason */
 				}
 			}
 		});
@@ -466,33 +465,29 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 		selectedPixelsButton.setText("Pixel       ");
 
 		matchingButton = new Button(top, SWT.NONE);
-		matchingButton.setToolTipText("Transfers collected selection coordinates\n as a List of Lists (the single selections) to R.\nThe ROI Manager has to be available!");
+		matchingButton.setToolTipText(RoiMeasurements.TOOLTIP);
 		matchingButton.setImage(rGif);
 		// matchingButton.setFont(SWTResourceManager.getFont("Courier New", 9,
 		// SWT.BOLD));
 		matchingButton.addSelectionListener(new SelectionAdapter() {
 
 			public void widgetSelected(final SelectionEvent e) {
-				/* Python is selected in the view: the transfer to the embedded Python */
-				if (python) {
-					PythonImageTransfer.selectionsRoiManager();
-					return;
-				}
-
 				/*
-				 * TransferSelectionCoordsDialog dialog = new
-				 * TransferSelectionCoordsDialog(Util.getShell());
-				 * 
-				 * dialog.create(); dialog.open();
+				 * Measure RM: the measurements of the selections of the ROI Manager as a table
+				 * (the coordinates of the selections: the Geometry Selections view)
 				 */
-				Work.openView("com.eco.bio7.image.TransferGeometryView");
+				if (python) {
+					PythonImageTransfer.measurements();
+				} else {
+					RoiMeasurements.toR();
+				}
 
 			}
 		});
 		final GridData gd_matchingButton = new GridData(SWT.FILL, SWT.FILL, true, false);
 		gd_matchingButton.heightHint = 35;
 		matchingButton.setLayoutData(gd_matchingButton);
-		matchingButton.setText("Selection RM    ");
+		matchingButton.setText("Measure RM");
 
 		selectedRoiPixelButton = new Button(top, SWT.NONE);
 		selectedRoiPixelButton.setImage(rGif);
@@ -511,7 +506,7 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 					return;
 				}
 
-				if (RTools.isAlive()) {
+				if (ensureR()) {
 					ImagePlus imp = WindowManager.getCurrentImage();
 					if (imp != null) {
 						if (RState.isBusy() == false) {
@@ -541,7 +536,7 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 
 					}
 				} else {
-					Bio7Dialog.message("R is not running (please start R)!");
+					/* Not started: ensureR() showed the reason */
 				}
 
 			}
@@ -565,7 +560,7 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 					PythonImageTransfer.pixelsRoiManagerStack(transferTypeCombo.getSelectionIndex());
 					return;
 				}
-				if (RTools.isAlive()) {
+				if (ensureR()) {
 					ImagePlus imp = WindowManager.getCurrentImage();
 					if (imp != null) {
 						if (RState.isBusy() == false) {
@@ -593,7 +588,7 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 
 					}
 				} else {
-					Bio7Dialog.message("R is not running (please start R)!");
+					/* Not started: ensureR() showed the reason */
 				}
 
 			}
@@ -620,7 +615,7 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 					PythonImageTransfer.imageToPython(imageMatrixNameToR.getText(), transferTypeCombo.getSelectionIndex());
 					return;
 				}
-				if (RTools.isAlive()) {
+				if (ensureR()) {
 					if (RState.isBusy() == false) {
 						RState.setBusy(true);
 						if (canTransferPic) {
@@ -647,7 +642,7 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 
 					}
 				} else {
-					Bio7Dialog.message("R is not running (please start R)!");
+					/* Not started: ensureR() showed the reason */
 				}
 			}
 		});
@@ -670,7 +665,7 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 					PythonImageTransfer.imageFromPython(imageMatrixNameFromR.getText(), toimageJCombo.getSelectionIndex());
 					return;
 				}
-				if (RTools.isAlive()) {
+				if (ensureR()) {
 					if (transferTypeCombo.getSelectionIndex() == 3) {
 						Bio7Dialog.message("RGB transfer to ImageJ is not supported!\n Please use e.g. byte transfer for the R ,G ,B components\n which can be merged with ImageJ!");
 						return;
@@ -712,7 +707,7 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 
 					}
 				} else {
-					Bio7Dialog.message("R is not running (please start R)!");
+					/* Not started: ensureR() showed the reason */
 				}
 			}
 		});
@@ -722,7 +717,7 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 
 		transferTypeCombo = new com.eco.bio7.util.ThemeCombo(top, SWT.READ_ONLY | SWT.BORDER);
 		transferTypeCombo.select(0);
-		transferTypeCombo.setToolTipText("The datatype to transfer in both directions!");
+		transferTypeCombo.setToolTipText("The datatype to transfer in both directions!\nRGB images: Double, Integer and Byte transfer\nthe luminance, RGB Byte the R, G, B values.");
 		transferTypeCombo.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(final SelectionEvent e) {
 				transferTypeCombo.getSelectionIndex();
@@ -741,7 +736,7 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 			}
 		});
 		toimageJCombo.setItems(new String[] { "Colour", "Greyscale", "Float", "Short", "Double" });
-		toimageJCombo.setText("Float");
+		toimageJCombo.setText("Double");
 		toimageJCombo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		// greyscaleButton.setToolTipText(
 		// "Create from the image data in R a greyscale image (ByteProcessor) in ImageJ"
@@ -791,7 +786,7 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 					return;
 				}
 
-				if (RBridge.getBackend() != null) {
+				if (ensureR()) {
 					CTabItem[] items = CanvasView.getCanvas_view().tabFolder.getItems();
 					if (items.length > 0) {
 						if (RState.isBusy() == false) {
@@ -820,7 +815,7 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 						Bio7Dialog.message("No image available!");
 					}
 				} else {
-					RTools.isAliveDialog();
+					/* Not started: ensureR() showed the reason */
 				}
 			}
 		});
@@ -845,7 +840,7 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 					com.eco.bio7.pybridge.PythonImageAnalysis.pca();
 					return;
 				}
-				if (RBridge.getBackend() != null) {
+				if (ensureR()) {
 					CTabItem[] items = CanvasView.getCanvas_view().tabFolder.getItems();
 					if (items.length > 0) {
 						if (RState.isBusy() == false) {
@@ -874,7 +869,7 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 						Bio7Dialog.message("No image available!");
 					}
 				} else {
-					RTools.isAliveDialog();
+					/* Not started: ensureR() showed the reason */
 				}
 
 			}
@@ -1093,6 +1088,18 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 	}
 
 	/* Used in Cluster and Pca job */
+	/**
+	 * Starts R if necessary (as Python for its transfers, in a job: the user
+	 * interface stays usable); false with a message if R could not be started.
+	 */
+	static boolean ensureR() {
+		if (com.eco.bio7.rcp.AutoStart.startR() && RTools.isAlive()) {
+			return true;
+		}
+		Bio7Dialog.message("R could not be started!");
+		return false;
+	}
+
 	public static CCombo getTransferTypeCombo() {
 		return transferTypeCombo;
 	}

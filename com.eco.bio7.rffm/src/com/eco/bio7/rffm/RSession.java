@@ -71,6 +71,11 @@ public final class RSession implements AutoCloseable {
 	}
 
 	private final LinkedBlockingQueue<ConsoleLine> consoleInput = new LinkedBlockingQueue<>();
+	/*
+	 * Wakes R waiting for console input (e.g., readline() or "Hit <Return> to see
+	 * next plot") after an interrupt: no line of the user (skipped elsewhere)
+	 */
+	private static final ConsoleLine WAKE = new ConsoleLine("", -1);
 	private final StringBuilder pendingInput = new StringBuilder();
 	private final Map<String, MemorySegment> helpers = new HashMap<>();
 	private MemorySegment helperEnv;
@@ -930,14 +935,27 @@ public final class RSession implements AutoCloseable {
 	int readConsole(MemorySegment prompt, MemorySegment buf, int len, int hist) {
 		try {
 			flushCapture();
-			/* The prompt after a hidden capture is not shown (the visible one is already there) */
-			if (capture == null || captureEcho || captureFilter != null) {
+			/* The prompt after a hidden capture is not shown (the visible one is already there); not after an interrupt */
+			if (!interruptRequested && (capture == null || captureEcho || captureFilter != null)) {
 				console.prompt(RNative.cString(prompt, n.consoleCharset));
 			}
 			console.busy(false);
 			readingConsole = true;
 			signalInputRequest();
-			String line = taken(consoleInput.take());
+			/*
+			 * An interrupt: an empty line at once, R handles the interrupt when it
+			 * evaluates again (it can't while it waits here for the input)
+			 */
+			String line;
+			if (interruptRequested) {
+				line = "";
+			} else {
+				ConsoleLine l = consoleInput.take();
+				while (l == WAKE && !interruptRequested) {
+					l = consoleInput.take();
+				}
+				line = l == WAKE ? "" : taken(l);
+			}
 			console.busy(true);
 			byte[] b = (line + "\n").getBytes(n.consoleCharset);
 			int count = Math.min(b.length, len - 1);
@@ -1401,6 +1419,9 @@ public final class RSession implements AutoCloseable {
 	private void drainConsole() {
 		ConsoleLine line;
 		while ((line = consoleInput.poll()) != null) {
+			if (line == WAKE) {
+				continue;
+			}
 			consoleStep(taken(line));
 		}
 		/* The input may have been read by readline() of another evaluation */
@@ -1530,6 +1551,10 @@ public final class RSession implements AutoCloseable {
 		}
 		interruptRequested = true;
 		n.setInt(n.os.equals("Windows") ? "UserBreak" : "R_interrupts_pending", 1);
+		/* R waits for console input (e.g., "Hit <Return> to see next plot"): woken */
+		if (readingConsole) {
+			consoleInput.add(WAKE);
+		}
 	}
 
 	/* ---------------- Graphics devices ---------------- */

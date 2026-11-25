@@ -322,7 +322,8 @@ public class RShellView extends ViewPart {
 		/* Return evaluates the input (see the key listener below, after the completion adapters) */
 		evaluateInput = new Listener() {
 			public void handleEvent(Event e) {
-				if (RTools.isAlive()) {
+				/* Started when it is used (preferences) */
+				if (RTools.isAlive() || com.eco.bio7.rcp.AutoStart.startROnUse()) {
 					if (cmdError == false) {
 						evaluate();
 					} else {
@@ -344,7 +345,7 @@ public class RShellView extends ViewPart {
 							Bio7Dialog.message("Parser error!\n\nPlease enter valid R commands!");
 						}
 					} else {
-						Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
+						Bio7Dialog.message(com.eco.bio7.rcp.AutoStart.NOT_RUNNING_R);
 					}
 				}
 			}
@@ -602,7 +603,7 @@ public class RShellView extends ViewPart {
 		btnEvaluate.setText("Eval");
 		btnEvaluate.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				if (RTools.isAlive()) {
+				if (RTools.isAlive() || com.eco.bio7.rcp.AutoStart.startROnUse()) {
 					if (cmdError == false) {
 						evaluate();
 					} else {
@@ -624,7 +625,7 @@ public class RShellView extends ViewPart {
 							Bio7Dialog.message("Parser error!\n\nPlease enter valid R commands!");
 						}
 					} else {
-						Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
+						Bio7Dialog.message(com.eco.bio7.rcp.AutoStart.NOT_RUNNING_R);
 					}
 				}
 			}

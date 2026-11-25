@@ -82,6 +82,8 @@ public class ImageMethods {
 
 				/* Get the image processor of the image ! */
 				ImageProcessor ip = imp.getProcessor();
+				/* An RGB image in the types Double, Integer and Byte: its luminance (as for Python) */
+				ip = luminance(ip, transferDataType);
 				int w = ip.getWidth();
 				int h = ip.getHeight();
 
@@ -806,6 +808,8 @@ public class ImageMethods {
 
 				/* Get the image processor of the image ! */
 				ImageProcessor ip = imp.getProcessor();
+				/* An RGB image in the types Double, Integer and Byte: its luminance (as for Python) */
+				ip = luminance(ip, transferDataType);
 
 				int w = ip.getWidth();
 				int h = ip.getHeight();
@@ -1253,6 +1257,8 @@ public class ImageMethods {
 					int y = 0;
 					int x = 0;
 					ImageProcessor ip = imp.getImageStack().getProcessor(slice);
+					/* An RGB image in the types Double, Integer and Byte: its luminance (as for Python) */
+					ip = luminance(ip, transferDataType);
 					/* We transfer the values to R! */
 					l = "layer" + slice;
 
@@ -1691,7 +1697,7 @@ public class ImageMethods {
 		ArrayList<Integer> values = new ArrayList<Integer>();
 		for (Point p : roi.getContainedPoints()) {
 
-			values.add(Integer.valueOf(ip.getPixel(p.x, p.y)));
+			values.add(Integer.valueOf(luminancePixel(ip, p.x, p.y)));
 		}
 		return values;
 	}
@@ -1700,7 +1706,7 @@ public class ImageMethods {
 		ArrayList<Byte> values = new ArrayList<Byte>();
 		for (Point p : roi.getContainedPoints()) {
 
-			values.add(Byte.valueOf((byte) (ip.getPixel(p.x, p.y))));
+			values.add(Byte.valueOf((byte) (luminancePixel(ip, p.x, p.y))));
 		}
 		return values;
 	}
@@ -1722,6 +1728,38 @@ public class ImageMethods {
 
 		return name;
 
+	}
+
+	/**
+	 * An RGB image in the data types Double (0), Integer (1) and Byte (2) as its
+	 * luminance (the conversion of ImageJ, Edit > Options > Conversions): Double a
+	 * 32-bit image, Integer and Byte an 8-bit image (the rounded values 0-255). Otherwise (also RGB
+	 * Byte, 3) the image processor itself. The packed RGB value is no meaningful
+	 * number.
+	 */
+	public static ImageProcessor luminance(ImageProcessor ip, int transferDataType) {
+		if (!(ip instanceof ColorProcessor) || transferDataType < 0 || transferDataType > 2) {
+			return ip;
+		}
+		ImageProcessor f = ip.convertToFloat();
+		if (transferDataType == 0) {
+			return f;
+		}
+		/* Integer and Byte: the rounded luminance (as luminancePixel) */
+		float[] px = (float[]) f.getPixels();
+		byte[] b = new byte[px.length];
+		for (int i = 0; i < px.length; i++) {
+			b[i] = (byte) Math.min(255, Math.round(px[i]));
+		}
+		return new ByteProcessor(f.getWidth(), f.getHeight(), b);
+	}
+
+	/**
+	 * A pixel for the data types Integer and Byte: of an RGB image its rounded
+	 * luminance (0-255, as luminance()), else the pixel value.
+	 */
+	public static int luminancePixel(ImageProcessor ip, int x, int y) {
+		return ip instanceof ColorProcessor ? Math.min(255, Math.round(ip.getPixelValue(x, y))) : ip.getPixel(x, y);
 	}
 
 	/* The exact value of double images (getPixelValue() returns a float)! */

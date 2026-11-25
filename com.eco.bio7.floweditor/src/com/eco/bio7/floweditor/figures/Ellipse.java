@@ -12,44 +12,25 @@
 package com.eco.bio7.floweditor.figures;
 
 import org.eclipse.draw2d.Graphics;
-import org.eclipse.draw2d.MouseEvent;
-import org.eclipse.draw2d.MouseListener;
 import org.eclipse.draw2d.Shape;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.swt.SWT;
 
 /**
- * An figure that draws an ellipse filling its bounds.
+ * A loop of a flow: a circle in the orange accent with the glyph of a loop over
+ * the count (the label of the shape).
  */
-public class Ellipse extends Shape implements MouseListener {
+public class Ellipse extends Shape implements RunningFigure {
 
-	/**
-	 * Constructs a new Ellipse with the default values of a Shape.
-	 * 
-	 * @since 2.0
-	 */
-	public Ellipse() {
-		addMouseListener(this);
-		/*
-		 * MouseMotionListener listener = new MouseMotionListener.Stub() {
-		 * public void mouseEntered(MouseEvent me) { ((Shape) me.getSource())
-		 * .setBackgroundColor(ColorConstants.yellow); } public void
-		 * mouseExited(MouseEvent me) { ((Shape) me.getSource())
-		 * .setBackgroundColor(ColorConstants.white); } };
-		 * addMouseMotionListener(listener);
-		 */
+	private boolean running;
 
+	public void setRunning(boolean running) {
+		if (this.running != running) {
+			this.running = running;
+			repaint();
+		}
 	}
 
-	/**
-	 * Returns <code>true</code> if the given point (x,y) is contained within
-	 * this ellipse.
-	 * 
-	 * @param x
-	 *            the x coordinate
-	 * @param y
-	 *            the y coordinate
-	 * @return <code>true</code>if the given point is contained
-	 */
 	public boolean containsPoint(int x, int y) {
 		if (!super.containsPoint(x, y))
 			return false;
@@ -59,42 +40,38 @@ public class Ellipse extends Shape implements MouseListener {
 		return ((ux * ux) << 10) / (r.width * r.width) + ((uy * uy) << 10) / (r.height * r.height) <= 256;
 	}
 
-	/**
-	 * Fills the ellipse.
-	 * 
-	 * @see org.eclipse.draw2d.Shape#fillShape(org.eclipse.draw2d.Graphics)
-	 */
+	public void paintFigure(Graphics g) {
+		FlowColors.Palette p = FlowColors.get();
+		/* The label (the count) in the text color of the accent */
+		if (!p.orangeText.equals(getLocalForegroundColor())) {
+			setForegroundColor(p.orangeText);
+		}
+		g.setAntialias(SWT.ON);
+		Rectangle r = getBounds().getResized(-1, -1).getShrinked(1, 1);
+		g.setBackgroundColor(running ? p.runFill : p.orangeTint);
+		g.fillOval(r);
+		g.setForegroundColor(running ? p.runBorder : p.orange);
+		g.setLineWidthFloat(running ? 2.5f : 1.5f);
+		g.drawOval(r);
+		if (Math.min(r.width, r.height) >= 40) {
+			/* The glyph of the loop above the center */
+			int cx = r.x + r.width / 2;
+			int cy = r.y + r.height / 2 - 11;
+			int rad = 6;
+			g.setForegroundColor(running ? p.runBorder : p.orange);
+			g.setLineWidthFloat(1.8f);
+			g.setLineCap(SWT.CAP_ROUND);
+			g.drawArc(cx - rad, cy - rad, 2 * rad, 2 * rad, 60, 280);
+			int ax = cx + 3, ay = cy - rad;
+			g.drawPolyline(new int[] { ax - 1, ay - 3, ax + 2, ay, ax - 1, ay + 3 });
+		}
+	}
+
 	protected void fillShape(Graphics graphics) {
-
-		graphics.fillOval(getBounds());
-
+		/* Painted in paintFigure */
 	}
 
-	/**
-	 * Outlines the ellipse.
-	 * 
-	 * @see org.eclipse.draw2d.Shape#outlineShape(org.eclipse.draw2d.Graphics)
-	 */
 	protected void outlineShape(Graphics graphics) {
-		Rectangle r = Rectangle.SINGLETON;
-		r.setBounds(getBounds());
-		r.width--;
-		r.height--;
-		r.shrink((lineWidth - 1) / 2, (lineWidth - 1) / 2);
-		graphics.setAntialias(1);
-		graphics.drawOval(r);
-
+		/* Painted in paintFigure */
 	}
-
-	public void mouseDoubleClicked(MouseEvent arg0) {
-
-	}
-
-	public void mousePressed(MouseEvent arg0) {
-
-	}
-
-	public void mouseReleased(MouseEvent arg0) {
-	}
-
 }

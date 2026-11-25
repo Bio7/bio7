@@ -83,6 +83,21 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 
 	}
 
+	/** The name of the matrix of the dialog (e.g., for the transfer to Python). */
+	public static String input() {
+		return input;
+	}
+
+	/** The class (signature) of the dialog. */
+	public static int signature() {
+		return input2;
+	}
+
+	/** Returns true if the dialog adds the class column. */
+	public static boolean isSignature() {
+		return selectionSig;
+	}
+
 	public void transfer() {
 
 		if (transferType == 3) {
@@ -312,7 +327,7 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 		ArrayList<Integer> values = new ArrayList<Integer>();
 		for (Point p : roi.getContainedPoints()) {
 
-			values.add(new Integer(ip.getPixel(p.x, p.y)));
+			values.add(new Integer(ImageMethods.luminancePixel(ip, p.x, p.y)));
 		}
 		return values;
 	}
@@ -322,7 +337,7 @@ public class ImageSelectionTransferJob extends WorkspaceJob implements IJobChang
 		ArrayList<Byte> values = new ArrayList<Byte>();
 		for (Point p : roi.getContainedPoints()) {
 
-			values.add(new Byte((byte) (ip.getPixel(p.x, p.y))));
+			values.add(new Byte((byte) (ImageMethods.luminancePixel(ip, p.x, p.y))));
 		}
 		return values;
 	}

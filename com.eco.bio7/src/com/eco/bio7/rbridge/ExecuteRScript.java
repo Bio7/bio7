@@ -49,7 +49,7 @@ public class ExecuteRScript {
 		this.executer = executer;
 		this.progressSteps = progressSteps;
 		this.listRObjects = true;
-		if (RTools.isAlive()) {
+		if (RTools.isAlive() || com.eco.bio7.rcp.AutoStart.startROnUse()) {
 			backend = RBridge.getBackend();
 			/* Waits for R if it is busy (it was not executed before, only a message on stdout) */
 			RWait.whenFree("the R script", () -> {
@@ -73,7 +73,7 @@ public class ExecuteRScript {
 		this.executer = executer;
 		this.progressSteps = progressSteps;
 		this.listRObjects = listRObjects;
-		if (RTools.isAlive()) {
+		if (RTools.isAlive() || com.eco.bio7.rcp.AutoStart.startROnUse()) {
 			backend = RBridge.getBackend();
 			/* Waits for R if it is busy (it was not executed before, only a message on stdout) */
 			RWait.whenFree("the R script", () -> {

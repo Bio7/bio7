@@ -67,10 +67,28 @@ protected void createEditPolicies() {
  */
 protected IFigure createFigure() {
 	
-	PolylineConnection connection = (PolylineConnection) super.createFigure();
-	connection.setTargetDecoration(new PolygonDecoration()); // arrow at target endpoint
+	/* The line and the arrow in the color of the theme (taken when painted: also after a change of the theme) */
+	PolylineConnection connection = new PolylineConnection() {
+		protected void outlineShape(org.eclipse.draw2d.Graphics g) {
+			g.setForegroundColor(com.eco.bio7.floweditor.figures.FlowColors.get().line);
+			super.outlineShape(g);
+		}
+	};
+	PolygonDecoration arrow = new PolygonDecoration() {
+		protected void fillShape(org.eclipse.draw2d.Graphics g) {
+			g.setBackgroundColor(com.eco.bio7.floweditor.figures.FlowColors.get().line);
+			super.fillShape(g);
+		}
+
+		protected void outlineShape(org.eclipse.draw2d.Graphics g) {
+			g.setForegroundColor(com.eco.bio7.floweditor.figures.FlowColors.get().line);
+			super.outlineShape(g);
+		}
+	};
+	arrow.setScale(8, 3.5);
+	connection.setTargetDecoration(arrow); // arrow at target endpoint
 	connection.setLineStyle(getCastedModel().getLineStyle());  // line drawing style
-	connection.setLineWidth(2);
+	connection.setLineWidthFloat(1.5f);
 	/*ConnectionEndpointLocator targetEndpointLocator = 
         new ConnectionEndpointLocator(connection, true);
 targetEndpointLocator.setVDistance(15);

@@ -30,7 +30,7 @@ import org.eclipse.ui.dialogs.WizardNewFileCreationPage;
 import org.eclipse.ui.ide.IDE;
 
 /**
- * Create new new ecoflow - file. Those files can be used with the ShapesEditor
+ * Create a new flow file (.flow; older flows: .ecoflow). Those files can be used with the ShapesEditor
  * (see plugin.xml).
  * 
  * @author Elias Volanakis
@@ -74,7 +74,7 @@ public class ShapesCreationWizard extends Wizard implements INewWizard {
 	 * This WizardPage can create an empty .shapes file for the ShapesEditor.
 	 */
 	private class CreationPage extends WizardNewFileCreationPage {
-		private static final String DEFAULT_EXTENSION = ".ecoflow";
+		private static final String DEFAULT_EXTENSION = ".flow";
 		private final IWorkbench workbench;
 
 		/**

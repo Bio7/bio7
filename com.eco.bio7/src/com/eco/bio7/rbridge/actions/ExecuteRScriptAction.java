@@ -39,7 +39,8 @@ public class ExecuteRScriptAction extends Action {
 
 		else {
 			String path = file.toString().replace("\\", "/");
-			if (RTools.isAlive()) {
+			/* Started when it is used (preferences) */
+			if (RTools.isAlive() || com.eco.bio7.rcp.AutoStart.startROnUse()) {
 
 				/* Waits for R if it is busy (e.g., loading the workspace) */
 				com.eco.bio7.rbridge.RWait.whenFree("the R script", () -> {
@@ -70,7 +71,7 @@ public class ExecuteRScriptAction extends Action {
 					System.out.print("source('" + path + "')");
 					System.out.println();
 				} else {
-					Bio7Dialog.message("Please start R or the \"Native R\" shell in the Bio7 console!");
+					Bio7Dialog.message(com.eco.bio7.rcp.AutoStart.NOT_RUNNING_R);
 				}
 
 			}

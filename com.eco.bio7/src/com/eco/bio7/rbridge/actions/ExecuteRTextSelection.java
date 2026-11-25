@@ -73,6 +73,10 @@ public class ExecuteRTextSelection extends Action {
 			// IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 			// boolean rPipe = store.getBoolean("r_pipe");
 			RBackend con = RBridge.getBackend();
+			/* Started when it is used (preferences) */
+			if (con == null && com.eco.bio7.rcp.AutoStart.startROnUse()) {
+				con = RBridge.getBackend();
+			}
 			if (con == null) {
 				if (rEditor instanceof REditor) {
 					String selectionConsole = ConsolePageParticipant.getInterpreterSelection();
@@ -83,7 +87,7 @@ public class ExecuteRTextSelection extends Action {
 						ConsolePageParticipant.pipeInputToConsole(inhalt, true, true);
 						System.out.println(inhalt);
 					} else {
-						Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
+						Bio7Dialog.message(com.eco.bio7.rcp.AutoStart.NOT_RUNNING_R);
 					}
 				}
 

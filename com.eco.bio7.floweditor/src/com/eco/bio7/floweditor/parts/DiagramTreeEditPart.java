@@ -102,7 +102,37 @@ class DiagramTreeEditPart extends AbstractTreeEditPart implements
 	 * @see org.eclipse.gef.editparts.AbstractEditPart#getModelChildren()
 	 */
 	protected List getModelChildren() {
-		return getCastedModel().getChildren(); // a list of shapes
+		/*
+		 * In the order of the flow: from the start along the connections (a step
+		 * once), then the shapes not reached (e.g., the notes)
+		 */
+		List children = getCastedModel().getChildren();
+		java.util.LinkedHashSet<Object> ordered = new java.util.LinkedHashSet<>();
+		java.util.ArrayDeque<Object> queue = new java.util.ArrayDeque<>();
+		for (Object o : children) {
+			if (o instanceof com.eco.bio7.floweditor.model.TriangleShape) {
+				queue.add(o);
+			}
+		}
+		while (!queue.isEmpty()) {
+			Object o = queue.poll();
+			if (!ordered.add(o) || !(o instanceof com.eco.bio7.floweditor.model.Shape s)) {
+				continue;
+			}
+			for (Object c : s.getSourceConnections()) {
+				Object target = ((com.eco.bio7.floweditor.model.Connection) c).getTarget();
+				if (target != null && children.contains(target) && !ordered.contains(target)) {
+					queue.add(target);
+				}
+			}
+		}
+		for (Object o : children) {
+			if (!(o instanceof com.eco.bio7.floweditor.model.RectangularShape)) {
+				ordered.add(o);
+			}
+		}
+		ordered.addAll(children);
+		return new java.util.ArrayList<>(ordered);
 	}
 
 	/*

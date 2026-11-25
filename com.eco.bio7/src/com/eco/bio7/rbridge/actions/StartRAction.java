@@ -33,7 +33,8 @@ import com.eco.bio7.rffm.RException;
 
 /**
  * The toolbar action "Start R": starts R (embedded R, in the process of Bio7) in
- * the console. The menu interrupts a computation. A file dropped on Bio7 before
+ * the console; if R runs, the console is switched to R (as "Start Python"). The
+ * menu interrupts a computation. A file dropped on Bio7 before
  * the start (an R workspace) is loaded after the start.
  */
 public class StartRAction extends Action implements IMenuCreator {
@@ -49,16 +50,13 @@ public class StartRAction extends Action implements IMenuCreator {
 		setId("com.eco.bio7.start_r");
 		setActionDefinitionId("com.eco.bio7.Start_R_Action");
 		setImageDescriptor(Bio7Plugin.getImageDescriptor("/icons/maintoolbar/r.svg"));
+		setToolTipText("Start R (embedded in Bio7: R runs in the process of Bio7, restart Bio7 to restart R)");
 		setMenuCreator(this);
 	}
 
 	@Override
 	public void run() {
-		if (RBridge.isConnected()) {
-			Bio7Dialog.message("R is running.\n\nR runs in the process of Bio7: restart Bio7 to restart R.");
-			return;
-		}
-		/* Starts R in the console (in a job, see ConsolePageParticipant.processRCommand) */
+		/* Starts R in the console (in a job, see ConsolePageParticipant.processRCommand); if R runs: the console shows R */
 		ConsoleInterpreterAction.getInstance().startR();
 		if (fromDragDrop) {
 			fromDragDrop = false;
@@ -121,8 +119,8 @@ public class StartRAction extends Action implements IMenuCreator {
 		menu.addDisposeListener(_ -> image.dispose());
 
 		MenuItem start = new MenuItem(menu, SWT.PUSH);
-		start.setText("Start R");
-		start.setEnabled(!RBridge.isConnected());
+		/* If R runs: the console is switched to R */
+		start.setText(RBridge.isConnected() ? "R Console" : "Start R");
 		start.addListener(SWT.Selection, _ -> run());
 
 		MenuItem interrupt = new MenuItem(menu, SWT.PUSH);
@@ -130,11 +128,6 @@ public class StartRAction extends Action implements IMenuCreator {
 		interrupt.setImage(image);
 		interrupt.setEnabled(RBridge.isConnected());
 		interrupt.addListener(SWT.Selection, _ -> EmbeddedR.interrupt());
-
-		new MenuItem(menu, SWT.SEPARATOR);
-		MenuItem info = new MenuItem(menu, SWT.PUSH);
-		info.setText("R runs in the process of Bio7: restart Bio7 to restart R");
-		info.setEnabled(false);
 		return menu;
 	}
 

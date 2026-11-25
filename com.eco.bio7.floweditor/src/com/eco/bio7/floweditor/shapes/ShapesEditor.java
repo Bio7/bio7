@@ -129,7 +129,8 @@ public class ShapesEditor extends GraphicalEditorWithFlyoutPalette {
 	/** Palette component, holding the tools and shapes. */
 	private static PaletteRoot PALETTE_MODEL;
 
-	public boolean debug = false;
+	/* The debug mode (on by default): the executed shape is highlighted */
+	public boolean debug = true;
 
 	private ScrollableThumbnail thumbnail;
 
@@ -218,6 +219,13 @@ public class ShapesEditor extends GraphicalEditorWithFlyoutPalette {
 
 	protected void configureGraphicalViewer() {
 		super.configureGraphicalViewer();
+		/* The shapes and the background in the colors of the theme: repainted when it changes */
+		com.eco.bio7.floweditor.figures.FlowColors.addRepaintTarget(getGraphicalViewer().getControl());
+		if (getGraphicalViewer().getControl() instanceof org.eclipse.draw2d.FigureCanvas canvas) {
+			com.eco.bio7.floweditor.figures.FlowColors.addCanvas(canvas, canvas.getLightweightSystem().getRootFigure(), true);
+			/* The rulers (created when they are shown) in the colors of the editor */
+			canvas.addListener(SWT.Paint, e -> com.eco.bio7.floweditor.figures.FlowColors.themeChildCanvases(rulerComp, canvas, true));
+		}
 
 		ScrollingGraphicalViewer viewer = (ScrollingGraphicalViewer) getGraphicalViewer();
 		viewer.setEditPartFactory(new ShapesEditPartFactory());
@@ -362,6 +370,22 @@ public class ShapesEditor extends GraphicalEditorWithFlyoutPalette {
 		return new PaletteViewerProvider(getEditDomain()) {
 			protected void configurePaletteViewer(PaletteViewer viewer) {
 				super.configurePaletteViewer(viewer);
+				/* The palette in the colors of the views of the theme (also its categories, painted by GEF) */
+				viewer.setColorProvider(com.eco.bio7.floweditor.figures.FlowColors.paletteColorProvider());
+				com.eco.bio7.floweditor.figures.FlowColors.themeFigureCanvas(viewer.getControl(), false);
+				/* The title of the palette (and its button) with the text color of the theme */
+				org.eclipse.swt.widgets.Composite paletteParent = viewer.getControl().getParent();
+				viewer.getControl().getDisplay().asyncExec(() -> {
+					com.eco.bio7.floweditor.figures.FlowColors.themeChildCanvases(paletteParent, viewer.getControl(), false);
+					/* The arrow button of the collapsed palette (in the sash of the flyout, not the flow) */
+					if (paletteParent != null && !paletteParent.isDisposed() && paletteParent.getParent() != null) {
+						for (org.eclipse.swt.widgets.Control c : paletteParent.getParent().getChildren()) {
+							if (c instanceof org.eclipse.swt.widgets.Composite sash && c.getClass().getName().contains("Sash")) {
+								com.eco.bio7.floweditor.figures.FlowColors.themeChildCanvases(sash, null, false);
+							}
+						}
+					}
+				});
 				// create a drag source listener for this palette viewer
 				// together with an appropriate transfer drop target listener,
 				// this will enable
@@ -645,6 +669,14 @@ public class ShapesEditor extends GraphicalEditorWithFlyoutPalette {
 	/**
 	 * Creates an outline pagebook for this editor.
 	 */
+	/* Deactivates the thumbnail of the outline: its image is disposed */
+	private void disposeThumbnail() {
+		if (thumbnail != null) {
+			thumbnail.deactivate();
+			thumbnail = null;
+		}
+	}
+
 	public class ShapesOutlinePage extends ContentOutlinePage {
 		/**
 		 * Create a new outline page for the shapes editor.
@@ -683,13 +715,20 @@ public class ShapesEditor extends GraphicalEditorWithFlyoutPalette {
 			// initialize outline viewer with model
 			getViewer().setContents(getModel());
 			Canvas canvas = new Canvas(sash, SWT.BORDER);
+			com.eco.bio7.floweditor.figures.FlowColors.addRepaintTarget(canvas);
 
 			LightweightSystem lws = new LightweightSystem(canvas);
+			/* The overview in the background of the theme */
+			com.eco.bio7.floweditor.figures.FlowColors.addCanvas(canvas, lws.getRootFigure(), false);
 
+			/* A thumbnail of a former outline page (its image is released) */
+			disposeThumbnail();
 			thumbnail = new ScrollableThumbnail((Viewport) ((ScalableRootEditPart) getGraphicalViewer().getRootEditPart()).getFigure());
 			thumbnail.setSource(((ScalableRootEditPart) getGraphicalViewer().getRootEditPart()).getLayer(LayerConstants.PRINTABLE_LAYERS));
 
 			lws.setContents(thumbnail);
+			/* The image of the thumbnail is released with its canvas (e.g., the outline page or view is closed) */
+			canvas.addDisposeListener(e -> disposeThumbnail());
 
 			disposeListener = new DisposeListener() {
 				public void widgetDisposed(DisposeEvent e) {
@@ -716,6 +755,7 @@ public class ShapesEditor extends GraphicalEditorWithFlyoutPalette {
 		public void dispose() {
 			if (getGraphicalViewer().getControl() != null && !getGraphicalViewer().getControl().isDisposed())
 				getGraphicalViewer().getControl().removeDisposeListener(disposeListener);
+			disposeThumbnail();
 
 			// unhook outline viewer
 			getSelectionSynchronizer().removeViewer(getViewer());

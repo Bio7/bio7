@@ -421,7 +421,7 @@ public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements I
 		ArrayList<Integer> values = new ArrayList<Integer>();
 		for (Point p : roi.getContainedPoints()) {
 
-			values.add(Integer.valueOf(ip.getPixel(p.x, p.y)));
+			values.add(Integer.valueOf(ImageMethods.luminancePixel(ip, p.x, p.y)));
 		}
 		return values;
 	}
@@ -430,7 +430,7 @@ public class ImageStackRoiSelectionTransferJob extends WorkspaceJob implements I
 		ArrayList<Byte> values = new ArrayList<Byte>();
 		for (Point p : roi.getContainedPoints()) {
 
-			values.add(Byte.valueOf((byte) (ip.getPixel(p.x, p.y))));
+			values.add(Byte.valueOf((byte) (ImageMethods.luminancePixel(ip, p.x, p.y))));
 		}
 		return values;
 	}

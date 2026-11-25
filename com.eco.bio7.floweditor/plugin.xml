@@ -8,7 +8,7 @@
 
      <extension point="org.eclipse.ui.editors">
       <editor name="Flow Editor"
-              extensions="ecoflow"
+              extensions="flow,ecoflow"
               icon="icons/flow.svg"
               default="true"
               class="com.eco.bio7.floweditor.shapes.ShapesEditor"

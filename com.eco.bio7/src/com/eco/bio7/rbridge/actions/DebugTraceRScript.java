@@ -75,6 +75,10 @@ public class DebugTraceRScript implements IEditorActionDelegate {
 		IDocument doc = ((ITextEditor) editor).getDocumentProvider().getDocument(editor.getEditorInput());
 
 		RBackend d = RBridge.getBackend();
+		/* Started when it is used (preferences) */
+		if (d == null && com.eco.bio7.rcp.AutoStart.startROnUse()) {
+			d = RBridge.getBackend();
+		}
 		IEditorInput editorInput = editor.getEditorInput();
 		IFile aFile = null;
 
@@ -159,7 +163,7 @@ public class DebugTraceRScript implements IEditorActionDelegate {
 				}
 
 			} else {
-				Bio7Dialog.message("Please start the \"Native R\" shell in the Bio7 console!");
+				Bio7Dialog.message(com.eco.bio7.rcp.AutoStart.NOT_RUNNING_R);
 			}
 
 		}
