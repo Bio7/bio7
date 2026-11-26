@@ -145,6 +145,8 @@ public class Compile {
 				if (event.getResult().isOK()) {
 					BatchModel.resume();
 
+				} else {
+					BatchModel.stepFailed("the Java code was not executed.");
 				}
 			}
 		});

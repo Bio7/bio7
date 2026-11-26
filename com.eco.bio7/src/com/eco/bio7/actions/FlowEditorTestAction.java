@@ -12,12 +12,12 @@ public class FlowEditorTestAction extends Action {
 	}
 
 	public void run() {
-		if (BatchModel.isPause() == false) {
-			BatchModel.batch(true);
-		} else {
-			BatchModel.setPause(false);
-			BatchModel.batchStart();
+		/* A step of a running flow is executed: the flow continues when it has finished */
+		if (BatchModel.isRunning()) {
+			com.eco.bio7.batch.Bio7Dialog.message("A flow is running.\nPlease stop it to start a new flow.");
+			return;
 		}
+		BatchModel.batch(true);
 
 	}
 

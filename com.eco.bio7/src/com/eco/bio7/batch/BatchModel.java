@@ -14,27 +14,28 @@ package com.eco.bio7.batch;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.File;
 import java.util.List;
 import java.util.Stack;
+import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.part.FileEditorInput;
 import com.eco.bio7.actions.Bio7Action;
 import com.eco.bio7.compile.BeanShellInterpreter;
 import com.eco.bio7.floweditor.model.Connection;
 import com.eco.bio7.floweditor.model.EllipticalShape;
 import com.eco.bio7.floweditor.model.FlowDecisionShape;
+import com.eco.bio7.floweditor.model.FlowPaths;
 import com.eco.bio7.floweditor.model.Shape;
 import com.eco.bio7.floweditor.model.ShapesDiagram;
 import com.eco.bio7.floweditor.model.TriangleEndShape;
@@ -73,7 +74,21 @@ public class BatchModel {
 
 	private static boolean test = false;// The variable switch for the test mode!
 
-	private static Stack<IFile> s = new Stack<IFile>();
+	/* The flow editors of nested flows (to activate the parent flow again) */
+	private static Stack<IEditorInput> s = new Stack<IEditorInput>();
+
+	/*
+	 * A flow is running: started and not finished, stopped or failed (also while
+	 * a step runs in a job). Only then the end of a step continues the flow (not
+	 * the end of a script which was started in an editor).
+	 */
+	private static volatile boolean running;
+
+	/* The component which is executed */
+	private static Shape current;
+
+	/* The current step failed (the flow is stopped) */
+	private static volatile boolean failed;
 
 	public static void batch(boolean testRun) {
 		/* Set shapenext to default color after test run! */
@@ -83,6 +98,10 @@ public class BatchModel {
 		}
 
 		test = testRun;
+		running = false;
+		failed = false;
+		shapenext = null;
+		current = null;
 		ShapesEditor editor = geteditor();
 		if (editor == null) {
 			warning("No Bio7 flow: please activate the editor of a flow (*.bio7flow)!");
@@ -195,6 +214,7 @@ public class BatchModel {
 	 */
 	public static void batchStart() {
 		while (shapenext != null && cancel == false && pause == false) {
+			running = true;
 
 			/* The editor of the flow (not the editor which a step activated) */
 			ShapesEditor editor = geteditor();
@@ -237,9 +257,17 @@ public class BatchModel {
 					a.setColor();
 				}
 				if (test == false) {
-
-					ExecuteBatchFile.intercompile(filesourceprop, fileextension);
-					// a.setDefaultColor();
+					current = a;
+					try {
+						ExecuteBatchFile.intercompile(filesourceprop, fileextension);
+					} catch (Throwable t) {
+						t.printStackTrace();
+						stepFailed(t.getClass().getSimpleName() + (t.getMessage() != null ? ": " + t.getMessage() : ""));
+					}
+					/* The step failed (e.g., the file was not found): the flow is stopped */
+					if (failed) {
+						break;
+					}
 				}
 
 				List sourceconnectionlist = a.getSourceConnections();
@@ -254,6 +282,71 @@ public class BatchModel {
 
 			}
 		}
+		/* Finished, stopped or failed (else a step runs and continues the flow when it has finished) */
+		if (!pause || cancel || shapenext == null) {
+			running = false;
+			pause = false;
+		}
+	}
+
+	/**
+	 * Stops the flow because the current step failed (e.g., the file of a
+	 * component doesn't exist, a job was cancelled): the component is marked, the
+	 * message is printed and a new flow can be started. Can be called from any
+	 * thread; nothing happens if no flow runs.
+	 * 
+	 * @param message the reason.
+	 */
+	public static void stepFailed(String message) {
+		if (!running) {
+			return;
+		}
+		Shape shape = current;
+		failed = true;
+		reset();
+		Runnable mark = () -> {
+			if (shape != null) {
+				shape.setColor();
+			}
+		};
+		Display display = Display.getDefault();
+		if (display.getThread() == Thread.currentThread()) {
+			mark.run();
+		} else {
+			display.asyncExec(mark);
+		}
+		System.err.println("Flow stopped: " + message);
+	}
+
+	/**
+	 * Stops the flow (the stop action): a new flow can be started, the end of a
+	 * running step doesn't continue it.
+	 */
+	public static void stop() {
+		cancel = true;
+		reset();
+	}
+
+	private static void reset() {
+		running = false;
+		pause = false;
+		shapenext = null;
+		s.clear();
+	}
+
+	/** True if a flow runs (also while a step runs in a job). */
+	public static boolean isRunning() {
+		return running;
+	}
+
+	/**
+	 * The file of the flow which runs (in the workspace or a file opened from the
+	 * file system), null if not available: the files of the components are
+	 * searched relative to it too.
+	 */
+	public static File getFlowFile() {
+		ShapesEditor editor = geteditor();
+		return editor != null ? FlowPaths.flowFile(editor.getEditorInput()) : null;
 	}
 
 	private static void child(List sourceconnectionlist) {
@@ -441,40 +534,45 @@ public class BatchModel {
 		}
 
 		shapenext = null;
+		running = false;
+		pause = false;
 	}
 
 	private static void interCompile(String fileprop, String fileextension) {
 		ExecuteBatchFile.intercompile(fileprop, fileextension);
 	}
 
-	public static void recursiveBatch(String fileprop) {
-
-		IEditorPart editorStart = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-
+	/* Executes a nested flow (in the workspace or a file) and activates the parent flow again */
+	public static void recursiveBatch(File flow) {
 		IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-
-		IPath location = Path.fromOSString(fileprop);
-
-		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		IFile iFile = workspace.getRoot().getFile(location);
-
 		IWorkbenchPage page = workbenchWindow.getActivePage();
-
 		try {
-			page.openEditor(new FileEditorInput(iFile), PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(iFile.getFullPath().toString()).getId());
+			page.openEditor(editorInput(flow), FLOW_EDITOR);
 		} catch (PartInitException exception) {
 			System.out.println(exception.getMessage());
 		}
 		batch(test);
 
-		IFile ifiletemp = s.pop();
-
+		if (s.isEmpty()) {
+			return;
+		}
+		IEditorInput parent = s.pop();
 		try {
-			page.openEditor(new FileEditorInput(ifiletemp), PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(ifiletemp.getFullPath().toString()).getId());
+			page.openEditor(parent, FLOW_EDITOR);
 		} catch (PartInitException exception) {
 			System.out.println(exception.getMessage());
 		}
+	}
 
+	private static final String FLOW_EDITOR = "com.eco.bio7.floweditor.ShapesEditor";
+
+	/* The input of a file: a workspace file or a file of the file system */
+	private static IEditorInput editorInput(File file) {
+		IFile ifile = FlowPaths.workspaceFile(file);
+		if (ifile != null) {
+			return new FileEditorInput(ifile);
+		}
+		return new FileStoreEditorInput(EFS.getLocalFileSystem().getStore(file.toURI()));
 	}
 
 	/**
@@ -510,16 +608,18 @@ public class BatchModel {
 		return content;
 	}
 
+	/* The end of a step: the flow continues (only if a flow runs) */
 	public static void resumeFlow() {
+		if (!running) {
+			return;
+		}
 		pause = true;
 		Bio7Action.flowStart();
 
 	}
 
 	public static void resume() {
-		pause = true;
-		Bio7Action.flowStart();
-
+		resumeFlow();
 	}
 
 	public static void pause() {
@@ -590,7 +690,7 @@ public class BatchModel {
 		BatchModel.argument = argument;
 	}
 
-	public static Stack<IFile> getS() {
+	public static Stack<IEditorInput> getS() {
 		return s;
 	}
 

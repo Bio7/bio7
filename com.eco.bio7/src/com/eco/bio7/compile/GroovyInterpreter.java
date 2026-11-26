@@ -167,6 +167,8 @@ public class GroovyInterpreter {
 
 					BatchModel.resumeFlow();
 
+				} else {
+					BatchModel.stepFailed("the Groovy script was not executed.");
 				}
 			}
 		});

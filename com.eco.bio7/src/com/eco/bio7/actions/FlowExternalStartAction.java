@@ -22,7 +22,8 @@ public class FlowExternalStartAction extends Action {
 	public void run() {
 
 		
-		if(BatchModel.isPause()==false){
+		/* Continues a running flow (the end of a step), else starts the flow */
+		if (BatchModel.isRunning() == false || BatchModel.isPause() == false) {
 			BatchModel.batch(false);
 			}
 			else{

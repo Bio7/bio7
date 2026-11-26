@@ -417,39 +417,27 @@ class ShapeEditPart extends AbstractGraphicalEditPart implements PropertyChangeL
 			if (sh instanceof BeanShellScript) {
 				IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 
-				IPath location = Path.fromOSString(sh.getText());
-
-				IWorkspace workspace = ResourcesPlugin.getWorkspace();
-				IFile iFile = null;
-				try {
-					iFile = workspace.getRoot().getFile(location);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
 				IWorkbenchPage page = workbenchWindow.getActivePage();
-				IEditorDescriptor des = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(iFile.getFullPath().toString());
-				String id = null;
-				/* Try to open the default editors else the text editor! */
-				if (des != null) {
-					id = des.getId();
-
-					try {
-						IEditorPart par = page.openEditor(new FileEditorInput(iFile), id);
-
-					} catch (PartInitException exception) {
-
-						System.out.println(exception.getMessage());
+				IEditorPart flowEditor = page.getActiveEditor();
+				java.io.File flow = flowEditor != null ? com.eco.bio7.floweditor.model.FlowPaths.flowFile(flowEditor.getEditorInput()) : null;
+				/* The file of the component (also in a Git repository or outside of the workspace) */
+				java.io.File location = com.eco.bio7.floweditor.model.FlowPaths.location(sh.getText(), flow);
+				if (location == null || !location.exists()) {
+					System.err.println("Flow: file not found: " + sh.getText() + (location != null ? " (" + location + ")" : ""));
+					return;
+				}
+				IFile iFile = com.eco.bio7.floweditor.model.FlowPaths.workspaceFile(location);
+				try {
+					if (iFile != null) {
+						IEditorDescriptor des = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(iFile.getName());
+						/* Try to open the default editors else the text editor! */
+						page.openEditor(new FileEditorInput(iFile), des != null ? des.getId() : "org.eclipse.ui.DefaultTextEditor");
+					} else {
+						/* A file outside of the workspace */
+						org.eclipse.ui.ide.IDE.openEditorOnFileStore(page, org.eclipse.core.filesystem.EFS.getLocalFileSystem().getStore(location.toURI()));
 					}
-
-				} else {
-					try {
-						page.openEditor(new FileEditorInput(iFile), "org.eclipse.ui.DefaultTextEditor");
-					} catch (PartInitException e) {
-
-						e.printStackTrace();
-					}
+				} catch (PartInitException exception) {
+					System.out.println(exception.getMessage());
 				}
 
 			}

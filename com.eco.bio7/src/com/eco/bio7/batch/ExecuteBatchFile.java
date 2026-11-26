@@ -21,19 +21,13 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.program.Program;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.IProgressService;
@@ -50,7 +44,7 @@ import com.eco.bio7.compile.GroovyInterpreter;
 import com.eco.bio7.compile.JavaScriptInterpreter;
 import com.eco.bio7.compile.RScript;
 import com.eco.bio7.console.ConsolePageParticipant;
-import com.eco.bio7.floweditor.shapes.ShapesPlugin;
+import com.eco.bio7.floweditor.model.FlowPaths;
 import com.eco.bio7.javaeditor.Bio7EditorPlugin;
 import com.eco.bio7.jobs.ImageFlowMacroWorkspaceJob;
 import com.eco.bio7.preferences.PreferenceConstants;
@@ -68,14 +62,22 @@ public class ExecuteBatchFile {
 
 	public static void intercompile(String fileprop, String fileextension) {
 		/* Call interpreter or compiler etc. from the different extensions */
-		IWorkspaceRoot root = ShapesPlugin.getWorkspace().getRoot();
-		String fileroot = root.getLocation().toString();
-		// Get the absolute path from the relative path!
+		/*
+		 * The file of the component: a workspace path (also of a project in a Git
+		 * repository which is not in the workspace folder), a path relative to the
+		 * flow file or an absolute path (see FlowPaths)
+		 */
+		File resolved = FlowPaths.location(fileprop, BatchModel.getFlowFile());
+		if (resolved == null || !resolved.exists()) {
+			BatchModel.stepFailed("file not found: " + fileprop + (resolved != null ? " (searched: " + resolved.getPath() + ")" : ""));
+			return;
+		}
+		fileprop = resolved.getPath().replace("\\", "/");
+		String fileroot;
 
 		/* Interprets a BeanShell script! */
 		if (fileextension.equals("bsh")) {
 			BatchModel.pause();
-			fileprop = fileroot + fileprop;
 
 			String fileproper = fileprop.replace("//", "////");// Conversion
 			// For Windows!
@@ -92,7 +94,6 @@ public class ExecuteBatchFile {
 		/* Interprets a Groovy script! */
 		else if (fileextension.equals("groovy")) {
 			BatchModel.pause();
-			fileprop = fileroot + fileprop;
 
 			String fileproper = fileprop.replace("//", "////");// Conversion
 
@@ -103,7 +104,6 @@ public class ExecuteBatchFile {
 		/* Interprets a JavaScript script! */
 		else if (fileextension.equals("js")) {
 			BatchModel.pause();
-			fileprop = fileroot + fileprop;
 
 			String fileproper = fileprop.replace("//", "////");// Conversion
 
@@ -114,7 +114,6 @@ public class ExecuteBatchFile {
 		/* Interprets a Python script (the embedded Python or a Python process) */
 		else if (fileextension.equals("py")) {
 			BatchModel.pause();
-			fileprop = fileroot + fileprop;
 
 			/* The embedded Python or a Python process (preferences); the flow continues when the script has finished */
 			com.eco.bio7.pybridge.PythonScripts.runFile(fileprop, BatchModel::resumeFlow);
@@ -123,7 +122,6 @@ public class ExecuteBatchFile {
 		/* Interprets a R script! */
 		else if (fileextension.equals("R") || fileextension.equals("r")) {
 			BatchModel.pause();
-			fileprop = fileroot + fileprop;
 			String fileproper = fileprop.replace("//", "////");
 
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
@@ -159,7 +157,6 @@ public class ExecuteBatchFile {
 			IPreferenceStore store = Bio7EditorPlugin.getDefault().getPreferenceStore();
 			// classbody = store.getBoolean("classbody");
 			BatchModel.pause();
-			fileprop = fileroot + fileprop;
 			/* Compile a classbody! */
 			/*
 			 * if (classbody) { String result = BatchModel.fileToString(fileprop);
@@ -170,9 +167,13 @@ public class ExecuteBatchFile {
 			 */
 			/* Compile a main class and multiple classes! */
 			// else {
-			IWorkspace workspace = ResourcesPlugin.getWorkspace();
-			IPath location = Path.fromOSString(new File(fileprop).getAbsolutePath());
-			IFile ifile = workspace.getRoot().getFileForLocation(location);
+			IFile ifile = FlowPaths.workspaceFile(new File(fileprop));
+			if (ifile == null) {
+				/* The Java classes are compiled in their project */
+				BatchModel.stepFailed("the Java file is not in a project of the workspace: " + fileprop
+						+ "\nPlease import the project (File > Import > Existing Projects into Workspace, without copying the files).");
+				return;
+			}
 			CompileClassAndMultipleClasses cp = new CompileClassAndMultipleClasses();
 			cp.compileClasses(ifile, ifile, null);
 
@@ -185,17 +186,15 @@ public class ExecuteBatchFile {
 			/* At the moment only works with one component inside a child flow! */
 			IEditorPart editorstart = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
 					.getActiveEditor();
-			IFile ifilestart = ((IFileEditorInput) editorstart.getEditorInput()).getFile();
-			BatchModel.getS().push(ifilestart);
+			BatchModel.getS().push(editorstart.getEditorInput());
 
-			BatchModel.recursiveBatch(fileprop);
+			BatchModel.recursiveBatch(new File(fileprop));
 
 		}
 		/* Executes an ImageJ macro! */
 		else if (fileextension.equals("txt") || fileextension.equals("ijm")) {
 			// final Shape shape = a;
 			BatchModel.pause();
-			fileprop = fileroot + fileprop;
 			final File file = new File(fileprop);
 			ImageFlowMacroWorkspaceJob job = new ImageFlowMacroWorkspaceJob(file);
 
@@ -203,6 +202,8 @@ public class ExecuteBatchFile {
 				public void done(IJobChangeEvent event) {
 					if (event.getResult().isOK()) {
 						BatchModel.resume();
+					} else {
+						BatchModel.stepFailed("the ImageJ macro was not executed: " + file.getName());
 					}
 				}
 			});
@@ -332,13 +333,11 @@ public class ExecuteBatchFile {
 		}
 		/* Assigns the text to the argument variable! */
 		else if (fileextension.equals("argument")) {
-			fileprop = fileroot + fileprop;
 			BatchModel.setArgument(BatchModel.fileToString(fileprop));
 
 		}
 		/* Starts R with the specified RData file as argument(Windows!) */
 		else if (fileextension.equals("rdata")) {
-			fileprop = fileroot + fileprop;
 			String result = fileprop;
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 			String path = store.getString(PreferenceConstants.PATH_R) + "\\bin\\Rgui";
@@ -369,7 +368,6 @@ public class ExecuteBatchFile {
 		 * Starts R with the specified script in batch mode with the file as argument!
 		 */
 		else if (fileextension.equals("rbatch")) {
-			fileprop = fileroot + fileprop;
 			String result = fileprop;
 			Runtime rt;
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
@@ -399,7 +397,6 @@ public class ExecuteBatchFile {
 		/* Starts the registered pdf application with the file! */
 		else if (fileextension.equals("pdf")) {
 
-			fileprop = fileroot + fileprop;
 
 			try {
 				Program.launch(fileprop);
@@ -413,7 +410,6 @@ public class ExecuteBatchFile {
 		else if (fileextension.equals("rhtml") || fileextension.equals("Rhtml") || fileextension.equals("Rmw")
 				|| fileextension.equals("rmw") || fileextension.equals("Rmd") || fileextension.equals("rmd")
 				|| fileextension.equals("Rst") || fileextension.equals("rst")) {
-			fileprop = fileroot + fileprop;
 
 			String fileext = fileextension.replace("R", "");
 			fileext = fileext.replace("r", "");
@@ -541,7 +537,6 @@ public class ExecuteBatchFile {
 
 		else if (fileextension.equals("Rtex") || fileextension.equals("rtex")) {
 
-			fileprop = fileroot + fileprop;
 
 			String fileext = fileextension.replace("R", "");
 			fileext = fileext.replace("r", "");

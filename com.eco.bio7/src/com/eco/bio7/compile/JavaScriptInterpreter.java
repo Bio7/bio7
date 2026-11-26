@@ -162,6 +162,8 @@ public class JavaScriptInterpreter {
 
 					BatchModel.resumeFlow();
 
+				} else {
+					BatchModel.stepFailed("the JavaScript script was not executed.");
 				}
 			}
 		});

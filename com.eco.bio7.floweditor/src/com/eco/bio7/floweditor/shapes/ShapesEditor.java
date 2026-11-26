@@ -233,7 +233,7 @@ public class ShapesEditor extends GraphicalEditorWithFlyoutPalette {
 
 		getGraphicalViewer().setKeyHandler(new GraphicalViewerKeyHandler(getGraphicalViewer()).setParent(getCommonKeyHandler()));
 
-		viewer.addDropTargetListener(new FlowFileDropTargetListener(viewer));
+		viewer.addDropTargetListener(new FlowFileDropTargetListener(viewer, this::getEditorInput));
 		// configure the context menu provider
 		ContextMenuProvider cmProvider = new ShapesEditorContextMenuProvider(viewer, getActionRegistry());
 		viewer.setContextMenu(cmProvider);
@@ -424,11 +424,20 @@ public class ShapesEditor extends GraphicalEditorWithFlyoutPalette {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		try {
 			createOutputStream(out);
-			IFile file = ((IFileEditorInput) getEditorInput()).getFile();
-			file.setContents(new ByteArrayInputStream(out.toByteArray()), true, false, // dont
-					// keep
-					// history
-					monitor); // progress monitor
+			if (getEditorInput() instanceof IFileEditorInput fileInput) {
+				IFile file = fileInput.getFile();
+				file.setContents(new ByteArrayInputStream(out.toByteArray()), true, false, // dont
+						// keep
+						// history
+						monitor); // progress monitor
+			} else {
+				/* A flow opened from the file system (e.g., a Git repository which is not in the workspace) */
+				java.io.File file = com.eco.bio7.floweditor.model.FlowPaths.flowFile(getEditorInput());
+				if (file == null) {
+					return;
+				}
+				java.nio.file.Files.write(file.toPath(), out.toByteArray());
+			}
 			getCommandStack().markSaveLocation();
 		} catch (CoreException ce) {
 			ce.printStackTrace();
@@ -452,7 +461,11 @@ public class ShapesEditor extends GraphicalEditorWithFlyoutPalette {
 		// Show a SaveAs dialog
 		Shell shell = getSite().getWorkbenchWindow().getShell();
 		SaveAsDialog dialog = new SaveAsDialog(shell);
-		dialog.setOriginalFile(((IFileEditorInput) getEditorInput()).getFile());
+		if (getEditorInput() instanceof IFileEditorInput fileInput) {
+			dialog.setOriginalFile(fileInput.getFile());
+		} else {
+			dialog.setOriginalName(getEditorInput().getName());
+		}
 		dialog.open();
 
 		IPath path = dialog.getResult();
@@ -629,11 +642,21 @@ public class ShapesEditor extends GraphicalEditorWithFlyoutPalette {
 	protected void setInput(IEditorInput input) {
 		super.setInput(input);
 		try {
-			IFile file = ((IFileEditorInput) input).getFile();
-			ObjectInputStream in = new ObjectInputStream(file.getContents());
-			diagram = (ShapesDiagram) in.readObject();
-			in.close();
-			setPartName(file.getName());
+			java.io.InputStream stream;
+			if (input instanceof IFileEditorInput fileInput) {
+				stream = fileInput.getFile().getContents();
+			} else {
+				/* A flow opened from the file system (File > Open File..., a Git repository) */
+				java.io.File file = com.eco.bio7.floweditor.model.FlowPaths.flowFile(input);
+				if (file == null) {
+					throw new IOException("The flow is not a file: " + input.getName());
+				}
+				stream = new java.io.FileInputStream(file);
+			}
+			try (ObjectInputStream in = new ObjectInputStream(stream)) {
+				diagram = (ShapesDiagram) in.readObject();
+			}
+			setPartName(input.getName());
 		} catch (IOException e) {
 			handleLoadException(e);
 		} catch (CoreException e) {
@@ -648,9 +671,7 @@ public class ShapesEditor extends GraphicalEditorWithFlyoutPalette {
 		public void partActivated(IWorkbenchPart part) {
 			if (part != ShapesEditor.this)
 				return;
-			if (!((IFileEditorInput) getEditorInput()).getFile().exists()) {
-
-			}
+			/* Nothing to do */
 		}
 
 		public void partBroughtToTop(IWorkbenchPart part) {

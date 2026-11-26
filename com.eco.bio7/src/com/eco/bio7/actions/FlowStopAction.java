@@ -26,7 +26,8 @@ public class FlowStopAction extends Action {
 	}
 
 	public void run() {
-		BatchModel.setCancel(true);
+		/* A new flow can be started (the end of the running step doesn't continue it) */
+		BatchModel.stop();
 		/* The running step is interrupted: R, Python or a Java class */
 		try {
 			if (com.eco.bio7.rbridge.backend.EmbeddedR.isBusy() || com.eco.bio7.rbridge.backend.EmbeddedR.isBrowsing()) {

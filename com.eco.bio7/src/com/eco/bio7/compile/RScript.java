@@ -227,6 +227,7 @@ public class RScript {
 
 					} else {
 						RState.setBusy(false);
+						BatchModel.stepFailed("the R script was not executed.");
 					}
 				}
 			});

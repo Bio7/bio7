@@ -191,6 +191,8 @@ public class BeanShellInterpreter {
 
 					BatchModel.resumeFlow();
 
+				} else {
+					BatchModel.stepFailed("the BeanShell script was not executed.");
 				}
 			}
 		});

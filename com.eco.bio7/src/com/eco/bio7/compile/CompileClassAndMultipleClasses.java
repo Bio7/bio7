@@ -500,6 +500,8 @@ public class CompileClassAndMultipleClasses {
             public void done(IJobChangeEvent event) {
                 if (event.getResult().isOK()) {
                     BatchModel.resume();
+                } else {
+                    BatchModel.stepFailed("the Java class was not executed (cancelled or failed).");
                 }
             }
         });
