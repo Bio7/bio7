@@ -63,7 +63,6 @@ The JDK is bundled in the folder `jdk`, Nashorn in `jdk/nashorn` (macOS:
 
 | Component | License | Source |
 |---|---|---|
-| Win32-OpenSSH (Windows, `ssh_win64`) | BSD-style, see its `LICENSE.txt`; includes OpenSSL (Apache-2.0) | https://github.com/PowerShell/openssh-portable |
 | jSSC, NRJavaSerial native libraries (Windows) | LGPL-3.0 | https://github.com/java-native/jssc, https://github.com/NeuronRobotics/nrjavaserial |
 
 ## Source code included in Bio7
