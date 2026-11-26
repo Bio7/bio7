@@ -28,8 +28,9 @@ import org.eclipse.swt.widgets.Shell;
  * background of the editor folder when it is created (then still the color of
  * the views: a small rectangle in the empty editor area of the custom themes).
  * Here the controls get the current background of their editor folder: when
- * they are resized (Eclipse sizes them with the editor area) and when a theme
- * is activated.
+ * they are resized (Eclipse sizes them with the editor area), shown or painted,
+ * after the CSS engine styled them again (a perspective switch: SWT.Skin) and
+ * when a theme is activated.
  */
 final class EditorOnboarding {
 
@@ -49,6 +50,28 @@ final class EditorOnboarding {
 		installed = true;
 		display.addFilter(SWT.Resize, EditorOnboarding::handle);
 		display.addFilter(SWT.Show, EditorOnboarding::handle);
+		/* Before they are painted with another color (e.g., after a perspective switch) */
+		display.addFilter(SWT.Paint, EditorOnboarding::handle);
+		/* The CSS engine styles in a listener (after this filter): afterwards */
+		display.addFilter(SWT.Skin, e -> {
+			if (e.widget instanceof Control c && (isOnboarding(c) || c instanceof CTabFolder)) {
+				e.display.asyncExec(() -> {
+					if (c.isDisposed()) {
+						return;
+					}
+					if (isOnboarding(c)) {
+						color(c);
+					} else {
+						/* The onboarding container is a child of the editor folder */
+						for (Control child : ((CTabFolder) c).getChildren()) {
+							if (isOnboarding(child)) {
+								color(child);
+							}
+						}
+					}
+				});
+			}
+		});
 		/* The existing ones (created before this filter) */
 		apply(display);
 	}
