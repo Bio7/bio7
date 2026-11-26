@@ -153,8 +153,18 @@ public final class EmbeddedR {
 			return tooOld;
 		}
 		connectConsole();
-		/* The size of the ImageJ view for the plot canvas device */
-		Display.getDefault().syncExec(RPlotCanvasDevice::updateViewSize);
+		/*
+		 * The size of the ImageJ view for the plot canvas device: asynchronous, the
+		 * start must not wait for the user interface thread (while it repaints
+		 * continuously, e.g., an image with many overlay ROIs, a syncExec waited more
+		 * than a minute and the start of R with it)
+		 */
+		Display display = Display.getDefault();
+		if (display.getThread() == Thread.currentThread()) {
+			RPlotCanvasDevice.updateViewSize();
+		} else {
+			display.asyncExec(RPlotCanvasDevice::updateViewSize);
+		}
 		RStartOptions options = RStartOptions.of(Path.of(home)).withConsole(new RConsole() {
 			@Override
 			public void write(String text, boolean error) {

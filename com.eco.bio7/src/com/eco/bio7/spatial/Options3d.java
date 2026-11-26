@@ -332,6 +332,45 @@ public class Options3d extends ViewPart {
 				store.setValue("axisImageCoordinates", imageCoordinatesButton.getSelection());
 			}
 		});
+		/* The automatic rotation of the scene around its vertical axis (the speed is stored in the preferences) */
+		final Button autoRotateButton = check(displayGroup, "Auto Rotation",
+				"Rotates the scene continuously around its vertical (z) axis.\nThe mouse can still rotate, move and zoom the view.");
+		Composite speedRow = new Composite(displayGroup, SWT.NONE);
+		speedRow.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		GridLayout speedLayout = new GridLayout(2, false);
+		speedLayout.marginWidth = 0;
+		speedLayout.marginHeight = 0;
+		speedRow.setLayout(speedLayout);
+		Label speedLabel = new Label(speedRow, SWT.NONE);
+		speedLabel.setText("Speed (°/s)");
+		final Spinner autoRotateSpeed = new Spinner(speedRow, SWT.BORDER);
+		autoRotateSpeed.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		autoRotateSpeed.setMinimum(-360);
+		autoRotateSpeed.setMaximum(360);
+		autoRotateSpeed.setIncrement(1);
+		autoRotateSpeed.setPageIncrement(10);
+		autoRotateSpeed.setToolTipText("The speed of the automatic rotation in degrees per second (negative: the other direction)");
+		store.setDefault("autoRotateSpeed", 10f);
+		autoRotateSpeed.setSelection(Math.round(store.getFloat("autoRotateSpeed")));
+		SpatialStructure rotating = SpatialStructure.getSpatialStructureInstance();
+		autoRotateButton.setSelection(rotating != null && rotating.autoRotate);
+		autoRotateButton.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				SpatialStructure st = SpatialStructure.getSpatialStructureInstance();
+				if (st != null) {
+					st.autoRotateSpeed = autoRotateSpeed.getSelection();
+					st.autoRotate = autoRotateButton.getSelection();
+				}
+			}
+		});
+		autoRotateSpeed.addModifyListener(e -> {
+			store.setValue("autoRotateSpeed", (float) autoRotateSpeed.getSelection());
+			SpatialStructure st = SpatialStructure.getSpatialStructureInstance();
+			if (st != null) {
+				st.autoRotateSpeed = autoRotateSpeed.getSelection();
+			}
+		});
 
 		/* The grids: through the origin, at the far sides of the box and of the plot view */
 		final Group gridGroup = createGroup(composite, "Grid", 3, true);

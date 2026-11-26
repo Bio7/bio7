@@ -83,13 +83,18 @@ public class BatchModel {
 		}
 
 		test = testRun;
-		debug = geteditor().debug;
+		ShapesEditor editor = geteditor();
+		if (editor == null) {
+			warning("No Bio7 flow: please activate the editor of a flow (*.bio7flow)!");
+			return;
+		}
+		debug = editor.debug;
 		pause = false;
 		shapestart = null;
 		shapestop = null;
 		cancel = false;
 
-		ShapesDiagram diagram = getActiveDiagram();
+		ShapesDiagram diagram = editor.getModel();
 		dia = diagram.getChildren();
 
 		if (dia.size() > 0) {
@@ -162,21 +167,27 @@ public class BatchModel {
 
 	}
 
+	/*
+	 * The Flow editor of the running flow: a step of the flow may open or activate
+	 * another editor (e.g., the Java file of a step), and the flow continues later
+	 * (pause, the external start action) with the editor it started with.
+	 */
+	private static ShapesEditor flowEditor;
+
 	private static ShapesDiagram getActiveDiagram() {
-		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		ShapesDiagram diagram = ((ShapesEditor) editor).getModel();
-		return diagram;
+		ShapesEditor editor = geteditor();
+		return editor != null ? editor.getModel() : null;
 	}
 
+	/* The active Flow editor (remembered), else the Flow editor of the flow, else null */
 	private static ShapesEditor geteditor() {
-		IEditorPart editor = (IEditorPart) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		if (editor != null || editor instanceof ShapesEditor) {
-			ShapesEditor shapeeditor = (ShapesEditor) editor;
-			return shapeeditor;
-		} else {
-			return null;
+		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+		IWorkbenchPage page = window != null ? window.getActivePage() : null;
+		IEditorPart editor = page != null ? page.getActiveEditor() : null;
+		if (editor instanceof ShapesEditor shapes) {
+			flowEditor = shapes;
 		}
-
+		return flowEditor;
 	}
 
 	/**
@@ -185,7 +196,11 @@ public class BatchModel {
 	public static void batchStart() {
 		while (shapenext != null && cancel == false && pause == false) {
 
-			debug = geteditor().debug;
+			/* The editor of the flow (not the editor which a step activated) */
+			ShapesEditor editor = geteditor();
+			if (editor != null) {
+				debug = editor.debug;
+			}
 			Shape a = shapenext;
 			if (debug) {// Send shape if debug is true!
 				a.setColor();
@@ -597,6 +612,9 @@ public class BatchModel {
 
 	public static void eraseColours() {
 		ShapesDiagram diagram = getActiveDiagram();
+		if (diagram == null) {
+			return;
+		}
 		dia = diagram.getChildren();
 		if (dia.size() > 0) {
 			for (int i = 0; i < dia.size(); i++) {// Search a start!

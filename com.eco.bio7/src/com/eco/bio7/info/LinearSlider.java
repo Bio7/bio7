@@ -51,7 +51,6 @@ public class LinearSlider extends Canvas {
 	private double labelFactor = 1;
 	private boolean dragging;
 	/* Without an own background the slider has the background of its parent */
-	private boolean backgroundSet;
 	/* Without an own font the slider uses the font of the parent */
 	private boolean fontSet;
 	/* Without an own text color the slider has the text color of its parent */
@@ -126,10 +125,18 @@ public class LinearSlider extends Canvas {
 		return text instanceof Color color && !color.isDisposed() ? color : getParent().getForeground();
 	}
 
-	@Override
-	public void setBackground(Color color) {
-		super.setBackground(color);
-		backgroundSet = color != null;
+	/*
+	 * The background of the parent (the panel or the group of the theme, as the
+	 * labels beside the slider): a background of the slider itself comes only from
+	 * the CSS of the themes (e.g., the fixed grey of ".MPartStack.active CTabFolder
+	 * Canvas" of the dark theme, darker than the panel of other dark themes).
+	 * macOS: the painted fill of a group (see GroupColors).
+	 */
+	private Color paintBackground() {
+		if (groupFill() != null) {
+			return groupFill();
+		}
+		return getParent() == null ? getBackground() : getParent().getBackground();
 	}
 
 	@Override
@@ -329,7 +336,7 @@ public class LinearSlider extends Canvas {
 		 * theme): the double buffer is filled with the default background of the
 		 * slider (not transparent)!
 		 */
-		Color bg = groupFill() != null ? groupFill() : backgroundSet || getParent() == null ? getBackground() : getParent().getBackground();
+		Color bg = paintBackground();
 		Color trackColor = blend(fg, bg, 0.3);
 		Color minorColor = blend(fg, bg, 0.4);
 		Color majorColor = blend(fg, bg, 0.7);

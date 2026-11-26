@@ -15,11 +15,7 @@ package com.eco.bio7.reditor.database.view;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Iterator;
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.InputDialog;
@@ -56,7 +52,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.osgi.framework.Bundle;
 
 import com.eco.bio7.reditor.Bio7REditorPlugin;
 import com.eco.bio7.util.Bio7Dialog;
@@ -806,13 +801,25 @@ public class DatabaseView extends ViewPart {
 		new Label(composite_1, SWT.NONE);
 		new Label(composite_1, SWT.NONE);
 
+		/* Windows: the OpenSSH client of Windows (or a download if it is not installed) */
+		boolean windows = Util.getOS().equals("Windows");
+		boolean windowsSsh = windows && isWindowsSshInstalled();
 		Label lblDownloadWindows = new Label(composite_1, SWT.NONE);
-		lblDownloadWindows.setText("Download SSH Windows:");
-		new Label(composite_1, SWT.NONE);
-		new Label(composite_1, SWT.NONE);
+		lblDownloadWindows.setText("SSH on Windows:");
+		Label lblWindowsSsh = new Label(composite_1, SWT.WRAP);
+		lblWindowsSsh.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+		if (!windows) {
+			lblWindowsSsh.setText("(Linux and macOS: the ssh of the system)");
+		} else if (windowsSsh) {
+			lblWindowsSsh.setText("OpenSSH client of Windows");
+		} else {
+			lblWindowsSsh.setText("Not found: install \"OpenSSH Client\" (Settings > System > Optional features) or ssh.exe:");
+		}
+		lblWindowsSsh.setToolTipText(getSshWindowsPath());
 
 		Link link_1 = new Link(composite_1, SWT.NONE);
-		link_1.setText("<a href=\"https://github.com/PowerShell/Win32-OpenSSH/releases\">ssh.exe</a>");
+		link_1.setText("<a href=\"https://github.com/PowerShell/Win32-OpenSSH/releases\">Win32-OpenSSH</a>");
+		link_1.setToolTipText("Win32-OpenSSH (if the OpenSSH client of Windows is not installed): the folder of ssh.exe must be in the PATH");
 		link_1.addSelectionListener(new SelectionAdapter() {
 
 			@Override
@@ -1078,19 +1085,32 @@ public class DatabaseView extends ViewPart {
 		// Set the focus
 	}
 
+	/**
+	 * The ssh client on Windows: the OpenSSH client of Windows (part of Windows 10
+	 * 1809+ and Windows 11, %WINDIR%\System32\OpenSSH\ssh.exe), else "ssh" of the
+	 * PATH (e.g., Win32-OpenSSH installed by the user). Bio7 no longer bundles its
+	 * own ssh.exe. The path has forward slashes (used in the R code of the tunnel).
+	 */
 	public static String getSshWindowsPath() {
-		Bundle bundle = Platform.getBundle("com.eco.bio7.win32.x86_64");
-		Path path = new Path("ssh_win64/ssh.exe");
-		URL locationURL = FileLocator.find(bundle, path, null);
-		URL fileUrl = null;
-		try {
-			fileUrl = FileLocator.toFileURL(locationURL);
-		} catch (IOException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
+		File ssh = windowsSsh();
+		return ssh != null ? ssh.getAbsolutePath().replace('\\', '/') : "ssh";
+	}
+
+	/** True if the OpenSSH client of Windows is installed. */
+	public static boolean isWindowsSshInstalled() {
+		return windowsSsh() != null;
+	}
+
+	private static File windowsSsh() {
+		String windir = System.getenv("WINDIR");
+		if (windir == null) {
+			windir = System.getenv("SystemRoot");
 		}
-		String pathBundle = fileUrl.getFile().replaceFirst("/", "");
-		return pathBundle;
+		if (windir == null) {
+			return null;
+		}
+		File ssh = new File(windir, "System32\\OpenSSH\\ssh.exe");
+		return ssh.isFile() ? ssh : null;
 	}
 
 }

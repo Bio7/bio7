@@ -33,7 +33,7 @@ import org.eclipse.swt.widgets.Text;
  * The dialog "Experiment" of the settings of a model: runs the model several
  * times without a display (a sweep of the parameters, repetitions, steps) and
  * saves the table as a CSV file in the project of the model (and as a data
- * frame in R). Java models run in parallel threads ({@link Experiment}), Python
+ * frame in R and in Python). Java models run in parallel threads ({@link Experiment}), Python
  * and R models in their interpreter (experiment() of bio7sim).
  */
 final class ExperimentDialog {
@@ -41,8 +41,8 @@ final class ExperimentDialog {
 	private final Simulation model;
 	private final ScriptSimulation.Script script;
 	private final Map<String, Text> values = new LinkedHashMap<>();
-	private Text steps, repetitions, seed, every, file, rName;
-	private Button toR, run, cancel;
+	private Text steps, repetitions, seed, every, file, rName, pyName;
+	private Button toR, toPy, run, cancel;
 	private ProgressBar bar;
 	private Label status;
 	private volatile Experiment running;
@@ -95,6 +95,13 @@ final class ExperimentDialog {
 		rName = new Text(shell, SWT.BORDER);
 		rName.setText("experiment");
 		rName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		toPy = new Button(shell, SWT.CHECK);
+		toPy.setText("Data frame in Python:");
+		toPy.setToolTipText("A pandas DataFrame in the Python console (a list of dicts without pandas)");
+		toPy.setSelection(isPython() || pythonRunning());
+		pyName = new Text(shell, SWT.BORDER);
+		pyName.setText("experiment");
+		pyName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		bar = new ProgressBar(shell, SWT.HORIZONTAL);
 		bar.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 		status = new Label(shell, SWT.WRAP);
@@ -183,6 +190,18 @@ final class ExperimentDialog {
 		return String.valueOf(v);
 	}
 
+	private boolean isPython() {
+		return script != null && !isR();
+	}
+
+	private static boolean pythonRunning() {
+		try {
+			return com.eco.bio7.pybridge.EmbeddedPython.isRunning();
+		} catch (Throwable e) {
+			return false;
+		}
+	}
+
 	private static boolean rRunning() {
 		try {
 			com.eco.bio7.rffm.RSession s = com.eco.bio7.rffm.RSession.current();
@@ -201,6 +220,10 @@ final class ExperimentDialog {
 			nRep = Integer.parseInt(repetitions.getText().trim());
 			nSeed = Integer.parseInt(seed.getText().trim());
 			nEvery = Integer.parseInt(every.getText().trim());
+			String py = pyName.getText().trim();
+			if (toPy.getSelection() && !py.isEmpty() && !Experiment.isPythonName(py)) {
+				throw new IllegalArgumentException("Not a name of a Python variable: " + py);
+			}
 			for (Map.Entry<String, Text> e : values.entrySet()) {
 				Object[] v = Experiment.values(e.getValue().getText());
 				if (v.length == 0) {
@@ -220,6 +243,8 @@ final class ExperimentDialog {
 		String shown = out.toPath().normalize().startsWith(project.toPath().normalize()) ? project.getName() + "/" + project.toPath().normalize().relativize(out.toPath().normalize()).toString().replace('\\', '/') : out.getPath();
 		boolean r = toR.getSelection();
 		String frame = rName.getText().trim().isEmpty() ? "experiment" : rName.getText().trim();
+		/* The variable of Python (null: none) */
+		String pyFrame = !toPy.getSelection() ? null : pyName.getText().trim().isEmpty() ? "experiment" : pyName.getText().trim();
 		run.setEnabled(false);
 		Display display = shell.getDisplay();
 		cancel.setEnabled(true);
@@ -240,8 +265,15 @@ final class ExperimentDialog {
 		Runnable work = () -> {
 			String message;
 			try {
-				int rows = script == null ? runJava(sweep, nSteps, nRep, nSeed, nEvery, out, r, frame, display) : runScript(sweep, nSteps, nRep, nSeed, nEvery, out, r, frame);
-				message = rows + " rows saved to " + shown + (r ? (rRunning() ? " and as the data frame " + frame + " in R." : " (R is not running: no data frame).") : ".");
+				int rows = script == null ? runJava(sweep, nSteps, nRep, nSeed, nEvery, out, r, frame, pyFrame, display) : runScript(sweep, nSteps, nRep, nSeed, nEvery, out, r, frame, pyFrame);
+				List<String> also = new ArrayList<>();
+				if (r) {
+					also.add(rRunning() ? "as the data frame " + frame + " in R" : "not in R (R is not running)");
+				}
+				if (pyFrame != null) {
+					also.add(pythonRunning() ? "as " + pyFrame + " in Python" : "not in Python (Python is not running)");
+				}
+				message = rows + " rows saved to " + shown + (also.isEmpty() ? "." : ", " + String.join(", ", also) + ".");
 				refresh(out);
 			} catch (Throwable e) {
 				Throwable c = e instanceof ScriptSimulation.ScriptException && e.getCause() != null ? e.getCause() : e;
@@ -287,7 +319,7 @@ final class ExperimentDialog {
 		}
 	}
 
-	private int runJava(Map<String, Object[]> sweep, int nSteps, int nRep, int nSeed, int nEvery, File out, boolean r, String frame, Display display) throws Exception {
+	private int runJava(Map<String, Object[]> sweep, int nSteps, int nRep, int nSeed, int nEvery, File out, boolean r, String frame, String pyFrame, Display display) throws Exception {
 		Experiment x = new Experiment(model).steps(nSteps).repetitions(nRep).seed(nSeed).every(nEvery);
 		for (Map.Entry<String, Object[]> e : sweep.entrySet()) {
 			x.paramValues(e.getKey(), e.getValue());
@@ -305,11 +337,14 @@ final class ExperimentDialog {
 		if (r) {
 			t.toR(frame);
 		}
+		if (pyFrame != null) {
+			t.toPython(pyFrame);
+		}
 		return t.size();
 	}
 
 	/* Python and R: experiment() of bio7sim in the interpreter (in the thread of the script) */
-	private int runScript(Map<String, Object[]> sweep, int nSteps, int nRep, int nSeed, int nEvery, File out, boolean r, String frame) throws Exception {
+	private int runScript(Map<String, Object[]> sweep, int nSteps, int nRep, int nSeed, int nEvery, File out, boolean r, String frame, String pyFrame) throws Exception {
 		out.getParentFile().mkdirs();
 		String path = out.getAbsolutePath().replace('\\', '/');
 		if ("r".equals(script.spec().language)) {
@@ -334,6 +369,9 @@ final class ExperimentDialog {
 			double[] n = s.evalDoubles("nrow(" + name + ")");
 			/* The model ran in the experiment: its setup again */
 			model.setup();
+			if (pyFrame != null) {
+				Experiment.csvToPython(out, pyFrame);
+			}
 			return n.length > 0 ? (int) n[0] : 0;
 		}
 		StringBuilder json = new StringBuilder("{\"params\": {");
@@ -347,7 +385,12 @@ final class ExperimentDialog {
 			json.append(']');
 		}
 		json.append("}, \"steps\": ").append(nSteps).append(", \"repetitions\": ").append(nRep).append(", \"seed\": ").append(nSeed).append(", \"every\": ").append(nEvery)
-				.append(", \"file\": ").append(JavaToJs.quote(path)).append('}');
+				.append(", \"file\": ").append(JavaToJs.quote(path));
+		/* The table also as a variable of the Python console (in the experiment, the model runs in Python) */
+		if (pyFrame != null) {
+			json.append(", \"frame\": ").append(JavaToJs.quote(pyFrame));
+		}
+		json.append('}');
 		ScriptSimulation.State st = script.run("experiment", json.toString());
 		if (r && rRunning()) {
 			com.eco.bio7.rffm.RSession.current().voidEval(frame + " <- utils::read.csv(" + JavaToJs.quote(path) + ", check.names = FALSE, stringsAsFactors = FALSE)");

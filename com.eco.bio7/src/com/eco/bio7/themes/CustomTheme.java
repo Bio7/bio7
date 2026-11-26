@@ -1031,6 +1031,15 @@ public class CustomTheme {
 				+ ".MPart Group ScrolledComposite,\n.MPart Group Button[style~='SWT.CHECK'],\n.MPart Group Button[style~='SWT.RADIO'],\n"
 				+ ".MPart Group Scale,\n.MPart Group Slider" + (COCOA ? "" : ",\n.MPart Group"),
 				"background-color: " + c("groupBackground") + ";");
+		/*
+		 * The canvases of the views (e.g., the sliders of the Options Space view):
+		 * the base dark theme gives them a fixed grey (".MPartStack.active CTabFolder
+		 * Canvas", more specific than ".MPart Canvas"), only the panel of the default
+		 * dark theme has this grey. More specific: the color of the panel and of the
+		 * groups (the rule of the groups after the rule of the panel).
+		 */
+		rule(css, ".MPartStack .MPart Canvas,\n.MPartStack.active .MPart Canvas", "background-color: " + c("panelBackground") + ";\n\tcolor: " + c("text") + ";");
+		rule(css, ".MPartStack .MPart Group Canvas,\n.MPartStack.active .MPart Group Canvas", "background-color: " + c("groupBackground") + ";");
 		/* The links of the forms (e.g., "Create a project..." in the empty Project Explorer have a white background) */
 		rule(css, ".MPart Hyperlink,\n.MPart ImageHyperlink,\n.MPart FormText", "background-color: " + c("panelBackground") + ";");
 		/*

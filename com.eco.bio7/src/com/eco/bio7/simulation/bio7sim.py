@@ -1627,6 +1627,17 @@ def _do(op, arg=""):
         rows = experiment(m, spec.get("params", {}), spec.get("steps", 100), spec.get("repetitions", 1),
                           spec.get("seed", DEFAULT_SEED), spec.get("every", 1), as_frame=False)
         _csv(rows, spec["file"])
+        # the table also as a variable of the console (a pandas DataFrame, a list of dicts without pandas)
+        frame = spec.get("frame")
+        if frame:
+            import __main__
+            value = rows
+            try:
+                import pandas as pd
+                value = pd.DataFrame(rows)
+            except ImportError:
+                pass
+            setattr(__main__, frame, value)
         return {"rows": float(len(rows))}
     s = m._state()
     s["chart_names"] = [c[0] for c in m._charts]

@@ -438,7 +438,7 @@ public class SpatialView extends ViewPart {
 			clip.reset();
 		}
 		org.eclipse.jface.preference.IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
-		for (String key : new String[] { "plotView", "showAxisGizmo", "textureFlipVertically", "axisImageCoordinates",
+		for (String key : new String[] { "plotView", "showAxisGizmo", "autoRotateSpeed", "textureFlipVertically", "axisImageCoordinates",
 				"spatialX", "spatialY", "spatialZ" }) {
 			store.setToDefault(key);
 		}

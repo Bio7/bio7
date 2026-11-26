@@ -48,6 +48,7 @@ import java.util.function.BiConsumer;
  * 		.run();
  * t.save("experiment.csv");   // a file of the project (relative path) or an absolute path
  * t.toR("experiment");        // a data frame in R (if R runs)
+ * t.toPython("experiment");   // a pandas DataFrame in Python (if Python runs)
  * </pre>
  *
  * The seed of repetition k is seed + k (the same seeds for all parameter
@@ -428,6 +429,54 @@ public final class Experiment {
 		return v.toArray();
 	}
 
+	/** True if the name is a name of a Python variable (letters, digits, _; not a keyword). */
+	public static boolean isPythonName(String name) {
+		return name != null && name.matches("[A-Za-z_][A-Za-z0-9_]*") && !PYTHON_KEYWORDS.contains(name);
+	}
+
+	private static final java.util.Set<String> PYTHON_KEYWORDS = java.util.Set.of("False", "None", "True", "and", "as", "assert", "async", "await", "break", "class", "continue", "def", "del", "elif", "else", "except",
+			"finally", "for", "from", "global", "if", "import", "in", "is", "lambda", "nonlocal", "not", "or", "pass", "raise", "return", "try", "while", "with", "yield");
+
+	/**
+	 * Reads a CSV file of an experiment (NA, TRUE, FALSE) into a variable of the
+	 * embedded Python (the namespace of the console, __main__): a pandas DataFrame,
+	 * a list of dicts without pandas. Returns false if Python is not running.
+	 */
+	public static boolean csvToPython(File csv, String name) throws Exception {
+		if (!isPythonName(name)) {
+			throw new IllegalArgumentException("Not a name of a Python variable: " + name);
+		}
+		com.eco.bio7.pyffm.PySession s = com.eco.bio7.pybridge.EmbeddedPython.session();
+		if (s == null) {
+			return false;
+		}
+		String path = JavaToJs.quote(csv.getAbsolutePath().replace('\\', '/'));
+		s.exec("""
+				def _bio7_experiment(path, name):
+				    import __main__
+				    try:
+				        import pandas as pd
+				        value = pd.read_csv(path, na_values=["NA"], keep_default_na=False, true_values=["TRUE"], false_values=["FALSE"])
+				    except ImportError:
+				        import csv
+				        def cell(x):
+				            if x == "NA":
+				                return None
+				            if x in ("TRUE", "FALSE"):
+				                return x == "TRUE"
+				            for convert in (int, float):
+				                try:
+				                    return convert(x)
+				                except ValueError:
+				                    pass
+				            return x
+				        with open(path, newline="", encoding="utf-8") as f:
+				            value = [{k: cell(v) for k, v in row.items()} for row in csv.DictReader(f)]
+				    setattr(__main__, name, value)
+				""" + "_bio7_experiment(" + path + ", " + JavaToJs.quote(name) + ")\ndel _bio7_experiment\n");
+		return true;
+	}
+
 	/** The result of an experiment: a row for each recorded step of each run. */
 	public static final class Table {
 
@@ -541,6 +590,21 @@ public final class Experiment {
 				tmp.delete();
 			}
 			return true;
+		}
+
+		/**
+		 * The table as a variable with the name in the embedded Python (Bio7 with a
+		 * running Python): a pandas DataFrame, a list of dicts without pandas.
+		 * Returns false if Python is not running.
+		 */
+		public boolean toPython(String name) throws Exception {
+			File tmp = File.createTempFile("bio7experiment", ".csv");
+			try {
+				Files.writeString(tmp.toPath(), csv(), StandardCharsets.UTF_8);
+				return csvToPython(tmp, name);
+			} finally {
+				tmp.delete();
+			}
 		}
 
 		@Override

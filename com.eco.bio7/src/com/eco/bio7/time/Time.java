@@ -95,8 +95,9 @@ public class Time {
 
 			public void run() {
 
+				/* The label of the Info view (disposed if the view was closed) */
 				Label lblTimesteps = InfoView.getLblTimesteps();
-				if (lblTimesteps != null) {
+				if (lblTimesteps != null && !lblTimesteps.isDisposed()) {
 					lblTimesteps.setText("Time steps: " + Time.getTime());
 				}
 			}

@@ -526,12 +526,16 @@ public class ConsolePageParticipant implements IConsolePageParticipant {
 				 */
 				ProcessBuilder builder = new ProcessBuilder("cmd");
 				builder.redirectErrorStream(true);
-				/* Add SSH path to local shell environment! */
+				/* The folder of the ssh client of Windows in the PATH of the shell (if it is missing there) */
 				Map<String, String> envs = builder.environment();
-				String addPath = DatabaseView.getSshWindowsPath();
-				addPath = new File(addPath).getParent();
+				String addPath = new File(DatabaseView.getSshWindowsPath()).getParent();
+				String pathKey = envs.containsKey("Path") ? "Path" : "PATH";
+				String current = envs.getOrDefault(pathKey, "");
 				if (addPath != null) {
-					envs.put("Path", envs.get("Path") + addPath.replace("/", "\\"));
+					addPath = addPath.replace("/", "\\");
+					if (!current.toLowerCase().contains(addPath.toLowerCase())) {
+						envs.put(pathKey, current.isEmpty() ? addPath : current + File.pathSeparator + addPath);
+					}
 				}
 				nativeShellProcess = builder.start();
 				nativeShellprocessThread = new Thread(new NativeProcessGrabber());

@@ -20,7 +20,6 @@ import ij.gui.Roi;
 import ij.measure.ResultsTable;
 import ij.plugin.filter.Analyzer;
 import ij.process.ImageProcessor;
-import ij.text.TextWindow;
 import com.eco.bio7.rffm.RException;
 
 /**
@@ -31,7 +30,12 @@ public class IJTranserResultsTable {
 
 	public void transferResultsTable(RBackend con, boolean dialog) {
 		ResultsTable rt = Analyzer.getResultsTable();
-		if (rt == null || ResultsTable.getResultsWindow() == null) {
+		/*
+		 * The table itself, not its window: ResultsTable.getResultsWindow() asks the
+		 * user interface thread (WindowManager, syncExec). This job waited there more
+		 * than a minute while the image with the particle overlay was repainted.
+		 */
+		if (rt == null || rt.size() == 0) {
 			String mess = "No ImageJ Results Table";
 			if (dialog) {
 
@@ -310,9 +314,9 @@ public class IJTranserResultsTable {
 		// IJ.runMacro("run(\"Analyze Particles...\", \"size=0-Infinity
 		// circularity=0.00-1.00 show=Nothing display clear stack\")");
 		// System.out.println(rt.getColumnHeadings());
+		/* The table, not its window (see transferResultsTable: no wait for the user interface thread) */
 		ResultsTable rt = Analyzer.getResultsTable();
-		TextWindow resultsWindow = ResultsTable.getResultsWindow();
-		if (rt == null || resultsWindow == null) {
+		if (rt == null || rt.size() == 0) {
 			System.out.println("No ImageJ Results Table");
 		} else {
 
@@ -352,9 +356,13 @@ public class IJTranserResultsTable {
 						}
 					}
 				}
-				if (resultsWindow != null) {
-					resultsWindow.close(false);
-				}
+				/* The window of the results is closed by the user interface thread later (the transfer doesn't wait) */
+				org.eclipse.swt.widgets.Display.getDefault().asyncExec(() -> {
+					var resultsWindow = ResultsTable.getResultsWindow();
+					if (resultsWindow != null) {
+						resultsWindow.close(false);
+					}
+				});
 				try {
 					con.eval("try(Particles[1]<-NULL)");
 				} catch (RException e) {

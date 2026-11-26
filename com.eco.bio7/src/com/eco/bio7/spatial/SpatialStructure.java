@@ -277,6 +277,16 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	public volatile float[] plotFontScales = { 1, 1, 1, 1 };
 	/* The axis orientation overlay in the top right corner */
 	public boolean showAxisGizmo = true;
+	/**
+	 * The automatic rotation of the scene around its vertical axis (z, the height):
+	 * on/off and the speed in degrees per second (negative: the other direction).
+	 * Not in the walkthrough. The mouse rotation still works (the axis of the turn
+	 * is the z axis of the scene).
+	 */
+	public volatile boolean autoRotate;
+	public volatile float autoRotateSpeed = 10f;
+	/* The time of the last frame of the automatic rotation (0: not rotating) */
+	private long autoRotateLast;
 	private final AxisGizmo axisGizmo = new AxisGizmo();
 	/* The pixels per point of the canvas (HiDPI, updated when the canvas is resized) */
 	private volatile float canvasPixelScale = 1;
@@ -415,6 +425,9 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		plotView = store.getBoolean("plotView");
 		store.setDefault("showAxisGizmo", true);
 		showAxisGizmo = store.getBoolean("showAxisGizmo");
+		/* The speed of the automatic rotation (the rotation itself is off at the start) */
+		store.setDefault("autoRotateSpeed", 10f);
+		autoRotateSpeed = store.getFloat("autoRotateSpeed");
 		/* Get the split view coordinates from the preferences! */
 		pref3d.getSplitViewCameraValues();
 
@@ -846,6 +859,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 			synchronized (matrixLock) {
 				ThisRot.get(matrix);
 			}
+			autoRotate();
 
 			if (localLight == false) {
 				lightPosition(gl);
@@ -976,6 +990,24 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		 * 
 		 * } }
 		 */
+
+		/*
+		 * The automatic rotation: the angle around the z axis of the scene grows with
+		 * the time (the same speed at each frame rate; a pause of the rendering, e.g.,
+		 * a hidden view, is no jump)
+		 */
+		private void autoRotate() {
+			long now = System.nanoTime();
+			if (!autoRotate || walkthrough) {
+				autoRotateLast = 0;
+				return;
+			}
+			if (autoRotateLast != 0) {
+				float seconds = Math.min(0.25f, (now - autoRotateLast) / 1e9f);
+				rotatz = (rotatz + autoRotateSpeed * seconds) % 360f;
+			}
+			autoRotateLast = now;
+		}
 
 		private void views(GLAutoDrawable drawable, int view) {
 
@@ -1573,6 +1605,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 		plotGridYZ = true;
 		resetPlotLabels();
 		showAxisGizmo = true;
+		autoRotate = false;
 		if (axisLabelsRenderer != null) {
 			axisLabelsRenderer.setEnabled(false);
 		}
