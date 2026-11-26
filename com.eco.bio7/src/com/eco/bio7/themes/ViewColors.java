@@ -52,6 +52,8 @@ final class ViewColors {
 		ListSelectionColors.install();
 		/* macOS 26+: the rows of the lists with the height of the font (the native rows are 24 points for every font) */
 		CompactLists.install();
+		/* The onboarding controls of the empty editor area with the color of the editor area */
+		EditorOnboarding.install(Display.getDefault());
 		if (installed || !PlatformUI.isWorkbenchRunning()) {
 			return;
 		}
@@ -91,6 +93,7 @@ final class ViewColors {
 	static void apply() {
 		applyGridHeaders();
 		applyFlowCanvases();
+		EditorOnboarding.apply(Display.getDefault());
 		/* The gaps of the theme (or of the preferences) */
 		WindowGaps.apply();
 		if (!PlatformUI.isWorkbenchRunning()) {

@@ -1011,7 +1011,8 @@ public class CustomTheme {
 		rule(css, "#com-eco-bio7-imagej CTabFolder,\n#com-eco-bio7-rbridge-RTable CTabFolder", "swt-unselected-tabs-color: " + c("consoleBackground") + ";");
 		/*
 		 * The empty editor area and the Outline (its page with the message or the tree)
-		 * with the darker background of the work areas
+		 * with the darker background of the work areas (the onboarding controls in the
+		 * middle of the empty editor area: see EditorOnboarding)
 		 */
 		rule(css, "#org-eclipse-ui-editorss,\n#org-eclipse-ui-editorss CTabFolder,\nCTabFolder.MArea,\n"
 				+ "#org-eclipse-ui-views-ContentOutline .MPart Composite,\n#org-eclipse-ui-views-ContentOutline .MPart Label,\n"
