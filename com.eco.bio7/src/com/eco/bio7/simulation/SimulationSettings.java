@@ -757,7 +757,7 @@ public final class SimulationSettings {
 			synchronized (model) {
 				m.invoke(model);
 			}
-			model.display();
+			model.show();
 		} catch (IllegalAccessException | InvocationTargetException e) {
 			Throwable cause = e instanceof InvocationTargetException ite ? ite.getCause() : e;
 			System.err.println("The action " + m.getName() + " failed:");
@@ -795,7 +795,7 @@ public final class SimulationSettings {
 			if (restart) {
 				model.setup();
 			} else {
-				model.display();
+				model.show();
 			}
 		} catch (IllegalAccessException | IllegalArgumentException e) {
 			e.printStackTrace();

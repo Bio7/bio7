@@ -147,7 +147,7 @@ public final class ScriptSimulation {
 					((Applier) model).apply(st);
 					charts(model, st);
 				}
-				model.display();
+				model.show();
 			});
 		}
 
@@ -162,7 +162,7 @@ public final class ScriptSimulation {
 				if (p.restart) {
 					model.setup();
 				} else {
-					model.display();
+					model.show();
 				}
 			});
 		}
@@ -175,7 +175,7 @@ public final class ScriptSimulation {
 					((Applier) model).apply(st);
 					charts(model, st);
 				}
-				model.display();
+				model.show();
 			});
 		}
 

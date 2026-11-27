@@ -843,6 +843,32 @@ public abstract class AgentModel<A extends Agent> extends Simulation {
 	}
 
 	private volatile Shown shown;
+	/*
+	 * The state of the current frame of the 3D view: taken before the cameras of
+	 * the frame (SpatialStructure.beforeFrame), so that all views of the frame and
+	 * the camera which follows an agent show the same step (a new step during the
+	 * frame would draw the scene one step ahead of the camera: a jump forward and
+	 * back)
+	 */
+	private volatile Shown frameShown;
+	private final Runnable frameStart = this::frameStart;
+
+	private void frameStart() {
+		if (com.eco.bio7.methods.Compiled.getModel() != this) {
+			return;
+		}
+		Shown sh = shown;
+		frameShown = sh;
+		/* The custom camera behind the followed agent (the coordinates of the walkthrough: x, z, -y) */
+		if (sh != null && sh.follow >= 0 && sh.follow < Math.min(sh.rgb.length, sh.xyz.length / 3)) {
+			int i = sh.follow;
+			double s = scale(), ox = -boxWidth * s / 2, oy = -boxHeight * s / 2;
+			double r = (agentRadius > 0 ? agentRadius : Math.max(boxWidth, Math.max(boxHeight, boxDepth)) * 0.01) * s;
+			double px = ox + sh.xyz[i * 3] * s, py = oy + sh.xyz[i * 3 + 1] * s, pz = sh.xyz[i * 3 + 2] * s;
+			double yr = Math.toRadians(sh.yaw[i]), behind = r * 12, above = r * 3;
+			com.eco.bio7.spatial.SpatialCamera.setCustomCamera(px - Math.cos(yr) * behind, pz + above, -(py - Math.sin(yr) * behind), px, pz, -py);
+		}
+	}
 	/* The last position of an agent: x, y, heading, z, the direction dx, dy, dz, the yaw and the bank */
 	private final java.util.IdentityHashMap<Agent, double[]> lastPositions = new java.util.IdentityHashMap<>();
 
@@ -888,10 +914,25 @@ public abstract class AgentModel<A extends Agent> extends Simulation {
 				lastBank = before[8];
 				double mx = a.x - before[0], my = a.y - before[1], mz = a.z - before[3];
 				boolean jump = Math.abs(mx) > boxWidth / 2 || Math.abs(my) > boxHeight / 2;
-				if (!jump && mx * mx + my * my + mz * mz > 0) {
-					dx = mx;
-					dy = my;
-					dz = mz;
+				double len = Math.sqrt(mx * mx + my * my + mz * mz);
+				if (!jump && len > 0) {
+					/* Smoothed over the steps (half the new movement): the gliders do not jitter with small changes of the direction */
+					double old = Math.sqrt(dx * dx + dy * dy + dz * dz);
+					if (old > 0) {
+						dx = 0.5 * dx / old + 0.5 * mx / len;
+						dy = 0.5 * dy / old + 0.5 * my / len;
+						dz = 0.5 * dz / old + 0.5 * mz / len;
+					} else {
+						dx = mx;
+						dy = my;
+						dz = mz;
+					}
+					/* A reversal (opposite directions): the new direction */
+					if (dx * dx + dy * dy + dz * dz < 1e-6) {
+						dx = mx;
+						dy = my;
+						dz = mz;
+					}
 				}
 			}
 			/* A given heading (0: the direction of y, clockwise) sets the yaw */
@@ -915,6 +956,8 @@ public abstract class AgentModel<A extends Agent> extends Simulation {
 		int[] pairs = getLinks();
 		shown = new Shown(xyz, rgb, images, models, animations, headings, sizes, getDrawing(), getImageFiles(), getModelFiles(), yaw, pitch, bank,
 				agentShape, floor, shadows, followAgent, getModels(), pairs, linkColors(pairs), linkColor, linkWidth);
+		/* The state of each frame is taken before its cameras */
+		com.eco.bio7.spatial.SpatialStructure.beforeFrame = frameStart;
 		camera(followAgent);
 	}
 
@@ -941,7 +984,8 @@ public abstract class AgentModel<A extends Agent> extends Simulation {
 
 	@Override
 	public void run(GL2 gl, GLU glu, GLUT glut) {
-		Shown sh = shown;
+		Shown fs = frameShown;
+		Shown sh = fs != null ? fs : shown;
 		double[] xyz = sh != null ? sh.xyz : shownXyz;
 		int[] rgb = sh != null ? sh.rgb : shownRgb;
 		double s = scale(), ox = -boxWidth * s / 2, oy = -boxHeight * s / 2;
@@ -1007,13 +1051,7 @@ public abstract class AgentModel<A extends Agent> extends Simulation {
 				gl.glPopMatrix();
 			}
 		}
-		/* The custom camera behind the followed agent (the coordinates of the walkthrough: x, z, -y) */
-		if (sh != null && sh.follow >= 0 && sh.follow < n) {
-			int i = sh.follow;
-			double px = ox + xyz[i * 3] * s, py = oy + xyz[i * 3 + 1] * s, pz = xyz[i * 3 + 2] * s;
-			double yr = Math.toRadians(sh.yaw[i]), behind = r * 12, above = r * 3;
-			com.eco.bio7.spatial.SpatialCamera.setCustomCamera(px - Math.cos(yr) * behind, pz + above, -(py - Math.sin(yr) * behind), px, pz, -py);
-		}
+		/* The custom camera behind the followed agent: set before the frame (frameStart) */
 		double seconds = System.nanoTime() / 1e9;
 		java.util.Map<String, List<Gltf.Mesh>> frame = new java.util.HashMap<>();
 		for (int i = 0; i < n; i++) {

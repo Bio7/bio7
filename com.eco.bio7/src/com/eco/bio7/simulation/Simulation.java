@@ -131,6 +131,17 @@ public abstract class Simulation extends Model {
 	/** Displays the model (ImageJ image or 3D view). */
 	protected abstract void display();
 
+	/*
+	 * display() with the lock of the model: the display reads the state (e.g., the
+	 * agents) while no step, setup (a restart setting changed while the model
+	 * runs), input or action changes it in another thread
+	 */
+	final void show() {
+		synchronized (this) {
+			display();
+		}
+	}
+
 	/**
 	 * A click of the mouse in the view of the model (override it): for a grid the
 	 * position in cells (the cell {@code ((int) x, (int) y)}, y from the top as
@@ -237,7 +248,7 @@ public abstract class Simulation extends Model {
 						}
 					}
 				}
-				display();
+				show();
 				ChartDisplay.update(this);
 			} catch (RuntimeException e) {
 				System.err.println("The input " + event + " of the model failed:");
@@ -295,7 +306,7 @@ public abstract class Simulation extends Model {
 			settingsShown = true;
 			ui(() -> SimulationSettings.show(this));
 		}
-		display();
+		show();
 	}
 
 	/* The setup of a run without a display (an Experiment): the seed of the run */
@@ -480,7 +491,7 @@ public abstract class Simulation extends Model {
 			step();
 			t++;
 		}
-		display();
+		show();
 		ChartDisplay.update(this);
 		/* stop() in the step: the simulation pauses (the Play button continues it) */
 		if (stopped && hasDisplay()) {

@@ -847,6 +847,15 @@ public class SpatialStructure implements KeyListener, MouseListener {
 			if (profileChanged()) {
 				return;
 			}
+			/* Before the cameras of the frame (e.g., a model takes the state of the frame and sets the custom camera) */
+			Runnable frameStart = beforeFrame;
+			if (frameStart != null) {
+				try {
+					frameStart.run();
+				} catch (RuntimeException e) {
+					e.printStackTrace();
+				}
+			}
 			gl = drawable.getGL().getGL2();
 			gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 			if (backgroundColour) {
@@ -2668,6 +2677,13 @@ public class SpatialStructure implements KeyListener, MouseListener {
 	public void setGridSize(float gridSize) {
 		this.gridSize = gridSize;
 	}
+
+	/**
+	 * Called at the start of each frame of the 3D view, before the cameras are set:
+	 * a model can take one state for all views of the frame and set the custom
+	 * camera from it (setCustomCamera in run() would apply to the next frame).
+	 */
+	public static volatile Runnable beforeFrame;
 
 	public static void setCustomCamera(double xpos, double ypos, double zpos, double xlook, double ylook,
 			double zlook) {
