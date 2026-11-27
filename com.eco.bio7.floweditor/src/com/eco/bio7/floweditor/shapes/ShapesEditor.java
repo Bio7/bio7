@@ -224,7 +224,7 @@ public class ShapesEditor extends GraphicalEditorWithFlyoutPalette {
 		if (getGraphicalViewer().getControl() instanceof org.eclipse.draw2d.FigureCanvas canvas) {
 			com.eco.bio7.floweditor.figures.FlowColors.addCanvas(canvas, canvas.getLightweightSystem().getRootFigure(), true);
 			/* The rulers (created when they are shown) in the colors of the editor */
-			canvas.addListener(SWT.Paint, e -> com.eco.bio7.floweditor.figures.FlowColors.themeChildCanvases(rulerComp, canvas, true));
+			canvas.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("ShapesEditor painting", e -> com.eco.bio7.floweditor.figures.FlowColors.themeChildCanvases(rulerComp, canvas, true)));
 		}
 
 		ScrollingGraphicalViewer viewer = (ScrollingGraphicalViewer) getGraphicalViewer();
@@ -286,7 +286,11 @@ public class ShapesEditor extends GraphicalEditorWithFlyoutPalette {
 
 	}
 
+	/* The editor is disposed (activation events of its control are ignored) */
+	private boolean disposed;
+
 	public void dispose() {
+		disposed = true;
 		getSite().getWorkbenchWindow().getPartService().removePartListener(partListener);
 		partListener = null;
 
@@ -318,12 +322,24 @@ public class ShapesEditor extends GraphicalEditorWithFlyoutPalette {
 	}
 
 	protected void handleActivationChanged(Event event) {
-		IAction copy = null;
-		if (event.type == SWT.Deactivate)
-			copy = getActionRegistry().getAction(ActionFactory.COPY.getId());
-		if (getEditorSite().getActionBars().getGlobalActionHandler(ActionFactory.COPY.getId()) != copy) {
-			getEditorSite().getActionBars().setGlobalActionHandler(ActionFactory.COPY.getId(), copy);
-			getEditorSite().getActionBars().updateActionBars();
+		/*
+		 * Not while the workbench closes or the editor is disposed: the focus moves
+		 * when the tabs are disposed (in a callback of Cocoa) and the context of the
+		 * editor is gone - an exception there crashes the application on macOS
+		 */
+		if (disposed || PlatformUI.getWorkbench().isClosing() || getGraphicalControl() == null || getGraphicalControl().isDisposed()) {
+			return;
+		}
+		try {
+			IAction copy = null;
+			if (event.type == SWT.Deactivate)
+				copy = getActionRegistry().getAction(ActionFactory.COPY.getId());
+			if (getEditorSite().getActionBars().getGlobalActionHandler(ActionFactory.COPY.getId()) != copy) {
+				getEditorSite().getActionBars().setGlobalActionHandler(ActionFactory.COPY.getId(), copy);
+				getEditorSite().getActionBars().updateActionBars();
+			}
+		} catch (RuntimeException e) {
+			/* The site of the editor is not available any more (e.g., closing) */
 		}
 	}
 
@@ -579,6 +595,9 @@ public class ShapesEditor extends GraphicalEditorWithFlyoutPalette {
 		shortest = new ShortestPath("Shortest Path", PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 
 		registry.registerAction(shortest);
+
+		Action spline = new com.eco.bio7.floweditor.actions.SplineRouterAction("Curves (Splines)", PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+		registry.registerAction(spline);
 
 		saveimage = new SaveImage("Save Image", PlatformUI.getWorkbench().getActiveWorkbenchWindow());
 

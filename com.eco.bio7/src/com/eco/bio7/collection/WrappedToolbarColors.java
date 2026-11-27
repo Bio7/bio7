@@ -48,7 +48,7 @@ public final class WrappedToolbarColors {
 			return;
 		}
 		installed = true;
-		display.addFilter(SWT.Paint, WrappedToolbarColors::paint);
+		display.addFilter(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("WrappedToolbarColors", WrappedToolbarColors::paint));
 	}
 
 	private static void paint(Event event) {

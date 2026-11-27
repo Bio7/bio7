@@ -308,7 +308,7 @@
       <command
             description="Stop the flow"
             id="com.eco.bio7.flowstop"
-            name="Flowstop"/>
+            name="Stop Flow"/>
       <command
             description="Evaluate Expression"
             id="com.eco.bio7.print_expression"
@@ -323,9 +323,9 @@
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
             keySequence="ALT+X"/>
       <command
-            description="Executes a line selection in R"
+            description="Evaluates the line or the selection of the R or Python editor"
             id="com.eco.bio7.execute_r_select"
-            name="R_Selection"/>
+            name="Evaluate Line or Selection"/>
       <keyBinding
             commandId="com.eco.bio7.execute_r_select"
             keyConfigurationId="org.eclipse.ui.defaultAcceleratorConfiguration"
@@ -1914,6 +1914,23 @@
               id="bio7toolbar.debugflow"
               label="Debug Flow Action"
               style="push">
+           <visibleWhen>
+              <with
+                    variable="activePartId">
+                 <equals
+                       value="com.eco.bio7.floweditor.ShapesEditor">
+                 </equals>
+              </with>
+           </visibleWhen>
+        </command>
+        <command
+              commandId="com.eco.bio7.flowstop"
+              disabledIcon="icons/editor/flowstop.svg"
+              icon="icons/editor/flowstop.svg"
+              id="bio7toolbar.stopflow"
+              label="Stop Flow"
+              style="push"
+              tooltip="Stop the running flow (Ctrl+Alt+Shift+X)">
            <visibleWhen>
               <with
                     variable="activePartId">

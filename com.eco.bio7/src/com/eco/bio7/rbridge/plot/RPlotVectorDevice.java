@@ -187,10 +187,10 @@ public final class RPlotVectorDevice {
 
 		canvas = new Canvas(root, SWT.DOUBLE_BUFFERED | SWT.NO_BACKGROUND);
 		canvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		canvas.addListener(SWT.Paint, e -> {
+		canvas.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("RPlotVectorDevice painting", e -> {
 			Rectangle area = canvas.getClientArea();
 			mapping = SwtPlotRenderer.paint(e.gc, shown, area.width, area.height);
-		});
+		}));
 		canvas.addListener(SWT.Resize, _ -> canvasResized());
 		installClicks();
 

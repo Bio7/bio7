@@ -51,6 +51,13 @@ public final class PythonEditorHooks {
 			PythonEditorSupport.debugAction = PythonEditorHooks::debugAction;
 			PythonEditorSupport.installPackage = pkg -> Display.getDefault().asyncExec(() -> PythonPackagesView.prepareInstall(pkg));
 			PythonEditorSupport.debugScript = () -> com.eco.bio7.pybridge.debug.PythonDebugger.startActiveEditor(false);
+			/* The action of the toolbar (Evaluate Line or Selection, also for the Python editor) */
+			PythonEditorSupport.evaluateSelection = () -> {
+				com.eco.bio7.rbridge.actions.ExecuteRTextSelection a = com.eco.bio7.rbridge.actions.ExecuteRTextSelection.getInstance();
+				if (a != null) {
+					a.run();
+				}
+			};
 			PythonEditorSupport.profileScript = selection -> com.eco.bio7.pybridge.debug.PythonProfiler.profileActiveEditor(selection);
 		} catch (LinkageError e) {
 			/* The Python editor is not installed */

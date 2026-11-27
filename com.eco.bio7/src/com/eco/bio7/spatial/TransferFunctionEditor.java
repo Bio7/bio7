@@ -85,7 +85,7 @@ public class TransferFunctionEditor extends Composite {
 		opacityCanvas.setLayoutData(gdOpacity);
 		opacityCanvas.setToolTipText(
 				"Opacity: click to add a point, drag a point to move it, right click a point to remove it");
-		opacityCanvas.addListener(SWT.Paint, e -> paintOpacity(e.gc));
+		opacityCanvas.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("TransferFunctionEditor painting", e -> paintOpacity(e.gc)));
 		opacityCanvas.addListener(SWT.MouseDown, this::opacityMouseDown);
 		opacityCanvas.addListener(SWT.MouseMove, this::opacityMouseMove);
 		opacityCanvas.addListener(SWT.MouseUp, e -> dragging = false);
@@ -96,7 +96,7 @@ public class TransferFunctionEditor extends Composite {
 		colorCanvas.setLayoutData(gdColor);
 		colorCanvas.setToolTipText(
 				"Colors: click to add a point, drag a point to move it, double click a point to select the color, right click a point to remove it");
-		colorCanvas.addListener(SWT.Paint, e -> paintColors(e.gc));
+		colorCanvas.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("TransferFunctionEditor painting", e -> paintColors(e.gc)));
 		colorCanvas.addListener(SWT.MouseDown, this::colorMouseDown);
 		colorCanvas.addListener(SWT.MouseMove, this::colorMouseMove);
 		colorCanvas.addListener(SWT.MouseUp, e -> dragging = false);

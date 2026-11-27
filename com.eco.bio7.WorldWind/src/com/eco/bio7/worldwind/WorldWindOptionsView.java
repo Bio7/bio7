@@ -584,6 +584,11 @@ public class WorldWindOptionsView extends ViewPart {
 				fd.setText("Load");
 
 				file = fd.open();
+				s.dispose();
+				/* Canceled */
+				if (file == null) {
+					return;
+				}
 
 				File fil = new File(file);
 
@@ -629,6 +634,11 @@ public class WorldWindOptionsView extends ViewPart {
 				fd.setText("Save");
 
 				String file = fd.open();
+				s.dispose();
+				/* Canceled */
+				if (file == null) {
+					return;
+				}
 				File fil = new File(file);
 				FileWriter fileWriter = null;
 				try {

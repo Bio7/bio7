@@ -81,7 +81,7 @@ public class Sleak {
 		list.addListener(SWT.Selection, event -> refreshObject());
 		text = new Text(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
 		canvas = new Canvas(parent, SWT.BORDER);
-		canvas.addListener(SWT.Paint, event -> paintCanvas(event));
+		canvas.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("Sleak painting", event -> paintCanvas(event)));
 		stackTrace = new Button(parent, SWT.CHECK);
 		stackTrace.setText("Stack");
 		stackTrace.addListener(SWT.Selection, e -> toggleStackTrace());

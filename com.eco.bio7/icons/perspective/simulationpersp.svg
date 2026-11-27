@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7 simulation perspective: the frame of the ImageJ Edit icon with a line chart -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="16" height="16" viewBox="-10.910 -10.910 1045.820 1045.820">
+  <g
+     transform="translate(0,-2600.8031)"
+     style="display:inline"
+     id="g1">
+    <g
+       id="g84280"
+       transform="translate(-3.5029079,-1.1948424)">
+      <g
+         id="use83817-9-2-5"
+         style="fill:#638d43;fill-opacity:1"
+         transform="matrix(10.893994,0,0,13.323713,-7.4088041,2517.0956)">
+        <title
+           id="title1">frame</title>
+        <path
+           transform="matrix(0.05,0,0,-0.05,0,76.8)"
+           d="M 1760,1280 H 160 q -13,0 -22.5,-9.5 Q 128,1261 128,1248 V 32 Q 128,19 137.5,9.5 147,0 160,0 h 1600 q 13,0 22.5,9.5 9.5,9.5 9.5,22.5 v 1216 q 0,13 -9.5,22.5 -9.5,9.5 -22.5,9.5 z m 160,-32 V 32 q 0,-66 -47,-113 -47,-47 -113,-47 H 160 Q 94,-128 47,-81 0,-34 0,32 v 1216 q 0,66 47,113 47,47 113,47 h 1600 q 66,0 113,-47 47,-47 47,-113 z"
+           id="path1" />
+      </g>
+    </g>
+  </g>
+
+  <g id="chart" style="fill:#638d43;fill-opacity:1">
+    <polyline points="190,690 340,470 480,580 640,300 790,390" style="fill:none;stroke:#638d43;stroke-width:70;stroke-linecap:round;stroke-linejoin:round" />
+    <circle cx="190" cy="690" r="62" />
+    <circle cx="340" cy="470" r="62" />
+    <circle cx="480" cy="580" r="62" />
+    <circle cx="640" cy="300" r="62" />
+    <circle cx="790" cy="390" r="62" />
+  </g>
+</svg>

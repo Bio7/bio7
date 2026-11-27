@@ -154,7 +154,7 @@ public class ThemePreferencePage extends PreferencePage implements IWorkbenchPre
 		GridData pd = new GridData(SWT.FILL, SWT.TOP, true, false, 2, 1);
 		pd.heightHint = 84;
 		preview.setLayoutData(pd);
-		preview.addPaintListener(e -> paintPreview(e.gc));
+		preview.addPaintListener(com.eco.bio7.util.SafeEvents.guardPaint("ThemePreferencePage painting", e -> paintPreview(e.gc)));
 		preview.addListener(SWT.Resize, e -> {
 			disposePreview();
 			preview.redraw();

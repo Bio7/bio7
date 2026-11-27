@@ -4562,7 +4562,7 @@ public class Options3d extends ViewPart {
 			toolBar.getParent().layout(true, true);
 		};
 		updateIcons.run();
-		toolBar.addListener(SWT.Paint, e -> updateIcons.run());
+		toolBar.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("Options3d painting", e -> updateIcons.run()));
 		toolBar.addDisposeListener(e -> {
 			for (Image icon : icons) {
 				if (icon != null) {

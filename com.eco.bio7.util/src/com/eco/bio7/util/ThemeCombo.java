@@ -39,7 +39,7 @@ public class ThemeCombo extends CCombo {
 		addListener(SWT.Resize, _ -> centerText());
 		/* The arrow in the colors of the combo (the native arrow button is dark, not visible in a dark theme) */
 		if (field("arrow") instanceof Button arrow) {
-			arrow.addListener(SWT.Paint, e -> paintArrow(e.gc, arrow));
+			arrow.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("ThemeCombo painting", e -> paintArrow(e.gc, arrow)));
 		}
 	}
 

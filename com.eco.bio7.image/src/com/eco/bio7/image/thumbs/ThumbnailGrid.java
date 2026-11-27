@@ -117,7 +117,7 @@ class ThumbnailGrid extends Canvas {
 	ThumbnailGrid(Composite parent) {
 		super(parent, SWT.V_SCROLL | SWT.H_SCROLL | SWT.DOUBLE_BUFFERED | SWT.NO_BACKGROUND);
 		updateColors();
-		addListener(SWT.Paint, this::paint);
+		addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("ThumbnailGrid painting", this::paint));
 		addListener(SWT.Resize, e -> {
 			updateScrollBars();
 			if (columns == 0) {

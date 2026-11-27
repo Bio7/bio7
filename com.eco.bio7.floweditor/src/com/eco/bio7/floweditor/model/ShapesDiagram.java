@@ -46,6 +46,9 @@ public class ShapesDiagram extends ModelElement {
 
 	public static Integer ROUTER_SHORTEST_PATH = new Integer(2);
 
+	/** The connections as curves (splines). */
+	public static Integer ROUTER_SPLINE = Integer.valueOf(3);
+
 	protected DiagramRuler leftRuler, topRuler;
 
 	public Integer connectionRouter = ROUTER_SHORTEST_PATH;

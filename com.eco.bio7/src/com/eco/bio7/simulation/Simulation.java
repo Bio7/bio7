@@ -11,6 +11,7 @@
 package com.eco.bio7.simulation;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +60,8 @@ public abstract class Simulation extends Model {
 
 	/* The charts (the first chart has the title "") */
 	private final Map<String, ChartData> charts = new LinkedHashMap<>();
+	/* The own colors of the charts (by the title) */
+	private final Map<String, String[]> chartColors = new HashMap<>();
 
 	/* The shapes drawn in the current step (cleared before each step) */
 	private final List<Shape> drawing = new ArrayList<>();
@@ -277,6 +280,7 @@ public abstract class Simulation extends Model {
 			stopped = false;
 			synchronized (charts) {
 				charts.clear();
+				chartColors.clear();
 			}
 			synchronized (drawing) {
 				drawing.clear();
@@ -304,6 +308,7 @@ public abstract class Simulation extends Model {
 			seedValue = seed;
 			synchronized (charts) {
 				charts.clear();
+				chartColors.clear();
 			}
 			synchronized (drawing) {
 				drawing.clear();
@@ -339,11 +344,70 @@ public abstract class Simulation extends Model {
 		}
 	}
 
+	/* The label of the Custom perspective while the model is shown (null: "Custom") */
+	private volatile String perspectiveLabel;
+
+	/**
+	 * Renames the Custom perspective of the model (the label in the perspective
+	 * switcher, e.g., the name of the model); also kept when the views of the model
+	 * are arranged again. Call it, e.g., in init() or load().
+	 *
+	 * @param label the label, null for "Custom"
+	 */
+	public void perspectiveLabel(String label) {
+		perspectiveLabel = label;
+		if (hasDisplay()) {
+			try {
+				com.eco.bio7.collection.Work.setPerspectiveLabel(SimulationLayout.PERSPECTIVE, label);
+			} catch (RuntimeException | LinkageError e) {
+				/* No workbench (e.g., an experiment without display) */
+			}
+		}
+	}
+
+	/** The label of the Custom perspective of the model (null: "Custom"). */
+	public String getPerspectiveLabel() {
+		return perspectiveLabel;
+	}
+
+	/* The icon of the Custom perspective while the model is shown (null: the simulation icon) */
+	private volatile String perspectiveIcon;
+
+	/**
+	 * Changes the icon of the Custom perspective of the model (in the perspective
+	 * switcher). Without a call the Custom perspective of a model shows the
+	 * simulation icon of Bio7 (a line chart in a frame).
+	 *
+	 * @param icon the icon: an image file (SVG or PNG, 16 x 16; a path relative to
+	 *             the project of the model, an absolute path or a file: URI) or a
+	 *             platform:/plugin/... URI, null for the simulation icon
+	 */
+	public void perspectiveIcon(String icon) {
+		/* A relative path in the project of the model (as loadImage) */
+		if (icon != null && !icon.isBlank() && !icon.startsWith("platform:/") && !icon.startsWith("file:")) {
+			icon = resolve(icon);
+		}
+		perspectiveIcon = icon;
+		if (hasDisplay()) {
+			try {
+				com.eco.bio7.collection.Work.setPerspectiveIcon(SimulationLayout.PERSPECTIVE, SimulationLayout.iconUri(icon));
+			} catch (RuntimeException | LinkageError e) {
+				/* No workbench (e.g., an experiment without display) */
+			}
+		}
+	}
+
+	/** The icon of the Custom perspective of the model (null: the simulation icon). */
+	public String getPerspectiveIcon() {
+		return perspectiveIcon;
+	}
+
 	/**
 	 * Ends the simulation after this step, e.g., {@code if (infected == 0) stop();}
 	 * in step(): Bio7 pauses the simulation (Play continues it), the HTML page
 	 * stops, an Experiment ends the run (its last step is recorded).
 	 */
+
 	public void stop() {
 		stopped = true;
 	}
@@ -1058,6 +1122,21 @@ public abstract class Simulation extends Model {
 		}
 	}
 
+	/**
+	 * The colors of a chart: of its series in the order of their first values (a
+	 * line or XY chart) or of its bars (one color for all bars or one per bar),
+	 * e.g., the colors of the species of a map; colors "#rrggbb". Without colors
+	 * the chart uses its own palette.
+	 *
+	 * @param chart  the title of the chart ("": the first chart of chart(name, value))
+	 * @param colors the colors
+	 */
+	public void chartColors(String chart, String... colors) {
+		synchronized (charts) {
+			chartColors.put(chart, colors.clone());
+		}
+	}
+
 	/** A bar chart with a title: the labels and the values (replaced in each call, e.g., a histogram). */
 	public void chartBars(String chart, String[] labels, double[] values) {
 		synchronized (charts) {
@@ -1139,7 +1218,12 @@ public abstract class Simulation extends Model {
 		synchronized (charts) {
 			List<ChartData> list = new ArrayList<>();
 			for (ChartData c : charts.values()) {
-				list.add(c.copy());
+				ChartData copy = c.copy();
+				String[] colors = chartColors.get(c.title);
+				if (colors != null) {
+					copy.colors = colors.clone();
+				}
+				list.add(copy);
 			}
 			return list;
 		}
@@ -1176,7 +1260,7 @@ public abstract class Simulation extends Model {
 	}
 
 	/* The shapes which only the 3D view draws */
-	private static final java.util.Set<String> THREE_D_SHAPES = java.util.Set.of("box", "sphere", "point3", "path3", "polygon3", "pillar");
+	private static final java.util.Set<String> THREE_D_SHAPES = java.util.Set.of("box", "sphere", "point3", "path3", "polygon3", "pillar", "cone");
 	private boolean warned3d;
 
 	/* True for a model of the 3D view (an agent model) or of the globe (it decides itself which shapes it shows) */
@@ -1206,6 +1290,15 @@ public abstract class Simulation extends Model {
 	 */
 	public void drawPillar(double x, double y, double radius, double height, String color) {
 		addShape(new Shape("pillar", new double[] { x, y, radius, height }, null, color, null, 1, 0));
+	}
+
+	/**
+	 * A cone in 3D (an agent model or the globe: from the floor or the terrain at
+	 * x, y with the radius of its base and the height, e.g., a tuft of grass or a
+	 * young conifer; color: e.g., "#7cb342").
+	 */
+	public void drawCone(double x, double y, double radius, double height, String color) {
+		addShape(new Shape("cone", new double[] { x, y, radius, height }, null, color, null, 1, 0));
 	}
 
 	/** A line through the points (e.g., the track of an agent). */
@@ -1246,6 +1339,22 @@ public abstract class Simulation extends Model {
 	/** A rectangle at the height z above the floor (an agent model). */
 	public void drawRect(double x, double y, double w, double h, String fill, String stroke, double z) {
 		addShape(new Shape("rect", new double[] { x, y, w, h }, stroke, fill, null, 1, 0, z));
+	}
+
+	/**
+	 * A rectangle of a grid as an ImageJ overlay (e.g., the colors of a legend
+	 * beside a text overlay): sharp at each zoom, not painted into the image.
+	 */
+	public void drawRectOverlay(double x, double y, double w, double h, String fill, String stroke) {
+		addShape(new Shape("rect", new double[] { x, y, w, h }, stroke, fill, null, 1, 0, 0, true));
+	}
+
+	/**
+	 * A text of a grid as an ImageJ overlay (the size in cells): sharp at each
+	 * zoom (e.g., a description or a legend), Image > Overlay hides it.
+	 */
+	public void drawTextOverlay(double x, double y, String text, String color, double size) {
+		addShape(new Shape("text", new double[] { x, y }, color, null, text, size, 0, 0, true));
 	}
 
 	/** A text (the size in cells of a grid, in pixels on a map or the globe). */

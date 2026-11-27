@@ -72,7 +72,7 @@ public final class AssistantDocking {
 		 * supported, e.g., X11 without a compositor) outside of the screens. The empty
 		 * shell is hidden later (it cannot be hidden while it is shown)!
 		 */
-		display.addFilter(SWT.Show, e -> {
+		display.addFilter(SWT.Show, com.eco.bio7.util.SafeEvents.guard("AssistantDocking", e -> {
 			if (e.widget instanceof Shell && isAssistant((Shell) e.widget)) {
 				Shell s = (Shell) e.widget;
 				if (s.getData(DOCKED) == null && s.getData(UNDOCKED) == null) {
@@ -89,7 +89,7 @@ public final class AssistantDocking {
 					}
 				}
 			}
-		});
+		}));
 		/* The chat command of an open (docked) assistant shows the view! */
 		try {
 			Executer.addCommandListener(command -> {
@@ -160,7 +160,7 @@ public final class AssistantDocking {
 		 * when the view gets the focus and when editors are opened, closed or
 		 * activated in the workbench!
 		 */
-		parent.addListener(SWT.Activate, e -> notifyEditorsChanged());
+		parent.addListener(SWT.Activate, com.eco.bio7.util.SafeEvents.guard("AssistantDocking activation", e -> notifyEditorsChanged()));
 		IWorkbenchPage page = viewPage(parent);
 		if (page != null) {
 			IPartListener2 editorListener = new IPartListener2() {

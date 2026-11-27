@@ -1294,7 +1294,7 @@ public abstract class AgentModel<A extends Agent> extends Simulation {
 			double[] p = sh.p;
 			float[] fill;
 			switch (sh.kind) {
-			case "pillar" -> {
+			case "pillar", "cone" -> {
 				if (p.length < 4) {
 					continue;
 				}
@@ -1347,6 +1347,12 @@ public abstract class AgentModel<A extends Agent> extends Simulation {
 				gl.glTranslated(0, 0, p[3] * s);
 				gl.glColor4f(Math.min(1, fill[0] * 1.2f), Math.min(1, fill[1] * 1.2f), Math.min(1, fill[2] * 1.2f), fill[3]);
 				glu.gluDisk(quadric, 0, p[2] * s * 0.85, 32, 1);
+				gl.glPopMatrix();
+			}
+			case "cone" -> {
+				gl.glPushMatrix();
+				gl.glTranslated(ox + p[0] * s, oy + p[1] * s, 0);
+				glu.gluCylinder(quadric, p[2] * s, 0, p[3] * s, 32, 1);
 				gl.glPopMatrix();
 			}
 			case "sphere", "point3" -> {

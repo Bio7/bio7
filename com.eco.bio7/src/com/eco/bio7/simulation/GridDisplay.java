@@ -67,8 +67,94 @@ final class GridDisplay {
 		show(w, h, color, redo, null);
 	}
 
+	/**
+	 * A map under the grid (e.g., a satellite image or a drawn map): RGB pixels of
+	 * the extent of the grid, row by row from the top.
+	 */
+	record Background(int[] rgb, int width, int height) {
+	}
+
+	/* The map sampled to the size of the image (the last one: kept while the size and the map stay) */
+	private Background sampledFrom;
+	private int sampledW, sampledH;
+	private int[] sampled;
+
+	/* The map under the cells, the cells as ovals (see showOver) */
+	private Background background;
+	private boolean ovals;
+	private boolean alphaMode;
+
 	/** Displays the grid and the shapes of the model (drawLine, drawImage, ... in cells). */
 	void show(int w, int h, IntUnaryOperator color, Runnable redo, Simulation model) {
+		alphaMode = false;
+		background = null;
+		ovals = false;
+		render(w, h, color, redo, model);
+	}
+
+	/**
+	 * Displays the cells with the alpha of their colors over a map (or over white),
+	 * as squares or as ovals (with a border of the map between the cells).
+	 *
+	 * @param argb       the ARGB color of the cell with the index y * w + x
+	 * @param background the map under the grid, null: white
+	 * @param asOvals    true: each cell is an oval
+	 */
+	void showOver(int w, int h, IntUnaryOperator argb, Background background, boolean asOvals, Runnable redo, Simulation model) {
+		this.alphaMode = true;
+		this.background = background;
+		this.ovals = asOvals;
+		render(w, h, argb, redo, model);
+	}
+
+	/* The map at the size of the image (nearest pixel, cached) */
+	private int[] sample(Background b, int iw, int ih) {
+		if (b == sampledFrom && iw == sampledW && ih == sampledH && sampled != null) {
+			return sampled;
+		}
+		int[] out = new int[iw * ih];
+		for (int y = 0; y < ih; y++) {
+			int sy = Math.min(b.height() - 1, (int) ((y + 0.5) * b.height() / ih));
+			for (int x = 0; x < iw; x++) {
+				int sx = Math.min(b.width() - 1, (int) ((x + 0.5) * b.width() / iw));
+				out[y * iw + x] = b.rgb()[sy * b.width() + sx];
+			}
+		}
+		sampledFrom = b;
+		sampledW = iw;
+		sampledH = ih;
+		sampled = out;
+		return out;
+	}
+
+	/* An ARGB color over an RGB color */
+	private static int blend(int argb, int under) {
+		int a = argb >>> 24;
+		if (a == 255) {
+			return argb & 0xffffff;
+		}
+		if (a == 0) {
+			return under;
+		}
+		int r = ((argb >> 16 & 255) * a + (under >> 16 & 255) * (255 - a)) / 255;
+		int g = ((argb >> 8 & 255) * a + (under >> 8 & 255) * (255 - a)) / 255;
+		int bl = ((argb & 255) * a + (under & 255) * (255 - a)) / 255;
+		return r << 16 | g << 8 | bl;
+	}
+
+	/* The mask of an oval in a cell of scale x scale pixels (a border of a pixel) */
+	private static boolean[] ovalMask(int scale) {
+		boolean[] mask = new boolean[scale * scale];
+		double c = (scale - 1) / 2.0, r = Math.max(0.5, (scale - 2) / 2.0);
+		for (int y = 0; y < scale; y++) {
+			for (int x = 0; x < scale; x++) {
+				mask[y * scale + x] = (x - c) * (x - c) + (y - c) * (y - c) <= r * r;
+			}
+		}
+		return mask;
+	}
+
+	private void render(int w, int h, IntUnaryOperator color, Runnable redo, Simulation model) {
 		if (w <= 0 || h <= 0) {
 			return;
 		}
@@ -91,31 +177,61 @@ final class GridDisplay {
 		if (w == shownW && h == shownH && shownScale > wanted) {
 			wanted = shownScale;
 		}
+		/* Ovals: at least 7 pixels per cell (an oval of 5 pixels and a border) */
+		final boolean asOvals = alphaMode && ovals;
+		if (asOvals) {
+			wanted = Math.max(wanted, 7);
+		}
 		shownW = w;
 		shownH = h;
 		shownScale = wanted;
 		final int scale = wanted;
 		final int iw = w * scale, ih = h * scale;
 		final int[] pixels = new int[iw * ih];
-		for (int y = 0; y < h; y++) {
-			for (int x = 0; x < w; x++) {
-				int rgb = color.applyAsInt(y * w + x);
-				for (int yy = 0; yy < scale; yy++) {
-					int row = (y * scale + yy) * iw + x * scale;
-					for (int xx = 0; xx < scale; xx++) {
-						pixels[row + xx] = rgb;
+		if (alphaMode) {
+			/* The cells with their alpha over the map (or white), as squares or ovals */
+			Background map = background;
+			int[] under = map == null ? null : sample(map, iw, ih);
+			boolean[] mask = asOvals ? ovalMask(scale) : null;
+			for (int y = 0; y < h; y++) {
+				for (int x = 0; x < w; x++) {
+					int argb = color.applyAsInt(y * w + x);
+					for (int yy = 0; yy < scale; yy++) {
+						int row = (y * scale + yy) * iw + x * scale;
+						for (int xx = 0; xx < scale; xx++) {
+							int base = under == null ? 0xffffff : under[row + xx];
+							pixels[row + xx] = mask == null || mask[yy * scale + xx] ? blend(argb, base) : base;
+						}
+					}
+				}
+			}
+		} else {
+			for (int y = 0; y < h; y++) {
+				for (int x = 0; x < w; x++) {
+					int rgb = color.applyAsInt(y * w + x);
+					for (int yy = 0; yy < scale; yy++) {
+						int row = (y * scale + yy) * iw + x * scale;
+						for (int xx = 0; xx < scale; xx++) {
+							pixels[row + xx] = rgb;
+						}
 					}
 				}
 			}
 		}
-		if (!drawing.isEmpty()) {
+		/* The shapes painted into the image and the shapes of the ImageJ overlay (texts and rectangles, sharp at each zoom) */
+		java.util.List<Shape> painted = new java.util.ArrayList<>(), overlaid = new java.util.ArrayList<>();
+		for (Shape s : drawing) {
+			(s.overlay ? overlaid : painted).add(s);
+		}
+		if (!painted.isEmpty()) {
 			java.awt.image.BufferedImage bi = new java.awt.image.BufferedImage(iw, ih, java.awt.image.BufferedImage.TYPE_INT_RGB);
 			bi.setRGB(0, 0, iw, ih, pixels, 0, iw);
 			java.awt.Graphics2D g = bi.createGraphics();
-			Overlay.paint(g, drawing, scale, model.getImageFiles());
+			Overlay.paint(g, painted, scale, model.getImageFiles());
 			g.dispose();
 			bi.getRGB(0, 0, iw, ih, pixels, 0, iw);
 		}
+		final ij.gui.Overlay overlay = overlaid.isEmpty() ? null : Overlay.imageJ(overlaid, scale);
 		Simulation.ui(() -> {
 			try {
 				boolean closed = image == null || (image.getWindow() != null && image.getWindow().isClosed());
@@ -129,9 +245,14 @@ final class GridDisplay {
 					if (earlier != null && earlier != image && earlier.getWindow() != null && !earlier.getWindow().isClosed()) {
 						earlier.getWindow().close();
 					}
+					image.setOverlay(overlay);
 					image.show();
 				} else {
 					image.setProcessor(new ColorProcessor(iw, ih, pixels));
+					/* The overlay of the model (only if it has one: else an overlay of the user stays) */
+					if (overlay != null || image.getOverlay() != null && Overlay.isModelOverlay(image.getOverlay())) {
+						image.setOverlay(overlay);
+					}
 					image.updateAndDraw();
 				}
 				listen(image);

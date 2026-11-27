@@ -41,7 +41,7 @@ public final class MacActivation {
 			return;
 		}
 		installed = true;
-		display.addFilter(SWT.Activate, e -> {
+		display.addFilter(SWT.Activate, com.eco.bio7.util.SafeEvents.guard("MacActivation", e -> {
 			if (e.widget != null) {
 				/* The activation of a window of Bio7 (not of the application) */
 				return;
@@ -55,6 +55,6 @@ public final class MacActivation {
 				/* activateIgnoringOtherApps and makeKeyAndOrderFront: in front, the activation stays */
 				shell.forceActive();
 			}
-		});
+		}));
 	}
 }

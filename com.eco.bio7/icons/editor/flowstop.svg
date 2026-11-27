@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Bio7: stop a running flow (the stop square of the debugger in the Bio7 green: recolored with the icon color of the theme) -->
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <rect x="2.5" y="2.5" width="11" height="11" rx="1.5" ry="1.5" fill="#638D43" stroke="#4A6B32" stroke-width="1"/>
+</svg>

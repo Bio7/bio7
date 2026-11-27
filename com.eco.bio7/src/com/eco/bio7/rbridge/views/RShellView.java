@@ -2503,8 +2503,8 @@ public class RShellView extends ViewPart {
 		rItem.setMenu(startR.getMenu(menu));
 		addActions(menu, new com.eco.bio7.rbridge.actions.LoadRWorkspace("Load Workspace", window),
 				new com.eco.bio7.rbridge.actions.SaveRWorkspace("Save Workspace", window));
-		addActions(cascade(menu, "Editor"), new com.eco.bio7.rbridge.actions.ExecuteRTextSelection("Evaluate Line or Selection", window),
-				new com.eco.bio7.rbridge.actions.PrintExpression("Evaluate Expression", window),
+		/* Evaluation (the line or the selection: "Evaluate" in the context menu of the editor) */
+		addActions(cascade(menu, "Evaluation"), new com.eco.bio7.rbridge.actions.PrintExpression("Evaluate Expression", window),
 				new com.eco.bio7.rbridge.actions.ClipboardRScipt("Evaluate Clipboard", window));
 		addActions(cascade(menu, "Data"), new com.eco.bio7.rbridge.actions.ClipboardRValues("Get Clipboard Data", window),
 				new com.eco.bio7.rbridge.actions.ClearRWorkspace("Remove All Objects", window));

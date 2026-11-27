@@ -67,6 +67,9 @@ public final class PythonEditorSupport {
 	/** Debugs the script of the active editor (the debugger of the embedded Python). */
 	public static volatile Runnable debugScript;
 
+	/** Evaluates the line or the selection of the active Python editor in the Python console (null: not available). */
+	public static volatile Runnable evaluateSelection;
+
 	/** Opens the installation of a package (e.g., the Python Packages view). */
 	public static volatile Consumer<String> installPackage;
 

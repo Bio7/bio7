@@ -68,7 +68,7 @@ public final class ThemeStore {
 	 * The version of the example themes: an example of an older version is
 	 * installed again if it has not been changed by the user!
 	 */
-	private static final int EXAMPLES_VERSION = 24;
+	private static final int EXAMPLES_VERSION = 26;
 	/* Examples of earlier versions (removed from Bio7): deleted if installed and unchanged */
 	private static final List<String> REMOVED_EXAMPLES = List.of("autumn-harvest", "autumn-leaves", "cloud", "data-science", "dolphin", "dusk",
 			"ecological-modeling", "fiery", "fog", "forest-night", "frost", "glacier", "daylight", "halloween", "lavender-haze", "meadow", "modern-light", "pebble", "porcelain", "sage-mist", "sandstone", "science", "spring", "summer", "winter");

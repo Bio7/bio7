@@ -49,11 +49,11 @@ final class SeparatorColors {
 		}
 		installed = true;
 		Display display = Display.getDefault();
-		display.addFilter(SWT.Skin, event -> {
+		display.addFilter(SWT.Skin, com.eco.bio7.util.SafeEvents.guard("SeparatorColors", event -> {
 			if (event.widget instanceof Label label) {
 				hook(label);
 			}
-		});
+		}));
 		for (Shell shell : display.getShells()) {
 			hookAll(shell);
 		}
@@ -78,7 +78,7 @@ final class SeparatorColors {
 			return;
 		}
 		label.setData(PAINTED, Boolean.TRUE);
-		label.addListener(SWT.Paint, SeparatorColors::paint);
+		label.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("SeparatorColors painting", SeparatorColors::paint));
 		label.redraw();
 	}
 

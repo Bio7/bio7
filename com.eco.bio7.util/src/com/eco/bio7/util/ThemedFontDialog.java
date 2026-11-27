@@ -246,7 +246,7 @@ public class ThemedFontDialog {
 		GridData pd = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
 		pd.heightHint = 86;
 		preview.setLayoutData(pd);
-		preview.addListener(SWT.Paint, e -> {
+		preview.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("ThemedFontDialog painting", e -> {
 			if (previewFont != null && !previewFont.isDisposed()) {
 				e.gc.setFont(previewFont);
 			}
@@ -254,7 +254,7 @@ public class ThemedFontDialog {
 			Rectangle area = preview.getClientArea();
 			e.gc.setClipping(area);
 			e.gc.drawText(SAMPLE, 8, 6, true);
-		});
+		}));
 
 		createButtons();
 		shell.addListener(SWT.Dispose, _ -> {

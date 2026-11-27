@@ -95,7 +95,7 @@ final class ChartDisplay {
 			}
 			parent.setLayout(new FillLayout());
 			canvas = new Canvas(parent, SWT.DOUBLE_BUFFERED);
-			canvas.addListener(SWT.Paint, e -> paint(e.gc, canvas.getSize()));
+			canvas.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("ChartDisplay painting", e -> paint(e.gc, canvas.getSize())));
 			canvas.addListener(SWT.Resize, e -> canvas.redraw());
 			parent.layout(true, true);
 			/* Beside the display (below the editor) */
@@ -129,6 +129,20 @@ final class ChartDisplay {
 	private static void chart(GC gc, ChartData c, int x0, int y0, int w, int h, Color fg) {
 		Color muted = new Color(blend(fg.getRGB(), canvas.getBackground().getRGB(), 0.55)), grid = new Color(blend(fg.getRGB(), canvas.getBackground().getRGB(), 0.85));
 		int left = x0 + 54, right = x0 + w - 130, top = y0 + 22, bottom = y0 + h - 22;
+		/* Bars whose labels do not fit below them: numbers below the bars and a legend on the right (as wide as its texts) */
+		boolean legend = false;
+		if (ChartData.BARS.equals(c.kind)) {
+			int n = Math.min(c.labels.length, c.values.length), widest = 0;
+			for (int i = 0; i < n; i++) {
+				widest = Math.max(widest, gc.textExtent(c.labels[i]).x);
+			}
+			if (n > 0 && widest * 1.15 > (x0 + w - 24 - left) / (double) n) {
+				legend = true;
+				right = x0 + w - Math.min(w / 2, widest + gc.textExtent("99: : 100.0").x + 24);
+			} else {
+				right = x0 + w - 24;
+			}
+		}
 		if (right - left < 40 || bottom - top < 30) {
 			return;
 		}
@@ -138,7 +152,7 @@ final class ChartDisplay {
 		gc.setForeground(grid);
 		gc.drawRectangle(left, top, right - left, bottom - top);
 		if (ChartData.BARS.equals(c.kind)) {
-			bars(gc, c, left, top, right, bottom, fg, muted, grid);
+			bars(gc, c, left, top, right, bottom, fg, muted, grid, legend);
 			return;
 		}
 		double xmin = Double.MAX_VALUE, xmax = -Double.MAX_VALUE, ymin = Double.MAX_VALUE, ymax = -Double.MAX_VALUE;
@@ -166,7 +180,7 @@ final class ChartDisplay {
 		axes(gc, left, top, right, bottom, xmin, xmax, ymin, ymax, muted, grid);
 		int k = 0;
 		for (Map.Entry<String, List<double[]>> e : c.series.entrySet()) {
-			Color col = new Color(CATEGORY[k % CATEGORY.length]);
+			Color col = new Color(color(c, k));
 			gc.setForeground(col);
 			gc.setLineWidth(2);
 			List<double[]> s = e.getValue();
@@ -197,7 +211,16 @@ final class ChartDisplay {
 		grid.dispose();
 	}
 
-	private static void bars(GC gc, ChartData c, int left, int top, int right, int bottom, Color fg, Color muted, Color grid) {
+	/* The color k of the chart: its own colors (repeated) or the palette */
+	private static RGB color(ChartData c, int k) {
+		if (c.colors.length > 0) {
+			int rgb = Simulation.rgb(c.colors[k % c.colors.length]);
+			return new RGB((rgb >> 16) & 255, (rgb >> 8) & 255, rgb & 255);
+		}
+		return CATEGORY[k % CATEGORY.length];
+	}
+
+	private static void bars(GC gc, ChartData c, int left, int top, int right, int bottom, Color fg, Color muted, Color grid, boolean legend) {
 		int n = Math.min(c.labels.length, c.values.length);
 		if (n == 0) {
 			return;
@@ -212,7 +235,7 @@ final class ChartDisplay {
 		}
 		axes(gc, left, top, right, bottom, Double.NaN, Double.NaN, ymin, ymax * 1.05, muted, grid);
 		double bw = (right - left) / (double) n;
-		Color col = new Color(CATEGORY[0]);
+		Color col = new Color(color(c, 0));
 		gc.setBackground(col);
 		int zero = (int) (bottom - (0 - ymin) / (ymax * 1.05 - ymin) * (bottom - top));
 		/* Every k-th label if they do not fit */
@@ -224,8 +247,27 @@ final class ChartDisplay {
 		for (int i = 0; i < n; i++) {
 			int y = (int) (bottom - (c.values[i] - ymin) / (ymax * 1.05 - ymin) * (bottom - top));
 			int x = (int) (left + i * bw + bw * 0.15);
+			if (c.colors.length > 1) {
+				/* A color for each bar */
+				col.dispose();
+				col = new Color(color(c, i));
+				gc.setBackground(col);
+			}
 			gc.fillRectangle(x, Math.min(y, zero), (int) Math.max(1, bw * 0.7), Math.abs(zero - y));
 			gc.setForeground(muted);
+			if (legend) {
+				/* The number of the bar below it, the label in the legend: a color, the number, the label and the value */
+				String number = String.valueOf(i + 1);
+				Point e = gc.textExtent(number);
+				if (bw >= e.x * 1.2 || i % 2 == 0) {
+					gc.drawText(number, (int) (left + i * bw + bw / 2 - e.x / 2), bottom + 3, true);
+				}
+				int row = Math.max(12, Math.min(18, (bottom - top + 18) / n)), ly = top + i * row;
+				gc.fillRectangle(right + 10, ly + 2, 11, 9);
+				gc.setForeground(fg);
+				gc.drawText(number + " " + c.labels[i] + ": " + SimulationSettings.format(c.values[i], Math.abs(c.values[i]) >= 100 ? 1 : 0.1, false), right + 25, ly - 2, true);
+				continue;
+			}
 			Point e = gc.textExtent(c.labels[i]);
 			if (i % every == 0) {
 				gc.drawText(c.labels[i], (int) (left + i * bw + bw / 2 - e.x / 2), bottom + 3, true);

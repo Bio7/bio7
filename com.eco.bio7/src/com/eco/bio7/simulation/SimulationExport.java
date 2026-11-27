@@ -209,12 +209,13 @@ public class SimulationExport {
 			  chart(a, b, c) { if (!this._sim) return; if (c === undefined) this._sim.chart(a, b); else this._sim.chartLine(a, b, this.t, c); }
 			  chartXY(chart, name, x, y) { if (this._sim) this._sim.chartXY(chart, name, x, y); }
 			  chartBars(chart, labels, values) { if (this._sim) this._sim.chartBars(chart, Array.from(labels), Array.from(values)); }
+			  chartColors(chart, ...colors) { if (this._sim) this._sim.chartColors(chart, colors.length === 1 && Array.isArray(colors[0]) ? Array.from(colors[0]) : colors); }
 			  stop() { this._stopped = true; }
 			  isStopped() { return !!this._stopped; }
 			  record(name, value) { (this._records || (this._records = {}))[name] = value; }
 			  _shape(k, p, s, f, t, w, a, z) {
 			    /* 3D shapes in the 2D view of a grid: not drawn, a message once (as in Bio7) */
-			    if (!this._warned3d && ['box', 'sphere', 'point3', 'path3', 'polygon3', 'pillar'].indexOf(k) >= 0 && !(this instanceof AgentModel) && !(this instanceof GeoAgentModel)) {
+			    if (!this._warned3d && ['box', 'sphere', 'point3', 'path3', 'polygon3', 'pillar', 'cone'].indexOf(k) >= 0 && !(this instanceof AgentModel) && !(this instanceof GeoAgentModel)) {
 			      this._warned3d = true; console.warn('The model draws a 3D shape (' + k + '): 3D shapes are drawn only in the 3D view of an agent model (the 2D view of a grid ignores them)');
 			    }
 			    const d = { k: k, p: p, s: s || null, f: f || null, t: t === undefined ? null : t, w: w === undefined ? 1 : w, a: a || 0 }; if (z) d.z = z; (this._drawing || (this._drawing = [])).push(d); }
@@ -225,6 +226,12 @@ public class SimulationExport {
 			  drawCircle(x, y, radius, fill, stroke, z) { this._shape('circle', [x, y, radius], stroke, fill, null, 1, 0, z); }
 			  drawRect(x, y, w, h, fill, stroke, z) { this._shape('rect', [x, y, w, h], stroke, fill, null, 1, 0, z); }
 			  drawText(x, y, text, color, size, z) { this._shape('text', [x, y], color, null, String(text), size, 0, z); }
+			  drawTextOverlay(x, y, text, color, size) { this._shape('text', [x, y], color, null, String(text), size, 0, 0); }
+			  drawRectOverlay(x, y, w, h, fill, stroke) { this._shape('rect', [x, y, w, h], stroke, fill, null, 1, 0, 0); }
+			  perspectiveLabel(label) { }
+			  perspectiveIcon(icon) { }
+			  globeGrid(show) { }
+			  globeOutline(color, meters) { }
 			  drawImage(name, x, y, size, angle, z) { this._shape('image', [x, y], null, null, name, size, angle, z); }
 			  drawPoint3(x, y, z, size, color) { this._shape('point3', [x, y, z, size], null, color, null, 1); }
 			  drawPath3(xs, ys, zs, color, width) { const p = []; for (let i = 0; i < Math.min(xs.length, ys.length, zs.length); i++) p.push(xs[i], ys[i], zs[i]); this._shape('path3', p, color, null, null, width); }
@@ -232,6 +239,7 @@ public class SimulationExport {
 			  drawSphere(x, y, z, radius, fill) { this._shape('sphere', [x, y, z, radius], null, fill, null, 1); }
 			  drawPolygon3(xs, ys, zs, fill, stroke) { const p = []; for (let i = 0; i < Math.min(xs.length, ys.length, zs.length); i++) p.push(xs[i], ys[i], zs[i]); this._shape('polygon3', p, stroke, fill, null, 1); }
 			  drawPillar(x, y, radius, height, color) { this._shape('pillar', [x, y, radius, height], null, color, null, 1); }
+			  drawCone(x, y, radius, height, color) { this._shape('cone', [x, y, radius, height], null, color, null, 1); }
 			  loadImage(name, file) {}
 			  loadModel(name, file) {}
 			  randomBinomial(n, p) { let k = 0; for (let i = 0; i < n; i++) if (this.random() < p) k++; return k; }
@@ -413,6 +421,9 @@ public class SimulationExport {
 			  layer(name) { return this._work[name] || null; }
 			  showValues(values, min, max, ...colors) { this._shown = { values: values, min: min, max: max, colors: colors.length >= 2 ? colors : ValueGridModel.VIRIDIS }; }
 			  showStates() { this._shown = null; }
+			  showBackground(name) { }
+			  cellShape(shape) { }
+			  backgroundNames() { return []; }
 			  _inside(v, n) { return v >= 0 && v < n ? v : -1; }
 			  colAt(lon, lat) {
 			    const M = 20037508.342789244;

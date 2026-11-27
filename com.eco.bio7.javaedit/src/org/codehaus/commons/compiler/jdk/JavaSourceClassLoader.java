@@ -328,6 +328,10 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 				).call();
 
 				if (!success) {
+					/* Canceled (e.g., the Stop button of a flow interrupts the thread): no errors, no editor */
+					if (Thread.currentThread().isInterrupted()) {
+						throw new ClassNotFoundException(className + ": Compilation canceled");
+					}
 
 					markError(diagnosticsCollector, createMarker);
 
@@ -399,20 +403,27 @@ public class JavaSourceClassLoader extends AbstractJavaSourceClassLoader {
 					display.syncExec(new Runnable() {
 
 						public void run() {
-
+							/* Without a page (e.g., a Java step of a flow): the page of the active window */
+							IWorkbenchPage page = pag;
+							if (page == null && PlatformUI.getWorkbench().getActiveWorkbenchWindow() != null) {
+								page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+							}
+							if (page == null) {
+								return;
+							}
 							try {
-								IEditorPart part = IDE.openEditorOnFileStore(pag, fileStore);
+								IEditorPart part = IDE.openEditorOnFileStore(page, fileStore);
 
 								if (part != null) {
 									IEditorInput input = part.getEditorInput();
-									ifile = ((IFileEditorInput) input).getFile();
-
-									// ... use activeProjectName
+									/* A file outside the workspace has no IFile */
+									if (input instanceof IFileEditorInput) {
+										ifile = ((IFileEditorInput) input).getFile();
+									}
 								}
 
-							} catch (PartInitException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
+							} catch (PartInitException | IllegalArgumentException e) {
+								System.err.println("The file with the error could not be opened: " + e.getMessage());
 							}
 						}
 					});

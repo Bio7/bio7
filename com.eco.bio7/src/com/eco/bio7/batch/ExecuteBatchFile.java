@@ -113,6 +113,14 @@ public class ExecuteBatchFile {
 
 		/* Interprets a Python script (the embedded Python or a Python process) */
 		else if (fileextension.equals("py")) {
+			/* A flow needs Python: started if it is not running (also without the preference "Start Python when it is used") */
+			if (com.eco.bio7.pybridge.EmbeddedPython.isSelected()) {
+				String error = com.eco.bio7.rcp.AutoStart.ensurePython();
+				if (error != null) {
+					BatchModel.stepFailed("Python could not be started: " + error);
+					return;
+				}
+			}
 			BatchModel.pause();
 
 			/* The embedded Python or a Python process (preferences); the flow continues when the script has finished */
@@ -121,11 +129,16 @@ public class ExecuteBatchFile {
 		}
 		/* Interprets a R script! */
 		else if (fileextension.equals("R") || fileextension.equals("r")) {
-			BatchModel.pause();
 			String fileproper = fileprop.replace("//", "////");
 
 			IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 			boolean rPipe = store.getBoolean("r_pipe");
+			/* A flow needs R: started if it is not running (also without the preference "Start R when it is used") */
+			if (!rPipe && !com.eco.bio7.rcp.AutoStart.ensureR()) {
+				BatchModel.stepFailed("R could not be started (see the console).");
+				return;
+			}
+			BatchModel.pause();
 
 			if (rPipe == true) {
 				ConsolePageParticipant.pipeInputToConsole("source('" + fileprop + "')", true, true);

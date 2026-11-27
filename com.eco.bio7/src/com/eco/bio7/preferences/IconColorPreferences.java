@@ -105,7 +105,7 @@ public class IconColorPreferences extends FieldEditorPreferencePage implements I
 		cd.widthHint = PAD * 2 + PREVIEW.length * STEP - (STEP - 16);
 		cd.heightHint = 2 * ROW;
 		preview.setLayoutData(cd);
-		preview.addPaintListener(e -> paintPreview(e.gc));
+		preview.addPaintListener(com.eco.bio7.util.SafeEvents.guardPaint("IconColorPreferences painting", e -> paintPreview(e.gc)));
 		preview.addDisposeListener(e -> disposeImages());
 	}
 

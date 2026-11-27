@@ -72,7 +72,9 @@ public final class RUtil {
 	 */
 	public static RSession session() throws RException {
 		RSession s = EmbeddedR.session();
-		if (s == null && com.eco.bio7.rcp.AutoStart.startROnUse()) {
+		/* A running flow needs R (a Java step or a decision): started also without the preference */
+		boolean start = com.eco.bio7.batch.BatchModel.isRunning() ? com.eco.bio7.rcp.AutoStart.startR() : com.eco.bio7.rcp.AutoStart.startROnUse();
+		if (s == null && start) {
 			s = EmbeddedR.session();
 		}
 		if (s == null) {

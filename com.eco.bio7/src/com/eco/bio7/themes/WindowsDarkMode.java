@@ -51,7 +51,7 @@ public final class WindowsDarkMode {
 			return;
 		}
 		installed = true;
-		Listener dropDown = e -> {
+		Listener dropDown = com.eco.bio7.util.SafeEvents.guard("WindowsDarkMode", e -> {
 			if (e.widget instanceof Combo combo && !combo.isDisposed() && isActive()) {
 				/* After the drop-down (SWT has set the theme of the list in the meantime) */
 				display.asyncExec(() -> {
@@ -60,7 +60,7 @@ public final class WindowsDarkMode {
 					}
 				});
 			}
-		};
+		});
 		display.addFilter(SWT.MouseDown, dropDown);
 		display.addFilter(SWT.KeyDown, dropDown);
 	}

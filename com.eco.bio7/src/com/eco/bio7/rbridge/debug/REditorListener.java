@@ -29,7 +29,14 @@ public class REditorListener {
 
 			@Override
 			public void partActivated(IWorkbenchPartReference partRef) {
+				/* Called when the focus changes (also while the workbench closes): it must not throw */
+				if (com.eco.bio7.util.SafeEvents.closing()) {
+					return;
+				}
+				com.eco.bio7.util.SafeEvents.run("the R debug toolbar", () -> activated(partRef));
+			}
 
+			private void activated(IWorkbenchPartReference partRef) {
 				ConsolePageParticipant con = ConsolePageParticipant.getConsolePageParticipantInstance();
 				if (con != null) {
 
@@ -45,14 +52,17 @@ public class REditorListener {
 					}
 					if (editor instanceof REditor) {
 						REditor reditor = (REditor) editor;
+						/* A file outside of the workspace has no resource (and no markers) */
 						IResource resource = (IResource) reditor.getEditorInput().getAdapter(IResource.class);
 						String type = "com.eco.bio7.redit.debugMarker";
 
-						IMarker[] markers = null;
-						try {
-							markers = resource.findMarkers(type, true, IResource.DEPTH_INFINITE);
-						} catch (CoreException e) {
-							e.printStackTrace();
+						IMarker[] markers = new IMarker[0];
+						if (resource != null && resource.exists()) {
+							try {
+								markers = resource.findMarkers(type, true, IResource.DEPTH_INFINITE);
+							} catch (CoreException e) {
+								e.printStackTrace();
+							}
 						}
 
 						if (markers.length > 0) {
@@ -79,6 +89,9 @@ public class REditorListener {
 
 			@Override
 			public void partClosed(IWorkbenchPartReference partRef) {
+				if (com.eco.bio7.util.SafeEvents.closing() || partRef.getPage() == null) {
+					return;
+				}
 				IEditorPart editor = partRef.getPage().getActiveEditor();
 				if (editor == null) {
 

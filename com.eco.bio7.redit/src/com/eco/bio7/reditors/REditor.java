@@ -173,12 +173,26 @@ public class REditor extends TextEditor implements IPropertyChangeListener, Upda
 	 * @param editor
 	 */
 	public static void activateEditorPage(final IEditorPart editor) {
-		if (tempShell != null) {
-			if (tempShell.isDisposed() == false) {
-				tempShell.dispose();
-			}
+		/*
+		 * Called when the focus changes: the shell is created after the callback of
+		 * the operating system (a shell created or disposed in a focus callback of
+		 * Cocoa can corrupt its state) and not while the workbench closes
+		 */
+		if (com.eco.bio7.util.SafeEvents.closing()) {
+			return;
 		}
-		tempShell = new Shell();
+		org.eclipse.swt.widgets.Display display = org.eclipse.swt.widgets.Display.getDefault();
+		display.asyncExec(() -> {
+			if (com.eco.bio7.util.SafeEvents.closing() || display.isDisposed()) {
+				return;
+			}
+			if (tempShell != null) {
+				if (tempShell.isDisposed() == false) {
+					tempShell.dispose();
+				}
+			}
+			tempShell = new Shell();
+		});
 
 	}
 
@@ -533,9 +547,34 @@ public class REditor extends TextEditor implements IPropertyChangeListener, Upda
 
 	}
 
+	/**
+	 * Evaluates the line or the selection of the active R editor (the action
+	 * "Evaluate Line or Selection" of Bio7, set at the start; null: not
+	 * available).
+	 */
+	public static volatile Runnable evaluateSelection;
+
 	protected void editorContextMenuAboutToShow(IMenuManager menu) {
 
 		super.editorContextMenuAboutToShow(menu);
+		/* Evaluate: the line or the selection in R (the action of the toolbar, with its key binding) */
+		if (evaluateSelection != null) {
+			org.eclipse.jface.action.Action evaluate = new org.eclipse.jface.action.Action("Evaluate Line/Selection") {
+				@Override
+				public void run() {
+					Runnable r = evaluateSelection;
+					if (r != null) {
+						r.run();
+					}
+				}
+			};
+			evaluate.setId("com.eco.bio7.reditor.evaluate");
+			evaluate.setActionDefinitionId("com.eco.bio7.execute_r_select");
+			evaluate.setToolTipText("Evaluates the line or the selection in R");
+			/* The first item of the menu */
+			menu.prependToGroup(org.eclipse.ui.texteditor.ITextEditorActionConstants.GROUP_UNDO, evaluate);
+			menu.insertAfter(evaluate.getId(), new Separator());
+		}
 		addAction(menu, "ContentAssistProposal");
 		menu.add(new Separator());
 

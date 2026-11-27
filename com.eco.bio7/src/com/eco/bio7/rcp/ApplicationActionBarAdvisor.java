@@ -369,10 +369,11 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		register(flowexternalstartaction);
 
 		flowstop = new FlowStopAction("Flowstop", window);
-		register(flowstop);
 
 		rselect = new ExecuteRTextSelection("Evaluate Line or Selection", window);
 		register(rselect);
+		/* "Evaluate" in the context menu of the R editor */
+		com.eco.bio7.reditors.REditor.evaluateSelection = rselect::run;
 
 		clipboardRScript = new ClipboardRScipt("Evaluate Clipboard", window);
 		register(clipboardRScript);
@@ -402,7 +403,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor {
 		register(compileJava);
 
 		flowAction = new FlowEditorAction("Execute Flow");
-		register(flowAction);
+		/* The handlers of execute and stop: the toolbar shows a running flow (execute green, stop red) */
+		com.eco.bio7.actions.FlowToolbar.install(window, flowAction, flowstop);
 
 		debugFlowAction = new FlowEditorTestAction("Debug Flow");
 		register(debugFlowAction);

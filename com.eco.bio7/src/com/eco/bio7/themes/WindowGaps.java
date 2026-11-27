@@ -104,7 +104,7 @@ public final class WindowGaps {
 			return;
 		}
 		installed = true;
-		display.addFilter(SWT.Resize, event -> {
+		display.addFilter(SWT.Resize, com.eco.bio7.util.SafeEvents.guard("WindowGaps", event -> {
 			if (event.widget instanceof Composite composite && isGapLayout(composite.getLayout())) {
 				if (setGaps(composite)) {
 					display.asyncExec(() -> {
@@ -114,7 +114,7 @@ public final class WindowGaps {
 					});
 				}
 			}
-		});
+		}));
 	}
 
 	/* The gaps of the control and its children, true if a gap was changed */

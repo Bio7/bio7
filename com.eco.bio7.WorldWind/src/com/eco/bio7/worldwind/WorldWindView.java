@@ -242,7 +242,10 @@ public class WorldWindView extends ViewPart {
 
 			@Override
 			public void partHidden(IWorkbenchPartReference partRef) {
-
+				/* Called when the focus or the perspective changes (also while closing): it must not throw */
+				if (com.eco.bio7.util.SafeEvents.closing() || worldCanvas == null || worldCanvas.getWindow() == null) {
+					return;
+				}
 				if (partRef.getId().equals("com.eco.bio7.worldwind.WorldWindView")) {
 					partShown = false;
 					/*
@@ -261,6 +264,9 @@ public class WorldWindView extends ViewPart {
 
 			@Override
 			public void partVisible(IWorkbenchPartReference partRef) {
+				if (com.eco.bio7.util.SafeEvents.closing() || worldCanvas == null || worldCanvas.getWindow() == null) {
+					return;
+				}
 				if (partRef.getId().equals("com.eco.bio7.worldwind.WorldWindView")) {
 					partShown = true;
 					/* The fullscreen window gets the keys again (ESC, F2 to F5) */
@@ -278,7 +284,9 @@ public class WorldWindView extends ViewPart {
 							display.asyncExec(new Runnable() {
 								public void run() {
 									// spat.getCanvas().setParent(parent);
-									worldCanvas.getNEWTChild().setVisible(true);
+									if (!worldCanvas.isDisposed() && worldCanvas.getNEWTChild() != null) {
+										worldCanvas.getNEWTChild().setVisible(true);
+									}
 									// System.out.println(spat.getCanvas().getNEWTChild().getBounds());
 									// spat.getCanvas().getNEWTChild().setPosition(0, 0);
 

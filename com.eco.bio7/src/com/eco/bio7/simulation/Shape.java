@@ -21,14 +21,14 @@ public final class Shape {
 
 	/**
 	 * The kind: line, line3, path, polygon, circle, rect, text, image and the 3D
-	 * shapes of an agent model pillar, point3, path3, box, sphere, polygon3.
+	 * shapes of an agent model pillar, cone, point3, path3, box, sphere, polygon3.
 	 */
 	public final String kind;
 
 	/**
 	 * The coordinates (line: x1, y1, x2, y2; line3: x1, y1, z1, x2, y2, z2; path
 	 * and polygon: x0, y0, x1, y1, ...; circle: x, y, radius; rect: x, y, w, h;
-	 * text and image: x, y; pillar: x, y, radius, height; point3: x, y, z, size;
+	 * text and image: x, y; pillar and cone: x, y, radius, height; point3: x, y, z, size;
 	 * path3 and polygon3: x0, y0, z0, x1, y1, z1, ...; box: x, y, z (the corner),
 	 * width, height, depth; sphere: x, y, z, radius).
 	 */
@@ -55,11 +55,22 @@ public final class Shape {
 	 */
 	public final double z;
 
+	/**
+	 * A text or a rectangle of a grid shown as an ImageJ overlay (sharp at each
+	 * zoom, Image > Overlay hides it) instead of painted into the image.
+	 */
+	public final boolean overlay;
+
 	public Shape(String kind, double[] p, String stroke, String fill, String text, double width, double angle) {
 		this(kind, p, stroke, fill, text, width, angle, 0);
 	}
 
 	public Shape(String kind, double[] p, String stroke, String fill, String text, double width, double angle, double z) {
+		this(kind, p, stroke, fill, text, width, angle, z, false);
+	}
+
+	public Shape(String kind, double[] p, String stroke, String fill, String text, double width, double angle, double z, boolean overlay) {
+		this.overlay = overlay;
 		this.kind = kind;
 		this.z = Double.isFinite(z) ? z : 0;
 		this.p = p;
@@ -92,6 +103,9 @@ public final class Shape {
 		}
 		if (z != 0) {
 			b.append(",\"z\":").append(z);
+		}
+		if (overlay) {
+			b.append(",\"o\":true");
 		}
 		return b.append(",\"w\":").append(width).append(",\"a\":").append(angle).append('}').toString();
 	}

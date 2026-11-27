@@ -53,11 +53,11 @@ final class ListSelectionColors {
 		}
 		installed = true;
 		Display display = Display.getDefault();
-		display.addFilter(SWT.Skin, event -> {
+		display.addFilter(SWT.Skin, com.eco.bio7.util.SafeEvents.guard("ListSelectionColors", event -> {
 			if (event.widget instanceof List list) {
 				hook(list);
 			}
-		});
+		}));
 		for (Shell shell : display.getShells()) {
 			hookAll(shell);
 		}
@@ -81,7 +81,7 @@ final class ListSelectionColors {
 			return;
 		}
 		list.setData(PAINTED, Boolean.TRUE);
-		list.addListener(SWT.Paint, ListSelectionColors::paint);
+		list.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("ListSelectionColors painting", ListSelectionColors::paint));
 		/* The selection has another color without the focus */
 		list.addListener(SWT.FocusIn, _ -> list.redraw());
 		list.addListener(SWT.FocusOut, _ -> list.redraw());

@@ -122,6 +122,9 @@ final class GlobeDisplay {
 			shapeKind = null;
 			drawn.clear();
 			models = null;
+			solids = null;
+			outline = null;
+			outlineKey = null;
 		}
 		return layer;
 	}
@@ -133,11 +136,22 @@ final class GlobeDisplay {
 
 	/** Shows the grid and the shapes of the model (drawLine, drawImage, ... in cells, converted by the geometry). */
 	void showGrid(int w, int h, int[] argb, double south, double west, double north, double east, Runnable redo, Drawing drawing) {
+		showGrid(w, h, argb, south, west, north, east, redo, drawing, null, 0);
+	}
+
+	/**
+	 * Shows the grid (argb null: no grid, e.g., only the 3D shapes of the model),
+	 * the shapes of the model and the outline of the area (a fence along the
+	 * border on the terrain: its color, null none, and its height in meters).
+	 */
+	void showGrid(int w, int h, int[] argb, double south, double west, double north, double east, Runnable redo, Drawing drawing, String outlineColor, double outlineMeters) {
 		if (!begin(redo)) {
 			return;
 		}
-		BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-		img.setRGB(0, 0, w, h, argb, 0, w);
+		BufferedImage img = argb == null ? null : new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		if (img != null) {
+			img.setRGB(0, 0, w, h, argb, 0, w);
+		}
 		Simulation.ui(() -> {
 			try {
 				WorldWindow wwd = WorldWindView.getWwd();
@@ -146,12 +160,18 @@ final class GlobeDisplay {
 				}
 				RenderableLayer l = layer(wwd);
 				Sector sector = Sector.fromDegrees(south, north, west, east);
-				if (image == null) {
+				if (img == null) {
+					if (image != null) {
+						l.removeRenderable(image);
+						image = null;
+					}
+				} else if (image == null) {
 					image = new SurfaceImage(img, sector);
 					l.addRenderable(image);
 				} else {
 					image.setImageSource(img, sector);
 				}
+				outline(l, south, west, north, east, outlineColor, outlineMeters);
 				draw(l, drawing);
 				wwd.redraw();
 			} finally {
@@ -297,6 +317,9 @@ final class GlobeDisplay {
 	}
 
 	private final List<gov.nasa.worldwind.render.Renderable> drawn = new ArrayList<>();
+	private Solids solids;
+	private gov.nasa.worldwind.render.Path outline;
+	private String outlineKey;
 	private volatile Models models;
 	private boolean animating;
 
@@ -490,17 +513,59 @@ final class GlobeDisplay {
 		}
 	}
 
-	/* The shapes of the model on the globe (paths, surface polygons and circles, texts, images) */
+	/* The shapes of the model on the globe (paths, surface polygons and circles, texts, images; 3D: pillars and spheres above the terrain) */
 	private void draw(RenderableLayer l, Drawing d) {
 		for (gov.nasa.worldwind.render.Renderable r : drawn) {
 			l.removeRenderable(r);
 		}
 		drawn.clear();
-		if (d == null) {
-			return;
+		List<Solids.Solid> solid = new ArrayList<>();
+		List<Solids.Point> point = new ArrayList<>();
+		if (d != null) {
+			drawShapes(l, d, solid, point);
 		}
+		/* The 3D solids (pillars, cones, spheres) and the points together in OpenGL (many, e.g., a plant in each cell) */
+		if (solid.isEmpty() && point.isEmpty()) {
+			if (solids != null) {
+				l.removeRenderable(solids);
+				solids = null;
+			}
+		} else {
+			if (solids == null) {
+				solids = new Solids();
+				l.addRenderable(solids);
+			}
+			solids.set(solid, point);
+		}
+	}
+
+	private void drawShapes(RenderableLayer l, Drawing d, List<Solids.Solid> solid, List<Solids.Point> point) {
 		for (Shape s : d.shapes) {
 			double[] p = s.p;
+			if (s.kind.equals("point3") && p.length >= 4) {
+				/* x, y, z, size (units of the model): a round point (shaded as a ball) at the height z, its diameter in meters (with the zoom) */
+				float[] c = Assets.rgba(s.fill != null ? s.fill : s.stroke != null ? s.stroke : "#d0d4dc");
+				if (c != null) {
+					double[] ll = d.lonLat.apply(p[0], p[1]);
+					point.add(new Solids.Point(ll[0], ll[1], p[2] * d.metersPerUnit, Math.max(0.1, p[3] * d.metersPerUnit), c));
+				}
+				continue;
+			}
+			if ((s.kind.equals("pillar") || s.kind.equals("cone") || s.kind.equals("sphere")) && p.length >= 4) {
+				float[] c = Assets.rgba(s.fill != null ? s.fill : s.kind.equals("sphere") ? "#d0d4dc" : "#9aa6b8");
+				if (c == null) {
+					continue;
+				}
+				double[] ll = d.lonLat.apply(p[0], p[1]);
+				if (s.kind.equals("sphere")) {
+					/* x, y, z, radius (units of the model): a sphere above the terrain (e.g., a crown) */
+					solid.add(new Solids.Solid(Solids.SPHERE, ll[0], ll[1], p[2] * d.metersPerUnit, Math.max(0.1, p[3] * d.metersPerUnit), Math.max(0.1, p[3] * d.metersPerUnit), c));
+				} else {
+					/* x, y, radius, height (units of the model): a cylinder or a cone standing on the terrain (e.g., a trunk, a tuft) */
+					solid.add(new Solids.Solid(s.kind.equals("cone") ? Solids.CONE : Solids.PILLAR, ll[0], ll[1], 0, Math.max(0.1, p[2] * d.metersPerUnit), Math.max(0.1, p[3] * d.metersPerUnit), c));
+				}
+				continue;
+			}
 			java.awt.Color stroke = Assets.awt(s.stroke), fill = Assets.awt(s.fill);
 			gov.nasa.worldwind.render.BasicShapeAttributes at = new gov.nasa.worldwind.render.BasicShapeAttributes();
 			at.setDrawOutline(stroke != null);
@@ -571,6 +636,351 @@ final class GlobeDisplay {
 				drawn.add(r);
 				l.addRenderable(r);
 			}
+		}
+	}
+
+	/* The outline of the area: a path along the border on the terrain, extruded to a fence (translucent) of the height */
+	private void outline(RenderableLayer l, double south, double west, double north, double east, String color, double meters) {
+		String key = color == null ? null : south + "/" + west + "/" + north + "/" + east + "/" + color + "/" + meters;
+		if (java.util.Objects.equals(key, outlineKey)) {
+			return;
+		}
+		if (outline != null) {
+			l.removeRenderable(outline);
+			outline = null;
+		}
+		outlineKey = key;
+		if (key == null) {
+			return;
+		}
+		/* Many points (the fence follows the terrain) */
+		List<Position> ps = new ArrayList<>();
+		int n = 60;
+		double h = Math.max(0, meters);
+		for (int i = 0; i < n; i++) {
+			ps.add(Position.fromDegrees(north, west + (east - west) * i / n, h));
+		}
+		for (int i = 0; i < n; i++) {
+			ps.add(Position.fromDegrees(north - (north - south) * i / n, east, h));
+		}
+		for (int i = 0; i < n; i++) {
+			ps.add(Position.fromDegrees(south, east - (east - west) * i / n, h));
+		}
+		for (int i = 0; i <= n; i++) {
+			ps.add(Position.fromDegrees(south + (north - south) * i / n, west, h));
+		}
+		java.awt.Color c = Assets.awt(color);
+		if (c == null) {
+			return;
+		}
+		gov.nasa.worldwind.render.BasicShapeAttributes at = new gov.nasa.worldwind.render.BasicShapeAttributes();
+		at.setOutlineMaterial(new Material(c));
+		at.setOutlineWidth(3);
+		at.setDrawOutline(true);
+		at.setInteriorMaterial(new Material(c));
+		at.setInteriorOpacity(0.3);
+		at.setDrawInterior(h > 0);
+		gov.nasa.worldwind.render.Path path = new gov.nasa.worldwind.render.Path(ps);
+		path.setAltitudeMode(h > 0 ? gov.nasa.worldwind.WorldWind.RELATIVE_TO_GROUND : gov.nasa.worldwind.WorldWind.CLAMP_TO_GROUND);
+		path.setFollowTerrain(true);
+		path.setExtrude(h > 0);
+		path.setPathType(AVKey.LINEAR);
+		path.setAttributes(at);
+		outline = path;
+		l.addRenderable(path);
+	}
+
+	/*
+	 * The 3D solids of the model on the globe in OpenGL (lit): pillars and cones
+	 * standing on the terrain, spheres above it. Many solids (e.g., a plant in each
+	 * cell) are drawn fast: a display list for each kind (a unit solid) and the
+	 * frame of each solid on the terrain (computed again only after a while, e.g.,
+	 * when finer elevations are loaded).
+	 */
+	static final class Solids implements gov.nasa.worldwind.render.Renderable {
+		static final int PILLAR = 0, CONE = 1, SPHERE = 2;
+
+		/** A solid: the kind, the position, the height of its base (m), its radius and its height (sphere: the radius twice). */
+		record Solid(int kind, double lon, double lat, double z, double radius, double height, float[] rgba) {
+		}
+
+		/** A point: the position, its height above the terrain (m), its diameter (m). */
+		record Point(double lon, double lat, double z, double size, float[] rgba) {
+		}
+
+		private volatile List<Solid> solids = List.of();
+		private volatile List<Point> points = List.of();
+		/* The points relative to a center (float precision), sorted by their size: the groups of a size */
+		private java.nio.FloatBuffer pointXyz;
+		private java.nio.ByteBuffer pointRgba;
+		private gov.nasa.worldwind.geom.Vec4 pointCenter;
+		private int[] groupStart = new int[0], groupCount = new int[0];
+		private float[] groupSize = new float[0];
+		private List<Point> pointed;
+		/* The texture of a point: a ball (lit from the upper left) */
+		private int ball;
+		/* The frames on the terrain (from the solids) and when they were computed */
+		private gov.nasa.worldwind.geom.Matrix[] frames;
+		private List<Solid> framed;
+		private long framedAt;
+		private double framedExaggeration;
+		/* The display lists of the unit solids (of an OpenGL context) */
+		private int lists;
+		private Object listsContext;
+
+		void set(List<Solid> s, List<Point> p) {
+			solids = List.copyOf(s);
+			points = List.copyOf(p);
+		}
+
+		@Override
+		public void render(gov.nasa.worldwind.render.DrawContext dc) {
+			List<Solid> all = solids;
+			List<Point> pts = points;
+			if (dc.isPickingMode() || (all.isEmpty() && pts.isEmpty())) {
+				return;
+			}
+			com.jogamp.opengl.GL2 gl = dc.getGL().getGL2();
+			if (lists == 0 || listsContext != dc.getGLContext()) {
+				lists = compile(gl);
+				ball = ballTexture(gl);
+				listsContext = dc.getGLContext();
+			}
+			frames(dc, all, pts);
+			gov.nasa.worldwind.geom.Matrix view = dc.getView().getModelviewMatrix();
+			double[] mv = new double[16];
+			gl.glPushAttrib(com.jogamp.opengl.GL2.GL_ALL_ATTRIB_BITS);
+			gl.glPushClientAttrib((int) com.jogamp.opengl.GL2.GL_CLIENT_ALL_ATTRIB_BITS);
+			gl.glMatrixMode(com.jogamp.opengl.GL2.GL_MODELVIEW);
+			gl.glPushMatrix();
+			try {
+				gl.glEnable(com.jogamp.opengl.GL.GL_DEPTH_TEST);
+				gl.glDepthMask(true);
+				drawPoints(dc, gl, view, mv);
+				if (all.isEmpty()) {
+					return;
+				}
+				gl.glDisable(com.jogamp.opengl.GL.GL_CULL_FACE);
+				gl.glLightModeli(com.jogamp.opengl.GL2.GL_LIGHT_MODEL_TWO_SIDE, 1);
+				gl.glEnable(com.jogamp.opengl.GL2.GL_LIGHTING);
+				gl.glEnable(com.jogamp.opengl.GL2.GL_LIGHT0);
+				gl.glEnable(com.jogamp.opengl.GL2.GL_COLOR_MATERIAL);
+				gl.glColorMaterial(com.jogamp.opengl.GL.GL_FRONT_AND_BACK, com.jogamp.opengl.GL2.GL_AMBIENT_AND_DIFFUSE);
+				gl.glEnable(com.jogamp.opengl.GL2.GL_NORMALIZE);
+				gl.glEnable(com.jogamp.opengl.GL.GL_BLEND);
+				gl.glBlendFunc(com.jogamp.opengl.GL.GL_SRC_ALPHA, com.jogamp.opengl.GL.GL_ONE_MINUS_SRC_ALPHA);
+				/* A light from above (in the coordinates of the eye) */
+				gl.glLoadIdentity();
+				gl.glLightfv(com.jogamp.opengl.GL2.GL_LIGHT0, com.jogamp.opengl.GL2.GL_POSITION, new float[] { 0.3f, 0.8f, 0.6f, 0 }, 0);
+				gl.glLightfv(com.jogamp.opengl.GL2.GL_LIGHT0, com.jogamp.opengl.GL2.GL_DIFFUSE, new float[] { 0.75f, 0.75f, 0.75f, 1 }, 0);
+				gl.glLightfv(com.jogamp.opengl.GL2.GL_LIGHT0, com.jogamp.opengl.GL2.GL_AMBIENT, new float[] { 0.45f, 0.45f, 0.45f, 1 }, 0);
+				/* The view times the frame in double precision (the frames are far from the origin of the globe) */
+				gov.nasa.worldwind.geom.Matrix[] f = frames;
+				for (int i = 0; i < all.size() && i < f.length; i++) {
+					Solid s = all.get(i);
+					float[] c = s.rgba;
+					gl.glColor4f(c[0], c[1], c[2], c[3]);
+					gl.glLoadMatrixd(view.multiply(f[i]).toArray(mv, 0, false), 0);
+					gl.glCallList(lists + s.kind);
+				}
+			} finally {
+				gl.glPopMatrix();
+				gl.glPopClientAttrib();
+				gl.glPopAttrib();
+			}
+		}
+
+		/*
+		 * The points: one draw call for each size, sprites with the texture of a ball
+		 * in the color of the point; the size in pixels by the distance (the diameter
+		 * in meters: the attenuation of the points by the size of a pixel).
+		 */
+		private void drawPoints(gov.nasa.worldwind.render.DrawContext dc, com.jogamp.opengl.GL2 gl, gov.nasa.worldwind.geom.Matrix view, double[] mv) {
+			if (pointXyz == null || groupStart.length == 0) {
+				return;
+			}
+			gl.glLoadMatrixd(view.multiply(gov.nasa.worldwind.geom.Matrix.fromTranslation(pointCenter)).toArray(mv, 0, false), 0);
+			gl.glDisable(com.jogamp.opengl.GL2.GL_LIGHTING);
+			gl.glEnable(com.jogamp.opengl.GL.GL_TEXTURE_2D);
+			gl.glBindTexture(com.jogamp.opengl.GL.GL_TEXTURE_2D, ball);
+			gl.glTexEnvi(com.jogamp.opengl.GL2.GL_TEXTURE_ENV, com.jogamp.opengl.GL2.GL_TEXTURE_ENV_MODE, com.jogamp.opengl.GL2.GL_MODULATE);
+			gl.glEnable(com.jogamp.opengl.GL2.GL_POINT_SPRITE);
+			gl.glTexEnvi(com.jogamp.opengl.GL2.GL_POINT_SPRITE, com.jogamp.opengl.GL2.GL_COORD_REPLACE, com.jogamp.opengl.GL.GL_TRUE);
+			gl.glEnable(com.jogamp.opengl.GL2.GL_ALPHA_TEST);
+			gl.glAlphaFunc(com.jogamp.opengl.GL.GL_GREATER, 0.5f);
+			/* The size in pixels: the size (m) / (the meters of a pixel at the distance 1 * the distance) */
+			double pixel = Math.max(1e-9, dc.getView().computePixelSizeAtDistance(1));
+			gl.glPointParameterfv(com.jogamp.opengl.GL2.GL_POINT_DISTANCE_ATTENUATION, new float[] { 0, 0, (float) (pixel * pixel) }, 0);
+			gl.glPointParameterf(com.jogamp.opengl.GL2.GL_POINT_SIZE_MIN, 2f);
+			gl.glPointParameterf(com.jogamp.opengl.GL2.GL_POINT_SIZE_MAX, 64f);
+			gl.glEnableClientState(com.jogamp.opengl.GL2.GL_VERTEX_ARRAY);
+			gl.glEnableClientState(com.jogamp.opengl.GL2.GL_COLOR_ARRAY);
+			gl.glVertexPointer(3, com.jogamp.opengl.GL.GL_FLOAT, 0, pointXyz.rewind());
+			gl.glColorPointer(4, com.jogamp.opengl.GL.GL_UNSIGNED_BYTE, 0, pointRgba.rewind());
+			for (int g = 0; g < groupStart.length; g++) {
+				gl.glPointSize(groupSize[g]);
+				gl.glDrawArrays(com.jogamp.opengl.GL.GL_POINTS, groupStart[g], groupCount[g]);
+			}
+			gl.glDisableClientState(com.jogamp.opengl.GL2.GL_VERTEX_ARRAY);
+			gl.glDisableClientState(com.jogamp.opengl.GL2.GL_COLOR_ARRAY);
+			gl.glDisable(com.jogamp.opengl.GL2.GL_POINT_SPRITE);
+			gl.glDisable(com.jogamp.opengl.GL2.GL_ALPHA_TEST);
+			gl.glDisable(com.jogamp.opengl.GL.GL_TEXTURE_2D);
+		}
+
+		/* The points on the terrain relative to the first point, sorted into groups of a size (0.25 m steps) */
+		private void pointsOnTerrain(gov.nasa.worldwind.render.DrawContext dc, List<Point> pts, double ex) {
+			if (pts.isEmpty()) {
+				pointXyz = null;
+				groupStart = new int[0];
+				return;
+			}
+			gov.nasa.worldwind.globes.Globe globe = dc.getGlobe();
+			Integer[] order = new Integer[pts.size()];
+			for (int i = 0; i < order.length; i++) {
+				order[i] = i;
+			}
+			java.util.Arrays.sort(order, (a, b) -> Long.compare(Math.round(pts.get(a).size * 4), Math.round(pts.get(b).size * 4)));
+			java.nio.FloatBuffer xyz = com.jogamp.common.nio.Buffers.newDirectFloatBuffer(3 * order.length);
+			java.nio.ByteBuffer rgba = com.jogamp.common.nio.Buffers.newDirectByteBuffer(4 * order.length);
+			gov.nasa.worldwind.geom.Vec4 center = null;
+			List<Integer> starts = new ArrayList<>(), counts = new ArrayList<>();
+			List<Float> sizes = new ArrayList<>();
+			long key = Long.MIN_VALUE;
+			for (int k = 0; k < order.length; k++) {
+				Point p = pts.get(order[k]);
+				gov.nasa.worldwind.geom.Angle lat = gov.nasa.worldwind.geom.Angle.fromDegrees(p.lat), lon = gov.nasa.worldwind.geom.Angle.fromDegrees(p.lon);
+				gov.nasa.worldwind.geom.Vec4 v = globe.computePointFromPosition(lat, lon, globe.getElevation(lat, lon) * ex + p.z);
+				if (center == null) {
+					center = v;
+				}
+				xyz.put((float) (v.x - center.x)).put((float) (v.y - center.y)).put((float) (v.z - center.z));
+				float[] c = p.rgba;
+				rgba.put((byte) Math.round(c[0] * 255)).put((byte) Math.round(c[1] * 255)).put((byte) Math.round(c[2] * 255)).put((byte) Math.round(c[3] * 255));
+				long s = Math.round(p.size * 4);
+				if (s != key) {
+					key = s;
+					starts.add(k);
+					counts.add(0);
+					sizes.add((float) Math.max(0.25, s / 4.0));
+				}
+				counts.set(counts.size() - 1, counts.get(counts.size() - 1) + 1);
+			}
+			pointXyz = xyz.rewind();
+			pointRgba = rgba.rewind();
+			pointCenter = center;
+			groupStart = starts.stream().mapToInt(Integer::intValue).toArray();
+			groupCount = counts.stream().mapToInt(Integer::intValue).toArray();
+			groupSize = new float[sizes.size()];
+			for (int g = 0; g < groupSize.length; g++) {
+				groupSize[g] = sizes.get(g);
+			}
+		}
+
+		/* A ball: a disk lit from the upper left (white, the color of the point modulates it), transparent outside */
+		private static int ballTexture(com.jogamp.opengl.GL2 gl) {
+			int n = 32;
+			java.nio.ByteBuffer b = com.jogamp.common.nio.Buffers.newDirectByteBuffer(n * n * 4);
+			for (int y = 0; y < n; y++) {
+				for (int x = 0; x < n; x++) {
+					double u = (x + 0.5) / n * 2 - 1, v = (y + 0.5) / n * 2 - 1, r2 = u * u + v * v;
+					double nz = r2 < 1 ? Math.sqrt(1 - r2) : 0;
+					/* The light from the upper left and the front (the sprite: y down) */
+					double light = Math.max(0, -0.45 * u - 0.45 * v + 0.77 * nz);
+					int g = (int) Math.round(255 * Math.min(1, 0.5 + 0.6 * light));
+					b.put((byte) g).put((byte) g).put((byte) g).put((byte) (r2 < 1 ? 255 : 0));
+				}
+			}
+			b.rewind();
+			int[] id = new int[1];
+			gl.glGenTextures(1, id, 0);
+			gl.glBindTexture(com.jogamp.opengl.GL.GL_TEXTURE_2D, id[0]);
+			gl.glTexParameteri(com.jogamp.opengl.GL.GL_TEXTURE_2D, com.jogamp.opengl.GL.GL_TEXTURE_MIN_FILTER, com.jogamp.opengl.GL.GL_LINEAR);
+			gl.glTexParameteri(com.jogamp.opengl.GL.GL_TEXTURE_2D, com.jogamp.opengl.GL.GL_TEXTURE_MAG_FILTER, com.jogamp.opengl.GL.GL_LINEAR);
+			gl.glTexParameteri(com.jogamp.opengl.GL.GL_TEXTURE_2D, com.jogamp.opengl.GL.GL_TEXTURE_WRAP_S, com.jogamp.opengl.GL.GL_CLAMP_TO_EDGE);
+			gl.glTexParameteri(com.jogamp.opengl.GL.GL_TEXTURE_2D, com.jogamp.opengl.GL.GL_TEXTURE_WRAP_T, com.jogamp.opengl.GL.GL_CLAMP_TO_EDGE);
+			gl.glTexImage2D(com.jogamp.opengl.GL.GL_TEXTURE_2D, 0, com.jogamp.opengl.GL.GL_RGBA, n, n, 0, com.jogamp.opengl.GL.GL_RGBA, com.jogamp.opengl.GL.GL_UNSIGNED_BYTE, b);
+			gl.glBindTexture(com.jogamp.opengl.GL.GL_TEXTURE_2D, 0);
+			return id[0];
+		}
+
+		/* The frame of each solid: the surface orientation on the terrain (x east, y north, z up), scaled to the solid */
+		private void frames(gov.nasa.worldwind.render.DrawContext dc, List<Solid> all, List<Point> pts) {
+			long now = System.currentTimeMillis();
+			double ex = dc.getVerticalExaggeration();
+			if (frames != null && framed == all && pointed == pts && ex == framedExaggeration && now - framedAt < 1500) {
+				return;
+			}
+			pointsOnTerrain(dc, pts, ex);
+			pointed = pts;
+			gov.nasa.worldwind.globes.Globe globe = dc.getGlobe();
+			gov.nasa.worldwind.geom.Matrix[] f = new gov.nasa.worldwind.geom.Matrix[all.size()];
+			for (int i = 0; i < f.length; i++) {
+				Solid s = all.get(i);
+				gov.nasa.worldwind.geom.Angle lat = gov.nasa.worldwind.geom.Angle.fromDegrees(s.lat), lon = gov.nasa.worldwind.geom.Angle.fromDegrees(s.lon);
+				double ground = globe.getElevation(lat, lon) * ex;
+				f[i] = globe.computeSurfaceOrientationAtPosition(lat, lon, ground + s.z).multiply(gov.nasa.worldwind.geom.Matrix.fromScale(s.radius, s.radius, s.height));
+			}
+			frames = f;
+			framed = all;
+			framedAt = now;
+			framedExaggeration = ex;
+		}
+
+		/* The unit solids: a cylinder and a cone (radius 1, height 1, from z 0) and a sphere (radius 1) */
+		private static int compile(com.jogamp.opengl.GL2 gl) {
+			int base = gl.glGenLists(3);
+			int seg = 8;
+			/* The pillar: the side and the top */
+			gl.glNewList(base + PILLAR, com.jogamp.opengl.GL2.GL_COMPILE);
+			gl.glBegin(com.jogamp.opengl.GL2.GL_QUAD_STRIP);
+			for (int j = 0; j <= seg; j++) {
+				double a = 2 * Math.PI * j / seg, c = Math.cos(a), s = Math.sin(a);
+				gl.glNormal3d(c, s, 0);
+				gl.glVertex3d(c, s, 1);
+				gl.glVertex3d(c, s, 0);
+			}
+			gl.glEnd();
+			gl.glBegin(com.jogamp.opengl.GL.GL_TRIANGLE_FAN);
+			gl.glNormal3d(0, 0, 1);
+			gl.glVertex3d(0, 0, 1);
+			for (int j = 0; j <= seg; j++) {
+				double a = 2 * Math.PI * j / seg;
+				gl.glVertex3d(Math.cos(a), Math.sin(a), 1);
+			}
+			gl.glEnd();
+			gl.glEndList();
+			/* The cone: the side (normals inclined) */
+			gl.glNewList(base + CONE, com.jogamp.opengl.GL2.GL_COMPILE);
+			gl.glBegin(com.jogamp.opengl.GL.GL_TRIANGLES);
+			for (int j = 0; j < seg; j++) {
+				double a1 = 2 * Math.PI * j / seg, a2 = 2 * Math.PI * (j + 1) / seg, am = (a1 + a2) / 2;
+				gl.glNormal3d(Math.cos(am), Math.sin(am), 0.6);
+				gl.glVertex3d(0, 0, 1);
+				gl.glNormal3d(Math.cos(a1), Math.sin(a1), 0.6);
+				gl.glVertex3d(Math.cos(a1), Math.sin(a1), 0);
+				gl.glNormal3d(Math.cos(a2), Math.sin(a2), 0.6);
+				gl.glVertex3d(Math.cos(a2), Math.sin(a2), 0);
+			}
+			gl.glEnd();
+			gl.glEndList();
+			/* The sphere: rings from the south to the north */
+			gl.glNewList(base + SPHERE, com.jogamp.opengl.GL2.GL_COMPILE);
+			int rings = 5;
+			for (int r = 0; r < rings; r++) {
+				double t1 = Math.PI * r / rings - Math.PI / 2, t2 = Math.PI * (r + 1) / rings - Math.PI / 2;
+				gl.glBegin(com.jogamp.opengl.GL2.GL_QUAD_STRIP);
+				for (int j = 0; j <= seg; j++) {
+					double a = 2 * Math.PI * j / seg, c = Math.cos(a), s = Math.sin(a);
+					gl.glNormal3d(Math.cos(t2) * c, Math.cos(t2) * s, Math.sin(t2));
+					gl.glVertex3d(Math.cos(t2) * c, Math.cos(t2) * s, Math.sin(t2));
+					gl.glNormal3d(Math.cos(t1) * c, Math.cos(t1) * s, Math.sin(t1));
+					gl.glVertex3d(Math.cos(t1) * c, Math.cos(t1) * s, Math.sin(t1));
+				}
+				gl.glEnd();
+			}
+			gl.glEndList();
+			return base;
 		}
 	}
 

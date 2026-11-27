@@ -243,6 +243,78 @@ public abstract class GeoGridModel extends GridModel {
 		}
 	}
 
+	/* The maps under the grid in ImageJ (by name), the shown map, the cells as ovals */
+	private final Map<String, GridDisplay.Background> backgrounds = new LinkedHashMap<>();
+	private volatile String shownBackground;
+	private volatile boolean ovalCells;
+
+	/**
+	 * A map under the grid in ImageJ (call it in load()): an RGB raster (e.g., a
+	 * satellite image or a drawn map, bands 1 to 3) on the extent of the grid, at
+	 * a resolution of 8 pixels per cell. Show it with showBackground(name); the
+	 * cells are drawn with the alpha of their colors (#rrggbbaa) over the map. The
+	 * WorldWind globe and the HTML page show the grid over their own maps.
+	 *
+	 * @param name the name of the map (e.g., "Satellite")
+	 * @param file the raster file (bands red, green, blue)
+	 */
+	protected void background(String name, String file) {
+		checkGrid();
+		ensureGdal();
+		int bw = Math.max(1, width * 8), bh = Math.max(1, height * 8);
+		try (GdalDataset d = Gdal.open(resolve(file));
+				GdalDataset w = Gdal.warp(d, "", "-of", "MEM", "-t_srs", crs, "-te", num(Math.min(originX, originX + cellWidth * width)), num(Math.min(originY, originY + cellHeight * height)),
+						num(Math.max(originX, originX + cellWidth * width)), num(Math.max(originY, originY + cellHeight * height)), "-ts", String.valueOf(bw), String.valueOf(bh), "-r", "bilinear",
+						"-ot", "Byte")) {
+			int bands = Math.min(3, w.bandCount());
+			double[][] c = new double[3][];
+			for (int b = 0; b < 3; b++) {
+				c[b] = w.band(Math.min(bands, b + 1)).readDoubles();
+				if (cellHeight > 0) {
+					flipRows(c[b], bw, bh);
+				}
+			}
+			int[] rgb = new int[bw * bh];
+			for (int i = 0; i < rgb.length; i++) {
+				rgb[i] = ((int) c[0][i] & 255) << 16 | ((int) c[1][i] & 255) << 8 | ((int) c[2][i] & 255);
+			}
+			backgrounds.put(name, new GridDisplay.Background(rgb, bw, bh));
+			sources.add(new File(file).getName());
+		}
+	}
+
+	/**
+	 * Shows a map (see background) under the grid in ImageJ; null: no map (the
+	 * cells over white, as squares or ovals with their alpha) - the names of the
+	 * maps: backgroundNames().
+	 */
+	public void showBackground(String name) {
+		shownBackground = name;
+	}
+
+	/** The names of the maps (see background). */
+	public String[] backgroundNames() {
+		return backgrounds.keySet().toArray(new String[0]);
+	}
+
+	/**
+	 * The shape of the cells in ImageJ: "square" (default) or "oval" (each cell an
+	 * oval with the map or white between them; at least 7 pixels per cell).
+	 */
+	public void cellShape(String shape) {
+		ovalCells = "oval".equalsIgnoreCase(shape);
+	}
+
+	/* Rows reversed (a raster with the origin at the bottom) */
+	private static void flipRows(double[] v, int w, int h) {
+		double[] row = new double[w];
+		for (int y = 0; y < h / 2; y++) {
+			System.arraycopy(v, y * w, row, 0, w);
+			System.arraycopy(v, (h - 1 - y) * w, v, y * w, w);
+			System.arraycopy(row, 0, v, (h - 1 - y) * w, w);
+		}
+	}
+
 	/**
 	 * Shows the grid also on the WorldWind globe of Bio7 (call it in load(); the
 	 * WorldWind perspective is opened and the globe flies to the area). The
@@ -250,6 +322,39 @@ public abstract class GeoGridModel extends GridModel {
 	 */
 	protected void showOnGlobe() {
 		onGlobe = true;
+	}
+
+	/* The grid on the globe (false: only the shapes, e.g., 3D plants), the outline of the area */
+	private volatile boolean globeGrid = true;
+	private volatile String outlineColor;
+	private volatile double outlineMeters;
+
+	/**
+	 * Shows the grid on the globe (default) or not (false: only the shapes of the
+	 * model on the terrain, e.g., a 3D plant in each cell with drawCone or
+	 * drawSphere instead of the colored cells). The ImageJ view still shows the
+	 * grid.
+	 */
+	public void globeGrid(boolean show) {
+		globeGrid = show;
+	}
+
+	/**
+	 * Marks the area of the simulation on the globe: a line along its border on
+	 * the terrain, with a height in meters a translucent fence.
+	 *
+	 * @param color  the color (e.g., "#ffd54f"), null: no outline
+	 * @param meters the height of the fence (0: a line on the ground)
+	 */
+	public void globeOutline(String color, double meters) {
+		outlineColor = color;
+		outlineMeters = meters;
+	}
+
+	/* On the globe the 3D shapes drawPillar and drawSphere are drawn (above the terrain) */
+	@Override
+	boolean threeD() {
+		return onGlobe;
 	}
 
 	@Override
@@ -270,6 +375,7 @@ public abstract class GeoGridModel extends GridModel {
 		if (!loaded) {
 			data.clear();
 			sources.clear();
+			backgrounds.clear();
 			load();
 			loaded = true;
 			/* showOnGlobe() in load(): the globe and its options in the Custom perspective */
@@ -408,6 +514,25 @@ public abstract class GeoGridModel extends GridModel {
 		if (onGlobe) {
 			displayOnGlobe(v);
 		}
+		/* A map under the grid or ovals: the colors with their alpha */
+		GridDisplay.Background map = shownBackground == null ? null : backgrounds.get(shownBackground);
+		if (map != null || ovalCells) {
+			if (v == null) {
+				String[] pal = paletteColors();
+				int[] colors = new int[pal.length];
+				for (int k = 0; k < colors.length; k++) {
+					colors[k] = GlobeDisplay.argb(pal[k]);
+				}
+				int[] c = cells;
+				int last = colors.length - 1;
+				grid.showOver(width, height, i -> last < 0 ? 0 : colors[Math.max(0, Math.min(last, c[i]))], map, ovalCells, this::display, this);
+			} else {
+				double lo = shownMin, span = shownMax - shownMin == 0 ? 1 : shownMax - shownMin;
+				String[] colors = shownColors;
+				grid.showOver(width, height, i -> GlobeDisplay.rampArgb(colors, v[i], lo, span), map, ovalCells, this::display, this);
+			}
+			return;
+		}
 		if (v == null) {
 			super.display();
 			return;
@@ -424,8 +549,10 @@ public abstract class GeoGridModel extends GridModel {
 			globe.flyTo(south, west, north, east);
 		}
 		int n = width * height;
-		int[] argb = new int[n];
-		if (v != null) {
+		int[] argb = globeGrid ? new int[n] : null;
+		if (argb == null) {
+			/* Only the shapes */
+		} else if (v != null) {
 			double span = shownMax - shownMin == 0 ? 1 : shownMax - shownMin;
 			for (int i = 0; i < n; i++) {
 				argb[i] = GlobeDisplay.rampArgb(shownColors, v[i], shownMin, span);
@@ -442,8 +569,15 @@ public abstract class GeoGridModel extends GridModel {
 			}
 		}
 		/* The shapes in cells: the longitude and latitude of the cell coordinates, the radius in cells */
-		GlobeDisplay.Drawing drawing = new GlobeDisplay.Drawing(getDrawing(), getImageFiles(), (x, y) -> new double[] { cellLon(x), cellLat(y) }, cellSizeMeters);
-		globe.showGrid(width, height, argb, south, west, north, east, () -> displayOnGlobe(shownValues), drawing);
+		/* Not the ImageJ overlay (e.g., a legend in the image) */
+		java.util.List<Shape> shapes = new java.util.ArrayList<>();
+		for (Shape s : getDrawing()) {
+			if (!s.overlay) {
+				shapes.add(s);
+			}
+		}
+		GlobeDisplay.Drawing drawing = new GlobeDisplay.Drawing(shapes, getImageFiles(), (x, y) -> new double[] { cellLon(x), cellLat(y) }, cellSizeMeters);
+		globe.showGrid(width, height, argb, south, west, north, east, () -> displayOnGlobe(shownValues), drawing, outlineColor, outlineMeters);
 	}
 
 	/* ===================== The data of the HTML export ===================== */

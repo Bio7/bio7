@@ -398,7 +398,7 @@ public class SpatialStructure implements KeyListener, MouseListener {
 				}
 			};
 			canvas.addListener(SWT.Resize, hiDpiSizeListener);
-			canvas.addListener(SWT.Paint, hiDpiSizeListener);
+			canvas.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("SpatialStructure painting", hiDpiSizeListener));
 		}
 		// canvas.setData(gldata);
 

@@ -86,18 +86,18 @@ final class ThemeButtons {
 			return;
 		}
 		installed = true;
-		display.addFilter(SWT.Paint, ThemeButtons::paint);
-		display.addFilter(SWT.MouseEnter, e -> track(e, HOVER, true));
-		display.addFilter(SWT.MouseExit, e -> {
+		display.addFilter(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("ThemeButtons", ThemeButtons::paint));
+		display.addFilter(SWT.MouseEnter, com.eco.bio7.util.SafeEvents.guard("ThemeButtons", e -> track(e, HOVER, true)));
+		display.addFilter(SWT.MouseExit, com.eco.bio7.util.SafeEvents.guard("ThemeButtons", e -> {
 			track(e, HOVER, false);
 			track(e, PRESSED, false);
-		});
-		display.addFilter(SWT.MouseDown, e -> {
+		}));
+		display.addFilter(SWT.MouseDown, com.eco.bio7.util.SafeEvents.guard("ThemeButtons", e -> {
 			if (e.button == 1) {
 				track(e, PRESSED, true);
 			}
-		});
-		display.addFilter(SWT.MouseUp, e -> track(e, PRESSED, false));
+		}));
+		display.addFilter(SWT.MouseUp, com.eco.bio7.util.SafeEvents.guard("ThemeButtons", e -> track(e, PRESSED, false)));
 	}
 
 	/* A push button of a workbench window (the views, not the dialogs) */

@@ -73,6 +73,10 @@ public class LoadRWorkspace extends Action {
 					prefs.put("R_FILE_DIR", fd.getFilterPath());
 
 				}
+				/* Canceled */
+				if (selected == null) {
+					return;
+				}
 
 				ConsolePageParticipant.pipeInputToConsole("load(file = \"" + selected + "\")", true, true);
 				System.out.print("load(file = \"" + selected + "\")");

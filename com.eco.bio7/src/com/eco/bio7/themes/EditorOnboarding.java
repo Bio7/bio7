@@ -48,12 +48,12 @@ final class EditorOnboarding {
 			return;
 		}
 		installed = true;
-		display.addFilter(SWT.Resize, EditorOnboarding::handle);
-		display.addFilter(SWT.Show, EditorOnboarding::handle);
+		display.addFilter(SWT.Resize, com.eco.bio7.util.SafeEvents.guard("EditorOnboarding", EditorOnboarding::handle));
+		display.addFilter(SWT.Show, com.eco.bio7.util.SafeEvents.guard("EditorOnboarding", EditorOnboarding::handle));
 		/* Before they are painted with another color (e.g., after a perspective switch) */
-		display.addFilter(SWT.Paint, EditorOnboarding::handle);
+		display.addFilter(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("EditorOnboarding", EditorOnboarding::handle));
 		/* The CSS engine styles in a listener (after this filter): afterwards */
-		display.addFilter(SWT.Skin, e -> {
+		display.addFilter(SWT.Skin, com.eco.bio7.util.SafeEvents.guard("EditorOnboarding", e -> {
 			if (e.widget instanceof Control c && (isOnboarding(c) || c instanceof CTabFolder)) {
 				e.display.asyncExec(() -> {
 					if (c.isDisposed()) {
@@ -71,7 +71,7 @@ final class EditorOnboarding {
 					}
 				});
 			}
-		});
+		}));
 		/* The existing ones (created before this filter) */
 		apply(display);
 	}

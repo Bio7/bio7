@@ -38,6 +38,9 @@ public final class ChartData {
 	public String[] labels = new String[0];
 	public double[] values = new double[0];
 
+	/** The own colors of the series or of the bars (empty: the palette of the chart). */
+	public String[] colors = new String[0];
+
 	ChartData(String title, String kind) {
 		this.title = title;
 		this.kind = kind;
@@ -55,6 +58,7 @@ public final class ChartData {
 		}
 		c.labels = labels.clone();
 		c.values = values.clone();
+		c.colors = colors.clone();
 		return c;
 	}
 }

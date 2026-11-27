@@ -55,7 +55,7 @@ public final class WheelScrollGuard {
 		root.getDisplay().addFilter(SWT.MouseVerticalWheel, FILTER);
 	}
 
-	private static final Listener FILTER = new Listener() {
+	private static final Listener FILTER = com.eco.bio7.util.SafeEvents.guard("WheelScrollGuard", new Listener() {
 		public void handleEvent(Event e) {
 			if (!(e.widget instanceof Scale || e.widget instanceof Slider) || !inRoot((Control) e.widget)) {
 				return;
@@ -70,7 +70,7 @@ public final class WheelScrollGuard {
 				scroll.setOrigin(origin.x, y);
 			}
 		}
-	};
+	});
 
 	private static boolean inRoot(Control control) {
 		for (Control c = control; c != null; c = c.getParent()) {

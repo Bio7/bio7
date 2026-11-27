@@ -862,6 +862,63 @@ def _prompt(more=False):
     sys.stdout.write("... " if more else ">>> ")
 
 
+def _open_brackets(source):
+    """True if the source ends in an open bracket or string (not in a block)."""
+    import io
+    import tokenize
+    try:
+        for _ in tokenize.generate_tokens(io.StringIO(source + "\n").readline):
+            pass
+    except (tokenize.TokenError, SyntaxError):
+        return True
+    return False
+
+
+# The indentation removed from the lines of the block which is entered (line by line)
+_console_dedent = ""
+
+
+def _console_lines(text):
+    """Evaluates lines in the console as if they were typed (the line or the
+    selection of the editor): each line after the prompt, the results as in
+    the console. The indentation of the code in the editor is removed (e.g., a
+    line of the body of a loop); while a block is entered line by line, its
+    lines keep their indentation relative to the first line of the block. A
+    selection of several lines which ends in a block is closed with an empty
+    line, else the next statement which is not indented (or an empty line)
+    closes the block."""
+    global _console_dedent
+    import textwrap
+    lines = text.splitlines() or [""]
+    more = bool(_console.buffer)
+    if more:
+        # Continued: the same indentation as the start of the block is removed
+        lines = [ln[len(_console_dedent):] if ln.startswith(_console_dedent) else ln.lstrip() for ln in lines]
+    else:
+        # The common indentation of the lines (kept for the next lines of a block)
+        code = [ln for ln in lines if ln.strip()]
+        first = code[0] if code else ""
+        dedented = textwrap.dedent("\n".join(code)).split("\n")[0] if code else ""
+        _console_dedent = first[:len(first) - len(dedented)]
+        lines = [ln[len(_console_dedent):] if ln.startswith(_console_dedent) else ln.lstrip() for ln in lines]
+    if len(lines) > 1 and lines[-1][:1] in (" ", "\t"):
+        lines.append("")
+    for i, line in enumerate(lines):
+        # A statement after a block (not indented): the block is closed first (an empty line, as typed)
+        if more and line and not line[0].isspace() and not line.lstrip().startswith(("else", "elif", "except", "finally", ")", "]", "}")) \
+                and not _open_brackets("\n".join(_console.buffer)):
+            sys.stdout.write("\n")
+            more = _console.push("")
+            _prompt(more)
+        sys.stdout.write(line + "\n")
+        more = _console.push(line)
+        if i < len(lines) - 1:
+            _prompt(more)
+    if not more:
+        _flush()
+    _prompt(more)
+
+
 # ---------------------------------------------------------------- data
 
 

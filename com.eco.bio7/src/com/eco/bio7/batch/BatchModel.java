@@ -98,7 +98,7 @@ public class BatchModel {
 		}
 
 		test = testRun;
-		running = false;
+		setRunning(false);
 		failed = false;
 		shapenext = null;
 		current = null;
@@ -214,7 +214,7 @@ public class BatchModel {
 	 */
 	public static void batchStart() {
 		while (shapenext != null && cancel == false && pause == false) {
-			running = true;
+			setRunning(true);
 
 			/* The editor of the flow (not the editor which a step activated) */
 			ShapesEditor editor = geteditor();
@@ -284,7 +284,7 @@ public class BatchModel {
 		}
 		/* Finished, stopped or failed (else a step runs and continues the flow when it has finished) */
 		if (!pause || cancel || shapenext == null) {
-			running = false;
+			setRunning(false);
 			pause = false;
 		}
 	}
@@ -328,10 +328,18 @@ public class BatchModel {
 	}
 
 	private static void reset() {
-		running = false;
+		setRunning(false);
 		pause = false;
 		shapenext = null;
 		s.clear();
+	}
+
+	/* The state changes: the toolbar shows a running flow (execute green, stop red) */
+	private static void setRunning(boolean value) {
+		if (running != value) {
+			running = value;
+			com.eco.bio7.actions.FlowToolbar.refresh();
+		}
 	}
 
 	/** True if a flow runs (also while a step runs in a job). */
@@ -534,7 +542,7 @@ public class BatchModel {
 		}
 
 		shapenext = null;
-		running = false;
+		setRunning(false);
 		pause = false;
 	}
 

@@ -46,11 +46,11 @@ final class CompactLists {
 		}
 		installed = true;
 		Display display = Display.getDefault();
-		display.addFilter(SWT.Skin, event -> {
+		display.addFilter(SWT.Skin, com.eco.bio7.util.SafeEvents.guard("CompactLists", event -> {
 			if (event.widget instanceof List list) {
 				hook(list);
 			}
-		});
+		}));
 		for (Shell shell : display.getShells()) {
 			hookAll(shell);
 		}
@@ -82,7 +82,7 @@ final class CompactLists {
 			return;
 		}
 		list.setData(HOOKED, Boolean.TRUE);
-		list.addListener(SWT.Paint, CompactLists::check);
+		list.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("CompactLists painting", CompactLists::check));
 		apply(list);
 	}
 

@@ -455,12 +455,20 @@ class Simulation:
         """A bar chart (replaced in each call, e.g., a histogram)."""
         self._more_charts.append({"t": str(chart), "k": "bars", "l": [str(v) for v in labels], "v": [float(v) for v in values]})
 
+    def chart_colors(self, chart, *colors):
+        """The colors of a chart: of its series (in the order of their first values) or of its bars ("": the first chart)."""
+        if len(colors) == 1 and not isinstance(colors[0], str):
+            colors = colors[0]
+        self._more_charts.append({"t": str(chart), "k": "colors", "c": [str(c) for c in colors]})
+
     # drawing (in the coordinates of the model: cells, the box, longitude and latitude)
 
-    def _shape(self, k, p, s=None, f=None, t=None, w=1.0, a=0.0, z=0.0):
+    def _shape(self, k, p, s=None, f=None, t=None, w=1.0, a=0.0, z=0.0, o=False):
         d = {"k": k, "p": [float(v) for v in p], "s": s or None, "f": f or None, "t": t, "w": float(w), "a": float(a)}
         if z:
             d["z"] = float(z)
+        if o:
+            d["o"] = True
         self._drawing.append(d)
 
     def draw_line(self, x1, y1, x2, y2, color="#000000", width=1, z=0):
@@ -478,12 +486,14 @@ class Simulation:
     def draw_circle(self, x, y, radius, fill=None, stroke="#000000", z=0):
         self._shape("circle", (x, y, radius), stroke, fill, z=z)
 
-    def draw_rect(self, x, y, w, h, fill=None, stroke="#000000", z=0):
-        self._shape("rect", (x, y, w, h), stroke, fill, z=z)
+    def draw_rect(self, x, y, w, h, fill=None, stroke="#000000", z=0, overlay=False):
+        """A rectangle; overlay: an ImageJ overlay of a grid (sharp at each zoom, e.g. a legend)."""
+        self._shape("rect", (x, y, w, h), stroke, fill, z=z, o=overlay)
 
-    def draw_text(self, x, y, text, color="#000000", size=1, z=0):
-        """A text; z: the height above the floor (an agent model, e.g. a label above an object)."""
-        self._shape("text", (x, y), color, None, str(text), size, z=z)
+    def draw_text(self, x, y, text, color="#000000", size=1, z=0, overlay=False):
+        """A text; z: the height above the floor (an agent model, e.g. a label above an object);
+        overlay: an ImageJ overlay of a grid (sharp at each zoom, Image > Overlay hides it)."""
+        self._shape("text", (x, y), color, None, str(text), size, z=z, o=overlay)
 
     def draw_image(self, name, x, y, size=1, angle=0, z=0):
         """An image (load_image) centered at x, y: the size and the angle (degrees, clockwise);
@@ -520,7 +530,24 @@ class Simulation:
             height = getattr(self, "box_depth", 1.0)
         self._shape("pillar", (x, y, radius, height), None, color)
 
+    def draw_cone(self, x, y, radius, height, color="#7cb342"):
+        """A cone in 3D (an agent model or the globe): from the floor or the terrain at x, y with
+        the radius of its base and the height, e.g. a tuft of grass."""
+        self._shape("cone", (x, y, radius, height), None, color)
+
     # images and 3D models
+
+    def perspective_label(self, label):
+        """Renames the Custom perspective of Bio7 (e.g., the name of the model; None: "Custom")."""
+        if not BROWSER:
+            import bio7
+            bio7.call("sim_perspective", "" if label is None else str(label))
+
+    def perspective_icon(self, icon):
+        """Changes the icon of the Custom perspective of Bio7 (an SVG or PNG file; None: the simulation icon)."""
+        if not BROWSER:
+            import bio7
+            bio7.call("sim_perspective_icon", "" if icon is None else str(icon))
 
     def load_image(self, name, file):
         """Loads an image (PNG with transparency) for draw_image and the agents (agent.image = name)."""

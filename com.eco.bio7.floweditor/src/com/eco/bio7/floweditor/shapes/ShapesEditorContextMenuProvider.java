@@ -74,11 +74,30 @@ class ShapesEditorContextMenuProvider extends ContextMenuProvider {
 				getAction("Manhatten"));
 		menu.appendToGroup(GEFActionConstants.GROUP_COPY,
 				getAction("ShortestPath"));
+		menu.appendToGroup(GEFActionConstants.GROUP_COPY,
+				getAction("Spline"));
+		/* The router of the flow (stored in the flow) is checked */
+		if (getViewer().getContents() != null && getViewer().getContents().getModel() instanceof com.eco.bio7.floweditor.model.ShapesDiagram diagram) {
+			Integer router = diagram.getConnectionRouter();
+			getAction("Manhatten").setChecked(com.eco.bio7.floweditor.model.ShapesDiagram.ROUTER_MANHATTAN.equals(router));
+			getAction("ShortestPath").setChecked(com.eco.bio7.floweditor.model.ShapesDiagram.ROUTER_SHORTEST_PATH.equals(router));
+			getAction("Spline").setChecked(com.eco.bio7.floweditor.model.ShapesDiagram.ROUTER_SPLINE.equals(router));
+		}
 		menu.appendToGroup(GEFActionConstants.GROUP_SAVE,
 				getAction("DebugMode"));
 		menu.appendToGroup(GEFActionConstants.GROUP_SAVE,
 				getAction("SetGridSize"));
-
+		/* The Properties view: the file, the loop count, the code of a decision, the value of a connection */
+		menu.appendToGroup(GEFActionConstants.GROUP_VIEW, new org.eclipse.jface.action.Action("Show Properties") {
+			public void run() {
+				try {
+					org.eclipse.ui.PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+							.showView(org.eclipse.ui.IPageLayout.ID_PROP_SHEET);
+				} catch (org.eclipse.ui.PartInitException e) {
+					System.out.println(e.getMessage());
+				}
+			}
+		});
 	}
 
 	private IAction getAction(String actionId) {

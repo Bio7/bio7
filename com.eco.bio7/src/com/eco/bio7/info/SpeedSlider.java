@@ -68,7 +68,7 @@ public class SpeedSlider extends Canvas {
 		first = (int) Math.ceil(STEPS_PER_DECADE * Math.log10(min) - 1e-6);
 		last = (int) Math.floor(STEPS_PER_DECADE * Math.log10(max) + 1e-6);
 		value = valueOf(first);
-		addListener(SWT.Paint, e -> paint(e.gc));
+		addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("SpeedSlider painting", e -> paint(e.gc)));
 		addListener(SWT.Resize, e -> redraw());
 		addListener(SWT.FocusIn, e -> redraw());
 		addListener(SWT.FocusOut, e -> redraw());

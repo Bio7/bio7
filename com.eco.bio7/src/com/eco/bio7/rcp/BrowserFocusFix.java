@@ -43,7 +43,7 @@ public final class BrowserFocusFix {
 			return;
 		}
 		installed = true;
-		display.addFilter(SWT.MouseDown, e -> {
+		display.addFilter(SWT.MouseDown, com.eco.bio7.util.SafeEvents.guard("BrowserFocusFix", e -> {
 			if (!(e.widget instanceof Control clicked) || inBrowser(clicked)) {
 				return;
 			}
@@ -81,7 +81,7 @@ public final class BrowserFocusFix {
 					}
 				}
 			});
-		});
+		}));
 	}
 
 	private static boolean inBrowser(Control c) {

@@ -194,7 +194,7 @@ public class ThemedColorDialog {
 
 		svCanvas = new Canvas(left, SWT.DOUBLE_BUFFERED);
 		svCanvas.setLayoutData(size(SV_W + 2, SV_H + 2));
-		svCanvas.addListener(SWT.Paint, this::paintSv);
+		svCanvas.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("ThemedColorDialog painting", this::paintSv));
 		Listener svMouse = e -> {
 			if (e.type == SWT.MouseDown || (e.type == SWT.MouseMove && (e.stateMask & SWT.BUTTON1) != 0)) {
 				sat = clamp((e.x - 1) / (float) SV_W);
@@ -208,7 +208,7 @@ public class ThemedColorDialog {
 
 		hueCanvas = new Canvas(left, SWT.DOUBLE_BUFFERED);
 		hueCanvas.setLayoutData(size(HUE_W + 2, SV_H + 2));
-		hueCanvas.addListener(SWT.Paint, this::paintHue);
+		hueCanvas.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("ThemedColorDialog painting", this::paintHue));
 		Listener hueMouse = e -> {
 			if (e.type == SWT.MouseDown || (e.type == SWT.MouseMove && (e.stateMask & SWT.BUTTON1) != 0)) {
 				hue = Math.min(359.9f, clamp((e.y - 1) / (float) SV_H) * 360f);
@@ -244,7 +244,7 @@ public class ThemedColorDialog {
 		pd.horizontalSpan = 2;
 		preview.setLayoutData(pd);
 		preview.setToolTipText("Left: the new color, right: the current color (click to restore it)");
-		preview.addListener(SWT.Paint, this::paintPreview);
+		preview.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("ThemedColorDialog painting", this::paintPreview));
 		preview.addListener(SWT.MouseDown, e -> {
 			if (e.x > preview.getSize().x / 2) {
 				setFromRgb(current);
@@ -386,7 +386,7 @@ public class ThemedColorDialog {
 		GridData gd = size(columns * CELL, rows * CELL);
 		gd.horizontalSpan = 2;
 		canvas.setLayoutData(gd);
-		canvas.addListener(SWT.Paint, e -> {
+		canvas.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("ThemedColorDialog painting", e -> {
 			for (int i = 0; i < rows * columns; i++) {
 				int x = (i % columns) * CELL, y = (i / columns) * CELL;
 				Rectangle r = new Rectangle(x + 1, y + 1, CELL - 4, CELL - 4);
@@ -398,7 +398,7 @@ public class ThemedColorDialog {
 				e.gc.setForeground(borderColor(canvas));
 				e.gc.drawRectangle(r);
 			}
-		});
+		}));
 		canvas.addListener(SWT.MouseDown, e -> {
 			int i = (e.y / CELL) * columns + e.x / CELL;
 			if (i >= 0 && i < colors.size()) {
@@ -674,7 +674,7 @@ public class ThemedColorDialog {
 		Shell overlay = new Shell(shell, SWT.NO_TRIM | SWT.ON_TOP | SWT.APPLICATION_MODAL);
 		overlay.setBounds(bounds);
 		overlay.setCursor(display.getSystemCursor(SWT.CURSOR_CROSS));
-		overlay.addListener(SWT.Paint, e -> e.gc.drawImage(shot, 0, 0));
+		overlay.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("ThemedColorDialog painting", e -> e.gc.drawImage(shot, 0, 0)));
 		overlay.addListener(SWT.MouseDown, e -> {
 			int x = Math.max(0, Math.min(pixels.width - 1, e.x * pixels.width / Math.max(1, bounds.width)));
 			int y = Math.max(0, Math.min(pixels.height - 1, e.y * pixels.height / Math.max(1, bounds.height)));

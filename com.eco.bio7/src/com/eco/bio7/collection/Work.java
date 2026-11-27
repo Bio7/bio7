@@ -294,6 +294,115 @@ public class Work {
 
 	}
 
+	/**
+	 * Renames a perspective in all windows (e.g., the Custom perspective after the
+	 * name of a model): the label in the perspective switcher. A perspective which
+	 * is opened later (e.g., after a reset) gets its original name again.
+	 * 
+	 * @param id    the id of the perspective (e.g., "com.eco.bio7.CustomPerspective")
+	 * @param label the new label, null for the original name of the perspective
+	 */
+	public static void setPerspectiveLabel(final String id, final String label) {
+		Display display = PlatformUI.getWorkbench().getDisplay();
+		Runnable rename = () -> {
+			String text = label;
+			if (text == null) {
+				IPerspectiveDescriptor descriptor = PlatformUI.getWorkbench().getPerspectiveRegistry().findPerspectiveWithId(id);
+				text = descriptor != null ? descriptor.getLabel() : id;
+			}
+			for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+				org.eclipse.e4.ui.workbench.modeling.EModelService models = window.getService(org.eclipse.e4.ui.workbench.modeling.EModelService.class);
+				org.eclipse.e4.ui.model.application.ui.basic.MWindow mWindow = window.getService(org.eclipse.e4.ui.model.application.ui.basic.MWindow.class);
+				if (models == null || mWindow == null) {
+					continue;
+				}
+				for (org.eclipse.e4.ui.model.application.ui.advanced.MPerspective p : models.findElements(mWindow, id,
+						org.eclipse.e4.ui.model.application.ui.advanced.MPerspective.class, null)) {
+					p.setLabel(text);
+				}
+			}
+		};
+		if (Display.getCurrent() != null) {
+			rename.run();
+		} else {
+			display.syncExec(rename);
+		}
+	}
+
+	/**
+	 * Changes the icon of a perspective in all windows (e.g., the Custom
+	 * perspective of a simulation model): the icon in the perspective switcher. A
+	 * perspective which is opened later (e.g., after a reset) gets its original
+	 * icon again.
+	 * 
+	 * @param id      the id of the perspective (e.g., "com.eco.bio7.CustomPerspective")
+	 * @param iconURI the icon as URI (e.g.,
+	 *                "platform:/plugin/com.eco.bio7/icons/perspective/simulationpersp.svg"
+	 *                or a file: URI), null for the original icon of the perspective
+	 */
+	/** The key (transient data of a perspective) of its original icon URI after setPerspectiveIcon. */
+	public static final String ORIGINAL_PERSPECTIVE_ICON = "bio7.originalIconURI";
+
+	public static void setPerspectiveIcon(final String id, final String iconURI) {
+		Runnable change = () -> {
+			for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+				org.eclipse.e4.ui.workbench.modeling.EModelService models = window.getService(org.eclipse.e4.ui.workbench.modeling.EModelService.class);
+				org.eclipse.e4.ui.model.application.ui.basic.MWindow mWindow = window.getService(org.eclipse.e4.ui.model.application.ui.basic.MWindow.class);
+				if (models == null || mWindow == null) {
+					continue;
+				}
+				for (org.eclipse.e4.ui.model.application.ui.advanced.MPerspective p : models.findElements(mWindow, id,
+						org.eclipse.e4.ui.model.application.ui.advanced.MPerspective.class, null)) {
+					/* The original icon is kept to restore it */
+					Object original = p.getTransientData().get(ORIGINAL_PERSPECTIVE_ICON);
+					if (original == null) {
+						p.getTransientData().put(ORIGINAL_PERSPECTIVE_ICON, p.getIconURI() == null ? "" : p.getIconURI());
+						original = p.getIconURI();
+					}
+					String uri = iconURI != null ? iconURI : original == null || "".equals(original) ? null : original.toString();
+					if (!java.util.Objects.equals(uri, p.getIconURI())) {
+						p.setIconURI(uri);
+					}
+				}
+			}
+		};
+		if (Display.getCurrent() != null) {
+			change.run();
+		} else {
+			PlatformUI.getWorkbench().getDisplay().syncExec(change);
+		}
+	}
+
+	/**
+	 * The label of a perspective in the active window (as shown in the perspective
+	 * switcher), null if the perspective is not open.
+	 * 
+	 * @param id the id of the perspective
+	 */
+	public static String getPerspectiveLabel(final String id) {
+		String[] label = new String[1];
+		Runnable read = () -> {
+			IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+			if (window == null) {
+				return;
+			}
+			org.eclipse.e4.ui.workbench.modeling.EModelService models = window.getService(org.eclipse.e4.ui.workbench.modeling.EModelService.class);
+			org.eclipse.e4.ui.model.application.ui.basic.MWindow mWindow = window.getService(org.eclipse.e4.ui.model.application.ui.basic.MWindow.class);
+			if (models != null && mWindow != null) {
+				for (org.eclipse.e4.ui.model.application.ui.advanced.MPerspective p : models.findElements(mWindow, id,
+						org.eclipse.e4.ui.model.application.ui.advanced.MPerspective.class, null)) {
+					label[0] = p.getLabel();
+				}
+			}
+		};
+		if (Display.getCurrent() != null) {
+			read.run();
+		} else {
+			PlatformUI.getWorkbench().getDisplay().syncExec(read);
+		}
+		return label[0];
+	}
+
 	public static void openPerspectiveEditorInJob(final String id) {
 		Job job = new Job("Open Perspective") {
 

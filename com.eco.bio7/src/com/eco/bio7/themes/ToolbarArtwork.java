@@ -143,7 +143,7 @@ public final class ToolbarArtwork {
 			return;
 		}
 		bar.setData(HOOKED, Boolean.TRUE);
-		bar.addListener(SWT.Paint, e -> later(bar));
+		bar.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("ToolbarArtwork painting", e -> later(bar)));
 		bar.addListener(SWT.Resize, e -> later(bar));
 	}
 
@@ -193,7 +193,7 @@ public final class ToolbarArtwork {
 			if (child.getData(HOOKED) == null) {
 				child.setData(HOOKED, Boolean.TRUE);
 				/* A child is styled or moved without a paint of the toolbar (e.g., the perspective switcher)! */
-				child.addListener(SWT.Paint, e -> later(bar));
+				child.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("ToolbarArtwork painting", e -> later(bar)));
 				child.addListener(SWT.Move, e -> later(bar));
 				child.addListener(SWT.Resize, e -> later(bar));
 				child.addListener(SWT.Dispose, e -> disposePart(child));
@@ -349,7 +349,7 @@ public final class ToolbarArtwork {
 			return;
 		}
 		container.setData(SASHES, Boolean.TRUE);
-		container.addListener(SWT.Paint, e -> paintSashes(container, e.gc));
+		container.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("ToolbarArtwork painting", e -> paintSashes(container, e.gc)));
 		Point size = container.getSize();
 		container.redraw(0, 0, size.x, size.y, false);
 	}

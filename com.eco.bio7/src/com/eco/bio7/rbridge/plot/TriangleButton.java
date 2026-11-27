@@ -66,11 +66,11 @@ public final class TriangleButton {
 		};
 		update.run();
 		/* The colors of a theme are set after the creation of the button */
-		b.addListener(SWT.Paint, _ -> {
+		b.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("TriangleButton painting", _ -> {
 			if (!b.isDisposed() && !b.getForeground().getRGB().equals(color[0])) {
 				b.getDisplay().asyncExec(update);
 			}
-		});
+		}));
 		b.addListener(SWT.Dispose, _ -> {
 			if (image[0] != null) {
 				image[0].dispose();

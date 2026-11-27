@@ -28,6 +28,57 @@ final class Overlay {
 	private Overlay() {
 	}
 
+	/* The name of the elements of the overlay of a model (the overlay of a user is kept) */
+	private static final String MODEL = "bio7.model";
+
+	/** True if the overlay is the overlay of a model (see {@link #imageJ}). */
+	static boolean isModelOverlay(ij.gui.Overlay overlay) {
+		return overlay.size() > 0 && MODEL.equals(overlay.get(0).getName());
+	}
+
+	/**
+	 * The texts and rectangles as an ImageJ overlay (vector graphics: sharp at
+	 * each zoom, hidden with Image > Overlay > Hide Overlay).
+	 *
+	 * @param shapes the shapes (coordinates in cells)
+	 * @param scale  the pixels of a cell
+	 */
+	static ij.gui.Overlay imageJ(List<Shape> shapes, double scale) {
+		ij.gui.Overlay overlay = new ij.gui.Overlay();
+		java.awt.Graphics2D metrics = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB).createGraphics();
+		metrics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		for (Shape s : shapes) {
+			double[] p = s.p;
+			ij.gui.Roi roi = null;
+			if (s.kind.equals("text") && s.text != null && p.length >= 2) {
+				Font font = new Font(Font.SANS_SERIF, Font.PLAIN, (int) Math.max(6, Math.round(s.width * scale)));
+				/* The text of a model starts at its baseline (as drawString), a TextRoi at its top */
+				int ascent = metrics.getFontMetrics(font).getAscent();
+				ij.gui.TextRoi text = new ij.gui.TextRoi(p[0] * scale, p[1] * scale - ascent, s.text, font);
+				text.setAntiAlias(true);
+				text.setStrokeColor(s.stroke != null ? Assets.awt(s.stroke) : java.awt.Color.BLACK);
+				roi = text;
+			} else if (s.kind.equals("rect") && p.length >= 4) {
+				roi = new ij.gui.Roi(p[0] * scale, p[1] * scale, p[2] * scale, p[3] * scale);
+				java.awt.Color fill = Assets.awt(s.fill), stroke = Assets.awt(s.stroke);
+				if (fill != null) {
+					roi.setFillColor(fill);
+				}
+				if (stroke != null) {
+					roi.setStrokeColor(stroke);
+				} else if (fill == null) {
+					roi = null;
+				}
+			}
+			if (roi != null) {
+				roi.setName(MODEL);
+				overlay.add(roi);
+			}
+		}
+		metrics.dispose();
+		return overlay;
+	}
+
 	/**
 	 * Draws the shapes.
 	 *

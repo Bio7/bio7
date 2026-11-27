@@ -113,7 +113,7 @@ public final class InlineChunkOutputs {
 		 * text widget would take a wrong line and scroll (and the button would no
 		 * longer be under the mouse when it is released)
 		 */
-		org.eclipse.swt.widgets.Listener filter = e -> {
+		org.eclipse.swt.widgets.Listener filter = com.eco.bio7.util.SafeEvents.guard("inline chunk outputs", e -> {
 			if (e.widget != text || text.isDisposed()) {
 				return;
 			}
@@ -125,7 +125,7 @@ public final class InlineChunkOutputs {
 					return;
 				}
 			}
-		};
+		});
 		/*
 		 * After scrolling the visible area is painted once more completely: a scrolled
 		 * view only paints the new strip, a part of a tall output or of the text below

@@ -70,7 +70,7 @@ public class Fullscreen {
 	 * the current image. So the fullscreen image activated last is made the
 	 * current image again, unless another image or menu item was clicked!
 	 */
-	private static final Listener ACTIVATION_FILTER = new Listener() {
+	private static final Listener ACTIVATION_FILTER = com.eco.bio7.util.SafeEvents.guard("Fullscreen activation", new Listener() {
 		public void handleEvent(Event e) {
 			if (!isActive()) {
 				return;
@@ -116,10 +116,10 @@ public class Fullscreen {
 				}
 			}
 		}
-	};
+	});
 
 	/* Installed once by Bio7ImageJ! */
-	static final Listener KEY_FILTER = new Listener() {
+	static final Listener KEY_FILTER = com.eco.bio7.util.SafeEvents.guard("Fullscreen keys", new Listener() {
 		public void handleEvent(Event e) {
 			int key = FullscreenMonitors.functionKey(e.keyCode);
 			Control control = e.widget instanceof Control ? (Control) e.widget : null;
@@ -164,7 +164,7 @@ public class Fullscreen {
 				}
 			}
 		}
-	};
+	});
 
 	/*
 	 * Displays the image in fullscreen mode on the monitor of the key (see
@@ -321,10 +321,10 @@ public class Fullscreen {
 		shell.setBackground(display.getSystemColor(SWT.COLOR_BLACK));
 		shell.addListener(SWT.Close, _ -> restore(s));
 		/* Clicking the fullscreen shell makes the image the current image (like a tab)! */
-		shell.addListener(SWT.Activate, _ -> {
+		shell.addListener(SWT.Activate, com.eco.bio7.util.SafeEvents.guard("Fullscreen activation of the shell", _ -> {
 			activatedLast = s;
 			activateImage(s);
-		});
+		}));
 		if (!filtersInstalled) {
 			filtersInstalled = true;
 			display.addFilter(SWT.MouseDown, ACTIVATION_FILTER);

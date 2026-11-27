@@ -274,12 +274,14 @@ public class IJMacroEditor extends TextEditor implements IPropertyChangeListener
 		getEditorSite().getPage().addPartListener(new IPartListener() {
 
 			public void partActivated(IWorkbenchPart part) {
-
-				IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-				if (editor instanceof IJMacroEditor) {
+				/* Called when the focus changes (also while the workbench closes): it must not throw */
+				if (com.eco.bio7.util.SafeEvents.closing()) {
+					return;
+				}
+				IEditorPart editor = part instanceof IJMacroEditor macroEditor ? macroEditor : null;
+				Control ctrl = editor != null ? (Control) editor.getAdapter(Control.class) : null;
+				if (ctrl != null && !ctrl.isDisposed() && ctrl.getData(DND.DROP_TARGET_KEY) instanceof DropTarget dropTarget) {
 					ITextEditor ed = (ITextEditor) editor;
-					Control ctrl = (Control) editor.getAdapter(Control.class);
-					DropTarget dropTarget = (DropTarget) ctrl.getData(DND.DROP_TARGET_KEY);
 					DropTargetListener[] drops = dropTarget.getDropListeners();
 					/*Remove the default drag listener!*/
 					for (int i = 0; i < drops.length; i++) {

@@ -58,7 +58,7 @@ public class LinearSlider extends Canvas {
 
 	public LinearSlider(Composite parent, int style) {
 		super(parent, style | SWT.DOUBLE_BUFFERED | SpeedSlider.transparent());
-		addListener(SWT.Paint, e -> paint(e.gc));
+		addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("LinearSlider painting", e -> paint(e.gc)));
 		addListener(SWT.Resize, _ -> redraw());
 		addListener(SWT.FocusIn, _ -> redraw());
 		addListener(SWT.FocusOut, _ -> redraw());

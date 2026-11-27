@@ -1089,35 +1089,10 @@ public class RImageMethodsView extends ViewPart implements com.eco.bio7.rcp.Icon
 	 * interface stays usable); false with a message if R could not be started.
 	 */
 	static boolean ensureR() {
-		boolean running = RTools.isAlive();
-		if (!com.eco.bio7.rcp.AutoStart.startR() || !RTools.isAlive()) {
+		/* Started now: waits until R has evaluated its start, else the transfer would report "R is busy" */
+		if (!com.eco.bio7.rcp.AutoStart.ensureR()) {
 			Bio7Dialog.message("R could not be started!");
 			return false;
-		}
-		if (!running) {
-			/*
-			 * Started now: R evaluates its start (e.g., the functions for the code
-			 * completion) - wait until it is idle (0.5 s, at most 60 s), else the transfer
-			 * would report "R is busy"
-			 */
-			com.eco.bio7.rcp.BackgroundStart.run("Waiting for R", () -> {
-				long end = System.currentTimeMillis() + 60000, idleSince = System.currentTimeMillis();
-				while (System.currentTimeMillis() < end) {
-					long now = System.currentTimeMillis();
-					if (RState.isBusy()) {
-						idleSince = now;
-					} else if (now - idleSince >= 500) {
-						break;
-					}
-					try {
-						Thread.sleep(50);
-					} catch (InterruptedException e) {
-						Thread.currentThread().interrupt();
-						break;
-					}
-				}
-				return null;
-			});
 		}
 		return true;
 	}

@@ -67,11 +67,11 @@ final class GroupColors {
 			return;
 		}
 		installed = true;
-		Display.getDefault().addFilter(SWT.Skin, event -> {
+		Display.getDefault().addFilter(SWT.Skin, com.eco.bio7.util.SafeEvents.guard("GroupColors", event -> {
 			if (active && event.widget instanceof Group group) {
 				style(group);
 			}
-		});
+		}));
 	}
 
 	/** Sets the colors of all groups (null for the native boxes). */
@@ -130,7 +130,7 @@ final class GroupColors {
 		 */
 		if (active && parent != null && parent.getData(PAINTED) == null) {
 			parent.setData(PAINTED, Boolean.TRUE);
-			parent.addListener(SWT.Paint, GroupColors::paintGroups);
+			parent.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("GroupColors painting", GroupColors::paintGroups));
 		}
 		if (active && group.getData(PAINTED) == null) {
 			group.setData(PAINTED, Boolean.TRUE);
@@ -138,11 +138,11 @@ final class GroupColors {
 			group.addListener(SWT.Resize, _ -> redrawParent(group));
 			group.addListener(SWT.Move, _ -> redrawParent(group));
 			/* A background set later (e.g., by CSS after a theme change) would cover the box of the parent */
-			group.addListener(SWT.Paint, _ -> {
+			group.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("GroupColors painting", _ -> {
 				if (active && hasOwnBackground(group)) {
 					group.getDisplay().asyncExec(() -> clearBackground(group));
 				}
-			});
+			}));
 		}
 		if (active) {
 			clearBackground(group);

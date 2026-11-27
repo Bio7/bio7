@@ -136,6 +136,12 @@ class ShapeEditPart extends AbstractGraphicalEditPart implements PropertyChangeL
 				Shape source = (Shape) getHost().getModel();
 				int style = ((Integer) request.getNewObjectType()).intValue();
 				ConnectionCreateCommand cmd = new ConnectionCreateCommand(source, style);
+				/* A decision: the side of the start gives the value (left: true, right: false) */
+				if (source instanceof FlowDecisionShape && request.getLocation() != null) {
+					String value = decisionValue(request.getLocation());
+					cmd.setBoolean(value);
+					request.getExtendedData().put(DECISION_VALUE, value);
+				}
 				request.setStartCommand(cmd);
 				return cmd;
 			}
@@ -201,6 +207,16 @@ class ShapeEditPart extends AbstractGraphicalEditPart implements PropertyChangeL
 			f = new FlowDecision();
 			f.setLayoutManager(new StackLayout());
 			label.setFont(com.eco.bio7.floweditor.figures.FlowColors.bold());
+			/* The text inside the diamond (beside it: the labels of the outputs) */
+			label.setBorder(new org.eclipse.draw2d.AbstractBorder() {
+				public org.eclipse.draw2d.geometry.Insets getInsets(IFigure figure) {
+					int z = FlowDecision.zone(figure.getBounds().width) + 10;
+					return new org.eclipse.draw2d.geometry.Insets(0, z, 0, z);
+				}
+
+				public void paint(IFigure figure, org.eclipse.draw2d.Graphics graphics, org.eclipse.draw2d.geometry.Insets insets) {
+				}
+			});
 			f.add(label);
 		} else if (getModel() instanceof BeanShellScript) {
 			/* The type and the name of the file (the path: tooltip) */
@@ -233,6 +249,49 @@ class ShapeEditPart extends AbstractGraphicalEditPart implements PropertyChangeL
 		Shape e = (Shape) getModel();
 
 		return (Shape) getModel();
+	}
+
+	/* The value of a new connection of a decision (in the data of the request) */
+	private static final String DECISION_VALUE = "bio7.decision.value";
+
+	/*
+	 * The value of a new connection of a decision: the side of the start (left:
+	 * true, right: false); the other value if this one is connected already.
+	 */
+	private String decisionValue(org.eclipse.draw2d.geometry.Point location) {
+		org.eclipse.draw2d.geometry.Point p = location.getCopy();
+		getFigure().translateToRelative(p);
+		String value = p.x < getFigure().getBounds().getCenter().x ? "true" : "false";
+		String other = "true".equals(value) ? "false" : "true";
+		boolean used = false, otherUsed = false;
+		for (Object o : getCastedModel().getSourceConnections()) {
+			String b = ((Connection) o).getBoolean();
+			used |= value.equals(b);
+			otherUsed |= other.equals(b);
+		}
+		return used && !otherUsed ? other : value;
+	}
+
+	/* The output of a decision for a value: the left (true) or right (false) corner */
+	private ConnectionAnchor port(boolean value) {
+		return new org.eclipse.draw2d.AbstractConnectionAnchor(getFigure()) {
+			public org.eclipse.draw2d.geometry.Point getLocation(org.eclipse.draw2d.geometry.Point reference) {
+				org.eclipse.draw2d.geometry.Point p = ((FlowDecision) getOwner()).port(value).getCopy();
+				getOwner().translateToAbsolute(p);
+				return p;
+			}
+		};
+	}
+
+	/* The input of a decision: the top corner */
+	private ConnectionAnchor input() {
+		return new org.eclipse.draw2d.AbstractConnectionAnchor(getFigure()) {
+			public org.eclipse.draw2d.geometry.Point getLocation(org.eclipse.draw2d.geometry.Point reference) {
+				org.eclipse.draw2d.geometry.Point p = ((FlowDecision) getOwner()).input().getCopy();
+				getOwner().translateToAbsolute(p);
+				return p;
+			}
+		};
 	}
 
 	protected ConnectionAnchor getConnectionAnchor() {
@@ -289,6 +348,10 @@ class ShapeEditPart extends AbstractGraphicalEditPart implements PropertyChangeL
 	 * .ConnectionEditPart)
 	 */
 	public ConnectionAnchor getSourceConnectionAnchor(ConnectionEditPart connection) {
+		/* A decision: the connection starts at the output of its value */
+		if (getModel() instanceof FlowDecisionShape && getFigure() instanceof FlowDecision && connection.getModel() instanceof Connection c) {
+			return port(!"false".equals(c.getBoolean()));
+		}
 		return getConnectionAnchor();
 	}
 
@@ -300,6 +363,10 @@ class ShapeEditPart extends AbstractGraphicalEditPart implements PropertyChangeL
 	 * .Request)
 	 */
 	public ConnectionAnchor getSourceConnectionAnchor(Request request) {
+		/* A new connection of a decision: the feedback starts at the output of its value */
+		if (getModel() instanceof FlowDecisionShape && getFigure() instanceof FlowDecision && request.getExtendedData().get(DECISION_VALUE) instanceof String value) {
+			return port(!"false".equals(value));
+		}
 		return getConnectionAnchor();
 	}
 
@@ -311,6 +378,9 @@ class ShapeEditPart extends AbstractGraphicalEditPart implements PropertyChangeL
 	 * .ConnectionEditPart)
 	 */
 	public ConnectionAnchor getTargetConnectionAnchor(ConnectionEditPart connection) {
+		if (getFigure() instanceof FlowDecision) {
+			return input();
+		}
 		return getConnectionAnchor();
 	}
 
@@ -322,6 +392,9 @@ class ShapeEditPart extends AbstractGraphicalEditPart implements PropertyChangeL
 	 * .Request)
 	 */
 	public ConnectionAnchor getTargetConnectionAnchor(Request request) {
+		if (getFigure() instanceof FlowDecision) {
+			return input();
+		}
 		return getConnectionAnchor();
 	}
 

@@ -226,10 +226,16 @@ local({
       m$.more_charts[[length(m$.more_charts) + 1]] <- list(t = as.character(chart), k = "bars", l = as.list(as.character(labels)), v = as.list(as.numeric(values)))
       invisible(NULL)
     }
+    m$chart_colors <- function(chart, colors) {
+      "The colors of a chart: of its series (in the order of their first values) or of its bars (\"\": the first chart)."
+      m$.more_charts[[length(m$.more_charts) + 1]] <- list(t = as.character(chart), k = "colors", c = as.list(as.character(colors)))
+      invisible(NULL)
+    }
     # drawing (in the coordinates of the model: cells, the box, longitude and latitude)
-    shape <- function(k, p, s = NULL, f = NULL, t = NULL, w = 1, a = 0, z = 0) {
+    shape <- function(k, p, s = NULL, f = NULL, t = NULL, w = 1, a = 0, z = 0, o = FALSE) {
       d <- list(k = k, p = as.list(as.numeric(p)), s = s, f = f, t = t, w = as.numeric(w), a = as.numeric(a))
       if (!is.null(z) && z != 0) d$z <- as.numeric(z)
+      if (isTRUE(o)) d$o <- TRUE
       m$.drawing[[length(m$.drawing) + 1]] <- d
       invisible(NULL)
     }
@@ -238,10 +244,10 @@ local({
     m$draw_path <- function(xs, ys, color = "#000000", width = 1, z = 0) shape("path", as.vector(rbind(xs, ys)), color, NULL, NULL, width, z = z)
     m$draw_polygon <- function(xs, ys, fill = NULL, stroke = "#000000", z = 0) shape("polygon", as.vector(rbind(xs, ys)), stroke, fill, z = z)
     m$draw_circle <- function(x, y, radius, fill = NULL, stroke = "#000000", z = 0) shape("circle", c(x, y, radius), stroke, fill, z = z)
-    m$draw_rect <- function(x, y, w, h, fill = NULL, stroke = "#000000", z = 0) shape("rect", c(x, y, w, h), stroke, fill, z = z)
-    m$draw_text <- function(x, y, text, color = "#000000", size = 1, z = 0) {
-      "A text; z: the height above the floor (an agent model, e.g. a label above an object)."
-      shape("text", c(x, y), color, NULL, as.character(text), size, z = z)
+    m$draw_rect <- function(x, y, w, h, fill = NULL, stroke = "#000000", z = 0, overlay = FALSE) shape("rect", c(x, y, w, h), stroke, fill, z = z, o = overlay)
+    m$draw_text <- function(x, y, text, color = "#000000", size = 1, z = 0, overlay = FALSE) {
+      "A text; z: the height above the floor (an agent model, e.g. a label above an object); overlay: an ImageJ overlay of a grid (sharp at each zoom)."
+      shape("text", c(x, y), color, NULL, as.character(text), size, z = z, o = overlay)
     }
     m$draw_image <- function(name, x, y, size = 1, angle = 0, z = 0) {
       "An image (m$load_image) centered at x, y: the size and the angle (degrees, clockwise); z: the height above the floor (an agent model)."
@@ -274,6 +280,20 @@ local({
       "A pillar in 3D (an agent model): a vertical cylinder from the floor at x, y with the radius and the height (NULL: the height of the box), e.g. an obstacle."
       if (is.null(height)) height <- if (is.null(m$box_depth)) 1 else m$box_depth
       shape("pillar", c(x, y, radius, height), NULL, color)
+    }
+    m$draw_cone <- function(x, y, radius, height, color = "#7cb342") {
+      "A cone in 3D (an agent model or the globe): from the floor or the terrain at x, y with the radius of its base and the height, e.g. a tuft of grass."
+      shape("cone", c(x, y, radius, height), NULL, color)
+    }
+    m$perspective_label <- function(label) {
+      "Renames the Custom perspective of Bio7 (e.g., the name of the model; NULL: Custom)."
+      if (!browser) get(".bio7_call", envir = as.environment("bio7ffm"))("sim_perspective", if (is.null(label)) "" else as.character(label), NULL)
+      invisible(m)
+    }
+    m$perspective_icon <- function(icon) {
+      "Changes the icon of the Custom perspective of Bio7 (an SVG or PNG file; NULL: the simulation icon)."
+      if (!browser) get(".bio7_call", envir = as.environment("bio7ffm"))("sim_perspective_icon", if (is.null(icon)) "" else as.character(icon), NULL)
+      invisible(m)
     }
     # images and 3D models
     m$load_image <- function(name, file) {

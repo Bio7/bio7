@@ -498,7 +498,7 @@ public class Spread {
 		});
 
 		/* Global key listener for control key! */
-		grid.getDisplay().addFilter(SWT.KeyDown, new Listener() {
+		grid.getDisplay().addFilter(SWT.KeyDown, com.eco.bio7.util.SafeEvents.guard("Spread", new Listener() {
 
 			public void handleEvent(Event event) {
 				if (event.keyCode == SWT.CTRL) {
@@ -508,9 +508,9 @@ public class Spread {
 
 			}
 
-		});
+		}));
 		/* Global key listener for control key! */
-		grid.getDisplay().addFilter(SWT.KeyUp, new Listener() {
+		grid.getDisplay().addFilter(SWT.KeyUp, com.eco.bio7.util.SafeEvents.guard("Spread", new Listener() {
 
 			public void handleEvent(Event event) {
 				if (event.keyCode == SWT.CTRL) {
@@ -520,7 +520,7 @@ public class Spread {
 
 			}
 
-		});
+		}));
 
 		grid.addListener(SWT.MouseMove, new Listener() {
 			public void handleEvent(Event event) {

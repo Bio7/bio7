@@ -692,7 +692,8 @@ public class HtmlSimulation {
 	private static final String CHARTS_JS = """
 			function niceStep(span) { const p = Math.pow(10, Math.floor(Math.log10(span / 5))), f = span / 5 / p; return (f < 1.5 ? 1 : f < 3.5 ? 2 : f < 7.5 ? 5 : 10) * p; }
 			function chartNumber(v) { return Math.abs(v) >= 1e5 || (Math.abs(v) < 1e-3 && v !== 0) ? v.toExponential(1) : +v.toFixed(6); }
-			function drawOneChart(canvas, title, kind, data, bars) {
+			function drawOneChart(canvas, title, kind, data, bars, colors) {
+			  const own = colors && colors.length ? colors.map(function (c) { return c.length === 9 ? c.substr(0, 7) : c; }) : null, color = function (k) { return own ? own[k % own.length] : CATEGORY[k % CATEGORY.length]; };
 			  const r = resizeCanvas(canvas), ctx = canvas.getContext('2d'), W = canvas.width, H = canvas.height;
 			  ctx.fillStyle = cssColor('--card'); ctx.fillRect(0, 0, W, H);
 			  if (!(W > 0) || !(H > 0)) return;
@@ -711,11 +712,20 @@ public class HtmlSimulation {
 			    const bw = pw / n; ctx.textAlign = 'center';
 			    /* Every k-th label if they do not fit */
 			    let widest = 0; for (let i = 0; i < n; i++) widest = Math.max(widest, ctx.measureText(String(bars.labels[i])).width);
-			    const every = Math.max(1, Math.ceil(widest * 1.15 / bw));
+			    const every = Math.max(1, Math.ceil(widest * 1.15 / bw)), legend = every > 1;
 			    for (let i = 0; i < n; i++) {
-			      ctx.fillStyle = CATEGORY[0]; const y = Y(bars.values[i]), z = Y(0); ctx.fillRect(left + i * bw + bw * 0.15, Math.min(y, z), Math.max(1, bw * 0.7), Math.abs(z - y));
+			      const fill = own && own.length > 1 ? color(i) : color(0);
+			      ctx.fillStyle = fill; const y = Y(bars.values[i]), z = Y(0); ctx.fillRect(left + i * bw + bw * 0.15, Math.min(y, z), Math.max(1, bw * 0.7), Math.abs(z - y));
 			      const label = String(bars.labels[i]); ctx.fillStyle = cssColor('--muted');
-			      if (i % every === 0) ctx.fillText(label, left + i * bw + bw / 2, top + ph + 15 * r);
+			      if (legend) {
+			        /* Labels which do not fit: the numbers below the bars, a legend on the right (a color, the number, the label, the value) */
+			        const number = String(i + 1); ctx.textAlign = 'center';
+			        if (bw >= ctx.measureText(number).width * 1.2 || i % 2 === 0) ctx.fillText(number, left + i * bw + bw / 2, top + ph + 15 * r);
+			        const row = Math.max(11 * r, Math.min(18 * r, (ph + 18 * r) / n)), ly = top + i * row;
+			        ctx.fillStyle = fill; ctx.fillRect(left + pw + 12 * r, ly, 12 * r, 10 * r);
+			        ctx.fillStyle = cssColor('--text'); ctx.textAlign = 'left';
+			        ctx.fillText(number + ' ' + label + ': ' + (+bars.values[i].toFixed(1)), left + pw + 28 * r, ly + 9 * r);
+			      } else if (i % every === 0) ctx.fillText(label, left + i * bw + bw / 2, top + ph + 15 * r);
 			    }
 			    return;
 			  }
@@ -735,7 +745,7 @@ public class HtmlSimulation {
 			  for (let v = Math.ceil(xmin / xs) * xs; v <= xmax; v += xs) ctx.fillText(+v.toFixed(6), X(v), top + ph + 15 * r);
 			  let k = 0;
 			  data.forEach(function (s, name) {
-			    const c = CATEGORY[k % CATEGORY.length]; ctx.strokeStyle = c; ctx.lineWidth = 1.8 * r; ctx.beginPath();
+			    const c = color(k); ctx.strokeStyle = c; ctx.lineWidth = 1.8 * r; ctx.beginPath();
 			    /* At most about 2000 points (every n-th value) */
 			    const n = Math.max(1, Math.floor(s.length / 2000));
 			    for (let i = 0; i < s.length; i += n) { const x = X(s[i][0]), y = Y(s[i][1]); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
@@ -1165,12 +1175,12 @@ public class HtmlSimulation {
 			  function V(out, x, y, z, n, c) { out.push(x, y, z, n[0], n[1], n[2], c[0], c[1], c[2]); }
 			  for (const s of d) {
 			    const p = s.p; if (!p) continue;
-			    const fc = s.f || (s.k === 'pillar' ? '#9aa6b8' : s.k === 'sphere' || s.k === 'point3' ? '#d0d4dc' : null);
+			    const fc = s.f || (s.k === 'pillar' || s.k === 'cone' ? '#9aa6b8' : s.k === 'sphere' || s.k === 'point3' ? '#d0d4dc' : null);
 			    if (!fc) continue;
 			    const a = alphaOf(fc), out = a < 1 ? [] : solid, c = color3(fc);
-			    if (s.k === 'pillar' && p.length >= 4) {
-			      /* A vertical cylinder from the floor (x, y, the radius, the height), the top a little smaller and lighter */
-			      const x = p[0], y = p[1], r0 = p[2], r1 = p[2] * 0.85, h = p[3], ct = [Math.min(1, c[0] * 1.2), Math.min(1, c[1] * 1.2), Math.min(1, c[2] * 1.2)], seg = 32;
+			    if ((s.k === 'pillar' || s.k === 'cone') && p.length >= 4) {
+			      /* A vertical cylinder from the floor (x, y, the radius, the height), the top a little smaller and lighter; a cone: the top a point */
+			      const x = p[0], y = p[1], r0 = p[2], r1 = s.k === 'cone' ? 0 : p[2] * 0.85, h = p[3], ct = [Math.min(1, c[0] * 1.2), Math.min(1, c[1] * 1.2), Math.min(1, c[2] * 1.2)], seg = 32;
 			      for (let j = 0; j < seg; j++) {
 			        const a1 = 2 * Math.PI * j / seg, a2 = 2 * Math.PI * (j + 1) / seg, c1 = Math.cos(a1), s1 = Math.sin(a1), c2 = Math.cos(a2), s2 = Math.sin(a2);
 			        const v = function (cc, ss, r, z, col) { V(out, x + r * cc, y + r * ss, z, [cc, ss, 0.15], col); };
@@ -1198,7 +1208,7 @@ public class HtmlSimulation {
 			    const h = s.z || 0;
 			    if (s.k === 'image') { sprites.push([s.p[0], s.p[1], h + (s.w || 1) / 2, s.w || 1, s.a || 0, s.t]); continue; }
 			    if (s.k === 'text') { if (s.t !== null && s.t !== undefined) texts.push(s); continue; }
-			    if (s.k === 'pillar' || s.k === 'sphere' || s.k === 'point3') continue;
+			    if (s.k === 'pillar' || s.k === 'cone' || s.k === 'sphere' || s.k === 'point3') continue;
 			    if (s.k === 'line3') { if (s.s) seg([s.p[0], s.p[1], s.p[2]], [s.p[3], s.p[4], s.p[5]], color3(s.s)); continue; }
 			    if (s.k === 'path3' || s.k === 'polygon3') {
 			      if (!s.s) continue; const p = s.p, c = color3(s.s);
@@ -1518,6 +1528,7 @@ public class HtmlSimulation {
 
 			/* ----- The simulation object ----- */
 			const series = new Map(), moreCharts = new Map();
+			const chartColorMap = new Map();
 			function moreChart(title, kind) {
 			  if (!moreCharts.has(title)) moreCharts.set(title, { kind: kind, series: new Map(), labels: [], values: [], add: function (name, x, y) { if (!this.series.has(name)) this.series.set(name, []); this.series.get(name).push([x, y]); } });
 			  return moreCharts.get(title);
@@ -1531,6 +1542,7 @@ public class HtmlSimulation {
 			  chartLine: function (title, name, x, y) { moreChart(title, 'line').add(name, x, y); },
 			  chartXY: function (title, name, x, y) { moreChart(title, 'xy').add(name, x, y); },
 			  chartBars: function (title, labels, values) { const c = moreChart(title, 'bars'); c.labels = labels; c.values = values; },
+			  chartColors: function (title, colors) { chartColorMap.set(title, colors); },
 			  clearChart: function () { series.clear(); moreCharts.clear(); },
 			  pause: function () { playing = false; updatePlay(); },
 			  rampColor: function (t) { const c = rampColor(t); return [c[0] / 255, c[1] / 255, c[2] / 255]; }
@@ -2132,14 +2144,14 @@ public class HtmlSimulation {
 			if (CONFIG.chart !== null) chartBox.style.display = '';
 			else chartCanvas.parentNode.style.display = 'none';
 			function drawChart() {
-			  if (CONFIG.chart !== null) drawOneChart(chartCanvas, CONFIG.chart.replace(/<[^>]*>/g, ''), 'line', series);
+			  if (CONFIG.chart !== null) drawOneChart(chartCanvas, CONFIG.chart.replace(/<[^>]*>/g, ''), 'line', series, null, chartColorMap.get(''));
 			  moreCharts.forEach(function (c, title) {
 			    let canvas = moreCanvases.get(title);
 			    if (!canvas) {
 			      const cell = document.createElement('div'); cell.className = 'chartcell'; canvas = document.createElement('canvas'); cell.appendChild(canvas); chartBox.appendChild(cell);
 			      moreCanvases.set(title, canvas); chartBox.style.display = '';
 			    }
-			    drawOneChart(canvas, title, c.kind, c.series, c);
+			    drawOneChart(canvas, title, c.kind, c.series, c, chartColorMap.get(title));
 			  });
 			}
 			/*CHARTS*/

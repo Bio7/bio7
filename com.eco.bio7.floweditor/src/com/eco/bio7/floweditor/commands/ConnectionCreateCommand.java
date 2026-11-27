@@ -47,6 +47,13 @@ public class ConnectionCreateCommand extends Command {
 	private final Shape source;
 	/** Target endpoint for the connection. */
 	private Shape target;
+	/* The value of a connection of a decision (null: the default) */
+	private String bool;
+
+	/** The value of the connection (a decision: "true" or "false"). */
+	public void setBoolean(String bool) {
+		this.bool = bool;
+	}
 
 	/**
 	 * Instantiate a command that can create a connection between two shapes.
@@ -100,6 +107,9 @@ public class ConnectionCreateCommand extends Command {
 		connection = new Connection(source, target);
 		// use the supplied line style
 		connection.setLineStyle(lineStyle);
+		if (bool != null) {
+			connection.setBoolean(bool);
+		}
 	}
 
 	/*

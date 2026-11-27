@@ -130,6 +130,57 @@ public final class AutoStart {
 	}
 
 	/**
+	 * Starts R if it is not running (without the preference, e.g., for a step of
+	 * a flow) and waits after a new start until R has evaluated its start (idle
+	 * for 0.5 s, at most 60 s): the next evaluation doesn't find R busy.
+	 *
+	 * @return true if R runs
+	 */
+	public static boolean ensureR() {
+		boolean running = com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning();
+		if (!startR() || !com.eco.bio7.rbridge.backend.Backends.isEmbeddedRunning()) {
+			return false;
+		}
+		if (!running) {
+			BackgroundStart.run("Waiting for R", () -> {
+				long end = System.currentTimeMillis() + 60000, idleSince = System.currentTimeMillis();
+				while (System.currentTimeMillis() < end) {
+					long now = System.currentTimeMillis();
+					if (com.eco.bio7.rbridge.RState.isBusy()) {
+						idleSince = now;
+					} else if (now - idleSince >= 500) {
+						break;
+					}
+					try {
+						Thread.sleep(50);
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+						break;
+					}
+				}
+				return null;
+			});
+		}
+		return true;
+	}
+
+	/**
+	 * Starts the embedded Python if it is not running (without the preference,
+	 * e.g., for a step of a flow).
+	 *
+	 * @return null if Python runs, else the reason
+	 */
+	public static String ensurePython() {
+		if (com.eco.bio7.pybridge.EmbeddedPython.isRunning()) {
+			return null;
+		}
+		if (startWithConsole(false)) {
+			return com.eco.bio7.pybridge.EmbeddedPython.isRunning() ? null : "Python could not be started (see the console)";
+		}
+		return BackgroundStart.run("Starting Python", com.eco.bio7.pybridge.EmbeddedPython::start);
+	}
+
+	/**
 	 * Starts the embedded Python if it is not running and the preference "Start
 	 * Python when it is used" is set (in a job: the user interface stays usable).
 	 *

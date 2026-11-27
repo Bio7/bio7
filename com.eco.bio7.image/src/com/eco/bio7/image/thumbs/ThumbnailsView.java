@@ -206,7 +206,7 @@ public class ThumbnailsView extends ViewPart {
 		/* The overview of all thumbnails (toggled with the "Mag." action)! */
 		overview = new Canvas(sashForm, SWT.BORDER | SWT.DOUBLE_BUFFERED);
 		overview.setBackground(parent.getBackground());
-		overview.addListener(SWT.Paint, e -> grid.paintOverview(e.gc, overview.getClientArea()));
+		overview.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("ThumbnailsView painting", e -> grid.paintOverview(e.gc, overview.getClientArea())));
 		overview.addListener(SWT.MouseDown, e -> grid.scrollFromOverview(overview.getClientArea(), e.x, e.y));
 		overview.addListener(SWT.MouseMove, e -> {
 			if ((e.stateMask & SWT.BUTTON1) != 0) {

@@ -143,6 +143,24 @@ public class PythonEditor extends TextEditor implements IPropertyChangeListener,
 
 	protected void editorContextMenuAboutToShow(IMenuManager menu) {
 		super.editorContextMenuAboutToShow(menu);
+		/* Evaluate: the line or the selection in the Python console (the action of the toolbar, with its key binding) */
+		if (com.eco.bio7.pythonedit.analysis.PythonEditorSupport.evaluateSelection != null) {
+			org.eclipse.jface.action.Action evaluate = new org.eclipse.jface.action.Action("Evaluate Line/Selection") {
+				@Override
+				public void run() {
+					Runnable r = com.eco.bio7.pythonedit.analysis.PythonEditorSupport.evaluateSelection;
+					if (r != null) {
+						r.run();
+					}
+				}
+			};
+			evaluate.setId("com.eco.bio7.pythoneditor.evaluate");
+			evaluate.setActionDefinitionId("com.eco.bio7.execute_r_select");
+			evaluate.setToolTipText("Evaluates the line or the selection in Python");
+			/* The first item of the menu */
+			menu.prependToGroup(ITextEditorActionConstants.GROUP_UNDO, evaluate);
+			menu.insertAfter(evaluate.getId(), new Separator());
+		}
 		addAction(menu, "ContentAssistProposal");
 		addAction(menu, ITextEditorActionConstants.QUICK_ASSIST);
 		addAction(menu, "Format Python Code");

@@ -502,7 +502,7 @@ public class ThemeTabRendering extends Bio7TabRendering {
 				control.setData(PAINTED, this);
 				/* The part is set again when the tool bar is moved or styled again (e.g., by the CSS engine) */
 				Listener update = _ -> later(toolBar);
-				control.addListener(SWT.Paint, update);
+				control.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("ThemeTabRendering painting", update));
 				control.addListener(SWT.Move, update);
 				control.addListener(SWT.Resize, update);
 				control.addListener(SWT.Dispose, _ -> disposePart(toolBar));
@@ -517,7 +517,7 @@ public class ThemeTabRendering extends Bio7TabRendering {
 		/* Only one listener of the current renderer (e.g., after another theme was activated) */
 		if (control.getData(PAINTED) != this) {
 			control.setData(PAINTED, this);
-			control.addListener(SWT.Paint, event -> {
+			control.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("ThemeTabRendering painting", event -> {
 				if (control.getData(PAINTED) != this || picture == null || picture.isDisposed() || header == null || folder.isDisposed() || !isInFolder(control)) {
 					return;
 				}
@@ -554,7 +554,7 @@ public class ThemeTabRendering extends Bio7TabRendering {
 						transparentItems(toolBar);
 					});
 				}
-			});
+			}));
 			control.redraw();
 		}
 		if (control instanceof Composite composite && !(control instanceof ToolBar)) {

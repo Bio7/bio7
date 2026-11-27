@@ -167,7 +167,10 @@ public class SpatialView extends ViewPart {
 
 			@Override
 			public void partHidden(IWorkbenchPartReference partRef) {
-
+				/* Called when the focus or the perspective changes (also while closing): it must not throw */
+				if (com.eco.bio7.util.SafeEvents.closing() || spat == null || spat.glWindow == null || spat.getCanvas() == null) {
+					return;
+				}
 				if (partRef.getId().equals("com.eco.bio7.spatial")) {
 					partShown = false;
 					/*
@@ -187,6 +190,9 @@ public class SpatialView extends ViewPart {
 
 			@Override
 			public void partVisible(IWorkbenchPartReference partRef) {
+				if (com.eco.bio7.util.SafeEvents.closing() || spat == null || spat.glWindow == null || spat.getCanvas() == null) {
+					return;
+				}
 				if (partRef.getId().equals("com.eco.bio7.spatial")) {
 					partShown = true;
 					/* The fullscreen window gets the keys again (ESC, F2 to F5) */
@@ -200,7 +206,9 @@ public class SpatialView extends ViewPart {
 							display.asyncExec(new Runnable() {
 								public void run() {
 									// spat.getCanvas().setParent(parent);
-									spat.getCanvas().getNEWTChild().setVisible(true);
+									if (spat.getCanvas() != null && !spat.getCanvas().isDisposed() && spat.getCanvas().getNEWTChild() != null) {
+										spat.getCanvas().getNEWTChild().setVisible(true);
+									}
 									// System.out.println(spat.getCanvas().getNEWTChild().getBounds());
 									// spat.getCanvas().getNEWTChild().setPosition(0, 0);
 								}

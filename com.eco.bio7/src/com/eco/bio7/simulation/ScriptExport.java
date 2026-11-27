@@ -107,7 +107,7 @@ public final class ScriptExport {
 			  if (s.more_charts) {
 			    const arr = function (v) { return Array.isArray(v) ? v : [v]; };
 			    for (const c of JSON.parse(bio7One(s.more_charts) || '[]')) {
-			      if (c.k === 'line') sim.chartLine(c.t, c.n, c.x, c.y); else if (c.k === 'xy') sim.chartXY(c.t, c.n, c.x, c.y); else if (c.k === 'bars') sim.chartBars(c.t, arr(c.l), arr(c.v));
+			      if (c.k === 'line') sim.chartLine(c.t, c.n, c.x, c.y); else if (c.k === 'xy') sim.chartXY(c.t, c.n, c.x, c.y); else if (c.k === 'bars') sim.chartBars(c.t, arr(c.l), arr(c.v)) else if (c.k === 'colors') sim.chartColors(c.t, arr(c.c));
 			    }
 			  }
 			}

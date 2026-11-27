@@ -84,7 +84,7 @@ public class CustomViewFullscreen {
 	private static final boolean MAC = "cocoa".equals(SWT.getPlatform());
 	private static boolean installed = false;
 
-	private static final Listener KEY_FILTER = new Listener() {
+	private static final Listener KEY_FILTER = com.eco.bio7.util.SafeEvents.guard("CustomViewFullscreen keys", new Listener() {
 		public void handleEvent(Event e) {
 			if (!(e.widget instanceof Control) || !e.doit) {
 				return;
@@ -107,7 +107,7 @@ public class CustomViewFullscreen {
 				Display.getCurrent().asyncExec(() -> handleKey(key, v));
 			}
 		}
-	};
+	});
 
 	/* The action of the keys F2 to F5 for the view (displayed in fullscreen mode or not)! */
 	private static void handleKey(int key, CustomView v) {

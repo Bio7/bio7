@@ -55,11 +55,11 @@ final class SelectionColors {
 			return;
 		}
 		installed = true;
-		display.addFilter(SWT.Skin, event -> {
+		display.addFilter(SWT.Skin, com.eco.bio7.util.SafeEvents.guard("SelectionColors", event -> {
 			if (color != null && (event.widget instanceof Tree || event.widget instanceof Table)) {
 				style((Control) event.widget);
 			}
-		});
+		}));
 	}
 
 	private static void styleAll(Control control) {
@@ -80,7 +80,7 @@ final class SelectionColors {
 		if (color != null && control.getData(PAINTED) == null) {
 			control.setData(PAINTED, Boolean.TRUE);
 			control.addListener(SWT.EraseItem, SelectionColors::erase);
-			control.addListener(SWT.PaintItem, SelectionColors::paint);
+			control.addListener(SWT.PaintItem, com.eco.bio7.util.SafeEvents.guard("SelectionColors painting", SelectionColors::paint));
 		}
 		control.redraw();
 	}

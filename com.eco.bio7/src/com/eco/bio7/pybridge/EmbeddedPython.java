@@ -349,6 +349,49 @@ public final class EmbeddedPython {
 		}
 	}
 
+	/**
+	 * Evaluates lines in the console as if they were typed (e.g., the line or the
+	 * selection of the Python editor): each line after the prompt, the values of
+	 * expressions printed; a block which ends indented is closed.
+	 */
+	public static void evaluateLines(String code) {
+		PySession s = session();
+		if (s == null) {
+			return;
+		}
+		/* The debugger stopped: the lines in the frame */
+		if (com.eco.bio7.pybridge.debug.PythonDebugger.isPaused()) {
+			for (String line : code.split("\\R")) {
+				com.eco.bio7.pybridge.debug.PythonDebugger.consoleLine(line);
+			}
+			return;
+		}
+		s.runAsync("__import__('_bio7')._console_lines(" + literal(code) + ")\n", "Selection");
+	}
+
+	/* A Python string literal of the text */
+	private static String literal(String text) {
+		StringBuilder b = new StringBuilder("'");
+		for (int i = 0; i < text.length(); i++) {
+			char c = text.charAt(i);
+			switch (c) {
+			case '\\' -> b.append("\\\\");
+			case '\'' -> b.append("\\'");
+			case '\n' -> b.append("\\n");
+			case '\r' -> b.append("\\r");
+			case '\t' -> b.append("\\t");
+			default -> {
+				if (c < 0x20) {
+					b.append(String.format("\\x%02x", (int) c));
+				} else {
+					b.append(c);
+				}
+			}
+			}
+		}
+		return b.append('\'').toString();
+	}
+
 	/** Writes the prompt of the Python console. */
 	public static void prompt() {
 		PySession s = session();

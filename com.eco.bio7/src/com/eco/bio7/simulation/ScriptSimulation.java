@@ -254,6 +254,13 @@ public final class ScriptSimulation {
 						}
 						model.chartBars(title, labels.toArray(new String[0]), vals.stream().mapToDouble(Double::doubleValue).toArray());
 					}
+					case "colors" -> {
+						List<String> colors = new ArrayList<>();
+						for (JsonNode v : list(c.path("c"))) {
+							colors.add(v.asText());
+						}
+						model.chartColors(title, colors.toArray(new String[0]));
+					}
 					default -> {
 					}
 					}
@@ -269,7 +276,7 @@ public final class ScriptSimulation {
 						p.add(v.asDouble());
 					}
 					model.addShape(new Shape(d.path("k").asText(), p.stream().mapToDouble(Double::doubleValue).toArray(), nullable(d.get("s")), nullable(d.get("f")), nullable(d.get("t")),
-							d.path("w").asDouble(1), d.path("a").asDouble(0), d.path("z").asDouble(0)));
+							d.path("w").asDouble(1), d.path("a").asDouble(0), d.path("z").asDouble(0), d.path("o").asBoolean(false)));
 				}
 			}
 		} catch (IOException e) {
@@ -826,6 +833,22 @@ public final class ScriptSimulation {
 	public static PyValue call(String function, String[] args, PyValue value) throws Exception {
 		if (function.equals("sim_start")) {
 			start(parse(args[0]));
+			return null;
+		}
+		if (function.equals("sim_perspective")) {
+			/* The label of the Custom perspective (empty: "Custom") */
+			Simulation m = current;
+			if (m != null) {
+				m.perspectiveLabel(args.length == 0 || args[0].isEmpty() ? null : args[0]);
+			}
+			return null;
+		}
+		if (function.equals("sim_perspective_icon")) {
+			/* The icon of the Custom perspective (empty: the simulation icon) */
+			Simulation m = current;
+			if (m != null) {
+				m.perspectiveIcon(args.length == 0 || args[0].isEmpty() ? null : args[0]);
+			}
 			return null;
 		}
 		if (function.equals("sim_asset")) {

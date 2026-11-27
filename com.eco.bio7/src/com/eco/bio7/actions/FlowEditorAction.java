@@ -12,10 +12,14 @@ public class FlowEditorAction extends Action {
 	}
 
 	public void run() {
-		/* A step of a running flow is executed: the flow continues when it has finished */
+		/* A flow is running (a step is executed): stop it and start again? */
 		if (BatchModel.isRunning()) {
-			com.eco.bio7.batch.Bio7Dialog.message("A flow is running.\nPlease stop it to start a new flow.");
-			return;
+			boolean restart = org.eclipse.jface.dialogs.MessageDialog.openQuestion(org.eclipse.swt.widgets.Display.getDefault().getActiveShell(), "Flow",
+					"A flow is running.\nStop it and start the flow again?\n\n(Stop a flow with the stop action of the toolbar or Ctrl+Alt+Shift+X.)");
+			if (!restart) {
+				return;
+			}
+			com.eco.bio7.actions.Bio7Action.stopFlow();
 		}
 		BatchModel.batch(false);
 

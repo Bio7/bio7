@@ -47,6 +47,20 @@ public final class SimulationLayout {
 	/** The panel of the options view of the display (e.g., Options3D) in the left area. */
 	public static final String OPTIONS_PANEL = "subLeftTop";
 
+	/** The icon of the Custom perspective while a model is shown. */
+	public static final String SIMULATION_ICON = "platform:/plugin/com.eco.bio7/icons/perspective/simulationpersp.svg";
+
+	/* The URI of an icon: a platform: or file: URI as is, a path as a file: URI, null the simulation icon */
+	static String iconUri(String icon) {
+		if (icon == null || icon.isBlank()) {
+			return SIMULATION_ICON;
+		}
+		if (icon.startsWith("platform:/") || icon.startsWith("file:")) {
+			return icon;
+		}
+		return new java.io.File(icon).getAbsoluteFile().toURI().toString();
+	}
+
 	/** The panel of the settings below the options view. */
 	public static final String SETTINGS_BELOW_OPTIONS = "subLeftBottom";
 
@@ -61,6 +75,12 @@ public final class SimulationLayout {
 		if (!arrange(model.displayViews())) {
 			return;
 		}
+		/* The label of the model (the perspective may have been opened again) */
+		if (model.getPerspectiveLabel() != null) {
+			com.eco.bio7.collection.Work.setPerspectiveLabel(PERSPECTIVE, model.getPerspectiveLabel());
+		}
+		/* The simulation icon (or the icon of the model) */
+		com.eco.bio7.collection.Work.setPerspectiveIcon(PERSPECTIVE, iconUri(model.getPerspectiveIcon()));
 		if (options != null) {
 			com.eco.bio7.collection.Work.moveViewToPanel(new com.eco.bio7.collection.CustomView(), options[0], OPTIONS_PANEL, options[1]);
 		}

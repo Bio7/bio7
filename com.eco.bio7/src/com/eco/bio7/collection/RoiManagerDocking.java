@@ -64,7 +64,7 @@ public final class RoiManagerDocking {
 		 * the shell is transparent (and outside of the screens where the transparency
 		 * is not supported); the empty shell is hidden later!
 		 */
-		display.addFilter(SWT.Show, e -> {
+		display.addFilter(SWT.Show, com.eco.bio7.util.SafeEvents.guard("RoiManagerDocking", e -> {
 			if (e.widget instanceof Shell s && isRoiManager(s) && isEnabled()) {
 				if (s.getData(DOCKED) == null && s.getData(UNDOCKED) == null) {
 					s.setData(DOCKED, Boolean.TRUE);
@@ -79,7 +79,7 @@ public final class RoiManagerDocking {
 					}
 				}
 			}
-		});
+		}));
 		/* The menu command of an open (docked) ROI Manager shows the view (the hidden shell is not activated)! */
 		try {
 			Executer.addCommandListener(command -> {

@@ -19,6 +19,8 @@ public class Application implements IApplication {
 	public Object start(IApplicationContext context) throws Exception {
 
 		Display display = PlatformUI.createDisplay();
+		/* Exceptions of timers are logged, not thrown into the callback of the operating system (macOS) */
+		com.eco.bio7.util.SafeEvents.installExceptionHandler(display);
 		try {
 			/* One Bio7 per workspace: a workspace used by another Bio7 is not opened twice */
 			if (!lockWorkspace(display)) {

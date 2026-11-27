@@ -112,11 +112,11 @@ public final class FrameImages {
 		}
 		installed = true;
 		/* A filter: before the paint listener of the frame (which would call reskin) */
-		display.addFilter(SWT.Paint, event -> {
+		display.addFilter(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("FrameImages", event -> {
 			if (event.widget instanceof Control frame && FRAME_CLASS.equals(frame.getClass().getName())) {
 				repair(frame);
 			}
-		});
+		}));
 	}
 
 	private static void repair(Control frame) {

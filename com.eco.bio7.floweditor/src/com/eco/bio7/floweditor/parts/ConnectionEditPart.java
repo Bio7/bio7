@@ -130,6 +130,9 @@ public void propertyChange(PropertyChangeEvent event) {
 	String property = event.getPropertyName();
 	if (Connection.LINESTYLE_PROP.equals(property)) {
 		((PolylineConnection) getFigure()).setLineStyle(getCastedModel().getLineStyle());
+	} else if (Connection.BOOLEAN_PROP.equals(property)) {
+		/* A connection of a decision starts at the output of its value */
+		refresh();
 	}
 }
 

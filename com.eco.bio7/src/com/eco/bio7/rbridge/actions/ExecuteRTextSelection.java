@@ -70,6 +70,11 @@ public class ExecuteRTextSelection extends Action {
 			 */
 
 			IEditorPart rEditor = (IEditorPart) window.getActivePage().getActiveEditor();
+			/* The Python editor: the line or the selection in the Python console */
+			if (rEditor instanceof com.eco.bio7.editors.python.PythonEditor) {
+				evaluatePython(rEditor);
+				return;
+			}
 			// IPreferenceStore store = Bio7Plugin.getDefault().getPreferenceStore();
 			// boolean rPipe = store.getBoolean("r_pipe");
 			RBackend con = RBridge.getBackend();
@@ -113,10 +118,11 @@ public class ExecuteRTextSelection extends Action {
 					 * Avoid commented lines (as the first character!). We evaluate R commands in a
 					 * try() statement!
 					 */
-					if (inhalt.startsWith("#")) {
+					/* Also an indented comment; an empty line (only spaces) is not evaluated */
+					if (inhalt.strip().startsWith("#")) {
 						return;
 					}
-					if (inhalt.isEmpty() == false) {
+					if (inhalt.isBlank() == false) {
 						buff.append(inhalt);
 						buff.append("\n");
 						Parse parse = new Parse(null);
@@ -183,7 +189,31 @@ public class ExecuteRTextSelection extends Action {
 		buff.setLength(0); // clear buffer!
 	}
 
+	/* The line or the selection of the Python editor in the embedded Python (started when it is used, preferences) */
+	private void evaluatePython(IEditorPart pythonEditor) {
+		String reason = com.eco.bio7.rcp.AutoStart.startPythonOnUse();
+		if (reason != null || !com.eco.bio7.pybridge.EmbeddedPython.isRunning()) {
+			Bio7Dialog.message(reason != null ? reason : com.eco.bio7.rcp.AutoStart.NOT_RUNNING_PYTHON);
+			return;
+		}
+		String code = getTextAndForwardCursor(pythonEditor, true);
+		/* An empty line too: it closes a block which is entered line by line (as in the console) */
+		if (code == null) {
+			return;
+		}
+		com.eco.bio7.pybridge.EmbeddedPython.evaluateLines(code);
+	}
+
 	private String getTextAndForwardCursor(IEditorPart rEditor) {
+		return getTextAndForwardCursor(rEditor, false);
+	}
+
+	/*
+	 * The selection (or the line) and the cursor on the next line; indent: a
+	 * selection which starts after the indentation of its line gets this
+	 * indentation (Python: the common indentation of the lines is removed).
+	 */
+	private String getTextAndForwardCursor(IEditorPart rEditor, boolean indent) {
 		ITextEditor editor = (ITextEditor) rEditor;
 		IDocumentProvider dp = editor.getDocumentProvider();
 		IDocument doc = dp.getDocument(editor.getEditorInput());
@@ -209,6 +239,13 @@ public class ExecuteRTextSelection extends Action {
 					e1.printStackTrace();
 				}
 				inhalt = doc.get(selection.getOffset(), selection.getLength());
+				if (indent) {
+					IRegion first = doc.getLineInformationOfOffset(selection.getOffset());
+					String before = doc.get(first.getOffset(), selection.getOffset() - first.getOffset());
+					if (before.isBlank()) {
+						inhalt = before + inhalt;
+					}
+				}
 				editor.selectAndReveal(reg.getOffset() + 1 + reg.getLength() + 1, 0);
 			} else {
 				/*If we have only the line information we interpret the line from the region offset and length!*/

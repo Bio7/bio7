@@ -69,7 +69,7 @@ final class ThemeToolTips {
 			return;
 		}
 		installed = true;
-		Listener listener = ThemeToolTips::handle;
+		Listener listener = com.eco.bio7.util.SafeEvents.guard("ThemeToolTips", ThemeToolTips::handle);
 		for (int type : new int[] { SWT.MouseEnter, SWT.MouseHover, SWT.MouseExit, SWT.MouseDown, SWT.MouseWheel, SWT.KeyDown,
 				SWT.Deactivate }) {
 			display.addFilter(type, listener);
@@ -133,7 +133,7 @@ final class ThemeToolTips {
 		gc.dispose();
 		Point size = new Point(width + 2 * PADDING, lines.size() * lineHeight + 2 * PADDING);
 		shell.setSize(size);
-		shell.addListener(SWT.Paint, e -> {
+		shell.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("ThemeToolTips painting", e -> {
 			Rectangle r = shell.getClientArea();
 			e.gc.setFont(control.isDisposed() ? null : control.getFont());
 			e.gc.setBackground(background);
@@ -144,7 +144,7 @@ final class ThemeToolTips {
 			for (int i = 0; i < lines.size(); i++) {
 				e.gc.drawText(lines.get(i), PADDING, PADDING + i * lineHeight, true);
 			}
-		});
+		}));
 		/* Below the cursor, inside the monitor */
 		Point cursor = display.getCursorLocation();
 		Rectangle monitor = control.getMonitor().getClientArea();

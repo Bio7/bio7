@@ -51,7 +51,7 @@ public final class TableSelectionOverlay {
 		}
 		grid.setData(INSTALLED, Boolean.TRUE);
 		/* Called after the painting of the grid (the listener of the grid is first) */
-		grid.addListener(SWT.Paint, e -> paint(grid, e));
+		grid.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("TableSelectionOverlay painting", e -> paint(grid, e)));
 		/*
 		 * The grid paints the changed cells of a selection (and the border beside
 		 * them). The color of the whole selection changes with the focus.

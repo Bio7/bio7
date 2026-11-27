@@ -191,6 +191,8 @@ class DiagramEditPart extends AbstractGraphicalEditPart implements
 
 			cLayer.setConnectionRouter(new ManhattanConnectionRouter());
 
+		} else if (getDiagram().getConnectionRouter().equals(ShapesDiagram.ROUTER_SPLINE)) {
+			cLayer.setConnectionRouter(new SplineRouter());
 		} else {
 			cLayer.setConnectionRouter(new ShortestPathConnectionRouter(
 					getFigure()));

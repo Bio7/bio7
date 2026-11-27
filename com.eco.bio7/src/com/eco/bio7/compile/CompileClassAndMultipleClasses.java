@@ -533,6 +533,15 @@ public class CompileClassAndMultipleClasses {
      * This method is called from above but also from the script menu actions
      * directly (external Java path!)
      */
+
+    /* A class which is not compiled: the stack trace, only a line if the compilation was canceled */
+    private static void reportNotCompiled(ClassNotFoundException e) {
+        if (Thread.currentThread().isInterrupted() || String.valueOf(e.getMessage()).endsWith("Compilation canceled")) {
+            return;
+        }
+        e.printStackTrace();
+    }
+
     public void compileAndLoad(File path, String dir, String name, IWorkbenchPage pag, boolean startupScript) {
         FileRoot.setCurrentCompileDir(dir);
         ClassLoader classLoaderMain;
@@ -645,18 +654,23 @@ public class CompileClassAndMultipleClasses {
                 try {
                     cl = wrapperLoader.findSourceClass(pack + "." + name);
                 } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
+                    reportNotCompiled(e);
                 }
             } else {
                 try {
                     cl = wrapperLoader.findSourceClass(name);
                 } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
+                    reportNotCompiled(e);
                 }
             }
         }
 
         if (cl == null) {
+            /* Canceled (e.g., the Stop button of a flow): no error */
+            if (Thread.currentThread().isInterrupted()) {
+                System.out.println("The compilation of " + name + " was canceled.");
+                return;
+            }
             System.err.println("Failed to compile class: " + name);
             return;
         }

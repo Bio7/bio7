@@ -39,11 +39,11 @@ final class EmptyFolderHeight {
 		}
 		installed = true;
 		Display display = Display.getDefault();
-		display.addFilter(SWT.Resize, event -> {
+		display.addFilter(SWT.Resize, com.eco.bio7.util.SafeEvents.guard("EmptyFolderHeight", event -> {
 			if (event.widget instanceof CTabFolder folder) {
 				display.asyncExec(() -> adjust(folder));
 			}
-		});
+		}));
 	}
 
 	private static void adjust(CTabFolder folder) {
@@ -68,11 +68,11 @@ final class EmptyFolderHeight {
 			if (folder.getData(LISTENER) == null) {
 				folder.setData(LISTENER, Boolean.TRUE);
 				/* A new tab (e.g., an opened editor) without a resize of the folder */
-				folder.addListener(SWT.Paint, _ -> {
+				folder.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("EmptyFolderHeight painting", _ -> {
 					if (folder.getData(FIXED) != null && folder.getItemCount() > 0) {
 						folder.getDisplay().asyncExec(() -> adjust(folder));
 					}
-				});
+				}));
 			}
 			folder.setData(FIXED, Boolean.TRUE);
 			folder.setTabHeight(height);

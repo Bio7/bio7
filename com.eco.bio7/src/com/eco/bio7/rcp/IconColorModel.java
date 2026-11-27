@@ -465,11 +465,11 @@ public final class IconColorModel {
 				 * perspective is opened or the text is shown), so we check the items when
 				 * the toolbar is painted!
 				 */
-				bar.addListener(SWT.Paint, e -> {
+				bar.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("IconColorModel painting", e -> {
 					if (needsRecolor(bar)) {
 						bar.getDisplay().asyncExec(() -> recolorToolBar(bar));
 					}
-				});
+				}));
 			}
 			recolorToolBar(bar);
 		} else if (control instanceof Composite) {
@@ -515,7 +515,18 @@ public final class IconColorModel {
 		if (item.isDisposed() || !(item.getData() instanceof MPerspective)) {
 			return null;
 		}
-		return icon("org.eclipse.ui.perspectives", "perspective", ((MPerspective) item.getData()).getElementId());
+		MPerspective perspective = (MPerspective) item.getData();
+		/* An own icon of the perspective (e.g., the simulation icon of the Custom perspective, Work.setPerspectiveIcon), recolored */
+		Object original = perspective.getTransientData().get(com.eco.bio7.collection.Work.ORIGINAL_PERSPECTIVE_ICON);
+		String uri = perspective.getIconURI();
+		if (original != null && uri != null && !uri.equals(original) && !uri.equals(IconColors.recolorURI(original.toString()))) {
+			try {
+				return new URL(IconColors.recolorURI(uri));
+			} catch (java.net.MalformedURLException e) {
+				return null;
+			}
+		}
+		return icon("org.eclipse.ui.perspectives", "perspective", perspective.getElementId());
 	}
 
 	/*

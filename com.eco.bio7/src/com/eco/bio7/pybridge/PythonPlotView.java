@@ -230,7 +230,7 @@ public final class PythonPlotView {
 		root.setLayout(layout);
 		canvas = new Canvas(root, SWT.DOUBLE_BUFFERED | SWT.NO_BACKGROUND);
 		canvas.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		canvas.addListener(SWT.Paint, e -> paint(e.gc));
+		canvas.addListener(SWT.Paint, com.eco.bio7.util.SafeEvents.guard("PythonPlotView painting", e -> paint(e.gc)));
 		canvas.addListener(SWT.Resize, _ -> resized());
 		/*
 		 * The keys of the fullscreen mode (F2 to F5, Esc): on macOS a canvas only takes
