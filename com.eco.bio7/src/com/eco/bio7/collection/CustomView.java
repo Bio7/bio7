@@ -334,18 +334,19 @@ public class CustomView extends ViewPart {// implements ISaveablePart2
 		CustomView viewReturn = null;
 		if (activated instanceof CustomView) {
 			final CustomView view = (CustomView) activated;
-			if (name != null) {
-				view.setPartName(name);
-			} else {
-				view.setPartName(id);
-			}
-			if (image != null) {
-				view.setTitleImage(image);
-			}
-			display.update();
 			display = PlatformUI.getWorkbench().getDisplay();
+			/* The name, the image and the children of the view in the UI thread (also called from other threads, e.g., R and Python) */
 			display.syncExec(new Runnable() {
 				public void run() {
+					if (name != null) {
+						view.setPartName(name);
+					} else {
+						view.setPartName(id);
+					}
+					if (image != null) {
+						view.setTitleImage(image);
+					}
+					Display.getCurrent().update();
 					Control c[] = view.getCustomViewParent().getChildren();
 					for (int i = 0; i < c.length; i++) {
 						c[i].dispose();
@@ -400,18 +401,19 @@ public class CustomView extends ViewPart {// implements ISaveablePart2
 		LightweightSystem light = null;
 		if (activated instanceof CustomView) {
 			final CustomView view = (CustomView) activated;
-			if (name != null) {
-				view.setPartName(name);
-			} else {
-				view.setPartName(id);
-			}
-			if (image != null) {
-				view.setTitleImage(image);
-			}
-			display.update();
 			display = PlatformUI.getWorkbench().getDisplay();
+			/* The name, the image and the children of the view in the UI thread (also called from other threads, e.g., R and Python) */
 			display.syncExec(new Runnable() {
 				public void run() {
+					if (name != null) {
+						view.setPartName(name);
+					} else {
+						view.setPartName(id);
+					}
+					if (image != null) {
+						view.setTitleImage(image);
+					}
+					Display.getCurrent().update();
 					Control c[] = view.getCustomViewParent().getChildren();
 					for (int i = 0; i < c.length; i++) {
 						c[i].dispose();

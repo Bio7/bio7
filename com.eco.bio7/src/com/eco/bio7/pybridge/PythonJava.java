@@ -52,7 +52,7 @@ final class PythonJava {
 	/** The functions java_* of PythonCalls. */
 	/* The functions of the Java API (bio7.java): reserved for bio7.call */
 	static final java.util.Set<String> NAMES = java.util.Set.of("java_type", "java_members", "java_new", "java_call", "java_get", "java_set", "java_iter",
-			"java_release");
+			"java_release", "java_listen", "java_unlisten", "java_event");
 
 	static PyValue call(String function, String[] args, PyValue value) throws Exception {
 		switch (function) {
@@ -108,8 +108,163 @@ final class PythonJava {
 		case "java_release":
 			release(value);
 			return null;
+		case "java_listen":
+			listen(args, value);
+			return null;
+		case "java_unlisten":
+			unlisten(args[0] + ":" + args[1]);
+			return null;
+		case "java_event": {
+			synchronized (EVENTS) {
+				PyValue e = EVENTS.remove(Long.parseLong(args[0]));
+				return e == null ? PyValue.None.INSTANCE : e;
+			}
+		}
 		default:
 			throw new IllegalArgumentException("Unknown function: " + function);
+		}
+	}
+
+	/* ---------------- Events of SWT widgets (listeners in Python and R) ---------------- */
+
+	/*
+	 * A listener of a widget calls a function of Python or R: the event is taken
+	 * in the thread of the user interface (its values and the text and selection
+	 * of the widget), the function runs later in a thread of the language (not in
+	 * the thread of the user interface: the function may wait for it, e.g., with
+	 * java.ui(...), and R may be busy). The events of a language run one after the
+	 * other in their order.
+	 */
+	private static final Map<String, Object[]> LISTENERS = new java.util.HashMap<>();
+	private static final Map<Long, PyValue> EVENTS = new java.util.HashMap<>();
+	private static final AtomicLong NEXT_EVENT = new AtomicLong(1);
+	private static final java.util.concurrent.ExecutorService PYTHON_EVENTS = events("Python events of widgets");
+	private static final java.util.concurrent.ExecutorService R_EVENTS = events("R events of widgets");
+
+	private static java.util.concurrent.ExecutorService events(String name) {
+		return java.util.concurrent.Executors.newSingleThreadExecutor(r -> {
+			Thread t = new Thread(r, name);
+			t.setDaemon(true);
+			return t;
+		});
+	}
+
+	/* args: the language ("py" or "r"), the id of the listener, the event (e.g., "Selection"); value: the widget (target) */
+	private static void listen(String[] args, PyValue value) throws Exception {
+		String language = args[0], key = args[0] + ":" + args[1], name = args[2];
+		Object target = handleObject(((PyValue.PyDict) value).get("target"));
+		if (!(target instanceof org.eclipse.swt.widgets.Widget widget)) {
+			throw new IllegalArgumentException("A listener needs an SWT widget (e.g., a Button), not " + (target == null ? "null" : target.getClass().getName()));
+		}
+		int type = eventType(name);
+		org.eclipse.swt.widgets.Listener listener = e -> {
+			long id = NEXT_EVENT.getAndIncrement();
+			synchronized (EVENTS) {
+				EVENTS.put(id, event(name, e));
+			}
+			("r".equals(language) ? R_EVENTS : PYTHON_EVENTS).execute(() -> dispatch(language, args[1], id));
+		};
+		Exception[] error = new Exception[1];
+		Display.getDefault().syncExec(() -> {
+			if (widget.isDisposed()) {
+				error[0] = new IllegalArgumentException("The widget is disposed");
+				return;
+			}
+			widget.addListener(type, listener);
+			/* The listeners of a disposed widget are removed */
+			widget.addListener(org.eclipse.swt.SWT.Dispose, d -> {
+				synchronized (LISTENERS) {
+					LISTENERS.remove(key);
+				}
+			});
+		});
+		if (error[0] != null) {
+			throw error[0];
+		}
+		synchronized (LISTENERS) {
+			LISTENERS.put(key, new Object[] { widget, type, listener });
+		}
+	}
+
+	private static void unlisten(String key) {
+		Object[] l;
+		synchronized (LISTENERS) {
+			l = LISTENERS.remove(key);
+		}
+		if (l != null) {
+			org.eclipse.swt.widgets.Widget widget = (org.eclipse.swt.widgets.Widget) l[0];
+			Display.getDefault().asyncExec(() -> {
+				if (!widget.isDisposed()) {
+					widget.removeListener((Integer) l[1], (org.eclipse.swt.widgets.Listener) l[2]);
+				}
+			});
+		}
+	}
+
+	/* The type of an event by the name of its constant in SWT (e.g., "Selection", "MouseDown", "KeyDown", "Modify") */
+	private static int eventType(String name) {
+		try {
+			Field f = org.eclipse.swt.SWT.class.getField(name);
+			if (f.getType() == int.class && Modifier.isStatic(f.getModifiers())) {
+				return f.getInt(null);
+			}
+		} catch (ReflectiveOperationException e) {
+			/* Unknown */
+		}
+		throw new IllegalArgumentException("Unknown event: " + name + " (the name of an event of SWT, e.g., Selection, DefaultSelection, Modify, MouseDown, MouseUp, MouseDoubleClick, KeyDown, KeyUp, FocusIn, FocusOut)");
+	}
+
+	/* The values of the event and of its widget (in the thread of the user interface) */
+	private static PyValue event(String name, org.eclipse.swt.widgets.Event e) {
+		Map<String, PyValue> m = new LinkedHashMap<>();
+		m.put("type", PyValue.of(name));
+		m.put("widget", e.widget == null ? PyValue.None.INSTANCE : handle(e.widget));
+		m.put("x", toPy(e.x));
+		m.put("y", toPy(e.y));
+		m.put("button", toPy(e.button));
+		m.put("count", toPy(e.count));
+		m.put("character", PyValue.of(e.character == 0 ? "" : String.valueOf(e.character)));
+		m.put("keyCode", toPy(e.keyCode));
+		m.put("stateMask", toPy(e.stateMask));
+		m.put("detail", toPy(e.detail));
+		/* The state of the widget: its text, its selection (a check box, a slider, a spinner) and the selected item of a list or combo */
+		if (e.widget != null && !e.widget.isDisposed()) {
+			for (String getter : new String[] { "getText", "getSelection", "getSelectionIndex" }) {
+				try {
+					Method g = e.widget.getClass().getMethod(getter);
+					Object v = g.invoke(e.widget);
+					if (v instanceof String || v instanceof Boolean || v instanceof Integer) {
+						m.put(getter.equals("getText") ? "text" : getter.equals("getSelection") ? "selection" : "index", toPy(v));
+					}
+				} catch (ReflectiveOperationException | RuntimeException ex) {
+					/* The widget has no such value */
+				}
+			}
+		}
+		return new PyValue.PyDict(m);
+	}
+
+	/* Calls the function of the listener in Python or R (in the thread of the events of the language) */
+	private static void dispatch(String language, String listener, long id) {
+		try {
+			if ("r".equals(language)) {
+				com.eco.bio7.rffm.RSession s = com.eco.bio7.rffm.RSession.current();
+				if (s != null) {
+					s.eval(".bio7_java_event(" + Long.parseLong(listener) + ", " + id + ")");
+				}
+			} else {
+				com.eco.bio7.pyffm.PySession s = EmbeddedPython.session();
+				if (s != null) {
+					s.eval("__import__('_bio7')._java_event(" + Long.parseLong(listener) + ", " + id + ")");
+				}
+			}
+		} catch (Exception ex) {
+			System.err.println("The listener of the event failed: " + ex.getMessage());
+		} finally {
+			/* Not taken (e.g., the interpreter is not running) */
+			synchronized (EVENTS) {
+				EVENTS.remove(id);
+			}
 		}
 	}
 
@@ -129,7 +284,42 @@ final class PythonJava {
 				}
 			}
 		}
+		/* The libraries of the preferences (Bio7 > Java Libraries: added JARs, Maven downloads) */
+		ClassLoader libraries = libraryLoader();
+		if (libraries != null) {
+			try {
+				return Class.forName(name, true, libraries);
+			} catch (ClassNotFoundException e) {
+				/* Not in the libraries */
+			}
+		}
 		throw new ClassNotFoundException("Java class not found: " + name);
+	}
+
+	/* The class loader of the libraries of the dynamic compiler (made again when the list changes) */
+	private static String libraryList;
+	private static java.net.URLClassLoader libraryLoader;
+
+	private static synchronized ClassLoader libraryLoader() {
+		java.util.List<String> paths;
+		try {
+			paths = com.eco.bio7.compile.DynamicCompilerClassLoaderUtil.getDynamicCompilerLibraries();
+		} catch (RuntimeException e) {
+			return null;
+		}
+		String list = String.join(";", paths);
+		if (!list.equals(libraryList)) {
+			libraryList = list;
+			libraryLoader = null;
+			if (!paths.isEmpty()) {
+				try {
+					libraryLoader = com.eco.bio7.compile.DynamicCompilerClassLoaderUtil.buildLibraryClassLoader(paths, PythonJava.class.getClassLoader());
+				} catch (Exception e) {
+					System.err.println("The Java libraries of the preferences could not be loaded: " + e.getMessage());
+				}
+			}
+		}
+		return libraryLoader;
 	}
 
 	private static PyValue members(Class<?> cls) {

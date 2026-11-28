@@ -192,14 +192,8 @@ public class IJTabs {
 	 */
 	public static void deleteAllTabs() {
 		getDisplay().syncExec(() -> {
-			IWorkbenchPage page = Bio7ImageJ.getPage();
-			if (page != null) {
-				for (IViewReference ref : page.getViewReferences()) {
-					if (ref.getId().equals(CustomDetachedImageJView.ID)) {
-						page.hideView(ref);
-					}
-				}
-			}
+			/* The image views of all perspectives (the page lists only the views of the active perspective) */
+			CustomDetachedImageJView.closeAllViews();
 			for (CTabItem item : getItems()) {
 				closeTab(item);
 			}

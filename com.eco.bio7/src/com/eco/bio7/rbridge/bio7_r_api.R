@@ -204,6 +204,45 @@ local({
 
   env$is_java <- function(x) inherits(x, "bio7JavaObject")
 
+  # The functions of the listeners of widgets (bio7_java_listen) by their ids
+  state$listeners <- new.env(parent = emptyenv())
+  state$listener_id <- 0
+
+  env$bio7_java_listen <- function(widget, event, fun) {
+    "Calls fun(event) for an event of an SWT widget (e.g., \"Selection\" of a button,
+    \"Modify\" of a text, \"MouseDown\", \"KeyDown\"). The event is a list: type, widget,
+    x, y, button, count, character, keyCode, stateMask, detail and the state of the
+    widget when the event happened: text, selection (a check box, a slider, a
+    spinner), index (a list, a combo; from 0). The function runs when R is free (not
+    in the UI thread: use bio7_java_ui() for the widgets); the events run one after
+    the other. Returns the id of the listener (see bio7_java_unlisten)."
+    if (!is.function(fun)) stop("bio7_java_listen needs a function")
+    state$listener_id <- state$listener_id + 1
+    id <- state$listener_id
+    assign(as.character(id), fun, envir = state$listeners)
+    ok <- FALSE
+    on.exit(if (!ok) rm(list = as.character(id), envir = state$listeners))
+    jcall("java_listen", c("r", id, event), list(target = arg(widget)))
+    ok <- TRUE
+    invisible(id)
+  }
+
+  env$bio7_java_unlisten <- function(id) {
+    "Removes a listener (the id of bio7_java_listen)."
+    if (exists(as.character(id), envir = state$listeners, inherits = FALSE)) rm(list = as.character(id), envir = state$listeners)
+    invisible(jcall("java_unlisten", c("r", id)))
+  }
+
+  # Called by Java when R is free: the function of the listener with the event
+  env$.bio7_java_event <- function(listener, event) {
+    data <- jcall("java_event", as.character(event))
+    fun <- get0(as.character(listener), envir = state$listeners, inherits = FALSE)
+    if (!is.null(fun) && !is.null(data)) {
+      tryCatch(fun(data), error = function(e) message("Error in the listener of the event: ", conditionMessage(e)))
+    }
+    invisible(NULL)
+  }
+
   env$`$.bio7JavaClass` <- function(x, name) {
     cls <- slot(x, "name")
     ui <- slot(x, "ui")
@@ -637,6 +676,7 @@ local({
   imp$getTitle()
   roi <- J(\"ij.gui.OvalRoi\")$new(10, 10, 50, 50)   # constructors (also bio7_java_new)
   bio7_java_ui(obj)$setText(\"Title\")     # methods in the UI thread (SWT widgets)
+  bio7_java_listen(button, \"Selection\", function(e) print(e$text))   # events of widgets
   as.list(J(\"java.util.List\")$of(1, 2))  # the elements of a collection
 
   bio7_plot3d(bio7_scatter3d(iris[, 1:3], label = \"Iris\"), title = \"Scatter\")   # 3D plots in the 3D view

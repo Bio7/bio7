@@ -29,6 +29,7 @@ import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
@@ -156,10 +157,29 @@ public class Work {
 							// part composite) into the Bio7 panel. The part composite
 							// itself stays with the workbench so it can be disposed
 							// safely when the view is hidden below.
-							for (Control child : partComposite.getChildren()) {
+							final Composite original = partComposite;
+							final Control[] moved = partComposite.getChildren();
+							for (Control child : moved) {
 								child.setParent(targetParent);
 								child.setVisible(true);
 							}
+							/*
+							 * The panel closed (e.g., the Custom perspective): the widgets go back to
+							 * the view (SWT sends the dispose event of the panel before its children
+							 * are disposed), else they would be disposed with the panel and the view
+							 * would stay empty (e.g., ImageJ would open its images in own windows)
+							 */
+							targetParent.addListener(SWT.Dispose, event -> {
+								if (original.isDisposed()) {
+									return;
+								}
+								for (Control child : moved) {
+									if (!child.isDisposed() && child.getParent() == targetParent) {
+										child.setParent(original);
+									}
+								}
+								original.layout(true, true);
+							});
 
 							// Force a layout update so the elements adapt to the panel
 							targetParent.layout(true, true);
@@ -176,6 +196,128 @@ public class Work {
 				}
 			}
 		});
+	}
+
+	/**
+	 * Moves an open view (as it is, with its tab) to the place of a panel of the
+	 * Custom perspective, e.g., moveViewToCustomPanel("com.eco.bio7.browser.Browser",
+	 * null, "subRightTop"). Unlike {@link #moveViewToPanel}, the view itself is
+	 * moved (not its widgets): it keeps working, also after the Custom perspective
+	 * is closed. Can be called from any thread.
+	 *
+	 * @param viewId        the id of the view
+	 * @param secondaryId   the secondary id of the view (e.g., of an image view) or
+	 *                      null
+	 * @param panelLocation the panel of the Custom perspective (e.g., "subLeftTop",
+	 *                      "subRightTop", "subLeftBottom", "subRightBottomLeft",
+	 *                      "subRightBottomRight")
+	 * @return true if the view was moved
+	 */
+	public static boolean moveViewToCustomPanel(final String viewId, final String secondaryId, final String panelLocation) {
+		boolean[] moved = new boolean[1];
+		Runnable move = () -> {
+			try {
+				IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+				org.eclipse.ui.IViewReference ref = secondaryId == null ? page.findViewReference(viewId) : page.findViewReference(viewId, secondaryId);
+				IViewPart view = ref == null ? null : ref.getView(false);
+				if (view == null) {
+					System.err.println("The view '" + viewId + "' is not open.");
+					return;
+				}
+				/* The place of the panel: the stack of its custom view (created for the move if not open) */
+				final String custom = "com.eco.bio7.custom_controls";
+				boolean panelOpen = page.findViewReference(custom, panelLocation) != null;
+				IViewPart panel = page.showView(custom, panelLocation, IWorkbenchPage.VIEW_CREATE);
+				MPart panelPart = panel.getSite().getService(MPart.class);
+				MPart part = view.getSite().getService(MPart.class);
+				if (panelPart == null || part == null) {
+					return;
+				}
+				org.eclipse.e4.ui.model.application.ui.MUIElement panelRef = panelPart.getCurSharedRef() != null ? panelPart.getCurSharedRef() : panelPart;
+				org.eclipse.e4.ui.model.application.ui.MUIElement viewRef = part.getCurSharedRef() != null ? part.getCurSharedRef() : part;
+				org.eclipse.e4.ui.model.application.ui.MElementContainer<org.eclipse.e4.ui.model.application.ui.MUIElement> stack = panelRef.getParent();
+				if (stack == null) {
+					return;
+				}
+				if (viewRef.getParent() != stack) {
+					org.eclipse.e4.ui.workbench.modeling.EModelService models = view.getSite().getService(org.eclipse.e4.ui.workbench.modeling.EModelService.class);
+					models.move(viewRef, stack);
+				}
+				stack.setSelectedElement(viewRef);
+				/* The empty panel only made for the move is closed again */
+				if (!panelOpen) {
+					page.hideView(panel);
+				}
+				page.activate(view);
+				moved[0] = true;
+			} catch (Exception e) {
+				System.err.println("The view '" + viewId + "' could not be moved: " + e.getMessage());
+			}
+		};
+		if (Display.getCurrent() != null) {
+			move.run();
+		} else {
+			PlatformUI.getWorkbench().getDisplay().syncExec(move);
+		}
+		return moved[0];
+	}
+
+	/**
+	 * Shows an ImageJ image in its own view (the "Image" view of ImageJ) at the
+	 * place of a panel of the Custom perspective, e.g., showImageInPanel(imp,
+	 * "subRightBottomLeft"). The image is shown in ImageJ first if necessary.
+	 * Closing the view closes the image. Can be called from any thread.
+	 *
+	 * @param imp           the image
+	 * @param panelLocation the panel of the Custom perspective
+	 * @return true if the image is shown there
+	 */
+	public static boolean showImageInPanel(final ij.ImagePlus imp, final String panelLocation) {
+		if (imp == null) {
+			return false;
+		}
+		boolean uiThread = Display.getCurrent() != null;
+		boolean[] state = new boolean[2];
+		Runnable query = () -> {
+			state[0] = com.eco.bio7.image.ui.CustomDetachedImageJView.find(imp) != null;
+			state[1] = state[0] || com.eco.bio7.image.ui.Bio7ImageJ.getTab(imp) != null;
+		};
+		runInUi(query);
+		if (!state[1]) {
+			/* Shown in a tab of the ImageJ-Canvas view first (which may be added later in the UI thread) */
+			imp.show();
+			for (int i = 0; i < 100 && !uiThread; i++) {
+				runInUi(query);
+				if (state[1]) {
+					break;
+				}
+				try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+					return false;
+				}
+			}
+		}
+		boolean[] detached = new boolean[1];
+		runInUi(() -> {
+			detached[0] = com.eco.bio7.image.ui.CustomDetachedImageJView.find(imp) != null
+					|| com.eco.bio7.image.ui.CustomDetachedImageJView.detach(imp, null, true) != null;
+		});
+		if (!detached[0]) {
+			System.err.println("The image '" + imp.getTitle() + "' could not be shown in a view.");
+			return false;
+		}
+		return moveViewToCustomPanel(com.eco.bio7.image.ui.CustomDetachedImageJView.ID, Integer.toString(imp.getID()), panelLocation);
+	}
+
+	/* Runs the code in the UI thread and waits for it */
+	private static void runInUi(Runnable code) {
+		if (Display.getCurrent() != null) {
+			code.run();
+		} else {
+			PlatformUI.getWorkbench().getDisplay().syncExec(code);
+		}
 	}
 
 	/**

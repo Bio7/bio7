@@ -414,8 +414,8 @@ public class Bio7ImageJ implements ImageJHost, ImageListener {
 				item.dispose();
 			}
 			if (detached != null) {
-				IWorkbenchPage page = detached.getSite().getPage();
-				page.hideView(detached);
+				/* In all perspectives (e.g., a view moved into the Custom perspective) */
+				CustomDetachedImageJView.closeView(detached);
 			}
 			if (!holder.isDisposed()) {
 				holder.dispose();

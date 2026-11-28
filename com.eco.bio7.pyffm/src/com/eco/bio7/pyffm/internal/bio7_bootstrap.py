@@ -573,6 +573,7 @@ class _Java(_JavaPackage):
         roi = java.new("ij.gui.OvalRoi", 10, 10, 50, 50)   # constructors
         pixels = imp.getProcessor().getPixels()             # arrays as numpy
         java.ui(shell).setText("Title")     # in the UI thread (SWT widgets)
+        java.listen(button, "Selection", lambda event: print(event["text"]))   # events of widgets
     """
     __slots__ = ()
 
@@ -595,11 +596,52 @@ class _Java(_JavaPackage):
         """True for a Java object (proxy)."""
         return isinstance(obj, _JavaObject)
 
+    def listen(self, widget, event, function):
+        """Calls function(event) for an event of an SWT widget (e.g., "Selection" of a
+        button, "Modify" of a text, "MouseDown", "KeyDown"). The event is a dict: type,
+        widget, x, y, button, count, character, keyCode, stateMask, detail and the
+        state of the widget when the event happened: text, selection (a check box, a
+        slider, a spinner), index (a list, a combo). The function runs in a thread of
+        Python (not in the UI thread: use java.ui(...) for the widgets); the events
+        run one after the other. Returns the id of the listener (see unlisten)."""
+        if not callable(function):
+            raise TypeError("java.listen needs a function")
+        lid = next(_java_listener_ids)
+        _java_listeners[lid] = function
+        try:
+            _jcall("java_listen", "py", str(lid), event, value={"target": widget})
+        except BaseException:
+            _java_listeners.pop(lid, None)
+            raise
+        return lid
+
+    def unlisten(self, listener):
+        """Removes a listener (the id of listen)."""
+        _java_listeners.pop(listener, None)
+        _jcall("java_unlisten", "py", str(listener))
+
     def __repr__(self):
         return "<Java API of Bio7>"
 
 
 java = _Java()
+
+# The functions of the listeners of widgets (java.listen) by their ids
+_java_listeners = {}
+_java_listener_ids = __import__("itertools").count(1)
+
+
+def _java_event(listener, event):
+    """Calls the function of a listener with the event (called by Java in a thread of Python)."""
+    function = _java_listeners.get(listener)
+    data = _jcall("java_event", str(event))
+    if function is None or data is None:
+        return None
+    try:
+        function(data)
+    except BaseException:
+        __import__("traceback").print_exc()
+    return None
 
 
 def _file_url_path(url):

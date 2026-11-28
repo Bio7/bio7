@@ -71,6 +71,12 @@ public class CustomDetachedImageJView extends ViewPart {
 		return isDetached;
 	}
 
+	/*
+	 * The open views of all perspectives (the page finds only the views of the
+	 * active perspective, e.g., not a view moved into the Custom perspective)
+	 */
+	private static final java.util.Set<CustomDetachedImageJView> OPEN = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
 	public CustomDetachedImageJView() {
 	}
 
@@ -82,6 +88,7 @@ public class CustomDetachedImageJView extends ViewPart {
 	public void createPartControl(Composite parent) {
 		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, "com.eco.bio7.imagej");
 		this.customViewParent = parent;
+		OPEN.add(this);
 		parent.setLayout(new FillLayout());
 		parent.addControlListener(new ControlAdapter() {
 			@Override
@@ -141,6 +148,52 @@ public class CustomDetachedImageJView extends ViewPart {
 					moveToPerspective(modelService, images, floating, active);
 				}
 			}
+		}
+	}
+
+	/**
+	 * Closes the view in all perspectives (e.g., after the image has been closed in
+	 * ImageJ): the view is a shared part with one placeholder per perspective,
+	 * hideView only removes the placeholder of the active perspective (a view moved
+	 * into another perspective, e.g., the Custom perspective, would stay there
+	 * without its image).
+	 *
+	 * @param view the view of an image
+	 */
+	/**
+	 * Closes the views of all images in all perspectives (and the images).
+	 */
+	public static void closeAllViews() {
+		for (CustomDetachedImageJView view : new ArrayList<>(OPEN)) {
+			closeView(view);
+		}
+	}
+
+	public static void closeView(CustomDetachedImageJView view) {
+		if (view == null || view.getSite() == null) {
+			return;
+		}
+		IWorkbenchPage page = view.getSite().getPage();
+		IWorkbenchWindow workbenchWindow = view.getSite().getWorkbenchWindow();
+		EModelService modelService = workbenchWindow.getService(EModelService.class);
+		MWindow window = workbenchWindow.getService(MWindow.class);
+		MPart part = view.getSite().getService(MPart.class);
+		if (modelService != null && window != null && part != null) {
+			MPerspective active = modelService.getActivePerspective(window);
+			for (MPlaceholder ph : modelService.findElements(window, null, MPlaceholder.class)) {
+				if (ph.getRef() == part && ph.getParent() != null && modelService.getPerspectiveFor(ph) != active) {
+					ph.setToBeRendered(false);
+					ph.getParent().getChildren().remove(ph);
+				}
+			}
+		}
+		/* The placeholder of the active perspective (disposes the view and the holder of the image) */
+		try {
+			if (part == null || part.getObject() != null) {
+				page.hideView(view);
+			}
+		} catch (RuntimeException e) {
+			/* Already disposed with its last placeholder */
 		}
 	}
 
@@ -241,6 +294,12 @@ public class CustomDetachedImageJView extends ViewPart {
 		IViewPart view = findBySecondaryId(page, Integer.toString(imp.getID()));
 		if (view instanceof CustomDetachedImageJView) {
 			return (CustomDetachedImageJView) view;
+		}
+		/* A view of another perspective */
+		for (CustomDetachedImageJView open : OPEN) {
+			if (open.plus == imp) {
+				return open;
+			}
 		}
 		return null;
 	}
@@ -486,6 +545,7 @@ public class CustomDetachedImageJView extends ViewPart {
 	}
 
 	public void dispose() {
+		OPEN.remove(this);
 		/* The empty floating window of the view is removed (after the view has been removed) */
 		IWorkbenchWindow workbenchWindow = getSite() != null ? getSite().getWorkbenchWindow() : null;
 		if (workbenchWindow != null) {
